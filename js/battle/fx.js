@@ -2888,7 +2888,16 @@ const FX = {
 
   trimPops() {
     const keep = this._popCap || 36;
-    while (this.pop && this.pop.children.length >= keep) this.pop.firstElementChild.remove();
+    while (this.pop && this.pop.children && this.pop.children.length >= keep) {
+      const first = this.pop.firstElementChild || this.pop.children[0];
+      if (first && typeof first.remove === 'function') {
+        first.remove();
+      } else if (this.pop.children && this.pop.children.shift) {
+        this.pop.children.shift();
+      } else {
+        break;
+      }
+    }
   },
 
   trimParts(max) {

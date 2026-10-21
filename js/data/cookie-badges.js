@@ -102,7 +102,7 @@ defBadge({
       B.after(0.3, () => {
         B.alliesOf(u).forEach(a => {
           B.applyStatus(u, a, 'ccimmune', 4);
-          B.applyStatus(u, a, 'evaP', 6, { val: 0.20 });
+          B.applyStatus(u, a, 'lucky', 6);
           B.cleanse(a, 1);
           B.fxSparkle(a.x, a.y - 45, 8, '#ffe6ad');
         });
@@ -379,7 +379,9 @@ defBadge({
       ev.prevented = true;
       const target = ev.unit;
       target.hp = Math.max(1, target.max.hp * (0.20 + lvl * 0.05));
-      B.applyStatus(u, target, 'invuln', 2.5);
+      B.applyStatus(u, target, 'untargetable', 2);
+      B.applyStatus(u, target, 'ccimmune', 2.5);
+      B.applyStatus(u, target, 'ward', 3);
       B.cleanse(target, 5);
       B.energy(u, 40);
       Sound.play('revive', { vol: .52, priority: true });
