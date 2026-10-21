@@ -84,6 +84,8 @@ function heroRole(role) {
     fallback can't express (a teleport, a flicker, a deliberate stall);
     everyone else rides the fallback their move.gait already implies. */
 const ENTRANCE_STYLES = {
+  // Gourdy is already at his drum kit when the lights come up.
+  QOMGourdy: { dur: .72, stagger: .08, ease: ease.out, teleport: true, appearAt: .4, col: '#b9f878' },
   // paints her own path into the fight, brush marks appearing underfoot
   Brusha: { dur: 1.0, stagger: .13, ease: ease.out, hop: 0, bob: 5, jitter: 0, paintTrail: true },
   // jumps in like a cat: a short, low pounce rather than a walk

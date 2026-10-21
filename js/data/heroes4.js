@@ -496,78 +496,130 @@ const GOURDY_TRICKS = [
 defHero({
   id: 'Gourdy', name: 'Gourdy', folder: 'Gourdy', file: 'Gourdy', icon: 'Gourdy',
   role: 'Support', tier: 'B', element: 'Pumpkin',
-  blurb: "Gives you something random. You don't control what you get, but every result is useful.",
-  base: { hp: 3350, atk: 108, def: 195, mag: 195, mdef: 232, spd: 98, acc: 172, eva: 118 },
-  hidden: { range: 255, aspd: .82, ms: 64, aggro: .55, crit: .05, critDmg: 1.4, healPow: 1.1, shieldPow: 1.1,
-    cdr: .10, ccRes: .18, kbRes: .3, armorPen: 0, magPen: .05 },
-  growth: { hp: .084, atk: .052, def: .080, mag: .062, mdef: .086 },
+  blurb: "Gives you something random. You don't control what you get, but every sweet result changes the fight.",
+  base: { hp: 4200, atk: 120, def: 235, mag: 360, mdef: 280, spd: 104, acc: 190, eva: 130 },
+  hidden: { range: 255, aspd: .95, ms: 75, aggro: .55, crit: .08, critDmg: 1.5, healPow: 1.25, shieldPow: 1.25,
+    cdr: .14, ccRes: .22, kbRes: .35, armorPen: 0, magPen: .08 },
+  growth: { hp: .092, atk: .055, def: .085, mag: .082, mdef: .088 },
   move: { gait: 'bounce', bob: 9, freq: 1.8, lean: 5, squash: .08, idle: 'shake', step: 'bounce',
     particles: 'confetti', pcol: '#ff9d4d', trail: { on: false }, brake: .3 },
-  basic: { name: 'Pumpkin Pat', type: 'magic', ratio: .45, range: 255, proj: 'orb', pcol: '#ff9d4d',
-    sfx: 'whoosh', hit: 'hit_light', wind: .2, note: "Barely a scratch - he's not really here to fight.",
-    onHit: (u, t, B) => { if (chance(.14)) B.gourdyTrick(u, t, 1); } },
+  basic: { name: 'Pumpkin Candy Toss', type: 'magic', ratio: .65, range: 255, proj: 'orb', pcol: '#ff9d4d',
+    sfx: 'throwsomething', hit: 'hit_light', wind: .2, note: "Sweet pumpkin candy tossed with care.",
+    onHit: (u, t, B) => {
+      if (chance(.25)) {
+        if (chance(.5)) B.gourdyTrick(u, t, 1);
+        else {
+          const a = B.lowestHp(B.alliesOf(u));
+          if (a) B.gourdyTreat(u, a, .6);
+        }
+      }
+    }
+  },
   skills: {
     W: {
-      name: 'Trick or Treat', type: 'Support', energy: 100,
-      v: {}, p: { radius: 320, duration: 8 },
-      desc: (S, P) => `<span class="sk-pas">Basic Attacks have a small chance to give the target a random Trick.</span>
-        Active: every ally in range gets a random Treat buff for <em>${P.duration}s</em>, boosting one of their stats.`,
+      name: 'Spooky Treat Extravaganza', type: 'Support / Magic Damage', energy: 100,
+      v: { ratio: .85, heal: .08 }, p: { radius: 360, duration: 9 },
+      desc: (S, P) => `<span class="sk-pas">Basic Attacks have a 25% chance to slip a Trick onto enemies or toss a Treat to an ally.</span>
+        Active: Gourdy dumps his glowing pumpkin bucket! Every ally gains a random Treat for <em>${P.duration}s</em>, heals for <em>${pcn(S.ratio * 100)}</em> Magic + ${pcn(S.heal * 100)} Max HP, and gains 18 Energy. Nearby enemies take <em>${pcn(S.ratio * 100)}</em> Magic Damage, suffer a random Trick, and are rooted in pumpkin vines for 1.5s.`,
       passive: () => {},
       cast: (u, B, S, P) => {
-        B.anim(u, 'cast', .72, 'gourdyTreat'); Sound.play('get_item'); B.fxGourdyTreatCast(u);
-        const allies = B.alliesOf(u).filter(a => B.distance(a, u) < P.radius);
+        B.anim(u, 'cast', .78, 'gourdyTreat');
+        Sound.play('get_item');
+        Sound.play('candy_pop', { vol: .6 });
+        B.fxGourdyTreatCast(u);
+        if (B.fxGourdyCandyFountain) B.fxGourdyCandyFountain(u.x, u.y);
+        const allies = B.alliesOf(u);
+        const foes = B.enemiesOf(u).filter(e => B.distance(e, u) < P.radius);
         B.after(.18, () => {
           if (!u.alive) return;
-          B.fxConfetti(u.x, u.y - 60, 20);
-          allies.filter(a => a.alive).forEach(a => B.gourdyTreat(u, a, P.duration / 8));
+          B.fxConfetti(u.x, u.y - 60, 24);
+          allies.filter(a => a.alive).forEach(a => {
+            B.gourdyTreat(u, a, P.duration / 8);
+            B.heal(u, a, u.st.mag * S.ratio + u.max.hp * S.heal, { tag: 'Pumpkin Treat' });
+            B.energy(a, 18);
+          });
+          foes.filter(e => e.alive).forEach(e => {
+            B.damage(u, e, u.st.mag * S.ratio, { type: 'magic', area: true, tag: 'Spooky Surprise' });
+            B.applyStatus(u, e, 'root', 1.5);
+            B.gourdyTrick(u, e, 1);
+          });
         });
       }
     },
     G: {
-      name: 'Sugar Rush', type: 'Buff',
-      v: {}, p: { rushDur: 6 },
-      desc: (S, P) => `At the start of combat, gives the whole team 🏃 Speed Up for <em>${P.rushDur}s</em>. Whenever the team gains a Treat, everyone gets a smaller version. Reaching full Mana refreshes it.`,
+      name: 'Sugar Rush & Harvest Cheer', type: 'Buff / Shield',
+      v: { shield: .16 }, p: { rushDur: 7 },
+      desc: (S, P) => `At battle start, grants all allies 🏃 Speed Up and 💨 Skill Haste for <em>${P.rushDur}s</em>. Whenever an ally gains a Treat or lands a critical hit, Candy Cascade accelerates the team with Speed Up and 6 Energy. Reaching full Mana or casting Spooky Extravaganza grants Gourdy and the lowest-HP ally a protective Candy Shield worth <em>${pcn(S.shield * 100)}</em> Max HP.`,
       passive: (u, B, S, P) => {
         const rush = (dur, smaller) => {
           if (smaller && B.t < (u._gourdyRushAt || 0) + .25) return;
-          u._gourdyRushAt = B.t; const allies = B.alliesOf(u);
+          u._gourdyRushAt = B.t;
+          const allies = B.alliesOf(u);
           if (!smaller && !u.casting && u.animStyle !== 'gourdyTreat') {
             B.anim(u, 'cast', .68, 'gourdyRush');
           }
           B.fxGourdyRush(u, allies, smaller);
-          allies.forEach(a => B.applyStatus(u, a, 'speedup', dur));
+          allies.forEach(a => {
+            B.applyStatus(u, a, 'speedup', dur);
+            B.applyStatus(u, a, 'haste', dur * .8);
+            if (smaller) B.energy(a, 6);
+          });
+        };
+        const grantShield = () => {
+          const hurt = B.lowestHp(B.alliesOf(u)) || u;
+          B.shield(u, u, u.max.hp * S.shield, 8);
+          if (hurt !== u) B.shield(u, hurt, u.max.hp * S.shield, 8);
+          Sound.play('sparkle', { vol: .4 });
         };
         B.after(.2, () => rush(P.rushDur, false));
-        B.on(u, 'gourdyTreat', () => rush(2.5, true));
-        B.on(u, 'cast', ev => { if (ev.key === 'W') rush(P.rushDur, false); });
+        B.on(u, 'gourdyTreat', () => rush(3, true));
+        B.on(u, 'dealDamage', ev => { if (ev.crit) rush(2.5, true); });
+        B.on(u, 'cast', ev => {
+          if (ev.key === 'W') {
+            rush(P.rushDur, false);
+            grantShield();
+          }
+        });
         B.every(u, .25, () => {
           const full = u.energy >= u.energyMax;
-          if (full && !u._gourdyFullMana) rush(P.rushDur, false);
+          if (full && !u._gourdyFullMana) {
+            rush(P.rushDur, false);
+            grantShield();
+          }
           u._gourdyFullMana = full;
         });
       }
     },
     B: {
-      name: 'Pumpkin Toss', type: 'Control', cd: 7,
-      v: { ratio: .25 }, p: {},
-      desc: (S) => `Throws a pumpkin at an enemy for a token <em>${pcn(S.ratio * 100)}</em> Magic, applying a random Control effect (Stun, Silence, Slow or Mana Drain). It prioritizes enemies holding a 🤝 Hug Line and breaks the link on impact. Enemies with more Attack or Magic Attack than Gourdy risk a second effect landing too.`,
-      ai: { prio: 46, cond: (u, B) => B.enemiesOf(u).length > 0 },
+      name: 'Mega Pumpkin Patch Slam', type: 'Control / Magic Damage', cd: 7,
+      v: { ratio: 1.25 }, p: {},
+      desc: (S) => `Heaves an enormous Jack-o'-Lantern into the enemy ranks for <em>${pcn(S.ratio * 100)}</em> Magic Damage. It prioritizes enemies holding a 🤝 Hug Line, breaking the link on impact. Targets are Stunned for 1.5s, rooted in pumpkin vines for 2s, and suffer two random Tricks. If Mrs. Holloway or Mr. Holloway is in the party, Mother and Father's presence triggers a Spiral Harvest Detonation: dealing +40% bonus damage and restoring 25 Energy to Gourdy!`,
+      ai: { prio: 50, cond: (u, B) => B.enemiesOf(u).length > 0 },
       cast: (u, B, S) => {
         const foes = B.enemiesOf(u);
         const linked = foes.filter(e => e.hasStatus('hugline'));
         const t = pick(linked.length ? linked : foes); if (!t) return;
-        B.anim(u, 'wind', .82, 'gourdyToss'); Sound.play('beam_charge', { vol: .22, throttle: 260 });
+        const hasFamily = B.alliesOf(u).some(a => a.id === 'MrsHolloway' || a.id === 'MrHolloway');
+        B.anim(u, 'wind', .82, 'gourdyToss'); Sound.play('beam_charge', { vol: .24, throttle: 260 });
         B.after(.24, () => {
           if (!u.alive || !t.alive) return;
-          B.anim(u, 'attack', .24, 'gourdyTossRelease'); Sound.play('throwsomething', { vol: .55 });
-          B.fxArc(u, t, { kind: 'food', img: 'Pumpkin', size: 34 }, () => {
+          B.anim(u, 'attack', .24, 'gourdyTossRelease'); Sound.play('throwsomething', { vol: .65 });
+          B.fxArc(u, t, { kind: 'food', img: 'Pumpkin', size: 44 }, () => {
             const hitT = (t && t.alive) ? t : (B.nearest(t, B.enemiesOf(u)) || pick(B.enemiesOf(u)));
             if (!hitT || !hitT.alive) return;
-            B.damage(u, hitT, u.st.mag * S.ratio, { type: 'magic', tag: 'Pumpkin Toss' });
-            const pool = ['stun', 'silence', 'slow', 'drain'];
-            const effect = pick(pool);
-            B.fxGourdyPumpkinImpact(hitT, effect); Sound.play('pop2', { vol: .65 });
-            B.applyStatus(u, hitT, effect, effect === 'stun' ? 2 : 3);
+            const dmgMult = hasFamily ? 1.40 : 1.0;
+            B.damage(u, hitT, u.st.mag * S.ratio * dmgMult, { type: 'magic', area: true, tag: 'Mega Pumpkin Slam' });
+            if (hasFamily) {
+              B.energy(u, 25);
+              Sound.play('spectral', { vol: .5 });
+            }
+            if (B.fxGourdyMegaPumpkin) B.fxGourdyMegaPumpkin(u, hitT, hasFamily);
+            else B.fxGourdyPumpkinImpact(hitT, 'stun');
+            Sound.play('pop2', { vol: .75 });
+            B.applyStatus(u, hitT, 'stun', 1.5);
+            B.applyStatus(u, hitT, 'root', 2);
+            B.gourdyTrick(u, hitT, 1);
+            B.gourdyTrick(u, hitT, 1);
             const hug = hitT.getStatus('hugline');
             if (hug) {
               const goob = hug.src;
@@ -576,30 +628,46 @@ defHero({
               else B.removeStatus(hitT, 'hugline');
               B.fxFloatIcon(hitT.x, hitT.y - 100, '🎃', '#ff9d4d');
             }
-            if (Math.max(hitT.st.atk, hitT.st.mag) > u.st.mag && chance(.5)) {
-              B.applyStatus(u, hitT, pick(pool), 2.5);
-            }
+            // Splash Tricks to nearby foes
+            B.enemiesOf(u).filter(e => e !== hitT && B.distance(e, hitT) < 160).forEach(e => {
+              B.damage(u, e, u.st.mag * S.ratio * 0.45, { type: 'magic', area: true, tag: 'Pumpkin Splash' });
+              B.gourdyTrick(u, e, 1);
+            });
           });
         });
       }
     },
     P: {
-      name: "Trickster's Fortune", type: 'Passive',
-      v: { base: .20, perCdr: .30 }, p: {},
-      desc: (S) => `Whenever a Trick or Treat is applied, there's a chance (higher with more Mana Regen) for a second one to land as well - a different Treat for allies, another Trick for enemies.`,
-      passive: (u, B, S) => { u._gourdyLucky = S; }
+      name: "Trickster's Harvest & Hollow Heritage", type: 'Passive / Defense',
+      v: { base: .25, perCdr: .35 }, p: {},
+      desc: (S) => `Treats granted to allies grant +15% Tenacity (CC Resistance) and 15% Damage Reduction. Enemies with Tricks take +18% increased damage from all sources. When Trick or Treat lands, there is a chance for a second one to land. Once every 12s when an ally falls below 40% HP, Gourdy tosses an emergency Guardian Candy granting a 20% Max HP Shield and Cleansing 2 debuffs.`,
+      passive: (u, B, S) => {
+        u._gourdyLucky = S;
+        u._gourdyEmergencyCd = 0;
+        B.on(u, 'allyDamaged', ev => {
+          if (!ev.unit || !ev.unit.alive || ev.unit.hpPct >= .40 || B.t < u._gourdyEmergencyCd) return;
+          u._gourdyEmergencyCd = B.t + 12;
+          B.shield(u, ev.unit, u.max.hp * .20, 8);
+          B.cleanse(ev.unit, 2);
+          Sound.play('sparkle', { vol: .5 });
+          B.fxFloatIcon(ev.unit.x, ev.unit.y - 100, '🍬🛡', '#ffd166');
+        });
+      }
     },
     R: {
-      name: "Halloween's Luck", type: 'Battle Opener',
-      v: {}, p: { thr: .5, trickDur: 4 },
-      desc: (S, P) => `Trick or Treat now rolls three Treats per ally and grants the best one for their current stats; the two leftovers become Tricks on nearby enemies for ${P.trickDur}s. Allies below ${pc(P.thr)} HP are prioritized for defensive Treats.`,
+      name: "The Great Halloween Miracle", type: 'Battle Opener',
+      v: {}, p: { thr: .5, trickDur: 5 },
+      desc: (S, P) => `Trick or Treat rolls three Treats per ally, picking the optimal one for their current stats; the two leftovers become flying pumpkin bombs that crash down on enemies for Magic Damage and Tricks for ${P.trickDur}s. In addition, all allies gain permanent +15% Energy Generation for the entire fight.`,
       passive: (u, B, S, P) => {
-        // Keep Trickster's Fortune active at Red instead of replacing it.
-        // The red flag is deliberately separate: Purple grants bonus rolls;
-        // only Red changes W into the three-Treat conversion.
         u._gourdyLuck = Object.assign({}, u._gourdyLucky || {}, P, {
           trickDur: P.trickDur,
           red: true
+        });
+        B.after(.25, () => {
+          B.alliesOf(u).forEach(a => {
+            a.flat.energyGenP = (a.flat.energyGenP || 0) + .15;
+            a.dirty = true;
+          });
         });
       }
     }

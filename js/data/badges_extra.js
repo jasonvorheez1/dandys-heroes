@@ -2,6 +2,54 @@
 'use strict';
 
 defBadge({
+  id: 'toodles_shelly', owner: 'Toodles', friend: 'Shelly',
+  name: "Shelly's Fossil Token", icon: '🦴', image: 'assets/toodles-shelly-badge.svg', color: '#ffd28b',
+  desc: 'A fossil Shelly labeled for Toodles after Toodles finally learned to listen.',
+  stat: lvl => `+${(12 + lvl * 6).toFixed(0)}% Attack · +${(10 + lvl * 5).toFixed(0)}% Shield Power`,
+  effect: "Shelly's field notes turn Toodles' guesses into a battle plan! At battle start, Toodles exposes the highest-Attack enemy and shreds 40% of their Defense and Magic Defense for 6s. Every Lucky Boost gives the lowest-HP ally a Fossil Shell (18%+ Max HP shield), cleanses 2 debuffs, grants Ward and 20+ Energy (6s cooldown). Lucky Strike dispels 2 enemy buffs, deals bonus Magic Damage, and stuns for 1.2s.",
+  apply(u, B, lvl) {
+    u.flat.atkP = (u.flat.atkP || 0) + .12 + lvl * .06;
+    u.flat.shieldPowP = (u.flat.shieldPowP || 0) + .10 + lvl * .05;
+    u.dirty = true;
+    u._shellyFossilAt = -Infinity;
+
+    const survey = () => {
+      if (!u.alive) return;
+      const target = B.highestStat(B.enemiesOf(u), 'atk');
+      if (!target || !target.alive) return;
+      B.applyStatus(u, target, 'exposed', 6);
+      B.applyStatus(u, target, 'defdown', 6, { stacks: 2 });
+      B.applyStatus(u, target, 'magdown', 6, { stacks: 2 });
+      B.fxRing(target.x, target.y - 40, 90, '#ffd28b', .35);
+      B.fxFloatIcon(target.x, target.y - 100, '🦴 SURVEYED', '#ffd28b');
+    };
+    B.after(.15, survey);
+
+    B.on(u, 'luckyBoost', () => {
+      if (!u.alive || B.t < u._shellyFossilAt) return;
+      const ally = B.lowestHp(B.alliesOf(u));
+      if (!ally) return;
+      u._shellyFossilAt = B.t + 6;
+      B.shield(u, ally, u.max.hp * (.18 + lvl * .04), 7);
+      B.cleanse(ally, 2);
+      B.applyStatus(u, ally, 'ward', 6);
+      B.energy(ally, 20 + lvl * 5);
+      B.fxSparkle(ally.x, ally.y - 45, 8, '#ffd28b');
+      B.fxFloatIcon(ally.x, ally.y - 100, '🦴 FOSSIL SHELL', '#ffd28b');
+    });
+
+    B.on(u, 'dealDamage', ev => {
+      if (!ev || ev.tag !== 'Lucky Strike' || !ev.target || !ev.target.alive) return;
+      B.dispel(ev.target, 2);
+      B.damage(u, ev.target, u.st.mag * (.6 + lvl * .2), { type: 'magic', tag: 'Fossil Break' });
+      B.applyStatus(u, ev.target, 'stun', 1.2);
+      B.fxSparkle(ev.target.x, ev.target.y - 45, 9, '#ffd28b');
+      B.fxFloatIcon(ev.target.x, ev.target.y - 100, '🦴 FOSSIL BREAK', '#ffd28b');
+    });
+  }
+});
+
+defBadge({
   id: 'cocoa_rudie', owner: 'Cocoa', friend: 'Rudie',
   name: "Rudie's Saved Bonbon Bag", icon: '👜', color: '#f0ae78',
   desc: 'A little supply bag Cocoa kept because Rudie finally admitted that saving things can help.',
@@ -125,6 +173,52 @@ defBadge({
 
     B.on(u, 'damaged', () => {
       if (u.hpPct <= 0.50) triggerEncoreShockwave();
+    });
+  }
+});
+
+defBadge({
+  id: 'qom_ribecca_gourdy', owner: 'QOMRibecca', friend: 'QOMGourdy',
+  name: "Gourdy's Bass Drum Key", icon: '🎹', color: '#a9f482',
+  desc: "A bone-carved tuning key Ribecca fastened to Gourdy's bass drum pedal, locking their tempos together.",
+  stat: lvl => `+${(12 + lvl * 6).toFixed(0)}% Defense · +${(10 + lvl * 5).toFixed(0)}% Shield Power`,
+  effect: "Ribecca's keytar chords synchronize with Gourdy's drum kit into an unbreakable rhythm section! Whenever Ribecca triggers a Sound Barrier redirect or Gourdy strikes Beat 4, a concussive Keytar Bass Drop ripples across the stage: knocks back all nearby enemies, interrupts them, shreds Magic Defense by 25% for 6s, and deals Magic Damage scaling with Ribecca's Defense. In addition, Gourdy instantly gains 1 Encore stack, and all allies receive a Harmonic Shield (18%+ Max HP) and cleanse 2 debuffs.",
+  apply(u, B, lvl) {
+    u.flat.defP = (u.flat.defP || 0) + (0.12 + lvl * 0.06);
+    u.flat.shieldPowP = (u.flat.shieldPowP || 0) + (0.10 + lvl * 0.05);
+    u.dirty = true;
+    u._qomRhythmDropAt = -Infinity;
+
+    const triggerBassDrop = () => {
+      if (B.t < u._qomRhythmDropAt) return;
+      u._qomRhythmDropAt = B.t + Math.max(3.2, 5.5 - lvl * .35);
+      Sound.play('bass_drop', { vol: .55, throttle: 180 });
+      B.enemiesOf(u).forEach(foe => {
+        if (!foe.alive || Math.abs(foe.x - u.x) > 230) return;
+        B.interrupt(foe);
+        B.knockback(u, foe, 80);
+        B.damage(u, foe, u.st.def * (1.15 + lvl * 0.22), { type: 'magic', area: true, tag: 'Keytar Bass Drop' });
+        B.applyStatus(u, foe, 'magdown', 6, { val: 0.25 });
+        B.fxSparkle(foe.x, foe.y - 45, 6, '#a9f482');
+      });
+      const allies = B.alliesOf(u);
+      allies.forEach(a => {
+        if (!a.alive) return;
+        B.cleanse(a, 2);
+        B.shield(u, a, u.max.hp * (.18 + lvl * .04), 6);
+      });
+      const gourdy = allies.find(a => a.alive && a.id === 'QOMGourdy');
+      if (gourdy) B.applyStatus(u, gourdy, 'qom_encore', 999);
+      B.fxFloatIcon(u.x, u.y - 110, '🎹 BASS DROP', '#a9f482');
+      B.fxRing(u.x, u.y - 40, 230, '#a9f482', .5);
+    };
+
+    B.on(u, 'damaged', ev => {
+      if (ev.redirected || u.hpPct <= 0.50) triggerBassDrop();
+    });
+
+    B.on(u, 'allyCast', a => {
+      if (a && a.id === 'QOMGourdy' && a._qomBeat === 4) triggerBassDrop();
     });
   }
 });
@@ -847,3 +941,609 @@ defBadge({
     });
   }
 });
+
+/* ============================================================ HOLLOWAY PARENTS BADGES */
+
+defBadge({
+  id: 'mrsholloway_gourdy', owner: 'MrsHolloway', friend: 'Gourdy',
+  name: "Gourdy's Spiraled Locket Ribbon", icon: '🌀', color: '#c070ed',
+  desc: "A purple silk ribbon woven with glowing spiral threads. It hums with maternal protection and boundless spiritual energy.",
+  stat: lvl => `+${(14 + lvl * 7).toFixed(0)}% Magic Damage · +${(12 + lvl * 6).toFixed(0)}% Max HP`,
+  effect: "Spiritual mastery empowers every strike! At wave start, Mrs. Holloway gains a Shield equal to 25%+ Max HP for 8s and inflicts 3 Spiral stacks on all enemies. Whenever Mrs. Holloway casts an active skill, she triggers a Spectral Pulse that deals Magic Damage to all enemies with Spirals, stuns them for 1.2s, and restores 30+ Energy to herself. In addition, Mrs. Holloway gains +25% increased Magic Damage on all skills.",
+  apply(u, B, lvl) {
+    u.flat.magP = (u.flat.magP || 0) + (0.14 + lvl * 0.07);
+    u.flat.hpP = (u.flat.hpP || 0) + (0.12 + lvl * 0.06);
+    u.dirty = true;
+    u._locketPulseAt = -Infinity;
+
+    const startGuard = () => {
+      if (!u.alive) return;
+      B.shield(u, u, u.max.hp * (.25 + lvl * .05), 8);
+      B.fxSparkle(u.x, u.y - 45, 10, '#c070ed');
+      B.enemiesOf(u).filter(e => e.alive).forEach(e => {
+        if (typeof applySpiral === 'function') applySpiral(u, e, B, 3);
+        else B.applyStatus(u, e, 'holloway_spiral', 12, { stacks: 3 });
+      });
+      if (B.fxMrsHollowayExplosion) B.fxMrsHollowayExplosion(u.x, u.y - 45, 280);
+      else B.fxSpiralBurst(u.x, u.y - 45, 280);
+      B.fxFloatIcon(u.x, u.y - 110, '🌀 SPIRAL RIBBON', '#c070ed');
+    };
+
+    B.after(.2, startGuard);
+    B.on(u, 'waveStart', startGuard);
+
+    B.on(u, 'cast', ev => {
+      if (B.t < u._locketPulseAt) return;
+      u._locketPulseAt = B.t + 3.5;
+      const foes = B.enemiesOf(u).filter(e => e.alive);
+      foes.forEach(e => {
+        const spiral = e.getStatus ? e.getStatus('holloway_spiral') : null;
+        if (spiral && spiral.stacks > 0) {
+          B.damage(u, e, u.st.mag * (.85 + lvl * .22), { type: 'magic', tag: 'Spectral Pulse' });
+          B.applyStatus(u, e, 'stun', 1.2);
+          B.fxSparkle(e.x, e.y - 40, 8, '#e0b0ff');
+        }
+      });
+      B.energy(u, 30 + lvl * 5);
+      B.fxFloatIcon(u.x, u.y - 90, `+${30 + lvl * 5} ⚡`, '#ffd54d');
+    });
+
+    B.on(u, 'dealDamage', ev => {
+      if (ev && !ev.basic) {
+        ev.amount *= 1.25;
+      }
+    });
+  }
+});
+
+defBadge({
+  id: 'mrsholloway_eclipse', owner: 'MrsHolloway', friend: 'Eclipse',
+  name: "Eclipse's Spiritual Crest", icon: '🌙', color: '#8b5cf6',
+  desc: "A crescent medallion engraved with spiraling twilight runes. It radiates an unbroken aura of spiritual defiance.",
+  stat: lvl => `+${(12 + lvl * 6).toFixed(0)}% Skill Haste · +${(14 + lvl * 6).toFixed(0)}% Magic Penetration`,
+  effect: "Twilight shadows and supernatural spirals merge into terrifying power! Enemies afflicted with Spiral suffer -20% Magic Defense and -15% Attack against Mrs. Holloway. Whenever Mrs. Holloway casts an active skill, she calls down a Celestial Spiral, dealing True Damage to all enemies, knocking them back, and granting herself CC Immunity and +20% Skill Power for 5s.",
+  apply(u, B, lvl) {
+    u.flat.cdr = (u.flat.cdr || 0) + (0.12 + lvl * 0.06);
+    u.flat.magPen = (u.flat.magPen || 0) + (0.14 + lvl * 0.06);
+    u.dirty = true;
+    u._celestialSpiralAt = -Infinity;
+
+    B.on(u, 'cast', ev => {
+      if (B.t < u._celestialSpiralAt) return;
+      u._celestialSpiralAt = B.t + 5;
+      Sound.play('spirit_aura', { vol: .7 });
+      if (B.fxMrsHollowayExplosion) B.fxMrsHollowayExplosion(B.centerX(), u.y - 45, 320, { dur: .75 });
+      else B.fxSpiralBurst(B.centerX(), u.y - 45, 320, { dur: .75 });
+      B.enemiesOf(u).filter(e => e.alive).forEach(e => {
+        B.damage(u, e, u.st.mag * (.90 + lvl * .25), { type: 'true', tag: 'Celestial Spiral' });
+        B.knockback(u, e, 120);
+      });
+      B.applyStatus(u, u, 'ccimmune', 5.0);
+      B.applyStatus(u, u, 'ward', 5.0);
+      B.fxSparkle(u.x, u.y - 40, 8, '#e0b0ff');
+      B.fxFloatIcon(u.x, u.y - 110, '🌙 CELESTIAL SPIRAL', '#a855f7');
+    });
+  }
+});
+
+defBadge({
+  id: 'mrholloway_gourdy', owner: 'MrHolloway', friend: 'Gourdy',
+  name: "A Father's Pumpkin Charm", icon: '🎃', color: '#d97706',
+  desc: "A carved wooden pumpkin talisman polished with autumn wax. It beats with the steady, protective heart of a devoted father.",
+  stat: lvl => `+${(15 + lvl * 7).toFixed(0)}% Armor · +${(15 + lvl * 7).toFixed(0)}% Shield Power`,
+  effect: "A father stands unflinching between danger and defeat! At wave start, Mr. Holloway taunts all enemies for 6s, gains 3 Fortitude stacks, and deploys an Autumn Barrier absorbing damage equal to 30%+ Max HP. Whenever Mr. Holloway takes damage, he immediately gains a 25%+ Max HP Shield and retaliates with a heavy Harvest Swipe that deals Physical Damage to the attacker, knocks them back, and stuns them for 1.5s (triggers every 3.5s). While shielded, Mr. Holloway takes 25% reduced Damage from all sources.",
+  apply(u, B, lvl) {
+    u.flat.defP = (u.flat.defP || 0) + (0.15 + lvl * 0.07);
+    u.flat.shieldPowP = (u.flat.shieldPowP || 0) + (0.15 + lvl * 0.07);
+    u.dirty = true;
+    u._fatherInterceptAt = -Infinity;
+
+    const startGuard = () => {
+      if (!u.alive) return;
+      B.applyStatus(u, u, 'holloway_fortitude', 12, { stacks: 3 });
+      B.shield(u, u, u.max.hp * (.30 + lvl * .06), 10);
+      B.enemiesOf(u).filter(e => e.alive).forEach(e => {
+        e._distractor = u;
+        e._distractUntil = B.t + 6;
+        B.applyStatus(u, e, 'holloway_distracted', 6, { dmgReduction: .2 });
+      });
+      if (B.fxMrHollowayCrash) B.fxMrHollowayCrash(u.x, u.y - 35, 240);
+      else B.fxAutumnBurst(u.x, u.y - 40, 240);
+      B.fxFloatIcon(u.x, u.y - 105, '🎃 FATHER’S CHARM', '#f59e0b');
+    };
+
+    B.after(.2, startGuard);
+    B.on(u, 'waveStart', startGuard);
+
+    // Retaliate whenever Mr. Holloway takes damage
+    B.on(u, 'damaged', ev => {
+      if (!ev || !ev.src || ev.src.team === u.team || !ev.src.alive) return;
+      if (B.t < u._fatherInterceptAt) return;
+      u._fatherInterceptAt = B.t + 3.5;
+      B.shield(u, u, u.max.hp * (.25 + lvl * .05), 7);
+      B.damage(u, ev.src, u.st.atk * (1.2 + lvl * 0.25), { type: 'physical', tag: 'Harvest Swipe' });
+      B.knockback(u, ev.src, 140);
+      B.applyStatus(u, ev.src, 'stun', 1.5);
+      if (B.fxMrHollowayClaw) B.fxMrHollowayClaw(u.x, u.y, ev.src.x, ev.src.y);
+      else B.fxAutumnBurst(ev.src.x, ev.src.y - 35, 160);
+      B.fxFloatIcon(u.x, u.y - 110, '🛡 HARVEST RETALIATION!', '#ffd54d');
+    });
+
+    // 25% damage reduction from all enemies while shielded
+    B.on(u, 'damaged', ev => {
+      const shieldVal = (u.statuses || []).filter(st => st.id === 'shield').reduce((sum, st) => sum + (st.val || 0), 0);
+      if (shieldVal > 0) {
+        ev.amount *= 0.75;
+      }
+    });
+  }
+});
+
+defBadge({
+  id: 'mrholloway_connie', owner: 'MrHolloway', friend: 'Connie',
+  name: "Connie's Ghost Lantern", icon: '👻', color: '#f59e0b',
+  desc: "A hollowed pumpkin lantern glowing with warm spectral fire. It weaves an elusive ghostly mantle around its bearer.",
+  stat: lvl => `+${(14 + lvl * 6).toFixed(0)}% Evasion · +${(12 + lvl * 6).toFixed(0)}% Attack`,
+  effect: "Ghostly stealth meets crushing pumpkin power! When Mr. Holloway enters battle, casts an active skill, or takes lethal damage, a spectral shroud makes him Untargetable and grants +50% Evasion for 3.5s. Whenever Mr. Holloway attacks with Harvest Crash or strikes in combat, he triggers a Ghostly Quake: all foes take Physical Damage, become Blinded for 4s, and Mr. Holloway heals himself for 14%+ Max HP (triggers every 5s).",
+  apply(u, B, lvl) {
+    u.flat.evaP = (u.flat.evaP || 0) + (0.14 + lvl * 0.06);
+    u.flat.atkP = (u.flat.atkP || 0) + (0.12 + lvl * 0.06);
+    u.dirty = true;
+    u._ghostQuakeAt = -Infinity;
+
+    const ghostShroud = () => {
+      if (!u.alive) return;
+      B.applyStatus(u, u, 'untargetable', 3.5);
+      B.applyStatus(u, u, 'evasion_up', 3.5, { evaBonus: .50 });
+      Sound.play('ghost_vanish', { vol: .6 });
+      B.fxSparkle(u.x, u.y - 45, 10, '#fef08a');
+      B.fxFloatIcon(u.x, u.y - 105, '👻 GHOST SHROUD', '#fef08a');
+    };
+
+    B.after(.15, ghostShroud);
+
+    B.on(u, 'cast', () => {
+      if (Math.random() < 0.5) ghostShroud();
+    });
+
+    B.on(u, 'dealDamage', ev => {
+      if (!ev || B.t < u._ghostQuakeAt) return;
+      u._ghostQuakeAt = B.t + 5;
+      Sound.play('earth_quake', { vol: .75 });
+      B.shake(12, .4);
+      B.enemiesOf(u).filter(e => e.alive).forEach(e => {
+        B.damage(u, e, u.st.atk * (1.0 + lvl * .22), { type: 'physical', tag: 'Ghostly Quake' });
+        B.applyStatus(u, e, 'blind', 4);
+      });
+      B.heal(u, u, u.max.hp * (.14 + lvl * .03));
+      if (B.fxMrHollowayCrash) B.fxMrHollowayCrash(u.x, u.y - 40, 240);
+      else B.fxAutumnBurst(u.x, u.y - 40, 240);
+      B.fxFloatIcon(u.x, u.y - 110, '👻 GHOSTLY QUAKE!', '#fef08a');
+    });
+  }
+});
+
+/* ============================================================ DELILAH KEEN FRIENDSHIP BADGES (DHBM) */
+
+defBadge({
+  id: 'delilah_bassie', owner: 'Delilah', friend: 'Bassie',
+  name: "Bassie's Prepared Capsule", icon: '🧺', color: '#a855f7',
+  desc: "A polished Easter basket woven from sterile laboratory tubing and spring ribbons, packed by Bassie with emergency reagents. Delilah scoffed at the pastel colors, but admits its field utility is undeniable.",
+  stat: lvl => `+${(14 + lvl * 7).toFixed(0)}% Skill Haste · +${(15 + lvl * 7).toFixed(0)}% Max HP`,
+  effect: "Clinical resourcefulness ensures every variable is accounted for! At wave start, Delilah prepares 3 Sterile Emergency Capsules. Whenever Delilah or an active specimen falls below 50% HP or casts an active skill, she consumes a capsule to grant herself and her active specimens an Ichor Shield equal to 22%+ Max HP for 8s, cleanse all crowd control, and instantly restore 35+ Energy. In addition, Delilah's skills gain +20% Skill Power and extend all Crowd Control durations by 1.5s.",
+  apply(u, B, lvl) {
+    u.flat.cdr = (u.flat.cdr || 0) + (0.14 + lvl * 0.07);
+    u.flat.hpP = (u.flat.hpP || 0) + (0.15 + lvl * 0.07);
+    u.flat.skillPowerP = (u.flat.skillPowerP || 0) + 0.20;
+    u.dirty = true;
+    u._capsuleCd = -Infinity;
+    u._capsulesRemaining = 3;
+
+    const useCapsule = (tag) => {
+      if (u._capsulesRemaining <= 0 || B.t < u._capsuleCd || !u.alive) return;
+      u._capsulesRemaining--;
+      u._capsuleCd = B.t + 4.0;
+      Sound.play('cure_all', { vol: .6 });
+      Sound.play('get_rare', { vol: .45 });
+
+      const targets = [u, ...B.minionsOf(u).filter(m => m.alive)];
+      targets.forEach(tgt => {
+        B.cleanse(tgt, 99);
+        B.shield(u, tgt, u.max.hp * (.22 + lvl * .05), 8);
+        B.energy(tgt, 35 + lvl * 8);
+        B.applyStatus(u, tgt, 'ward', 5);
+        B.fxSparkle(tgt.x, tgt.y - 45, 8, '#caa2ff');
+      });
+      B.fxFloatIcon(u.x, u.y - 110, `🧺 STERILE CAPSULE (${u._capsulesRemaining} REMAIN)`, '#a855f7');
+    };
+
+    B.on(u, 'waveStart', () => {
+      u._capsulesRemaining = 3;
+    });
+
+    B.on(u, 'cast', () => {
+      if (Math.random() < 0.6) useCapsule('cast');
+    });
+
+    B.on(u, 'damaged', ev => {
+      if (u.hpPct < 0.50) useCapsule('emergency');
+    });
+
+    // Extend CC applied by Delilah
+    B.on(u, 'statusApplied', ev => {
+      if (ev.src === u && STATUS[ev.id]?.cc && ev.status) {
+        ev.status.dur = (ev.status.dur || 2) + 1.5;
+      }
+    });
+  }
+});
+
+defBadge({
+  id: 'delilah_dandy', owner: 'Delilah', friend: 'Dandy',
+  name: "Prototype Mascot Core", icon: '🌼', color: '#eab308',
+  desc: "A miniature glass syringe etched with a golden flower emblem, preserving raw Ichor from Gardenview's very first mascot prototype. The creator and the scapegoat, forever bound by the catalyst that started it all.",
+  stat: lvl => `+${(15 + lvl * 7).toFixed(0)}% True Damage · +${(14 + lvl * 6).toFixed(0)}% Magic Penetration`,
+  effect: "The original prototype's catalyst surges through every injection! Delilah deals +25%+ True Damage and permanently ignores 25% of enemy Magic Defense. Whenever Delilah casts Controlled Experiment or an active skill, she unleashes a Petaled Ichor Shockwave, dealing heavy True Damage to all enemies, Stunning them for 1.5s, and injecting them with 3 stacks of Contamination. Defeating any enemy restores 15%+ Max HP to Delilah and all active specimens.",
+  apply(u, B, lvl) {
+    u.flat.trueDmgP = (u.flat.trueDmgP || 0) + (0.25 + lvl * 0.05);
+    u.flat.magPen = (u.flat.magPen || 0) + (0.14 + lvl * 0.06);
+    u.dirty = true;
+    u._dandyShockwaveAt = -Infinity;
+
+    B.on(u, 'cast', ev => {
+      if (B.t < u._dandyShockwaveAt) return;
+      u._dandyShockwaveAt = B.t + 4.5;
+      Sound.play('beam_fire', { vol: .75 });
+      Sound.play('fanfare', { vol: .5 });
+      B.flash('#ffd700', .35, .2);
+      B.fxRing(u.x, u.y - 45, 300, '#eab308', .6);
+      if (B.fxDelilahContaminationBurst) B.fxDelilahContaminationBurst(u.x, u.y - 45, 260);
+
+      B.enemiesOf(u).filter(e => e.alive).forEach(e => {
+        B.damage(u, e, u.st.mag * (.85 + lvl * .22), { type: 'true', tag: 'Petaled Ichor Shockwave' });
+        B.applyStatus(u, e, 'stun', 1.5);
+        B.applyStatus(u, e, 'contamination', 8, { stacks: 3 });
+        B.fxSparkle(e.x, e.y - 40, 8, '#eab308');
+      });
+      B.fxFloatIcon(u.x, u.y - 110, '🌼 PETALED ICHOR SHOCKWAVE', '#eab308');
+    });
+
+    B.on(u, 'enemyDown', () => {
+      const targets = [u, ...B.minionsOf(u).filter(m => m.alive)];
+      targets.forEach(tgt => {
+        B.heal(u, tgt, tgt.max.hp * (.15 + lvl * .03), { tag: 'Prototype Harvest' });
+        B.fxSparkle(tgt.x, tgt.y - 45, 6, '#ffd700');
+      });
+      B.fxFloatIcon(u.x, u.y - 95, '🌼 PROTOTYPE HEAL', '#ffd700');
+    });
+  }
+});
+
+defBadge({
+  id: 'connie_waxwell', owner: 'Connie', friend: 'Waxwell',
+  name: "Waxwell's Melodramatic Séance Wick", icon: '🕯️', color: '#c084fc',
+  desc: "A ludicrously ornate, violet candle-wick that Waxwell dramatically insisted would 'bind the unruly apparition to his infernal dominion.' Connie just uses it to light firecrackers, ruin his villainous monologues, and summon spectral trick-fire.",
+  stat: lvl => `+${(14 + lvl * 7).toFixed(0)}% Evasion · +${(15 + lvl * 7).toFixed(0)}% Magic Penetration`,
+  effect: "Waxwell's theatrical wick infuses Connie's phantom tricks with explosive purple fire! Connie permanently deals +25%+ Magic Damage and ignores 25% of enemy Magic Defense. Whenever Connie dodges an attack or activates an active skill, she triggers a Melodramatic Flare (4.5s cd): blasting nearby enemies for heavy Magic Damage, Blinding them for 3.5s, and leaving a pool of Scented Violet Wax that Roots enemies for 2.0s while granting Connie +25% Evasion and 30 Energy. When Connie drops below 50% HP (once per wave), she dramatically snuffs out her presence: cleansing all debuffs, gaining a 22%+ Max HP Spectral Wax Shield, and setting all enemies ablaze with violet burn.",
+  apply(u, B, lvl) {
+    u.flat.evaP = (u.flat.evaP || 0) + .14 + lvl * .07;
+    u.flat.magPen = (u.flat.magPen || 0) + .15 + lvl * .07;
+    u.flat.magP = (u.flat.magP || 0) + .25 + lvl * .05;
+    u.dirty = true;
+    u._waxFlareAt = 0;
+    u._waxSnuffUsed = false;
+
+    const triggerFlare = () => {
+      if (!u.alive || B.t < (u._waxFlareAt || 0)) return;
+      u._waxFlareAt = B.t + Math.max(2.8, 4.5 - lvl * 0.25);
+      Sound.play('fire', { vol: .6 });
+      Sound.play('hit_magic', { vol: .5 });
+      B.flash('#c084fc', .3, .2);
+      B.shake(6, .2);
+
+      // Area blast around Connie
+      const foes = B.enemiesOf(u).filter(e => e.alive && B.distance(e, u) < 240);
+      foes.forEach(e => {
+        B.damage(u, e, u.st.mag * (1.10 + lvl * .25), { type: 'magic', tag: 'Melodramatic Flare' });
+        B.applyStatus(u, e, 'blind', 3.5);
+        B.applyStatus(u, e, 'root', 2.0);
+        B.fxSparkle(e.x, e.y - 45, 8, '#c084fc');
+      });
+
+      // Scented violet wax pool
+      B.fxWaxZone(u.x, 'scented_violet', 110, 6.0, u.y);
+
+      // Connie self buffs
+      B.energy(u, 30);
+      B.applyStatus(u, u, 'speedup', 4.0);
+      B.fxFloatIcon(u.x, u.y - 110, '🕯️ MELODRAMATIC FLARE', '#c084fc');
+    };
+
+    B.on(u, 'dodged', triggerFlare);
+    B.on(u, 'cast', triggerFlare);
+
+    // Dramatic Snuff-Out save when dropping low
+    const checkSnuff = () => {
+      if (!u.alive || u.hpPct >= 0.50 || u._waxSnuffUsed) return;
+      u._waxSnuffUsed = true;
+      Sound.play('unsummon', { vol: .7 });
+      Sound.play('fire', { vol: .65 });
+      B.flash('#e879f9', .4, .25);
+      B.cleanse(u, 99);
+      B.shield(u, u, u.max.hp * (.22 + lvl * .05), 6.0);
+      B.applyStatus(u, u, 'untargetable', 1.5);
+
+      // Violet burn on all enemies
+      B.enemiesOf(u).filter(e => e.alive).forEach(e => {
+        B.applyStatus(u, e, 'burn', 6.0, { val: u.st.mag * (.24 + lvl * .05) });
+        B.fxSparkle(e.x, e.y - 45, 6, '#c084fc');
+      });
+      B.fxFloatIcon(u.x, u.y - 120, '🕯️ DRAMATIC SNUFF-OUT', '#e879f9');
+    };
+
+    B.on(u, 'damaged', checkSnuff);
+    B.on(u, 'waveStart', () => {
+      u._waxSnuffUsed = false;
+    });
+  }
+});
+
+/* ============================================================ QUEENS OF MISCHIEF (DHBM DISKS) */
+
+/* --- QOM GOURDY --- */
+defBadge({
+  id: 'qom_gourdy_soulvester', owner: 'QOMGourdy', friend: 'QOMSoulvester',
+  name: "Soulvester's Steel Drumsticks", icon: '🥁', color: '#bd82e8',
+  desc: 'Heavy alloy drumsticks forged by Soulvester, turning Gourdy’s rock rhythms into solid acoustic protection.',
+  stat: lvl => `+${(12 + lvl * 5).toFixed(0)}% Max Health · +${(10 + lvl * 4).toFixed(0)}% Skill Haste`,
+  effect: "Soulvester's reinforced steel drumsticks turn Gourdy's drum beats into concussive acoustic barriers! Beat 1 shields are doubled and grant Fortify. When any ally drops below 50% HP or takes lethal damage, Gourdy triggers an immediate Knightly Beat 4 Crash, pushing attackers back 120px, stunning them for 2.0s, and granting that ally an Aegis Shield (30%+ Max HP) and Ward for 5s (10s cooldown).",
+  apply(u, B, lvl) {
+    u.flat.hpP = (u.flat.hpP || 0) + (0.12 + lvl * 0.05);
+    u.flat.cdr = (u.flat.cdr || 0) + (0.10 + lvl * 0.04);
+    u.dirty = true;
+    u._qomSteelSticksAt = -Infinity;
+
+    B.on(u, 'allyDamaged', ev => {
+      const ally = ev && ev.unit;
+      if (!ally || ally.team !== u.team || !ally.alive) return;
+      if (ally.hpPct < 0.50 && B.t >= u._qomSteelSticksAt) {
+        u._qomSteelSticksAt = B.t + Math.max(7.0, 12.0 - lvl * 0.5);
+        Sound.play('qom_crash', { vol: .75 });
+        Sound.play('qom_counter', { vol: .65 });
+        B.enemiesOf(u).forEach(e => {
+          if (!e.alive) return;
+          B.interrupt(e);
+          B.knockback(u, e, 120);
+          B.applyStatus(u, e, 'stun', 2.0);
+          B.damage(u, e, u.st.mag * (1.2 + lvl * 0.2), { type: 'magic', area: true, tag: 'Steel Drum Crash' });
+        });
+        B.shield(u, ally, u.max.hp * (0.30 + lvl * 0.05), 5.0);
+        B.applyStatus(u, ally, 'ward', 5.0);
+        B.fxFloatIcon(u.x, u.y - 110, '🥁 STEEL DRUM CRASH', '#bd82e8');
+      }
+    });
+  }
+});
+
+defBadge({
+  id: 'qom_gourdy_connie', owner: 'QOMGourdy', friend: 'QOMConnie',
+  name: "Connie's Ghostly Metronome", icon: '⏱️', color: '#8cf0da',
+  desc: 'A supernatural metronome provided by Connie that ticks in harmony with the spirit realm.',
+  stat: lvl => `+${(12 + lvl * 6).toFixed(0)}% Magic Attack · +${(10 + lvl * 5).toFixed(0)}% Energy Generation`,
+  effect: "Connie's supernatural metronome syncs Gourdy's beats with the astral plane! Beat 3 grants all allies +1 Phantom Note and heals the entire team instead of just the lowest-HP ally. In addition, triggering Trick or Treat! casts Ghostly Feedback on all enemies, silencing them for 2.2s and granting Gourdy 2 stacks of Encore.",
+  apply(u, B, lvl) {
+    u.flat.magP = (u.flat.magP || 0) + (0.12 + lvl * 0.06);
+    u.flat.energyGen = (u.flat.energyGen || 0) + (0.10 + lvl * 0.05);
+    u.dirty = true;
+
+    B.on(u, 'cast', ev => {
+      if (ev && ev.key === 'B') {
+        Sound.play('qom_ghost', { vol: .55 });
+        B.applyStatus(u, u, 'qom_encore', 999, { stacks: 2 });
+        B.enemiesOf(u).forEach(e => {
+          if (!e.alive) return;
+          B.applyStatus(u, e, 'silence', 2.2);
+          B.applyStatus(u, e, 'qom_feedback', 6.0);
+          B.damage(u, e, u.st.mag * (0.65 + lvl * 0.15), { type: 'magic', tag: 'Ghostly Feedback' });
+        });
+        B.fxFloatIcon(u.x, u.y - 110, '⏱️ GHOSTLY TEMPO', '#8cf0da');
+      }
+    });
+  }
+});
+
+/* --- QOM ECLIPSE --- */
+defBadge({
+  id: 'qom_eclipse_ribecca', owner: 'QOMEclipse', friend: 'QOMRibecca',
+  name: "Ribecca's Bone Guitar Strap", icon: '🦴', color: '#c499f4',
+  desc: 'A guitar strap threaded with enchanted skeleton vertebrae that keeps Eclipse grounded during stage dives.',
+  stat: lvl => `+${(14 + lvl * 6).toFixed(0)}% Armor · +${(12 + lvl * 5).toFixed(0)}% Lifesteal`,
+  effect: "Ribecca's skeletal guitar strap anchors Eclipse during her wildest solos! Taking damage while above 6 Amp stacks redirects 25% of the damage back to the attacker as Magic Damage and grants Eclipse a Keytar Fortify shield (15%+ Max HP). Activating Howling Riff or leaping during Queens of Mischief shatters nearby bones, applying Offbeat to all enemies for 6s and healing Eclipse for 18% Max HP.",
+  apply(u, B, lvl) {
+    u.flat.defP = (u.flat.defP || 0) + (0.14 + lvl * 0.06);
+    u.flat.healRecvP = (u.flat.healRecvP || 0) + (0.12 + lvl * 0.05);
+    u.dirty = true;
+
+    B.on(u, 'damaged', ev => {
+      const amp = (u.getStatus('qom_amp') || {}).stacks || 0;
+      if (amp >= 6 && ev.src && !ev.reflected && ev.amount > 0 && B.t >= (u._qomBoneStrapAt || 0)) {
+        u._qomBoneStrapAt = B.t + Math.max(2.5, 4.5 - lvl * 0.3);
+        const ref = Math.max(1, Math.round(ev.amount * 0.25));
+        B.damage(u, ev.src, ref, { type: 'magic', reflected: true, tag: 'Bone Strap Reflect' });
+        B.shield(u, u, u.max.hp * (0.15 + lvl * 0.03), 6.0);
+        B.fxSparkle(u.x, u.y - 45, 6, '#c499f4');
+      }
+    });
+
+    B.on(u, 'cast', ev => {
+      if (ev && (ev.key === 'W' || ev.key === 'B')) {
+        Sound.play('qom_bone', { vol: .6 });
+        B.heal(u, u, u.max.hp * (0.18 + lvl * 0.03), { tag: 'Bone Strap Mend' });
+        B.enemiesOf(u).forEach(e => {
+          if (!e.alive) return;
+          B.applyStatus(u, e, 'qom_offbeat', 6.0);
+        });
+        B.fxFloatIcon(u.x, u.y - 110, '🦴 BONE STRAP REBOUND', '#c499f4');
+      }
+    });
+  }
+});
+
+/* --- QOM RIBECCA --- */
+defBadge({
+  id: 'qom_ribecca_eclipse', owner: 'QOMRibecca', friend: 'QOMEclipse',
+  name: "Eclipse's Overdrive Pedal", icon: '⚡', color: '#be69f6',
+  desc: 'A heavily battered guitar overdrive stompbox Eclipse gifted Ribecca to blow the dust off her keytar.',
+  stat: lvl => `+${(12 + lvl * 6).toFixed(0)}% Magic Attack · +${(14 + lvl * 5).toFixed(0)}% Shield Power`,
+  effect: "Eclipse's fuzz distortion pedal supercharges Ribecca's keytar barriers with overdriven feedback! Whenever Ribecca redirects allied damage or absorbs a blow with Sound Barrier, an Overdrive Feedback shockwave retaliates against the attacker for 65%+ Magic Damage, burns 12 Energy, and applies Armslow for 4s. Activating Skeleton Symphony grants all allies +35% Attack and turns their next attack into an electric splash shockwave.",
+  apply(u, B, lvl) {
+    u.flat.magP = (u.flat.magP || 0) + (0.12 + lvl * 0.06);
+    u.flat.shieldPowP = (u.flat.shieldPowP || 0) + (0.14 + lvl * 0.05);
+    u.dirty = true;
+
+    B.on(u, 'damaged', ev => {
+      if (ev && ev.src && !ev.reflected && ev.amount > 0 && B.t >= (u._qomOverdriveAt || 0)) {
+        u._qomOverdriveAt = B.t + Math.max(1.8, 3.5 - lvl * 0.25);
+        Sound.play('qom_riff', { vol: .5 });
+        B.damage(u, ev.src, u.st.mag * (0.65 + lvl * 0.15), { type: 'magic', reflected: true, tag: 'Overdrive Feedback' });
+        B.energy(ev.src, -12);
+        B.applyStatus(u, ev.src, 'armslow', 4.0);
+        B.fxSparkle(ev.src.x, ev.src.y - 45, 8, '#be69f6');
+      }
+    });
+
+    B.on(u, 'cast', ev => {
+      if (ev && ev.key === 'W') {
+        B.alliesOf(u).forEach(a => {
+          if (!a.alive) return;
+          B.applyStatus(u, a, 'atkup', 8.0, { val: 0.35 });
+          B.applyStatus(u, a, 'haste', 8.0);
+        });
+        B.fxFloatIcon(u.x, u.y - 110, '⚡ OVERDRIVE SYMPHONY', '#be69f6');
+      }
+    });
+  }
+});
+
+defBadge({
+  id: 'qom_ribecca_gourdy', owner: 'QOMRibecca', friend: 'QOMGourdy',
+  name: "Gourdy's Rhythm Backbone", icon: '🎼', color: '#bdf778',
+  desc: 'A heavy metronome plate built into Ribecca’s keytar base that resonates with Gourdy’s rock beats.',
+  stat: lvl => `+${(15 + lvl * 6).toFixed(0)}% Max Health · +${(10 + lvl * 4).toFixed(0)}% Damage Reduction`,
+  effect: "Gourdy's bass drum heartbeat anchors Ribecca's skeletal form! Ribecca gains permanent immunity to knockbacks. Whenever Gourdy triggers Beat 4 or Ribecca reaches 5 Resonance, all allies receive an Acoustic Barrier (18%+ Max HP) and +25% Move Speed. When Standing Ovation triggers, Gourdy immediately joins in with an explosive stadium roll that Stuns all enemies for 2.5s.",
+  apply(u, B, lvl) {
+    u.flat.hpP = (u.flat.hpP || 0) + (0.15 + lvl * 0.06);
+    u.flat.wardP = (u.flat.wardP || 0) + (0.10 + lvl * 0.04);
+    u.immovable = true;
+    u.st.kbRes = 1.0;
+    u.dirty = true;
+
+    B.on(u, 'statusApplied', ev => {
+      if (ev && ev.id === 'qom_standing_guard' && ev.unit === u) {
+        Sound.play('qom_crash', { vol: .85 });
+        B.enemiesOf(u).forEach(e => {
+          if (!e.alive) return;
+          B.applyStatus(u, e, 'stun', 2.5);
+          B.interrupt(e);
+        });
+        B.alliesOf(u).forEach(a => {
+          B.shield(u, a, u.max.hp * (0.18 + lvl * 0.04), 8.0);
+          B.applyStatus(u, a, 'speedup', 8.0);
+        });
+        B.fxFloatIcon(u.x, u.y - 110, '🎼 RHYTHM BACKBONE', '#bdf778');
+      }
+    });
+  }
+});
+
+/* --- QOM SOULVESTER --- */
+defBadge({
+  id: 'qom_soulvester_connie', owner: 'QOMSoulvester', friend: 'QOMConnie',
+  name: "Connie's Ethereal Crest", icon: '👻', color: '#e5c5ff',
+  desc: 'A ghostly crest carved onto Soulvester’s shield that allows him to step halfway into the spirit world.',
+  stat: lvl => `+${(14 + lvl * 5).toFixed(0)}% Magic Defense · +${(12 + lvl * 5).toFixed(0)}% Evasion`,
+  effect: "Connie's spectral blessing allows Soulvester to phase through reality during his chivalric guards! Whenever Soulvester blocks an attack with Perfect Parry or Royal Intervention, he phases into the ethereal plane, gaining +35% Evasion, cleansing all debuffs, and leaving behind a Phantom Decoy. His counterattacks inflict Haunted for 7s, reducing the attacker's accuracy and making them deal 25% less damage to Soulvester.",
+  apply(u, B, lvl) {
+    u.flat.mdefP = (u.flat.mdefP || 0) + (0.14 + lvl * 0.05);
+    u.flat.evaP = (u.flat.evaP || 0) + (0.12 + lvl * 0.05);
+    u.dirty = true;
+
+    B.on(u, 'dealDamage', ev => {
+      if (ev && (ev.tag === 'Perfect Parry' || ev.tag === 'Knight Counter' || ev.tag === 'Royal Intervention') && ev.target) {
+        B.applyStatus(u, ev.target, 'qom_haunted', 7.0);
+        B.cleanse(u, 2);
+        B.applyStatus(u, u, 'lucky', 4.0);
+        B.fxSparkle(u.x, u.y - 45, 6, '#e5c5ff');
+      }
+    });
+  }
+});
+
+/* --- QOM CONNIE --- */
+defBadge({
+  id: 'qom_connie_eclipse', owner: 'QOMConnie', friend: 'QOMEclipse',
+  name: "Eclipse's Duet Pick", icon: '🎸', color: '#be69f6',
+  desc: 'A heavy tortoiseshell rock guitar pick given by Eclipse for high-gain phantom acoustic solos.',
+  stat: lvl => `+${(14 + lvl * 6).toFixed(0)}% Crit Chance · +${(18 + lvl * 7).toFixed(0)}% Crit Damage`,
+  effect: "Eclipse's rock lead pick charges Connie's spectral notes with piercing electric distortion! Connie's Critical strikes build 1 Phantom Note and ignore 30% of the target's Magic Defense. When Connie triggers Ghostly Ovation or spends 5 Phantom Notes, Eclipse joins with an electric riff that grants Connie +30% Attack and reflects 30% of all damage taken for 6s.",
+  apply(u, B, lvl) {
+    u.flat.crit = (u.flat.crit || 0) + (0.14 + lvl * 0.06);
+    u.flat.critDmg = (u.flat.critDmg || 0) + (0.18 + lvl * 0.07);
+    u.flat.magPen = (u.flat.magPen || 0) + 0.30;
+    u.dirty = true;
+
+    B.on(u, 'dealDamage', ev => {
+      if (ev && ev.crit && !ev.dot && !ev.reflected) {
+        qomConnieNotes(u, B, 1);
+      }
+    });
+
+    B.on(u, 'cast', ev => {
+      if (ev && ev.key === 'W') {
+        Sound.play('qom_riff', { vol: .6 });
+        B.applyStatus(u, u, 'atkup', 6.0, { val: 0.30 });
+        B.applyStatus(u, u, 'ward', 6.0);
+        B.fxFloatIcon(u.x, u.y - 110, '🎸 DUET OVERDRIVE', '#be69f6');
+      }
+    });
+  }
+});
+
+defBadge({
+  id: 'qom_connie_soulvester', owner: 'QOMConnie', friend: 'QOMSoulvester',
+  name: "Soulvester's Chivalric Charm", icon: '🛡️', color: '#c9b4ff',
+  desc: 'A spectral knightly talisman blessed by Soulvester to shield Connie’s delicate ghostly frame.',
+  stat: lvl => `+${(12 + lvl * 5).toFixed(0)}% Max Health · +${(15 + lvl * 6).toFixed(0)}% Evasion`,
+  effect: "Soulvester's knightly oath guards Connie even across the ghostly divide! Whenever Connie's Dodge Guard activates or she triggers Untouchable, Soulvester's spectral shield wards her, granting a Chivalric Barrier (22%+ Max HP) and Ward for 5s. If an enemy targets Connie with hard CC, Soulvester counter-slashes them from behind, dealing 140%+ Physical Damage and stunning them for 1.5s.",
+  apply(u, B, lvl) {
+    u.flat.hpP = (u.flat.hpP || 0) + (0.12 + lvl * 0.05);
+    u.flat.evaP = (u.flat.evaP || 0) + (0.15 + lvl * 0.06);
+    u.dirty = true;
+
+    B.on(u, 'dodged', () => {
+      if (B.t >= (u._connieSoulShieldAt || 0)) {
+        u._connieSoulShieldAt = B.t + Math.max(3.0, 6.0 - lvl * 0.4);
+        Sound.play('qom_counter', { vol: .5 });
+        B.shield(u, u, u.max.hp * (0.22 + lvl * 0.04), 5.0);
+        B.applyStatus(u, u, 'ward', 5.0);
+        B.fxFloatIcon(u.x, u.y - 110, '🛡️ CHIVALRIC BARRIER', '#c9b4ff');
+      }
+    });
+
+    B.on(u, 'statusApplied', ev => {
+      if (ev && ev.unit === u && ev.src && ev.src.team !== u.team && STATUS[ev.id] && STATUS[ev.id].cc) {
+        if (B.t >= (u._connieSoulCounterAt || 0)) {
+          u._connieSoulCounterAt = B.t + 6.0;
+          Sound.play('qom_counter', { vol: .65 });
+          B.damage(u, ev.src, u.st.atk * (1.4 + lvl * 0.25), { type: 'physical', tag: 'Chivalric Retribution' });
+          B.applyStatus(u, ev.src, 'stun', 1.5);
+          B.cleanse(u, 1);
+          B.fxFloatIcon(ev.src.x, ev.src.y - 95, '⚔️ KNIGHT INTERVENTION', '#c9b4ff');
+        }
+      }
+    });
+  }
+});
+
+
+

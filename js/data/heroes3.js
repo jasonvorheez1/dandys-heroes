@@ -580,157 +580,328 @@ defHero({
 });
 
 /* ============================================================ FLYTE
-   Support / Utility - S Tier. Turns movement itself into team-wide upside. */
+   The Steadfast Aerial Vanguard & Team Protector - DHBM Standards
+   Combines aerodynamic slipstreams, fearless dives, and stubborn frontline
+   guardianship inspired by Captain Phoebus in DHBM. */
 defHero({
   id: 'Flyte', name: 'Flyte', folder: 'Flyte', file: 'Flyte', icon: 'Flyte',
-  role: 'Support', tier: 'S', element: 'Wind',
-  blurb: 'Never stays in one place long enough to be a target, and makes sure his team does not either.',
-  base: { hp: 3620, atk: 175, def: 205, mag: 310, mdef: 268, spd: 140, acc: 185, eva: 170 },
-  hidden: { range: 245, aspd: 1.02, ms: 115, aggro: .5, crit: .05, critDmg: 1.4, healPow: 1.15, shieldPow: 1.30,
-    cdr: .14, ccRes: .15, kbRes: .25, armorPen: 0, magPen: .06 },
-  growth: { hp: .084, atk: .065, def: .076, mag: .098, mdef: .088 },
-  move: { gait: 'float', bob: 15, freq: 1.5, lean: 6, squash: .05, hover: 24, idle: 'drift', step: null,
+  role: 'Tank', tier: 'SS', element: 'Wind',
+  blurb: 'An observant and protective butterfly Toon whose aerodynamic slipstreams, fearless aerial dives, and stubborn refusal to get grounded make him the ultimate vanguard guardian for his friends.',
+  base: { hp: 4280, atk: 195, def: 255, mag: 380, mdef: 310, spd: 135, acc: 210, eva: 215 },
+  hidden: { range: 220, aspd: 1.05, ms: 120, aggro: 2.2, crit: .10, critDmg: 1.50, healPow: 1.25, shieldPow: 1.35,
+    cdr: .16, ccRes: .35, kbRes: 1.0, armorPen: .15, magPen: .18 },
+  growth: { hp: .095, atk: .068, def: .088, mag: .102, mdef: .092 },
+  move: { gait: 'float', bob: 12, freq: 1.6, lean: 8, squash: .04, hover: 24, idle: 'drift', step: null,
     particles: 'sparkle', pcol: '#bfe0ff', trail: { on: true, col: '#bfe0ff', rate: .06 }, brake: .15, sway: 10 },
-  basic: { name: 'Wing Buffet', type: 'magic', ratio: .88, range: 245, proj: 'orb', pcol: '#bfe0ff',
-    sfx: 'whoosh', hit: 'hit_magic', wind: .18, note: 'A small gust with real force behind it.',
-    onHit: (u, t, B) => { B.knockback(u, t, 16); } },
+  basic: {
+    name: 'Aero Buffet',
+    type: 'magic',
+    ratio: 1.05,
+    range: 220,
+    proj: 'orb',
+    pcol: '#bfe0ff',
+    sfx: 'whoosh',
+    hit: 'hit_magic',
+    wind: .18,
+    note: 'Whips cutting gusts of wind. Every 2nd basic attack unleashes an empowered Gale Slice that pushes back and shields Flyte and an ally.',
+    onHit: (u, t, B) => {
+      if (!t || !t.alive) return;
+      u._flyteBasics = (u._flyteBasics || 0) + 1;
+      if (u._flyteEmpoweredAttacks > 0) {
+        u._flyteEmpoweredAttacks--;
+        B.applyStatus(u, t, 'stun', 2.0);
+        B.applyStatus(u, t, 'turbulence', 6.0, { stacks: 1 });
+        Sound.play('hit_heavy', { vol: .45 });
+        B.fxFloatIcon(t.x, t.y - 100, '🌪️ TURBULENT STUN', '#80e5ff');
+      }
+      if (u._flyteBasics % 2 === 0) {
+        B.knockback(u, t, 28);
+        const ally = B.lowestHp(B.alliesOf(u)) || u;
+        const shieldVal = u.max.hp * .09 + u.st.mag * .30;
+        B.shield(u, u, shieldVal, 4.0);
+        if (ally && ally !== u) {
+          B.shield(u, ally, shieldVal, 4.0);
+          B.applyStatus(u, ally, 'speedup', 3.5);
+        }
+        B.applyStatus(u, u, 'speedup', 3.5);
+        B.fxSparkle(u.x, u.y - 45, 6, '#bfe0ff');
+      }
+    }
+  },
   skills: {
+    // ---------------- WHITE SKILL (Ultimate): Vanguard Gale & Slipstream Rally (Phoebus "Fight Back" parallel)
     W: {
-      name: 'Guiding Gust', type: 'Buff', energy: 100,
-      v: { ms: .20 }, p: { dur: 5.5, radius: 240 },
-      desc: (S, P) => `<span class="sk-pas">Moving leaves a breeze behind Flyte; allies who cross it gain <em>${pcn(S.ms * 100)}</em> Move Speed briefly.</span>
-        Active: creates a large Gust where the team is fighting. Allies inside gain Move Speed, Attack Speed, Cooldown Recovery, and 15% Damage Reduction for ${P.dur}s, and cannot be Slowed while it lasts. Flyte receives the same benefits.`,
-      passive: (u, B, S) => {
-        B.every(u, 1.0, () => { if (u.moving) B.alliesOf(u).forEach(a => { if (B.distance(a, u) < 100) B.applyStatus(u, a, 'speedup', 2.2); }); });
-      },
+      name: 'Vanguard Gale',
+      type: 'Vanguard / Team Buff',
+      energy: 100,
+      v: { shield: .32, dmg: 2.10 },
+      p: { dur: 8.0, radius: 260 },
+      desc: (S, P) => `<span class="sk-pas">Moving leaves an aerodynamic Slipstream behind Flyte; allies who cross it gain +25% Move Speed and Slow Immunity for 3.5s. After casting any skill, Flyte's next 2 Basic Attacks become Turbulent Gusts that <b>Stun</b> their target for 2.0s.</span> Active: Flyte ascends and sweeps his wings to summon an immense Vanguard Cyclone! Deals <em>${pcn(S.dmg * 100)}</em> Magic Damage to all enemies, knocking them back from the eye of the storm and reducing their Accuracy by 25% for ${P.dur}s. All allies receive 🛡️ Gale Barriers equal to <em>${pcn(S.shield * 100)}</em> Max HP + Magic, +35% Move Speed, +30% Attack Speed, 15% Damage Reduction, and Slow Immunity for ${P.dur}s. While shielded, 25% of all damage absorbed is converted into Energy.`,
       cast: (u, B, S, P) => {
-        const allies = B.alliesOf(u); if (!allies.length) return;
-        const cx = B.avgX(allies);
-        const t = allies.reduce((a, b) => Math.abs(b.x - cx) > Math.abs(a.x - cx) ? b : a);
-        B.anim(u, 'cast', .72, 'flyteGust'); Sound.play('tornado_s');
-        B.fxFlyteGust(u, t, P.radius, P.dur);
-        B.applyStatus(u, u, 'speedup', P.dur); B.applyStatus(u, u, 'haste', P.dur);
-        if (u.hasStatus('slow')) B.removeStatus(u, 'slow');
-        B.repeat(Math.round(P.dur * 2), .5, () => {
-          B.alliesOf(u).forEach(a => {
-            if (B.distance(a, t) < P.radius || a === u) {
-              if (a.hasStatus('slow')) B.removeStatus(a, 'slow');
-              B.applyStatus(u, a, 'speedup', 1.8);
-              B.applyStatus(u, a, 'haste', 1.8);
-              B.applyStatus(u, a, 'ward', 1.0);
+        B.anim(u, 'cast', .82, 'flyteGust');
+        Sound.play('tornado_s'); Sound.play('ult', { delay: 120 });
+        u._flyteEmpoweredAttacks = 2;
+        const allies = B.alliesOf(u), foes = B.enemiesOf(u);
+        const cx = B.centerX();
+        if (B.fxFlyteCyclone) B.fxFlyteCyclone(u, { x: cx, y: u.y }, P.radius, P.dur);
+        else B.fxFlyteGust(u, { x: cx, y: u.y }, P.radius, P.dur);
+
+        // Enemies blown back and damaged
+        foes.forEach(e => {
+          if (!e.alive) return;
+          B.damage(u, e, u.st.mag * S.dmg, { type: 'magic', tag: 'Vanguard Cyclone' });
+          B.knockback(u, e, 85);
+          B.applyStatus(u, e, 'blind', P.dur);
+          B.applyStatus(u, e, 'turbulence', P.dur, { stacks: 1 });
+        });
+
+        // Allies empowered with Gale Barriers and slipstream buffs
+        allies.forEach(a => {
+          if (!a.alive) return;
+          if (a.hasStatus('slow')) B.removeStatus(a, 'slow');
+          const shieldVal = u.max.hp * S.shield + u.st.mag * 0.8;
+          B.shield(u, a, shieldVal, P.dur, {
+            onBreak: () => {
+              B.cleanse(a, 1);
+              B.applyStatus(u, a, 'speedup', 4.0);
+              B.fxFloatIcon(a.x, a.y - 95, '💨 TAILWIND SURGE', '#bfefff');
             }
           });
+          B.applyStatus(u, a, 'slipstream', P.dur);
+          B.applyStatus(u, a, 'haste', P.dur);
+          B.applyStatus(u, a, 'galebarrier', P.dur);
         });
-      }
-    },
-    G: {
-      name: 'Stay Close', type: 'Shield', cd: 9,
-      v: { shield: .34 }, p: { dur: 6, push: 65 },
-      desc: (S, P) => `Rushes to the lowest-HP ally, granting a Shield worth <em>${pcn(S.shield * 100)}</em> of Flyte's Max HP plus Magic, and Move Speed. Nearby enemies are blown back clear of the ally. If the Shield breaks, the protected ally gains another burst of speed.`,
-      ai: { prio: 58, cond: (u, B) => B.alliesOf(u).some(a => a.hpPct < .75) },
-      cast: (u, B, S, P) => {
-        const t = B.lowestHp(B.alliesOf(u)); if (!t) return;
-        B.anim(u, 'cast', .54, 'flyteRescue'); Sound.play('dash'); B.fxFlyteRescue(u, t);
-        B.blink(u, clamp(t.x - u.face * 40, B.leftWall + 20, B.rightWall - 20), t.depth);
-        const shieldVal = u.max.hp * S.shield + u.st.mag * 0.4;
-        B.shield(u, t, shieldVal, P.dur, { onBreak: () => B.applyStatus(u, t, 'speedup', 4) });
-        B.applyStatus(u, t, 'speedup', P.dur);
-        B.enemiesOf(u).forEach(e => {
-          if (B.distance(e, t) < 160) {
-            B.knockback(u, e, P.push);
-            Sound.play('hit_light', { vol: .4, throttle: 10 });
+
+        // Energy conversion when allies take damage under Gale Barrier
+        const onAllyDamaged = ev => {
+          if (!ev || !ev.unit || ev.unit.team !== u.team || !ev.unit.alive) return;
+          if (ev.unit.hasStatus('galebarrier') && ev.amount > 0) {
+            B.energy(ev.unit, Math.min(25, Math.round(ev.amount * 0.25 / 10)));
           }
-        });
-        B.alliesOf(u).forEach(a => {
-          if (a !== u && B.distance(a, t) < 130) {
-            a.x = clamp(a.x + (u.face > 0 ? -18 : 18), B.leftWall + 20, B.rightWall - 20);
-          }
-        });
-      }
-    },
-    B: {
-      name: 'Clear the Way', type: 'Magic Damage', cd: 11,
-      v: { ratio: .85 }, p: { kb: 80 },
-      desc: (S, P) => `Sweeps across the battlefield, dealing <em>${pcn(S.ratio * 100)}</em> Magic Damage and pushing back every enemy in his path while passing through allies, granting them Move Speed and Cooldown Recovery.`,
-      ai: { prio: 48, cond: (u, B) => B.enemiesOf(u).length >= 1 },
-      cast: (u, B, S, P) => {
-        B.anim(u, 'attack', .58, 'flyteClear'); Sound.play('dash');
-        const targetDir = B.enemiesOf(u).length ? (B.avgX(B.enemiesOf(u)) >= u.x ? 1 : -1) : (u.face || 1);
-        u.face = targetDir;
-        const dest = targetDir > 0 ? B.rightWall - 40 : B.leftWall + 40;
-        B.fxFlyteClearWay(u, dest, .38);
-        const hitE = new Set(), hitA = new Set();
-        B.dash(u, dest, .38, { onMove: () => {
-          B.enemiesOf(u).forEach(e => {
-            if (hitE.has(e) || Math.abs(e.x - u.x) > 65 || Math.abs(B.depthDelta(e, u)) > 115) return;
-            hitE.add(e);
-            Sound.play('hit_light', { vol: .5, throttle: 12 });
-            B.damage(u, e, u.st.mag * S.ratio, { type: 'magic', tag: 'Clear the Way' }); B.knockback(u, e, P.kb);
-            B.fxFlytePass(e, false);
-          });
-          B.alliesOf(u).forEach(a => {
-            if (hitA.has(a) || a === u || Math.abs(a.x - u.x) > 65 || Math.abs(B.depthDelta(a, u)) > 115) return;
-            hitA.add(a);
-            B.applyStatus(u, a, 'speedup', 3.5); B.applyStatus(u, a, 'haste', 3.5); B.fxFlytePass(a, true);
-          });
-        } });
-      }
-    },
-    P: {
-      name: 'Watch Your Step', type: 'Passive',
-      v: { eva: .15 }, p: { en: 28 },
-      desc: (S, P) => `Allies currently under a Flyte buff gain <em>${pcn(S.eva * 100)}</em> Evasion and CC Resistance. If a removable debuff reaches a buffed ally, Flyte clears it and refreshes their Move Speed (4s cooldown per ally). Crowd Control landing on allies also restores ${P.en} Energy to Flyte.`,
-      passive: (u, B, S, P) => {
-        B.every(u, .5, () => B.alliesOf(u).forEach(a => {
-          const buffed = a.hasStatus('speedup') || a.hasStatus('haste') || a.hasStatus('flightpath');
-          a.flat.evaP4 = buffed ? S.eva : 0; a.flat.ccRes2 = buffed ? S.eva : 0; a.dirty = true;
-        }));
-        B.on(u, 'allyDamaged', ev => {
-          const a = ev.unit;
-          if (!a || !a.statuses.some(s => STATUS[s.id].cc)) return;
-          if (a._flyteSave && B.t - a._flyteSave < 6) return;
-          const buffed = a.hasStatus('speedup') || a.hasStatus('haste') || a.hasStatus('flightpath');
-          if (!buffed) return;
-          a._flyteSave = B.t; B.applyStatus(u, a, 'speedup', 2.5); B.energy(u, P.en);
-        });
-        B.on(u, 'statusApplied', ev => {
-          const a = ev && ev.unit;
-          if (!a || a.team !== u.team || ev.src?.team === u.team || !STATUS[ev.id] || STATUS[ev.id].kind !== 'debuff') return;
-          if (!(a.hasStatus('speedup') || a.hasStatus('haste') || a.hasStatus('flightpath')) || B.t < (a._flyteCleanseAt || 0)) return;
-          a._flyteCleanseAt = B.t + 4;
-          B.cleanse(a, 1);
-          B.applyStatus(u, a, 'speedup', 2.5);
-          B.energy(u, P.en);
-          B.fxFloatIcon(a.x, a.y - 88, '🕊️ CLEAR AIR', '#bfe0ff');
-        });
-      }
-    },
-    R: {
-      name: 'Looking Out for You', type: 'Battle Opener',
-      v: { shield: .24 }, p: { thr: .5 },
-      desc: (S, P) => `At the start of battle, Flyte places a Gust between the teams that grants the whole team 🕊 Flight Path. Whenever an ally under Flight Path drops below ${pc(P.thr)} HP, Flyte creates a fresh Gust at their location, cleanses a debuff, and shields them for <em>${pcn(S.shield * 100)}</em> of his Max HP plus Magic.`,
-      passive: (u, B, S, P) => {
-        B.after(.4, () => {
-          Sound.play('tornado_s'); B.fxRing(B.centerX(), u.y - 20, 260, '#bfe0ff', .6);
-          B.alliesOf(u).forEach(a => B.applyStatus(u, a, 'flightpath', 999));
-        });
-        B.on(u, 'allyLow', a => {
-          if (!a.hasStatus('flightpath')) return;
-          if (a._lookingOut && B.t - a._lookingOut < 10) return;
-          a._lookingOut = B.t;
-          Sound.play('cleanse'); Sound.play('tornado_s');
-          B.fxRing(a.x, a.y - 30, 180, '#bfe0ff', .5);
-          B.fxFlyteGust(u, a, 180, 5);
-          B.cleanse(a, 1);
-          B.repeat(5, .5, () => {
-            B.alliesOf(u).forEach(ally => {
-              if (B.distance(ally, a) < 180) {
-                B.applyStatus(u, ally, 'speedup', 2);
-                B.applyStatus(u, ally, 'haste', 2);
+        };
+        B.on(u, 'allyDamaged', onAllyDamaged);
+        B.after(P.dur, () => { B.off(u, 'allyDamaged', onAllyDamaged); });
+      },
+      passive: (u, B) => {
+        B.every(u, 0.8, () => {
+          if (u.moving) {
+            B.alliesOf(u).forEach(a => {
+              if (B.distance(a, u) < 140) {
+                B.applyStatus(u, a, 'slipstream', 3.5);
               }
             });
+          }
+        });
+        B.on(u, 'cast', () => {
+          u._flyteEmpoweredAttacks = Math.max(u._flyteEmpoweredAttacks || 0, 2);
+          B.fxFloatIcon(u.x, u.y - 105, '🌪️ GALE ATTACKS', '#bfefff');
+        });
+      }
+    },
+
+    // ---------------- GREEN SKILL: Wing Slam & Pommel Gale (Phoebus "Pommel Pummel" parallel)
+    G: {
+      name: 'Wing Slam',
+      type: 'Physical / Magic Shred',
+      cd: 9,
+      v: { ratio: 1.85, shred: .30 },
+      p: { stun: 2.2, push: 95 },
+      desc: (S, P) => `Flyte dives with blistering velocity into the nearest or most aggressive enemy, delivering a crushing aerial wing slam. Deals <em>${pcn(S.ratio * 100)}</em> Damage, <b>Stuns</b> the target for ${P.stun}s, and shreds <em>${pcn(S.shred * 100)}</em> of their Armor & Magic Defense for 6s. If the target was currently attacking an ally below 60% HP or preparing an ability, Flyte interrupts them and grants that ally an immediate Gale Barrier.`,
+      ai: { prio: 65, cond: (u, B) => B.enemiesOf(u).length >= 1 },
+      cast: (u, B, S, P) => {
+        const foes = B.enemiesOf(u); if (!foes.length) return;
+        const target = B.nearest(u, foes); if (!target) return;
+        B.anim(u, 'attack', .52, 'flyteRescue');
+        Sound.play('dash'); Sound.play('hit_heavy', { delay: 180 });
+        if (B.fxFlyteWingSlam) B.fxFlyteWingSlam(u, target);
+        else B.fxFlyteRescue(u, target);
+
+        B.dash(u, clamp(target.x - u.face * 45, B.leftWall + 30, B.rightWall - 30), .22, {
+          onDone: () => {
+            if (!target.alive) return;
+            const dmg = u.st.mag * S.ratio * 0.65 + u.st.atk * S.ratio * 0.45;
+            B.damage(u, target, dmg, { type: 'magic', tag: 'Wing Slam' });
+            B.applyStatus(u, target, 'stun', P.stun);
+            B.applyStatus(u, target, 'exposed', 6.0, { stacks: 3 });
+            B.knockback(u, target, P.push);
+            B.interrupt(target, u);
+
+            // Check if defending endangered ally
+            const endangered = B.alliesOf(u).find(a => a.alive && a.hpPct < .60 && B.distance(a, target) < 220);
+            if (endangered) {
+              const shieldVal = u.max.hp * .20 + u.st.mag * .5;
+              B.shield(u, endangered, shieldVal, 6.0);
+              B.applyStatus(u, endangered, 'speedup', 4.0);
+              B.fxFloatIcon(endangered.x, endangered.y - 95, '🛡️ RESCUED!', '#bfefff');
+            }
+          }
+        });
+      }
+    },
+
+    // ---------------- BLUE SKILL: Mocking Swoop & Deflective Soar (Phoebus "Mocking Bow" parallel)
+    B: {
+      name: 'Mocking Swoop',
+      type: 'Taunt / Deflect & Heal',
+      cd: 11,
+      v: { reflect: .35, regen: .06 },
+      p: { dur: 4.5, eva: .35 },
+      desc: (S, P) => `Flyte swoops mockingly directly in front of the lowest-HP ally, Taunting all nearby enemies for ${P.dur}s and Cleansing all crowd control from both himself and the guarded ally. While soaring in defensive formation, Flyte regenerates <em>${pcn(S.regen * 100)}</em> Max HP/sec, gains +<em>${pcn(P.eva * 100)}</em> Evasion, and <b>Reflects 35% of all incoming damage</b> back at attackers as Razor Wind damage. When the stance concludes, a shockwave knocks nearby enemies back.`,
+      ai: { prio: 72, cond: (u, B) => B.alliesOf(u).some(a => a.hpPct < .70) || u.hpPct < .65 },
+      cast: (u, B, S, P) => {
+        const ally = B.lowestHp(B.alliesOf(u)) || u;
+        B.anim(u, 'cast', .58, 'flyteGust');
+        Sound.play('dash'); Sound.play('cleanse', { delay: 100 });
+        if (B.fxFlyteMockingSwoop) B.fxFlyteMockingSwoop(u, ally, P.dur);
+
+        // Reposition in front of ally
+        B.blink(u, clamp(ally.x + (ally.face || 1) * 35, B.leftWall + 30, B.rightWall - 30), ally.depth, true);
+
+        // Cleanse CC & debuffs
+        B.cleanse(u, 2);
+        if (ally !== u) B.cleanse(ally, 2);
+
+        // Distract & Taunt nearby enemies
+        const distractedCount = { val: 0 };
+        B.enemiesOf(u).forEach(e => {
+          if (B.distance(e, u) < 260) {
+            B.applyStatus(u, e, 'distracted', P.dur);
+            B.applyStatus(u, e, 'taunt', P.dur);
+            distractedCount.val++;
+            B.fxFloatIcon(e.x, e.y - 95, '💫 DISTRACTED', '#ffe066');
+          }
+        });
+
+        // Log distracted count into Red Skill scrapbook stacks if unlocked
+        if (u._flyteScrapbookStacks != null && distractedCount.val > 0) {
+          u._flyteScrapbookStacks = Math.min(10, u._flyteScrapbookStacks + distractedCount.val);
+          u.flat.defP = (u.flat.defP || 0) + distractedCount.val * 0.03;
+          u.flat.mdefP = (u.flat.mdefP || 0) + distractedCount.val * 0.03;
+          u.dirty = true;
+          B.fxFloatIcon(u.x, u.y - 110, `📖 SCRAPBOOK ×${u._flyteScrapbookStacks}`, '#ffe066');
+        }
+
+        u.flat.evaP_mocking = P.eva;
+        u.dirty = true;
+
+        // Healing over time
+        const regenTicks = Math.round(P.dur * 2);
+        B.repeat(regenTicks, 0.5, () => {
+          if (!u.alive) return;
+          B.heal(u, u, u.max.hp * (S.regen / 2), { tag: 'Deflective Soar' });
+          B.fxSparkle(u.x, u.y - 45, 4, '#80e5ff');
+        });
+
+        // Reflect incoming damage
+        const onDamaged = ev => {
+          if (ev.unit === u && ev.src && ev.src.team !== u.team && ev.src.alive && !ev.redirected && ev.amount > 0) {
+            const reflected = Math.max(1, Math.round(ev.amount * S.reflect));
+            B.damage(u, ev.src, reflected, { type: 'magic', redirected: true, tag: 'Razor Wind Reflect' });
+            B.fxSparkle(ev.src.x, ev.src.y - 40, 5, '#ffe066');
+          }
+        };
+        B.on(u, 'damaged', onDamaged);
+
+        B.after(P.dur, () => {
+          B.off(u, 'damaged', onDamaged);
+          u.flat.evaP_mocking = 0;
+          u.dirty = true;
+          if (u.alive) {
+            Sound.play('sweep', { vol: .4 });
+            B.enemiesOf(u).filter(e => B.distance(e, u) < 160).forEach(e => {
+              B.knockback(u, e, 75);
+            });
+            B.fxRing(u.x, u.y - 35, 160, '#ffe066', .35);
+          }
+        });
+      }
+    },
+
+    // ---------------- PURPLE SKILL (Passive): Stubborn Flight ("I Didn't Fall!") (Phoebus "Stubborn Soldier" parallel)
+    P: {
+      name: 'Stubborn Flight',
+      type: 'Displacement Immunity & Counter',
+      v: { dmg: 1.10, fatigue: .20 },
+      p: { en: 25, kb: 130 },
+      desc: (S, P) => `<span class="sk-pas">"I did NOT fall! I stumbled! I had it handled!" Flyte possesses absolute, permanent immunity to Knockbacks, Pulls, and Displacement.</span> Whenever an enemy attempts to knock back, pull, or displace Flyte (or inflicts hard crowd control on an ally near Flyte), Flyte's wings unleash a violent counter-downdraft! Deals <em>${pcn(S.dmg * 100)}</em> Magic Damage, knocks the attacker back ${P.kb} distance, inflicts 🌪️ <b>Turbulence</b> (-20% Attack Speed & -15% Damage, stacks 3x), and restores +${P.en} Energy to Flyte.`,
+      passive: (u, B, S, P) => {
+        u.immovable = true;
+        u.st.kbRes = 1.0;
+        u.dirty = true;
+
+        const triggerCounterDowndraft = (attacker) => {
+          if (!u.alive || !attacker || !attacker.alive || attacker.team === u.team) return;
+          if (B.t < (u._lastDowndraftAt || 0) + 1.2) return;
+          u._lastDowndraftAt = B.t;
+
+          Sound.play('tornado_s', { vol: .55 });
+          Sound.play('guardbreak', { vol: .4 });
+          if (B.fxFlyteStubbornDowndraft) B.fxFlyteStubbornDowndraft(u, attacker);
+          else B.fxRing(u.x, u.y - 35, 140, '#80e5ff', .4);
+
+          B.damage(u, attacker, u.st.mag * S.dmg, { type: 'magic', tag: 'Counter Downdraft' });
+          B.knockback(u, attacker, P.kb);
+          B.applyStatus(u, attacker, 'turbulence', 6.0, { stacks: 1 });
+          B.energy(u, P.en);
+          B.fxFloatIcon(u.x, u.y - 110, '🦅 I DIDN\'T FALL!', '#80e5ff');
+        };
+
+        B.on(u, 'knockbackAttempt', ev => {
+          if (ev && ev.src) triggerCounterDowndraft(ev.src);
+        });
+
+        B.on(u, 'pullAttempt', ev => {
+          if (ev && ev.src) triggerCounterDowndraft(ev.src);
+        });
+
+        B.on(u, 'allyDamaged', ev => {
+          const a = ev.unit;
+          if (!a || !ev.src || a.team !== u.team || B.distance(a, u) > 200) return;
+          if (a.statuses.some(s => STATUS[s.id] && STATUS[s.id].cc)) {
+            triggerCounterDowndraft(ev.src);
+          }
+        });
+      }
+    },
+
+    // ---------------- RED SKILL: For the Record (Phoebus "Highest Honor" & Scrapbook parallel)
+    R: {
+      name: 'For the Record',
+      type: 'Red Tier Mastery',
+      v: { heal: .22, hardy: .15 },
+      p: { cdCut: 1.5 },
+      desc: (S, P) => `Flyte records every heroic save and aerial victory in his scrapbook:
+        • Whenever Flyte <b>Stuns</b> an enemy with any ability or basic attack, he instantly heals for <em>${pcn(S.heal * 100)}</em> Max HP, gains +<em>${pcn(S.hardy * 100)}</em> Damage Reduction (Hardy) for 6s, and reduces all active cooldowns by ${P.cdCut}s (6s cooldown).
+        • For each enemy Distracted by <i>Mocking Swoop</i>, Flyte permanently gains +3% Armor and +3% Magic Defense for the rest of battle (up to 10 stacks).
+        • When any Gale Barrier breaks or expires, it bursts with a Tailwind Surge, granting that ally +25% Move Speed and Cleansing 1 debuff.
+        • <b>Battle Opener:</b> Flyte opens the match by creating an immediate Slipstream lane across the entire battlefield, granting all allies immediate sprint momentum and Flight Path.`,
+      passive: (u, B, S, P) => {
+        u._flyteScrapbookStacks = 0;
+
+        // Battle Opener
+        B.after(.25, () => {
+          if (!u.alive) return;
+          Sound.play('tornado_s');
+          B.fxRing(B.centerX(), u.y - 20, 320, '#bfe0ff', .6);
+          B.alliesOf(u).forEach(a => {
+            B.applyStatus(u, a, 'flightpath', 999);
+            B.applyStatus(u, a, 'slipstream', 8.0);
           });
-          B.shield(u, a, u.max.hp * S.shield + u.st.mag * 0.35, 6);
+          B.fxFloatIcon(u.x, u.y - 110, '📖 FOR THE RECORD', '#ffe066');
+        });
+
+        // Stun healing & cooldown reduction trigger
+        B.on(u, 'statusApplied', ev => {
+          if (!ev || ev.id !== 'stun' || ev.src !== u || !ev.unit || ev.unit.team === u.team) return;
+          if (B.t < (u._lastStunMasteryAt || 0) + 6.0) return;
+          u._lastStunMasteryAt = B.t;
+
+          B.heal(u, u, u.max.hp * S.heal, { tag: 'Highest Honor' });
+          B.applyStatus(u, u, 'ward', 6.0);
+          B.reduceCd(u, P.cdCut);
+          Sound.play('get_rare', { vol: .4 });
+          B.fxSparkle(u.x, u.y - 45, 8, '#ffe066');
+          B.fxFloatIcon(u.x, u.y - 110, '✨ HIGHEST HONOR', '#ffe066');
         });
       }
     }

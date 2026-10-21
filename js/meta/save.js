@@ -243,6 +243,13 @@ const Save = {
     ['heroes', 'pending', 'trinketInv', 'badges', 'campaigns', 'trials', 'seen'].forEach(key => {
       if (!this.data[key] || typeof this.data[key] !== 'object' || Array.isArray(this.data[key])) this.data[key] = {};
     });
+    // A save can be interrupted while a hero is being written, leaving an
+    // owned-id key with a null/primitive value. Those entries are not valid
+    // recruits, and downstream systems expect every owned id to have ranks.
+    Object.keys(this.data.heroes).forEach(id => {
+      const hero = this.data.heroes[id];
+      if (!hero || typeof hero !== 'object' || Array.isArray(hero)) delete this.data.heroes[id];
+    });
     // Grant all twelve Cookie keepsakes to existing saves immediately too.
     Object.keys(BADGES).forEach(bid => {
       if (BADGES[bid].cookieRun && !this.data.badges[bid]) this.data.badges[bid] = { lvl: 1 };
@@ -309,6 +316,7 @@ const Save = {
     const oldKairiBadge = Object.values(this.data.heroes || {}).find(h => h && h.badge === 'cocoa_kairi');
     if (oldKairiBadge) oldKairiBadge.badge = null;
     if (this.data.heroes.Kairi && !this.data.heroes.Kairi.badge && this.data.badges.kairi_cocoa) this.data.heroes.Kairi.badge = 'kairi_cocoa';
+    this.repairCampaignProgress();
     const oldRodgerTeaganBadge = this.data.heroes.Rodger;
     if (oldRodgerTeaganBadge && oldRodgerTeaganBadge.badge === 'rodger_teagan') {
       oldRodgerTeaganBadge.badge = null;
@@ -412,6 +420,11 @@ const Save = {
     Object.keys(this.data.heroes).forEach(id => {
       const h = this.data.heroes[id], n = this.newHero(id);
       for (const k in n) if (h[k] === undefined) h[k] = n[k];
+      if (!h.skills || typeof h.skills !== 'object' || Array.isArray(h.skills)) h.skills = Object.assign({}, n.skills);
+      SKILL_ORDER.forEach(key => {
+        h.skills[key] = clamp(Math.floor(Number(h.skills[key]) || 1), 1,
+          Math.min(SKILL_MAX_LEVEL, this.data.mastery));
+      });
       h.rarity = clamp(Number(h.rarity) || 1, 1, 6);
       h.rarityPlus = clamp(Number(h.rarityPlus) || 1, 1, RARITY_TIER_MAX[h.rarity]);
       h.rainbowUnlocked = h.rainbowUnlocked === true || h.rarity >= 6;
@@ -490,6 +503,7 @@ const Save = {
   },
 
   write(options = {}) {
+    if (this._batchWriteDepth) { this._batchWritePending = true; return; }
     // Saving is persistence only. Mastery XP must come from a validated
     // gameplay action, never from navigation, modal buttons, or any other
     // caller that happens to write the save.
@@ -516,6 +530,19 @@ const Save = {
     // Cloud storage is the account-bound copy of Main Save only. Other local
     // slots (especially Full Test Save) must never enter the cloud queue.
     if (!options.skipCloud && this.isMainSlot() && typeof WebsimAccount !== 'undefined') WebsimAccount.noteLocalChange();
+  },
+
+  batchWrite(fn) {
+    this._batchWriteDepth = (this._batchWriteDepth || 0) + 1;
+    try { return fn(); }
+    finally {
+      this._batchWriteDepth--;
+      if (!this._batchWriteDepth && this._batchWritePending) {
+        this._batchWritePending = false;
+        this.write();
+        UI.refreshBar();
+      }
+    }
   },
 
   reset() { this.data = this.fresh(); this.recoveryNotice = ''; this.write(); },
@@ -629,7 +656,7 @@ const Save = {
     PLAYABLE_IDS.forEach((id, i) => {
       const h = this.newHero(id);
       h.level = d.mastery; h.stars = 5; h.rarity = 6; h.rarityPlus = 30;
-      h.skills = { W: 450, G: 450, B: 450, P: 450, R: 450 };
+      h.skills = { W: SKILL_MAX_LEVEL, G: SKILL_MAX_LEVEL, B: SKILL_MAX_LEVEL, P: SKILL_MAX_LEVEL, R: SKILL_MAX_LEVEL };
       h.shards = 500;
       h.cls = classIds[i % classIds.length];
       h.subcls = subclassIds[i % subclassIds.length];
@@ -743,26 +770,29 @@ const Save = {
   },
 
   /* ---------- accessors ---------- */
-  hero(id) { return this.data.heroes[id]; },
-  owns(id) { return !!this.data.heroes[id]; },
-  ownedIds() { return Object.keys(this.data.heroes); },
+  hero(id) { return this.data.heroes[id] || null; },
+  owns(id) {
+    const hero = this.data.heroes[id];
+    return !!hero && typeof hero === 'object' && !Array.isArray(hero);
+  },
+  ownedIds() { return Object.keys(this.data.heroes).filter(id => this.owns(id)); },
   res(k) { return this.data.res[k] || 0; },
 
   can(cost) { return Object.keys(cost || {}).every(k => this.res(k) >= cost[k]); },
   spend(cost) {
     if (!this.can(cost)) return false;
     Object.keys(cost).forEach(k => this.data.res[k] -= cost[k]);
-    Sound.play('ichor_gain', { vol: .24, throttle: 110 });
-    this.write(); UI.refreshBar(); return true;
+    if (!this._batchWriteDepth) Sound.play('ichor_gain', { vol: .24, throttle: 110 });
+    this.write(); if (!this._batchWriteDepth) UI.refreshBar(); return true;
   },
   give(gain, quiet) {
     Object.keys(gain || {}).forEach(k => {
       if (k === 'shards') return;
       this.data.res[k] = (this.data.res[k] || 0) + gain[k];
     });
-    if ((gain && gain.ichor || 0) > 0) Sound.play('ichor_gain', { vol: .28, throttle: 110 });
+    if ((gain && gain.ichor || 0) > 0 && !this._batchWriteDepth) Sound.play('ichor_gain', { vol: .28, throttle: 110 });
     this.write();
-    UI.refreshBar(true);
+    if (!this._batchWriteDepth) UI.refreshBar(true);
     if (!quiet) {
       const parts = Object.keys(gain).filter(k => RES[k]).map(k => RES[k].icon + ' ' + fmt(gain[k]));
       if (parts.length) UI.toast(parts.join('  '));
@@ -834,8 +864,8 @@ const Save = {
     return wasOwned ? 'copy' : 'new';
   },
 
-  /** The upgrade path: Rank 1/2 uses two copies; Rank 3/4 is a more meaningful
-      investment and uses three. Accepts the old two-uid form for save/API
+  /** The upgrade path: Rank 1/2 uses two copies, Rank 3/4 uses three, and
+      Rank 5 onward uses two. Accepts the old two-uid form for save/API
       compatibility, or an array from the expanded inventory UI. */
   mergeTrinkets(id, uidA, uidB) {
     const inv = this.data.trinketInv;
@@ -993,6 +1023,18 @@ const Save = {
     const c = CAMPAIGNS[id];
     return c ? clamp(Math.floor(Number(this.data.campaigns[id]) || 0), 0, c.stages.length) : 0;
   },
+  repairCampaignProgress() {
+    // Older campaigns could have chapter progress or an earned badge without
+    // the newer intro flag. Keep their chapters and rewards in sync.
+    this.data.seen.friendshipIntros = this.data.seen.friendshipIntros && typeof this.data.seen.friendshipIntros === 'object'
+      ? this.data.seen.friendshipIntros : {};
+    Object.values(CAMPAIGNS).forEach(c => {
+      const cleared = clamp(Math.floor(Number(this.data.campaigns[c.id]) || 0), 0, c.stages.length);
+      if (this.data.badges[c.badge] && cleared < c.stages.length) this.data.campaigns[c.id] = c.stages.length;
+      else if (cleared === c.stages.length && BADGES[c.badge] && !this.data.badges[c.badge]) this.data.badges[c.badge] = { lvl: 1 };
+      if (cleared > 0 || this.data.badges[c.badge]) this.data.seen.friendshipIntros[c.id] = true;
+    });
+  },
   campaignIntroSeen(id) { return !!(this.data.seen && this.data.seen.friendshipIntros && this.data.seen.friendshipIntros[id]); },
   markCampaignIntro(id) {
     this.data.seen = this.data.seen || {};
@@ -1037,7 +1079,7 @@ const Save = {
     if (level % 3 === 0) reward.notes = 9 + Math.floor(level / 10);
     if (level % 5 === 0) reward.star = 18 + Math.floor(level * 2);
     if (level % 10 === 0) reward.manual = 2 + Math.floor(level / 60);
-    if (level % 20 === 0) reward.tape = 1 + Math.floor(level / 120);
+    if (level % 20 === 0) reward.tape = (reward.tape || 0) + 1 + Math.floor(level / 120);
     if (level % 25 === 0) reward.gold = 1 + Math.floor(level / 200);
     if (level % 30 === 0) reward.raidTicket = 1 + Math.floor(level / 240);
     if (level % 50 === 0) reward.diamond = 1 + Math.floor(level / 200);
@@ -1045,14 +1087,59 @@ const Save = {
     return reward;
   },
 
+  /** Turn saved upgrade materials into account training. Each step pays only
+      for the XP still needed at that level; the roster cap remains in force. */
+  masteryTrainingCost(level, fraction = 1) {
+    const full = {
+      ichor: Math.round(4000 + level * 700),
+      tape: Math.ceil(4 + level * .30),
+      notes: Math.ceil(3 + level * .10),
+      star: Math.round(8 + level * .70)
+    };
+    return Object.fromEntries(Object.entries(full).map(([key, value]) =>
+      [key, Math.max(0, Math.ceil(value * fraction))]));
+  },
+  masteryTrainingPlan(limit = 1) {
+    const wallet = this.data.res;
+    const spent = { ichor: 0, tape: 0, notes: 0, star: 0 };
+    const cap = globalCap();
+    let level = this.data.mastery, xp = this.data.masteryXp, grantXp = 0;
+    const steps = [];
+    const max = Math.min(800, Math.max(0, Math.floor(Number(limit) || 0)));
+    let paid = 0;
+    while (level < cap) {
+      const need = this.masteryNeed(level);
+      const gap = Math.max(0, need - xp);
+      if (gap && paid >= max) break;
+      const cost = this.masteryTrainingCost(level, gap / need);
+      if (Object.keys(spent).some(key => (wallet[key] || 0) < spent[key] + cost[key])) break;
+      Object.keys(spent).forEach(key => { spent[key] += cost[key]; });
+      steps.push(cost);
+      grantXp += gap;
+      if (gap) paid++;
+      xp += gap - need;
+      level++;
+    }
+    return { levels: steps.length, from: this.data.mastery, to: level, xp: grantXp, spent, steps, cap };
+  },
+  trainMastery(limit = 1) {
+    const plan = this.masteryTrainingPlan(limit);
+    if (!plan.levels) return plan;
+    this.batchWrite(() => {
+      this.spend(plan.spent);
+      this.addMasteryXp(plan.xp);
+    });
+    return plan;
+  },
+
   addMasteryXp(n, quiet) {
     const d = this.data;
     n = Math.max(0, Math.round(n || 0));
-    if (!n) return 0;
+    if (!n && (d.mastery >= globalCap() || d.masteryXp < this.masteryNeed(d.mastery))) return 0;
     d.masteryXp += n;
     // Several validated rewards can land in one click or one battle result.
     // Merge those pings into one calm notice instead of interrupting the player.
-    if (!quiet) {
+    if (n && !quiet) {
       this._masteryToastTotal = (this._masteryToastTotal || 0) + n;
       clearTimeout(this._masteryToastTimer);
       this._masteryToastTimer = setTimeout(() => {
@@ -1065,22 +1152,25 @@ const Save = {
     }
     const cap = globalCap();
     let gained = 0;
+    const from = d.mastery;
+    const rewards = {};
     while (d.mastery < cap && d.masteryXp >= this.masteryNeed(d.mastery)) {
       d.masteryXp -= this.masteryNeed(d.mastery);
       d.mastery++;
       gained++;
       const reward = this.masteryReward(d.mastery);
-      this.give(reward, true);
-      if (!quiet) {
-        UI.toast('🏅 Mastery ' + d.mastery + ' · reward claimed');
-        Sound.play('get_rare');
-        if (typeof MasteryCelebration !== 'undefined') MasteryCelebration.play(d.mastery, reward, cap);
-      }
+      Object.keys(reward).forEach(key => { rewards[key] = (rewards[key] || 0) + reward[key]; });
     }
     if (gained) {
+      this.give(rewards, true);
       clearTimeout(this._masteryToastTimer);
       this._masteryToastTimer = 0;
       this._masteryToastTotal = 0;
+      if (!quiet) {
+        UI.toast('🏅 ' + (gained === 1 ? 'Mastery ' + d.mastery : 'Mastery ' + from + ' → ' + d.mastery + ' · +' + gained + ' levels') + ' · rewards claimed');
+        Sound.play('get_rare');
+        if (typeof MasteryCelebration !== 'undefined') MasteryCelebration.play(d.mastery, rewards, cap, from);
+      }
     }
     if (gained && typeof Screens !== 'undefined' && Screens.refreshModeLocks) Screens.refreshModeLocks();
     this.write({ activity: false });

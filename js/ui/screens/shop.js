@@ -43,6 +43,23 @@
         Object.keys(item.gain).forEach(k => out.gain[k] = Math.ceil(item.gain[k] * this.resourceMult(level)));
         out.desc += ` Counter bonus: ${Math.round(this.resourceMult(level) * 100)}% supplies.`;
       }
+      // The counter can turn one ticket into several. Price the whole stack
+      // above its expected Ichor and convertible Star Dust return.
+      if (item.id === 'ticket') {
+        const unit = Math.ceil(Gacha.ticketLiquidValue() * 1.35 / (1 - this.discount(level)));
+        out.cost = { ichor: unit * out.gain.ticket };
+      }
+      if (item.id === 'star') {
+        const value = out.gain.star * Gacha.starCashRate() * 1.25;
+        out.cost = { ichor: Math.ceil(value / (1 - this.discount(level))) };
+      }
+      // Star Dust crates return Star Dust in their guaranteed cache. Price
+      // every crate in the counter bundle against that growing return.
+      if (['gold', 'diamond', 'main'].includes(item.id)) {
+        const cache = Gacha.supplyCache(item.id, Gacha.projectedCrateLevel());
+        const unit = Math.ceil(cache.star * 4 / (1 - this.discount(level)));
+        out.cost = { star: unit * out.gain[item.id] };
+      }
       if (item.hero) {
         out.amount = item.amount + this.licenseBonus(level);
         out.desc = item.collabTier
@@ -120,7 +137,7 @@
     { id:'gold', unlock:16, name:'Gold Crate', desc:'A crate of Hero research and useful materials.', emoji:'📦', cost:{star:55}, gain:{gold:1}, limit:1, say:"A Gold Crate! It rattles a little, but that's normal... I think. Crates are supposed to rattle, right?" },
     { id:'manual', unlock:22, name:'Training Manuals', desc:'Field notes used to rank up Classes and Subclasses.', emoji:'📘', cost:{ichor:850}, gain:{manual:7}, limit:2, say:"Training Manuals! Read every page carefully. If a diagram looks upside down, try turning the book first." },
     { id:'trinket-shards', unlock:28, name:'Trinket Shards', desc:'A pouch of parts used to craft Trinkets.', emoji:'🔩', cost:{ichor:1000}, gain:{scrap:50}, limit:2, say:"Trinket Shards! Lots of tiny possibilities in one tiny bag. Watch out for the pointy ones!" },
-    { id:'tape', unlock:40, name:'Scratch tape', desc:'One tape for the always-open Prize Parade. No daily lockout.', emoji:'🎟', cost:{ichor:1250}, gain:{tape:1}, unlimited:true, say:"A Scratch tape! The Prize Parade is always open, so pick a panel whenever you feel lucky!" },
+    { id:'ticket', unlock:40, name:'Scratch Ticket', desc:'One ticket for the always-open Prize Parade. No daily lockout.', emoji:'🎟', cost:{ichor:5000}, gain:{ticket:1}, unlimited:true, say:"A Scratch Ticket! The Prize Parade is always open, so pick a panel whenever you feel lucky!" },
     { id:'raid-ticket', unlock:48, name:'Raid Ticket', desc:'One instant Trial or Event attempt. The real battle sim runs off screen at 10,000× speed; rewards are paid only on a win.', emoji:'⚡', cost:{ichor:5200}, gain:{raidTicket:1}, limit:2, say:"A Raid Ticket! It skips the waiting, not the danger. Your team still has to win the actual fight in the paperwork machine!" },
     { id:'diamond', unlock:55, name:'Diamond Crate', desc:'Premium Hero research and upgrade materials.', emoji:'💎', cost:{star:135}, gain:{diamond:1}, limit:1, say:"Ooh, the Diamond Crate! Very shiny, very valuable, and very much not something to drop on my counter!" },
     { id:'main', unlock:85, name:'Main Character Crate', desc:'Focused research with a high chance of a Main Character or Dandy.', emoji:'🌟', cost:{star:360}, gain:{main:1}, limit:1, say:"A Main Character Crate! I would hold onto that one. It has an unusually strong pull toward the important files... and my file, naturally!" }

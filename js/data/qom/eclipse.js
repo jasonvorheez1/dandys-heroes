@@ -60,6 +60,7 @@ function qomEclipseFinalSolo(u, B) {
   });
 }
 
+QOM_ECLIPSE.basic.note = 'Alternates razor guitar slashes and electric soundwaves. Every 2nd hit splashes Magic damage; every 3rd hit grants Amplification and releases a concussive shockwave.';
 QOM_ECLIPSE.basic.onHit = (u, target, B) => {
   u._qomGuitarSwing = (u._qomGuitarSwing || 0) + 1;
   if (u._qomGuitarSwing % 2 === 0 && target.alive) {
@@ -71,8 +72,13 @@ QOM_ECLIPSE.basic.onHit = (u, target, B) => {
 QOM_ECLIPSE.skills = {
   W: {
     name: 'Queens of Mischief', type: 'Physical / Magic / Control', energy: 100,
-    v: { ratio: 1.65 }, p: {},
-    desc: () => 'Every third Basic releases an electric soundwave and gains Amplification. At 2/4/6/8/10 stacks she gains speed, splash, defenses, Energy drain, and Full Volume. Active: leaps into the enemy team, knocks them back, claws their strongest attacker, and at Full Volume adds three interrupting soundwaves and a damage-based Shield.',
+    v: { ratio: 1.75, splash: .36, clawRatio: .72 }, p: { ampMax: 10 },
+    desc: (S, P) => `<span class="sk-pas">Passive: Every 3rd Basic Attack releases an electric soundwave dealing <em>${pcn(S.splash * 100)}%</em> Magic Damage and grants 1 stack of ⚡ <b>Amplification</b> (max ${P.ampMax}, or 15 at 5-star). Critical hits and enemy KOs grant extra Amp.<br>
+• <b>4+ Stacks</b>: Basic attacks splash <em>${pcn(S.splash * 100)}%</em> Magic damage to adjacent foes.<br>
+• <b>8+ Stacks</b>: Basic hits drain 5 Energy from the target.<br>
+• <b>10+ Stacks (FULL VOLUME)</b>: Heals for 9% of all damage dealt; Feedback Frenzy hits all enemies.<br>
+• <b>15 Stacks (HEADLINER)</b>: Basic attacks trigger Double Strikes, lifesteal rises to 16%, absorbs 50% of the first major skill hit into a shield, and dropping &lt;60% HP triggers the devastating 🎸 <b>Final Solo</b>!</span><br>
+Active: Leaps high into the enemy formation, knocks all foes back, and tears into the strongest enemy with 3 rapid guitar claw strikes (<em>${pcn(S.ratio * 100)}% Physical</em>). At Full Volume, unleashes 3 interrupting shockwaves and gains an electric shield!`,
     passive(u, B) {
       u._qomBasics = 0;
       B.on(u, 'basicHit', ev => {
@@ -104,7 +110,7 @@ QOM_ECLIPSE.skills = {
         const strong = qomTop(qomFoes(B, u), 'atk');
         if (strong) B.repeat(3, .16, () => {
           if (!u.alive || !strong.alive) return;
-          B.damage(u, strong, u.st.atk * .72, { type: 'physical', tag: 'Guitar Claws' });
+          B.damage(u, strong, u.st.atk * S.clawRatio, { type: 'physical', tag: 'Guitar Claws' });
           qomShow(B, 'riff', u, strong);
         });
         if (qomStacks(u, 'qom_amp') >= 10) {
@@ -122,8 +128,8 @@ QOM_ECLIPSE.skills = {
   },
   G: {
     name: 'Feedback Frenzy', type: 'Magic / Control / Shield', cd: 9,
-    v: { ratio: 1.25 }, p: { dur: 6 },
-    desc: () => 'Feedback damages and weakens nearby enemies. Their Skills hurt them and build Amplification; attacks against Eclipse trigger shielded counters. At Full Volume Feedback reaches the whole team, hits harder, and heals Eclipse.',
+    v: { ratio: 1.35, heal: .04 }, p: { dur: 6 },
+    desc: (S, P) => `Screeching guitar feedback lashes nearby enemies for <em>${pcn(S.ratio * 100)}%</em> Magic Damage, marking them with <b>Feedback</b> for <em>${P.dur}s</em>. While marked, enemy Skill casts trigger electric backlash (55% Mag) and build 1 Amplification for Eclipse; enemy attacks against Eclipse trigger shielded counter-riffs (65% Mag) that Stun low-HP targets. At <b>Full Volume</b>, reaches all enemies, deals +35% damage, and heals Eclipse for <em>${pcn(S.heal * 100)}% Max HP</em>!`,
     cast(u, B, S, P) {
       const full = qomStacks(u, 'qom_amp') >= 10;
       qomShow(B, 'feedback', u);
@@ -131,15 +137,15 @@ QOM_ECLIPSE.skills = {
         const already = e.hasStatus('qom_feedback');
         B.damage(u, e, u.st.mag * S.ratio * (full && already ? 1.35 : 1), { type: 'magic', tag: 'Feedback Frenzy' });
         B.applyStatus(u, e, 'qom_feedback', P.dur);
-        if (full) B.heal(u, u, u.max.hp * .035);
+        if (full) B.heal(u, u, u.max.hp * S.heal);
       });
       Sound.play('qom_riff', { vol: .45 });
     }
   },
   B: {
     name: 'Howling Riff', type: 'Physical / Magic / Control', cd: 12,
-    v: { ratio: 1.15 }, p: { dur: 6 },
-    desc: () => 'Eclipse howls, gains Attack Speed and Evasion, then charges through three foes, Rattling them. A sustained chord hits every Rattled target. At low HP she guards and Taunts the strongest foe; Full Volume reaches every enemy and punishes low HP.',
+    v: { ratio: 1.25, chord: .85 }, p: { dur: 6 },
+    desc: (S, P) => `Eclipse howls into the microphone, gaining +30% Attack Speed and +25% Evasion for <em>${P.dur}s</em>, then dashes through 3 foes (or ALL foes at Full Volume), dealing <em>${pcn(S.ratio * 100)}% Physical Damage</em> and inflicting <b>Rattled</b> (-20% Def and MagDef for 6s). Afterward, a sustained power chord detonates all Rattled enemies for <em>${pcn(S.chord * 100)}% Magic Damage</em> (+ bonus missing-HP damage at Full Volume). Below 50% HP, she gains Ward and Taunts the strongest foe.`,
     cast(u, B, S, P) {
       u._qomRiffUntil = B.t + 1.3;
       qomShow(B, 'charge', u);
@@ -162,7 +168,7 @@ QOM_ECLIPSE.skills = {
       B.after(Math.max(.45, foes.length * .18 + .12), () => {
         if (!u.alive) return;
         qomFoes(B, u).filter(e => e.hasStatus('qom_rattled') || e.hasStatus('qom_rattled_full')).forEach(e => {
-          B.damage(u, e, u.st.mag * (.78 + (full ? (1 - e.hpPct) * .85 : 0)), { type: 'magic', tag: 'Sustained Chord' });
+          B.damage(u, e, u.st.mag * (S.chord + (full ? (1 - e.hpPct) * .85 : 0)), { type: 'magic', tag: 'Sustained Chord' });
         });
         qomShow(B, 'riff', u);
       });
@@ -170,10 +176,11 @@ QOM_ECLIPSE.skills = {
     }
   },
   P: {
-    name: 'Wild at Heart', type: 'Attack / Armor / Lifesteal / Control', v: { hp: .16 }, p: {},
-    desc: () => 'Gains Max HP and Lifesteal. Critical hits build Amplification and restore HP. Skill hits build Backstage Guard; maximum Guard prepares a reflecting Reversal. Defeats heal her and raise her Attack. At Full Volume she can spend Amplification to resist a Stun.',
+    name: 'Wild at Heart', type: 'Attack / Armor / Lifesteal / Control',
+    v: { hp: .18, lifesteal: .16, reflect: .42 }, p: { guardMax: 5 },
+    desc: (S, P) => `<span class="sk-pas">Eclipse gains <em>+${pcn(S.hp * 100)}%</em> Max HP and <em>+${pcn(S.lifesteal * 100)}%</em> Lifesteal. Critical strikes build 1 Amplification and heal for 3.5% missing HP. Incoming Skill hits build <b>Backstage Guard</b>; at ${P.guardMax} stacks, prepares a <b>Reversal</b> that reflects <em>${pcn(S.reflect * 100)}%</em> damage and knocks the attacker back 75px. Scoring a KO heals Eclipse for 10% Max HP, grants +25% Attack, and awards 1 Amp. At Full Volume, she can spend 2 Amp to instantly cancel and counter a Stun!</span>`,
     passive(u, B, S) {
-      u.flat.hpPqom = S.hp; u.flat.healRecvqom = .15; u.dirty = true;
+      u.flat.hpPqom = S.hp; u.flat.healRecvqom = S.lifesteal; u.dirty = true;
       B.on(u, 'dealDamage', ev => {
         if (!ev.crit || ev.dot || ev.reflected) return;
         qomEclipseAmp(u, B, 1);
@@ -182,7 +189,7 @@ QOM_ECLIPSE.skills = {
       B.on(u, 'damaged', ev => {
         if (u._qomReversalReady && ev.src && !ev.reflected) {
           u._qomReversalReady = false;
-          B.damage(u, ev.src, ev.amount * .42, { type: 'magic', reflected: true, tag: 'Reversal' });
+          B.damage(u, ev.src, ev.amount * S.reflect, { type: 'magic', reflected: true, tag: 'Reversal' });
           B.knockback(u, ev.src, 75); qomShow(B, 'riff', u, ev.src);
           B.removeStatus(u, 'qom_backstage_guard');
         } else if (ev.src && !ev.basic && !ev.reflected) {
@@ -207,10 +214,11 @@ QOM_ECLIPSE.skills = {
     }
   },
   R: {
-    name: 'Final Encore', type: 'Physical / Magic / Shield / Control', v: { atk: .16 }, p: {},
-    desc: () => 'Amplification reaches 15. Higher stacks pierce Armor, reduce enemy Healing, strengthen defense and shields, and restore Energy on Critical hits. Headliner doubles Basics and resists the first Skill hit. A low-HP maximum triggers the once-per-wave Final Solo.',
+    name: 'Final Encore', type: 'Physical / Magic / Shield / Control',
+    v: { atk: .18, critDmg: .25, echoRatio: .42 }, p: { ampCap: 15 },
+    desc: (S, P) => `<span class="sk-pas">Eclipse permanently gains <em>+${pcn(S.atk * 100)}%</em> Attack, <em>+${pcn(S.critDmg * 100)}%</em> Crit Damage, and +8% Max HP. Amplification cap increases to ${P.ampCap}. At 12+ Amp, soundwaves inflict <b>Grief</b> (-40% healing). At 14+ Amp, critical hits refund 5 Energy and 0.35s Cooldown. At 15 Amp (<b>HEADLINER</b>), basic attacks deal +22% bonus damage to low-HP foes, and taking a major Skill hit absorbs 50% into a 6s shield. Low HP (&lt;60%) unleashes the once-per-wave <b>Final Solo</b>: untargetable, 4 full-team soundwaves, defense shred, finished by a devastating leaping claw strike!</span>`,
     passive(u, B, S) {
-      u.flat.atkPqom = S.atk; u.flat.critDmgqom = .24; u.flat.hpPqomR = .08; u.dirty = true;
+      u.flat.atkPqom = S.atk; u.flat.critDmgqom = S.critDmg; u.flat.hpPqomR = .08; u.dirty = true;
       B.on(u, 'dealDamage', ev => {
         const amp = qomStacks(u, 'qom_amp');
         if (ev.target && ev.target.alive && amp >= 12 && ev.tag && (ev.tag.includes('Soundwave') || ev.tag.includes('Volume') || ev.tag.includes('Solo')))
@@ -231,7 +239,7 @@ QOM_ECLIPSE.skills = {
       });
       B.on(u, 'enemyDown', e => {
         if (qomStacks(u, 'qom_amp') < 15 || e._lastHitBy !== u) return;
-        qomEclipseWave(u, B, .42, 'Headliner KO'); B.energy(u, 12);
+        qomEclipseWave(u, B, S.echoRatio, 'Headliner KO'); B.energy(u, 12);
       });
     }
   }

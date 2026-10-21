@@ -67,36 +67,41 @@ function cleanDefenseTeam(team) {
     if (!/^[A-Za-z0-9_-]+$/.test(id)) return null;
     const copy = {
       id,
-      level: cleanNumber(slot.level, 1, 1000, 1),
-      stars: cleanNumber(slot.stars, 1, 6, 1),
+      level: cleanNumber(slot.level, 1, 800, 1),
+      stars: cleanNumber(slot.stars, 1, 5, 1),
       rarity: cleanNumber(slot.rarity, 1, 6, 1),
       rarityPlus: cleanNumber(slot.rarityPlus, 1, 30, 1),
-      skillLv: cleanNumber(slot.skillLv, 1, 1000, 1),
+      skillLv: cleanNumber(slot.skillLv, 1, 800, 1),
+      skillLevels: null,
       cls: cleanText(slot.cls, 24) || null,
       subcls: cleanText(slot.subcls, 24) || null,
       cls2: cleanText(slot.cls2, 24) || null,
       subcls2: cleanText(slot.subcls2, 24) || null,
-      classRank: cleanNumber(slot.classRank, 0, 10, 0),
-      subclassRank: cleanNumber(slot.subclassRank, 0, 10, 0),
-      classRank2: cleanNumber(slot.classRank2, 0, 10, 0),
-      subclassRank2: cleanNumber(slot.subclassRank2, 0, 10, 0),
+      classRank: cleanNumber(slot.classRank, 0, 50, 0),
+      subclassRank: cleanNumber(slot.subclassRank, 0, 50, 0),
+      classRank2: cleanNumber(slot.classRank2, 0, 50, 0),
+      subclassRank2: cleanNumber(slot.subclassRank2, 0, 50, 0),
       mult: { hp: 1, atk: 1, def: 1 },
       trinkets: [],
       badge: null
     };
+    if (slot.skillLevels && typeof slot.skillLevels === 'object' && !Array.isArray(slot.skillLevels)) {
+      copy.skillLevels = Object.fromEntries(['W', 'G', 'B', 'P', 'R'].map(key =>
+        [key, cleanNumber(slot.skillLevels[key], 1, 800, copy.skillLv)]));
+    }
     if (Array.isArray(slot.trinkets)) {
       copy.trinkets = slot.trinkets.slice(0, 3).map(item => {
         if (!item || typeof item !== 'object') return null;
         const itemId = cleanText(item.id, 64);
         return /^[A-Za-z0-9_-]+$/.test(itemId)
-          ? { id: itemId, rank: cleanNumber(item.rank, 1, 10, 1) }
+          ? { id: itemId, rank: cleanNumber(item.rank, 1, 20, 1) }
           : null;
       }).filter(Boolean);
     }
     if (slot.badge && typeof slot.badge === 'object') {
       const badgeId = cleanText(slot.badge.id, 64);
       if (/^[A-Za-z0-9_-]+$/.test(badgeId)) {
-        copy.badge = { id: badgeId, lvl: cleanNumber(slot.badge.lvl, 1, 10, 1) };
+        copy.badge = { id: badgeId, lvl: cleanNumber(slot.badge.lvl, 1, 5, 1) };
       }
     }
     return copy;
@@ -106,7 +111,7 @@ function cleanDefenseTeam(team) {
 
 function parseDefense(row) {
   let team;
-  try { team = JSON.parse(row.team_json); }
+  try { team = cleanDefenseTeam(JSON.parse(row.team_json)); }
   catch (_) { return null; }
   if (!Array.isArray(team) || !team.length) return null;
   return {

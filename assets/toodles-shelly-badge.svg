@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="Shelly's Fossil Token">
+  <defs>
+    <radialGradient id="gold" cx="34%" cy="26%" r="78%">
+      <stop stop-color="#fff6c9"/>
+      <stop offset=".48" stop-color="#f8c466"/>
+      <stop offset="1" stop-color="#9c5039"/>
+    </radialGradient>
+    <radialGradient id="stone" cx="35%" cy="24%" r="84%">
+      <stop stop-color="#fff9dc"/>
+      <stop offset=".65" stop-color="#eccb9d"/>
+      <stop offset="1" stop-color="#b98a70"/>
+    </radialGradient>
+    <linearGradient id="fossil" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#fff4c5"/>
+      <stop offset=".5" stop-color="#f3b472"/>
+      <stop offset="1" stop-color="#a85654"/>
+    </linearGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="5" stdDeviation="5" flood-color="#4f243f" flood-opacity=".7"/>
+    </filter>
+  </defs>
+  <circle cx="128" cy="128" r="120" fill="#4c2947"/>
+  <circle cx="128" cy="128" r="113" fill="url(#gold)" stroke="#fff0bf" stroke-width="5"/>
+  <circle cx="128" cy="128" r="98" fill="#a7566a" stroke="#69364c" stroke-width="5"/>
+  <circle cx="128" cy="128" r="89" fill="url(#stone)" stroke="#ffe6ac" stroke-width="5"/>
+  <path d="M58 157c18 34 47 50 70 51 32 0 60-17 75-47" fill="none" stroke="#de86a9" stroke-width="10" stroke-linecap="round"/>
+  <path d="M55 162c20 32 49 44 73 44 29 0 57-15 75-45" fill="none" stroke="#fff0be" stroke-width="3" opacity=".85"/>
+  <g filter="url(#shadow)">
+    <path d="M73 103c10-29 47-50 79-37 31 12 48 48 35 79-11 28-45 42-70 29-22-12-29-37-17-54 11-17 37-20 49-5 9 11 4 27-9 30-10 2-18-6-15-14" fill="none" stroke="#9c5e59" stroke-width="30" stroke-linecap="round"/>
+    <path d="M73 103c10-29 47-50 79-37 31 12 48 48 35 79-11 28-45 42-70 29-22-12-29-37-17-54 11-17 37-20 49-5 9 11 4 27-9 30-10 2-18-6-15-14" fill="none" stroke="url(#fossil)" stroke-width="24" stroke-linecap="round"/>
+    <path d="M82 93c15-21 42-34 66-26m31 32c11 19 11 42-2 58m-55 17c-17-5-28-21-27-39" fill="none" stroke="#fff3d1" stroke-width="5" stroke-linecap="round" opacity=".75"/>
+  </g>
+  <path d="M44 72l5-15 5 15 15 5-15 5-5 15-5-15-15-5z" fill="#fff7cb" stroke="#b75f8d" stroke-width="3"/>
+  <path d="M205 58l3-9 3 9 9 3-9 3-3 9-3-9-9-3z" fill="#fff7cb" stroke="#b75f8d" stroke-width="2"/>
+  <circle cx="128" cy="23" r="4" fill="#fff3bc"/>
+  <circle cx="233" cy="128" r="4" fill="#fff3bc"/>
+  <circle cx="128" cy="233" r="4" fill="#fff3bc"/>
+  <circle cx="23" cy="128" r="4" fill="#fff3bc"/>
+</svg>

@@ -875,211 +875,384 @@ defHero({
 });
 
 /* ============================================================ SHELLY
-   Skill Power Support / Team Buffer / Strategist - S Tier */
+   The Resilient Paleontologist & Team Stratigrapher - DHBM Standards */
 defHero({
   id: 'Shelly', name: 'Shelly', folder: 'Shelly', file: 'Shelly', icon: 'Shelly',
-  role: 'Support', tier: 'S', element: 'Discovery',
-  blurb: 'A paleontologist who turns her team\'s abilities into something larger than they were designed to be.',
-  base: { hp: 3700, atk: 190, def: 215, mag: 348, mdef: 292, spd: 112, acc: 182, eva: 120 },
-  hidden: { range: 285, aspd: .92, ms: 68, aggro: .70, crit: .08, critDmg: 1.55, healPow: 1.20, shieldPow: 1.25, cdr: .16, ccRes: .18, kbRes: .3, armorPen: 0, magPen: .12 },
-  growth: { hp: .086, atk: .068, def: .080, mag: .098, mdef: .088 },
+  role: 'Support', tier: 'SS', element: 'Discovery',
+  blurb: 'An enthusiastic paleontologist and ammonite Toon whose boundless passion for prehistoric excavation and stratigraphic analysis turns her entire team into an unstoppable catalyst.',
+  base: { hp: 4180, atk: 195, def: 240, mag: 385, mdef: 320, spd: 114, acc: 210, eva: 135 },
+  hidden: { range: 300, aspd: .96, ms: 72, aggro: .60, crit: .12, critDmg: 1.60, healPow: 1.30, shieldPow: 1.35, cdr: .18, ccRes: .25, kbRes: .35, armorPen: .15, magPen: .20 },
+  growth: { hp: .092, atk: .070, def: .085, mag: .105, mdef: .092 },
   move: { gait: 'march', bob: 5, freq: 1.8, lean: 8, squash: .05, idle: 'tap', step: 'step',
     particles: 'dust', pcol: '#c9a87a', trail: { on: false }, brake: .4 },
-  basic: { name: 'Field Notes', type: 'magic', ratio: .94, range: 285, proj: 'orb', pcol: '#c9a87a',
-    sfx: 'whoosh', hit: 'hit_magic', wind: .22, note: 'She is writing all of this down.' },
+  basic: {
+    name: 'Stratum Extraction',
+    type: 'magic',
+    ratio: 1.05,
+    range: 300,
+    proj: 'obj',
+    pimg: 'Magifyingglass',
+    pcol: '#d8b579',
+    sfx: 'whoosh',
+    hit: 'hit_magic',
+    wind: .20,
+    note: 'Shelly unearths stratigraphic fossil layers, marking enemies and excavating ancient amber for her team.',
+    onHit: (u, t, B) => {
+      if (!t || !t.alive) return;
+      B.applyStatus(u, t, 'stratigraphy', 6.0, { stacks: 1 });
+      u._shellyBasics = (u._shellyBasics || 0) + 1;
+      if (u._shellyBasics % 2 === 0) {
+        const ally = B.lowestHp(B.alliesOf(u)) || u;
+        if (ally && ally.alive) {
+          B.shield(u, ally, u.max.hp * .12, 6);
+          B.energy(ally, 15);
+          B.fxSparkle(ally.x, ally.y - 45, 6, '#d8b579');
+          B.fxFloatIcon(ally.x, ally.y - 100, '🦴 AMBER SHARD +15⚡', '#d8b579');
+        }
+      }
+    }
+  },
   skills: {
+    // ---------------- WHITE SKILL (Ultimate): Greatest Fossil Discovery
     W: {
-      name: 'Fossil Findings', type: 'Support', energy: 100,
-      v: { power: 4, crit: .22 }, p: { dur: 10, full: 6 },
-      desc: (S, P) => `<span class="sk-pas">Every time an enemy casts, Shelly gains 📊 Research on that enemy. Research makes incoming skills hit harder. At ${P.full} stacks the target is Fully Researched: its defenses are easier to pierce and abilities against it generate extra Energy.</span>
-        Active: she reveals her findings. Every ally gains <em>${Math.round(S.power)}</em> stacks of ⚗ Skill Power and <em>${pcn(S.crit * 100)}</em> Crit Chance for ${P.dur}s. Fully Researched enemies lose up to two positive effects and are 🛑 Buff Sealed for ${P.dur}s, stopping their next hostile buff.`,
+      name: 'Greatest Fossil Discovery',
+      type: 'Support / Area Debuff',
+      energy: 100,
+      v: { power: 5, shield: .30, dmg: 1.75 },
+      p: { dur: 10.0, full: 5 },
+      desc: (S, P) => `<span class="sk-pas">Whenever an enemy casts an ability or is struck by an ally skill, Shelly logs 📊 Stratum (up to ${P.full} stacks). At ${P.full} stacks, the target becomes 🦴 Fully Researched: dealing 20% less damage, taking 30% increased skill damage, and attacks against them restore +6 Energy.</span> Active: Shelly unearths an ancient Ammonite Fossil Matrix! Deals <em>${pcn(S.dmg * 100)}</em> Magic Damage to all enemies, knocking them back, dispelling all buffs from Fully Researched foes, and inflicting 🛑 Buff Sealed for ${P.dur}s. All allies receive Prehistoric Amber Shields (equal to <em>${pcn(S.shield * 100)}</em> Max HP + 80% Magic Defense), <em>${Math.round(S.power)}</em> stacks of ⚗ Skill Power, +25% Crit Chance, and 🍀 Lucky for ${P.dur}s.`,
+      ai: { cond: () => true },
       passive: (u, B, S, P) => {
-        const logResearch = e => {
-          if (!e || !e.alive) return;
-          B.applyStatus(u, e, 'research', 999, { stacks: 1 });
-          const r = e.getStatus('research');
+        const logResearch = (src, e) => {
+          if (!e || !e.alive || e.team === u.team) return;
+          B.applyStatus(u, e, 'stratigraphy', 999, { stacks: 1 });
+          const r = e.getStatus('stratigraphy');
           if (r && r.stacks >= P.full && !e.hasStatus('fullyresearched')) {
             B.applyStatus(u, e, 'fullyresearched', 999);
             B.fxFloatObject(e.x, e.y - 104, 'Magifyingglass', '#d8b579');
-            B.fxRing(e.x, e.y - 42, 112, '#d8b579', .42);
-            Sound.play('get_rare', { vol: .38 });
+            B.fxRing(e.x, e.y - 42, 120, '#d8b579', .45);
+            Sound.play('get_rare', { vol: .45 });
+            B.fxFloatIcon(e.x, e.y - 100, '🦴 FULLY RESEARCHED', '#d8b579');
           }
         };
-        B.on(u, 'enemyCast', logResearch);
+
+        B.on(u, 'enemyCast', e => logResearch(u, e));
         B.on(u, 'allyDamageDealt', ev => {
-          const r = ev.target.getStatus && ev.target.getStatus('research');
-          if (!r) return;
-          if (!ev.basic && r.stacks >= P.full) B.energy(ev.src, 2);
+          if (!ev.target || !ev.target.alive || ev.target.team === u.team) return;
+          if (!ev.basic) logResearch(ev.src, ev.target);
+          if (ev.target.hasStatus('fullyresearched')) {
+            B.energy(ev.src, 6);
+          }
         });
       },
       cast: (u, B, S, P) => {
-        // Give the fossil explanation a full extra ~25 frames to read in the
-        // battle pose and in the skill preview.
-        B.anim(u, 'cast', 1.04, 'shellyResearch');
-        B.fxFloatObject(u.x + u.face * 22, u.y - 108, 'Magifyingglass', '#d8b579');
-        Sound.play('lock'); Sound.play('ult', { delay: 120 });
+        B.anim(u, 'cast', 1.05, 'shellyDiscovery');
+        B.fxFloatObject(u.x + u.face * 24, u.y - 110, 'Magifyingglass', '#d8b579');
+        Sound.play('lock');
+        Sound.play('ult', { delay: 120 });
+        Sound.play('earth_quake', { vol: .65, delay: 180 });
+
         B.after(.32, () => {
-          B.tint('#c9a87a', .2, .5); B.fxRing(u.x, u.y - 40, 480, '#c9a87a', .7);
+          if (!u.alive) return;
+          B.tint('#d8b579', .25, .6);
+          B.flash('#fef08a', .3, .2);
+          if (B.fxShellyFossil) B.fxShellyFossil(u.x, u.y - 40, 480);
+          else B.fxRing(u.x, u.y - 40, 480, '#c9a87a', .7);
+
+          // Buff allies
           B.alliesOf(u).forEach(a => {
+            const shieldAmt = a.max.hp * S.shield + u.st.mdef * .80;
+            B.shield(u, a, shieldAmt, P.dur);
             B.applyStatus(u, a, 'skillpower', P.dur, { stacks: Math.round(S.power) });
             B.applyStatus(u, a, 'lucky', P.dur);
             B.applyStatus(u, a, 'findings', P.dur);
-            B.fxSparkle(a.x, a.y - 40, 12, '#c9a87a');
+            B.applyStatus(u, a, 'ward', P.dur);
+            B.fxSparkle(a.x, a.y - 45, 12, '#fef08a');
+            B.fxFloatIcon(a.x, a.y - 105, '🦴 AMBER MATRIX', '#d8b579');
           });
-          B.enemiesOf(u).filter(e => e.hasStatus('fullyresearched')).forEach(e => {
-            B.dispel(e, 2);
-            B.applyStatus(u, e, 'buffsealed', P.dur, { stacks: 1 });
-            B.fxRing(e.x, e.y - 38, 94, '#e8c98f', .38);
+
+          // Damage & debuff enemies
+          B.enemiesOf(u).forEach(e => {
+            if (!e.alive) return;
+            B.knockback(u, e, 65);
+            B.damage(u, e, u.st.mag * S.dmg, { type: 'magic', tag: 'Greatest Fossil Discovery' });
+            if (e.hasStatus('fullyresearched')) {
+              B.dispel(e, 3);
+              B.applyStatus(u, e, 'buffsealed', P.dur, { stacks: 2 });
+              B.fxRing(e.x, e.y - 38, 100, '#e8c98f', .45);
+            }
           });
         });
       }
     },
+
+    // ---------------- GREEN SKILL: Inspiration! (Canon Active Ability)
     G: {
-      name: 'Inspiration', type: 'Buff', cd: 11,
-      v: {}, p: { dur: 10 },
-      desc: (S, P) => `The team becomes 🌞 Inspired for ${P.dur}s: Skill Power, cooldown recovery, Energy generation and healing all rise. Any ally defeating an enemy while Inspired extends the duration.`,
-      passive: (u, B) => {
+      name: 'Inspiration!',
+      type: 'Team Buff / Sustain',
+      cd: 11.0,
+      v: { heal: .18, haste: .30 },
+      p: { dur: 10.0, energy: 25 },
+      desc: (S, P) => `Shelly blows her field whistle and rallies the squad with boundless optimism! All allies become 🌞 Inspired for ${P.dur}s: gaining +30% Skill Haste, +35% Energy Generation, +25% Attack Speed, and +20% Move Speed, while converting 20% of all skill damage dealt into Team Healing. Passive: Defeating an enemy or landing a Critical Hit drops a 🎒 Paleo Snack, immediately restoring <em>${pcn(S.heal * 100)}</em> Max HP, granting ${P.energy} Energy, and extending Inspired by 3s!`,
+      ai: { prio: 62, cond: () => true },
+      passive: (u, B, S, P) => {
+        const dropPaleoSnack = targetUnit => {
+          if (!targetUnit || !targetUnit.alive || targetUnit.team !== u.team) return;
+          Sound.play('candy_pop', { vol: .55, throttle: 200 });
+          B.heal(u, targetUnit, targetUnit.max.hp * S.heal, { tag: 'Paleo Snack' });
+          B.energy(targetUnit, P.energy);
+          const s = targetUnit.getStatus('inspired');
+          if (s) s.t = Math.min(s.t + 3.0, 18.0);
+          B.fxFloatIcon(targetUnit.x, targetUnit.y - 105, '🎒 PALEO SNACK +25⚡', '#f59e0b');
+          B.fxSparkle(targetUnit.x, targetUnit.y - 45, 8, '#f59e0b');
+        };
+
         B.on(u, 'enemyDown', () => {
-          if (B.t > (u._inspUntil || 0)) return;
-          u._inspUntil += 3;
-          B.alliesOf(u).forEach(a => {
-            const s = a.getStatus('inspired');
-            if (s) s.t = Math.min(s.t + 3, 18);
-          });
-          B.fxConfetti(u.x, u.y - 50, 12);
+          const ally = B.lowestHp(B.alliesOf(u)) || u;
+          dropPaleoSnack(ally);
+        });
+
+        B.on(u, 'crit', ev => {
+          if (ev.unit && ev.unit.team === u.team && Math.random() < 0.35) {
+            dropPaleoSnack(ev.unit);
+          }
+        });
+
+        // Convert 20% of skill damage dealt by Inspired allies into team healing
+        B.on(u, 'allyDamageDealt', ev => {
+          if (ev.src && ev.src.team === u.team && ev.src.hasStatus('inspired') && !ev.basic && !ev.dot && ev.amount > 0) {
+            const healPool = ev.amount * 0.20;
+            const targetAlly = B.lowestHp(B.alliesOf(u));
+            if (targetAlly && targetAlly.alive) {
+              B.heal(ev.src, targetAlly, healPool, { silent: true, tag: 'Inspired Leech' });
+            }
+          }
         });
       },
-      ai: { prio: 58, cond: () => true },
       cast: (u, B, S, P) => {
-        B.anim(u, 'cast', 1.00, 'shellyInspire'); Sound.play('cheer');
-        B.fxAura(u, '#f2cf77', P.dur);
+        B.anim(u, 'cast', .95, 'shellyInspire');
+        Sound.play('cheer');
+        Sound.play('fanfare', { vol: .55 });
+        if (B.fxShellyInspiration) B.fxShellyInspiration(u.x, u.y - 40, P.dur);
+        else B.fxAura(u, '#f2cf77', P.dur);
+
         B.alliesOf(u).forEach(a => {
           B.applyStatus(u, a, 'inspired', P.dur);
-          B.fxSparkle(a.x, a.y - 48, 9, '#f2cf77');
+          B.applyStatus(u, a, 'haste', P.dur);
+          B.applyStatus(u, a, 'speedup', P.dur, { stacks: 1 });
+          B.fxSparkle(a.x, a.y - 48, 10, '#f2cf77');
         });
-        u._inspUntil = B.t + P.dur;
+        B.fxFloatIcon(u.x, u.y - 110, '🌞 RELENTLESS INSPIRATION!', '#f59e0b');
       }
     },
+
+    // ---------------- BLUE SKILL: Problem Solver (Canon 5-Star Skill Check & Tactical Diagnostics)
     B: {
-      name: 'Problem Solver', type: 'Utility', cd: 12,
-      v: { shield: .85, heal: .5 }, p: { dur: 8 },
-      desc: (S, P) => `Shelly reads the battlefield and hands the ally who needs it most exactly one solution: Offensive (⚗ Skill Power and Crit), Defensive (Damage Reduction and a <em>${pcn(S.shield * 100)}</em> Magic Shield), or Recovery (Energy restored and cooldowns cut). She always picks correctly.`,
-      ai: { prio: 55, cond: () => true },
-      cast: (u, B, S, P) => {
-        const allies = B.alliesOf(u); if (!allies.length) return;
-        const hurt = allies.filter(a => a.hpPct < .66).sort((a, b) => a.hpPct - b.hpPct)[0];
-        const starved = allies.filter(a => a.energy < 35).sort((a, b) => a.energy - b.energy)[0];
-        const carry = allies.slice().sort((a, b) => (b.st.atk + b.st.mag) - (a.st.atk + a.st.mag))[0];
-        const cooldownNeed = allies.filter(a => Object.values(a.cds || {}).some(v => v > 5)).sort((a, b) =>
-          Math.max(...Object.values(b.cds || {}), 0) - Math.max(...Object.values(a.cds || {}), 0))[0];
-        B.anim(u, 'cast', .90, 'shellySolution');
-        if (hurt) {
-          Sound.play('guard');
-          B.shield(u, hurt, u.st.mag * S.shield, P.dur);
-          B.applyStatus(u, hurt, 'ward', P.dur);
-          B.fxFloatObject(hurt.x, hurt.y - 104, 'Magifyingglass', '#86d5e8');
-          B.fxFloatIcon(hurt.x, hurt.y - 90, '🛡', '#86d5e8');
-        } else if (starved || cooldownNeed) {
-          const target = starved || cooldownNeed;
+      name: 'Problem Solver',
+      type: 'Tactical Cleanse / Dual Protocol',
+      cd: 10.0,
+      v: { shield: .25, dmg: .30 },
+      p: { dur: 8.0, cdCut: 3.5 },
+      desc: (S, P) => `<span class="sk-pas">Passive (5-Star Skill Check): Whenever an ally misses an attack, has a skill interrupted, or suffers Hard Crowd Control, Shelly's problem-solving instinct immediately triggers: cleansing the CC, reducing cooldowns by ${P.cdCut}s, restoring 30 Energy, and guaranteeing their next ability Crits! (5s cooldown per ally).</span> Active: Shelly diagnoses the tactical state. If any ally is below 60% HP: casts 🛡 Ammonite Shell Fortification, wrapping wounded allies in an <em>${pcn(S.shield * 100)}</em> Max HP shield, cleansing 2 debuffs, and granting Ward (-30% damage taken). Otherwise, executes 🦖 Apex Discovery: granting all allies +<em>${pcn(S.dmg * 100)}</em> All Damage, +25% Armor & Magic Penetration, and area attack cleave for ${P.dur}s.`,
+      ai: { prio: 60, cond: () => true },
+      passive: (u, B, S, P) => {
+        u._solverAllyCds = u._solverAllyCds || {};
+
+        const solveProblem = ally => {
+          if (!ally || !ally.alive || ally.team !== u.team) return;
+          const uid = ally.uid || ally.id;
+          if (B.t < (u._solverAllyCds[uid] || 0)) return;
+          u._solverAllyCds[uid] = B.t + 5.0;
+
           Sound.play('cleanse');
-          B.energy(target, 60); B.reduceCd(target, 5);
-          B.fxFloatObject(target.x, target.y - 104, 'Magifyingglass', '#a8dfb5');
-          B.fxFloatIcon(target.x, target.y - 90, '🔋', '#a8dfb5');
-        } else if (carry) {
+          Sound.play('get_rare', { vol: .42 });
+          B.cleanse(ally, 3);
+          B.reduceCd(ally, P.cdCut);
+          B.energy(ally, 30);
+          B.applyStatus(u, ally, 'lucky', 6.0);
+          B.anim(u, 'cast', .35, 'shellySolve');
+          B.fxFloatObject(ally.x, ally.y - 104, 'Magifyingglass', '#38bdf8');
+          B.fxFloatIcon(ally.x, ally.y - 95, '💡 5★ PROBLEM SOLVED!', '#38bdf8');
+          B.fxSparkle(ally.x, ally.y - 45, 8, '#38bdf8');
+        };
+
+        B.on(u, 'statusApplied', ev => {
+          if (ev.unit && ev.unit.team === u.team && STATUS[ev.id]?.cc) {
+            solveProblem(ev.unit);
+          }
+        });
+
+        B.on(u, 'allyMissed', ev => {
+          if (ev.unit && ev.unit.team === u.team) solveProblem(ev.unit);
+        });
+      },
+      cast: (u, B, S, P) => {
+        const allies = B.alliesOf(u);
+        if (!allies.length) return;
+        const wounded = allies.filter(a => a.hpPct < .60);
+
+        B.anim(u, 'cast', .85, 'shellySolution');
+
+        if (wounded.length > 0) {
+          // Defensive Protocol: Ammonite Shell Fortification
+          Sound.play('guard');
+          Sound.play('cure_all', { vol: .5 });
+          wounded.forEach(a => {
+            B.cleanse(a, 2);
+            B.shield(u, a, u.max.hp * S.shield, P.dur);
+            B.applyStatus(u, a, 'ward', P.dur);
+            B.fxFloatObject(a.x, a.y - 104, 'Magifyingglass', '#86d5e8');
+            B.fxSparkle(a.x, a.y - 45, 8, '#86d5e8');
+          });
+          B.fxFloatIcon(u.x, u.y - 110, '🛡 AMMONITE FORTIFICATION', '#86d5e8');
+        } else {
+          // Offensive Protocol: Apex Discovery
           Sound.play('buff');
-          B.applyStatus(u, carry, 'skillpower', P.dur, { stacks: 5 });
-          B.applyStatus(u, carry, 'lucky', P.dur);
-          B.fxFloatObject(carry.x, carry.y - 104, 'Magifyingglass', '#e0b6ff');
-          B.fxFloatIcon(carry.x, carry.y - 90, '⚗', '#e0b6ff');
+          Sound.play('sparkle', { vol: .55 });
+          allies.forEach(a => {
+            B.applyStatus(u, a, 'skillpower', P.dur, { stacks: 6 });
+            B.applyStatus(u, a, 'focus', P.dur);
+            B.applyStatus(u, a, 'atkup', P.dur, { val: S.dmg });
+            B.fxFloatObject(a.x, a.y - 104, 'Magifyingglass', '#f59e0b');
+            B.fxSparkle(a.x, a.y - 45, 8, '#f59e0b');
+          });
+          B.fxFloatIcon(u.x, u.y - 110, '🦖 APEX DISCOVERY!', '#f59e0b');
         }
       }
     },
+
+    // ---------------- PURPLE SKILL: Paleontologist's Passion
     P: {
-      name: "Paleontologist's Passion", type: 'Skill Power',
-      v: {}, p: { max: 8 },
-      desc: (S, P) => `Every ally skill cast grants Shelly 📈 Excitement (max ${P.max}), raising the whole team's Skill Power. At maximum stacks the next ally skill deals greatly increased damage, costs less Energy and has its cooldown reduced after use. Excitement slowly decays when nobody casts.`,
+      name: "Paleontologist's Passion",
+      type: 'Eureka! Engine / Skill Amplification',
+      v: { boost: .60 },
+      p: { max: 10, refund: .50 },
+      desc: (S, P) => `Every ally skill cast or Critical Hit grants Shelly a stack of 📈 Fossil Excitement (max ${P.max}). Each stack permanently increases team Skill Power by +3%, Skill Haste by +2%, and Crit Chance by +1.5%. Upon reaching ${P.max} stacks (or when Shelly casts an ultimate), she enters 💡 Eureka! Breakthrough: the next ally skill cast triggers with 0 cooldown, refunds ${pcn(P.refund * 100)} Energy, deals +<em>${pcn(S.boost * 100)}</em> bonus damage, and is guaranteed to Super Crit! (Excitement resets to 5 rather than 0).`,
       passive: (u, B, S, P) => {
-        B.on(u, 'allyCast', a => {
-          if (u._passionJustUsed === B.t) { u._passionJustUsed = -1; return; }
-          u._shellyLastSkillAt = B.t;
+        const addExcitement = () => {
+          if (!u.alive) return;
           B.applyStatus(u, u, 'excitement', 999, { stacks: 1 });
           const e = u.getStatus('excitement');
-          B.anim(u, 'cast', .26, 'shellyPassion');
-          B.fxFloatIcon(u.x, u.y - 100, e && e.stacks >= P.max ? '💡' : '📈', '#e8c98f');
-          if (e && e.stacks >= P.max) u._passionReady = true;
+          const stacks = e ? e.stacks : 1;
+          if (stacks >= P.max && !u._eurekaReady) {
+            u._eurekaReady = true;
+            Sound.play('get_rare', { vol: .65 });
+            Sound.play('sparkle', { vol: .6 });
+            B.flash('#ffd700', .25, .15);
+            B.fxFloatIcon(u.x, u.y - 115, '💡 EUREKA! BREAKTHROUGH!', '#ffd700');
+            B.fxRing(u.x, u.y - 40, 220, '#ffd700', .55);
+          } else {
+            B.fxFloatIcon(u.x, u.y - 100, `📈 EXCITEMENT (${stacks})`, '#f59e0b');
+          }
+        };
+
+        B.on(u, 'allyCast', a => {
+          if (a.team === u.team) addExcitement();
         });
+
+        B.on(u, 'crit', ev => {
+          if (ev.unit && ev.unit.team === u.team && Math.random() < 0.4) {
+            addExcitement();
+          }
+        });
+
+        B.on(u, 'allySkillStarting', ev => {
+          if (!u._eurekaReady || !ev.unit || !ev.unit.alive || ev.unit.team !== u.team) return;
+          u._eurekaReady = false;
+          ev.costDiscount = (ev.energyCost || 100) * P.refund;
+          ev.superCrit = true;
+
+          // Retain 5 stacks of excitement
+          B.removeStatus(u, 'excitement');
+          B.applyStatus(u, u, 'excitement', 999, { stacks: 5 });
+
+          B.applyStatus(u, ev.unit, 'passionboost', 2.0);
+          B.applyStatus(u, ev.unit, 'lucky', 3.0);
+          B.reduceCd(ev.unit, 99); // Reset cooldown of the casting skill
+
+          B.anim(u, 'cast', .45, 'shellyEureka');
+          Sound.play('fanfare', { vol: .75 });
+          B.fxFloatIcon(ev.unit.x, ev.unit.y - 110, '💡 EUREKA SUPER CRIT!', '#ffd700');
+          B.fxRing(ev.unit.x, ev.unit.y - 40, 160, '#ffd700', .5);
+        });
+
+        // Passive stat amplification based on excitement stacks
         B.on(u, 'allyDamageDealt', ev => {
           const e = u.getStatus('excitement');
-          if (e && !ev.basic) ev.amount *= 1 + .025 * e.stacks;
-        });
-        B.on(u, 'allySkillStarting', ev => {
-          if (!u._passionReady || !ev.unit || !ev.unit.alive) return;
-          u._passionReady = false; u._passionJustUsed = B.t;
-          B.removeStatus(u, 'excitement');
-          ev.passion = true; ev.costDiscount = 18;
-          B.applyStatus(u, ev.unit, 'passionboost', 1.8);
-          B.anim(u, 'cast', .44, 'shellyPassion');
-          Sound.play('get_rare'); B.fxFloatIcon(ev.unit.x, ev.unit.y - 100, '💡', '#ffe39a');
-        });
-        B.every(u, 1.8, () => {
-          const e = u.getStatus('excitement');
-          if (!e || B.t - (u._shellyLastSkillAt || -99) < 1.8) return;
-          e.stacks--; e.t = 999; u.statusVersion++; u.dirty = true;
-          if (e.stacks <= 0) B.removeStatus(u, 'excitement');
+          if (e && !ev.basic) {
+            ev.amount *= 1 + (0.03 * e.stacks);
+          }
         });
       }
     },
+
+    // ---------------- RED SKILL: Gardenview Paleontology Archive
     R: {
-      name: 'Greatest Discovery', type: 'Battle Opener',
-      v: { power: 3, pen: .20 }, p: { need: 4 },
-      desc: (S, P) => `Shelly opens the Field Lab: at the start of each wave, every ally receives a brief Skill Power and Crit boost while the Lab grants permanent ⚗ Skill Power, faster cooldowns, <em>${pcn(S.pen * 100)}</em> Penetration and stronger healing. After ${P.need} ally ultimates the Lab becomes the Ancient Archive, granting a large Skill Power surge, uninterruptible skills and bonus damage on each ally's first skill. Any ally falling below half HP is automatically Inspired.`,
+      name: 'Gardenview Paleontology Archive',
+      type: 'Ancient Dinosaur Aura / Stasis Save',
+      v: { redPower: 4, redPen: .25 },
+      p: { stompDmg: 1.25, saveHp: .35 },
+      desc: (S, P) => `Shelly establishes the Gardenview Paleontology Archive! At the start of each wave, the spectral silhouette of the Ancient Dinosaur Fossil watches over the battle: granting all allies permanent +25% Skill Haste, +25% Armor & Magic Penetration, and +15% Damage Reduction. Whenever any ally casts an ultimate, the Ancient Dinosaur unleashes a Prehistoric Shockwave dealing <em>${pcn(P.stompDmg * 100)}</em> Magic Damage and Stunning all enemies for 1.5s, while dropping an Amber Core that heals all allies for 15% Max HP. Once per battle when an ally would suffer lethal damage, Shelly encases them in 💎 Ancient Amber Stasis for 3.5s (Invulnerable, cleanses all debuffs, and heals for 35% Max HP).`,
       passive: (u, B, S, P) => {
-        B.after(.4, () => {
+        const deployArchive = () => {
+          if (!u.alive) return;
           B.alliesOf(u).forEach(a => {
-            B.applyStatus(u, a, 'skillpower', 999, { stacks: Math.round(S.power) });
-            B.applyStatus(u, a, 'haste', 999, { stacks: 1 });
-            a.flat.magPen = (a.flat.magPen || 0) + S.pen;
-            a.flat.armorPen = (a.flat.armorPen || 0) + S.pen;
+            B.applyStatus(u, a, 'skillpower', 999, { stacks: S.redPower });
+            B.applyStatus(u, a, 'haste', 999, { stacks: 2 });
+            B.applyStatus(u, a, 'focus', 999);
+            a.flat.magPen = (a.flat.magPen || 0) + S.redPen;
+            a.flat.armorPen = (a.flat.armorPen || 0) + S.redPen;
+            a.flat.dmgTaken = (a.flat.dmgTaken || 0) - 0.15;
             a.dirty = true;
+            B.fxSparkle(a.x, a.y - 45, 8, '#d8b579');
           });
-          B.alliesOf(u).forEach(a => {
-            B.applyStatus(u, a, 'skillpower', 6, { stacks: 1 });
-            B.applyStatus(u, a, 'lucky', 6);
-            B.fxSparkle(a.x, a.y - 48, 8, '#e8c98f');
+          B.fxFloatObject(u.x + u.face * 24, u.y - 115, 'Book', '#d8b579');
+          B.fxFloatIcon(u.x, u.y - 110, '🏛 ANCIENT ARCHIVE ACTIVE', '#d8b579');
+        };
+
+        B.on(u, 'waveStart', deployArchive);
+        B.after(.35, deployArchive);
+
+        // Prehistoric Stomp on ally ultimates
+        B.on(u, 'allyUltimate', ev => {
+          if (!u.alive) return;
+          Sound.play('earth_quake', { vol: .75 });
+          Sound.play('hit_heavy', { vol: .65 });
+          B.tint('#d8b579', .25, .5);
+          B.flash('#fef08a', .3, .2);
+          if (B.fxShellyFossil) B.fxShellyFossil(u.x, u.y - 40, 520);
+          else B.fxRing(u.x, u.y - 40, 520, '#d8b579', .8);
+
+          B.enemiesOf(u).filter(e => e.alive).forEach(e => {
+            B.damage(u, e, u.st.mag * P.stompDmg, { type: 'magic', tag: 'Prehistoric Stomp' });
+            B.applyStatus(u, e, 'stun', 1.5);
+            B.applyStatus(u, e, 'stratigraphy', 8, { stacks: 2 });
           });
-          B.fxPool(B.avgX(B.alliesOf(u)), 999, '#c9a87a', 420);
-          B.fxFloatObject(u.x + u.face * 22, u.y - 112, 'Magifyingglass', '#c9a87a');
-          B.fxAura(u, '#c9a87a', 999);
-        });
-        B.on(u, 'allyUltimate', () => {
-          u.breakthrough = (u.breakthrough || 0) + 1;
-          if (u.breakthrough < P.need || u._archiveActive) return;
-          u._archiveActive = true;
-          B.log('<b>The Ancient Archive opens.</b>'); Sound.play('suddendeath');
-          B.anim(u, 'cast', .9, 'shellyArchive');
-          B.tint('#c9a87a', .3, 1);
-          B.alliesOf(u).forEach(x => {
-            B.applyStatus(u, x, 'skillpower', 999, { stacks: 10 });
-            B.applyStatus(u, x, 'ccimmune', 999);
-            B.applyStatus(u, x, 'archivefirst', 999);
+
+          B.alliesOf(u).filter(a => a.alive).forEach(a => {
+            B.heal(u, a, a.max.hp * .15, { tag: 'Amber Core' });
+            B.fxSparkle(a.x, a.y - 45, 6, '#ffd700');
           });
-          B.fxRing(u.x, u.y - 42, 520, '#e8c98f', 1.1);
-          B.fxFloatObject(u.x + u.face * 22, u.y - 112, 'Book', '#e8c98f');
+
+          B.fxFloatIcon(u.x, u.y - 110, '🦖 PREHISTORIC STOMP!', '#f59e0b');
         });
-        B.on(u, 'allySkillStarting', ev => {
-          if (!u._archiveActive || !ev.unit || !ev.unit.hasStatus('archivefirst')) return;
-          B.removeStatus(ev.unit, 'archivefirst');
-          B.applyStatus(u, ev.unit, 'archivebonus', 2.2);
-          B.fxFloatObject(ev.unit.x, ev.unit.y - 108, 'Book', '#e8c98f');
-          B.fxRing(ev.unit.x, ev.unit.y - 38, 110, '#e8c98f', .42);
-        });
-        B.on(u, 'allyDamaged', ev => {
-          const a = ev && ev.unit;
-          const projectedHp = a && Math.max(0, a.hp - Math.max(0, (ev.amount || 0) - a.shieldTotal));
-          if (!a || (a.hpPct >= .5 && projectedHp / a.max.hp >= .5) || (a._archiveInsp && B.t - a._archiveInsp < 10)) return;
-          a._archiveInsp = B.t;
-          B.applyStatus(u, a, 'inspired', 8);
-          B.fxSparkle(a.x, a.y - 54, 10, '#f2cf77');
+
+        // Ancient Amber Stasis lethal damage save
+        B.on(u, 'allyLethal', ev => {
+          const a = ev.unit;
+          if (!a || a.team !== u.team || u._amberStasisUsed) return;
+          u._amberStasisUsed = true;
+          ev.prevented = true;
+          a.hp = a.max.hp * P.saveHp;
+          B.cleanse(a, 99);
+          B.applyStatus(u, a, 'amberstasis', 3.5);
+          B.applyStatus(u, a, 'untargetable', 3.5);
+          B.applyStatus(u, a, 'ward', 3.5);
+          if (B.fxShellyAmber) B.fxShellyAmber(a.x, a.y - 40, 3.5);
+
+          Sound.play('fanfare', { vol: .85 });
+          B.flash('#fef08a', .5, .3);
+          B.fxFloatIcon(a.x, a.y - 120, '💎 ANCIENT AMBER STASIS!', '#fef08a');
         });
       }
     }
@@ -1210,95 +1383,153 @@ defHero({
 defHero({
   id: 'Toodles', name: 'Toodles', folder: 'Toodles', file: 'Toodles', icon: 'Toodles',
   role: 'Damage', tier: 'S', element: 'Luck',
-  blurb: 'Refuses to be underestimated and refuses to be one thing. Whatever the team lacks, she becomes.',
-  base: { hp: 4450, atk: 375, def: 280, mag: 272, mdef: 260, spd: 122, acc: 188, eva: 145 },
-  hidden: { range: 215, aspd: 1.05, ms: 82, aggro: 1.15, crit: .16, critDmg: 1.70, healPow: 1.15, shieldPow: 1.32, cdr: .14, ccRes: .22, kbRes: .42, armorPen: .10, magPen: .10 },
-  growth: { hp: .094, atk: .090, def: .086, mag: .080, mdef: .080 },
+  blurb: 'A cheerful but determined junior detective and the youngest Toon, who refuses to be underestimated. Whatever clue or support the team needs, her Magic 8-Ball and Beginner\'s Luck provide.',
+  base: { hp: 4650, atk: 410, def: 310, mag: 290, mdef: 285, spd: 126, acc: 200, eva: 160 },
+  hidden: { range: 215, aspd: 1.10, ms: 88, aggro: 1.15, crit: .18, critDmg: 1.75, healPow: 1.20, shieldPow: 1.35, cdr: .15, ccRes: .25, kbRes: .45, armorPen: .12, magPen: .12 },
+  growth: { hp: .096, atk: .094, def: .088, mag: .082, mdef: .082 },
   move: { gait: 'bounce', bob: 9, freq: 2.2, lean: 8, squash: .08, idle: 'tumble', step: 'bounce',
     particles: 'sparkle', pcol: '#ffe27a', trail: { on: true, col: '#ffe27a', rate: .08 }, brake: .35 },
-  basic: { name: 'Rolling Swing', type: 'physical', ratio: 1.10, range: 215, sfx: 'swing_light', hit: 'hit_blunt', animStyle: 'toodlesSwing', attackAnim: .30, pcol: '#ffb3d8',
-    wind: .16, note: 'Whatever is nearest, swung with confidence.',
-    onHit: (u, t, B) => { if (chance(.15)) B.luckyBoost(u); } },
+  basic: { name: 'Confident Swing', type: 'physical', ratio: 1.15, range: 215, sfx: 'swing_light', hit: 'hit_blunt', animStyle: 'toodlesSwing', attackAnim: .30, pcol: '#ffb3d8',
+    wind: .15, note: 'Whatever is nearest, swung with absurd childhood confidence.',
+    onHit: (u, t, B) => {
+      if (chance(.25)) B.luckyBoost(u);
+    }
+  },
   skills: {
     W: {
       name: "Beginner's Luck", type: 'Buff', energy: 100,
-      v: {}, p: { dur: 11 },
-      desc: (S, P) => `<span class="sk-pas">Whenever Toodles or an ally gains a friendly buff, Toodles has a 20% chance to roll one Lucky Boost: Damage, Defense, Speed, or Support.</span>
-        Active: she rolls a Lucky Boost for ${P.dur}s. Damage grants 2 stacks of ⚔ Attack Up; Defense grants 3 stacks of 🧱 Fortify and 🛡 Ward; Speed grants 2 stacks of 🏃 Speed Up; Support grants 📣 Rally and 🔋 Overcharge.`,
+      v: {}, p: { dur: 12 },
+      desc: (S, P) => `<span class="sk-pas">Whenever Toodles or an ally gains a friendly buff, or Toodles dodges an attack, 25% chance to consult her Magic 8-Ball for a Lucky Boost.</span>
+        Active: she shakes her Magic 8-Ball for ${P.dur}s! Reveals ⚔ Damage ("Outlook Good!": Attack Up + Crit), 🛡 Defense ("It is Certain!": Fortify + Ward), 🏃 Speed ("Signs Point to Yes!": Speed Up + Haste), 💚 Support ("Without a Doubt!": Rally + Overcharge + Healing pulses), or a rare ★ "All Signs Point to Yes!" fortune that unleashes all four boosts!`,
       passive: (u, B) => {
         u.lastBoost = null;
+        u._luckRollCount = 0;
         B.on(u, 'statusApplied', ev => {
           if (!STATUS[ev.id] || STATUS[ev.id].kind !== 'buff' || !ev.unit || ev.unit.team !== u.team || !ev.src || ev.src.team !== u.team) return;
-          if (chance(.20)) B.luckyBoost(u);
+          if (chance(.25)) B.luckyBoost(u);
+        });
+        B.on(u, 'dodged', () => {
+          if (chance(.35)) B.luckyBoost(u);
         });
       },
       cast: (u, B, S, P) => {
-        B.anim(u, 'cast', .82, 'toodlesLuckRoll'); Sound.play('toodles_gamble', { vol: .62 }); Sound.play('coin', { vol: .34, delay: 160, throttle: 180 });
-        ['⚔', '🛡', '🏃', '💚'].forEach((icon, i) => B.after(.08 + i * .07, () => {
-          if (u.alive) B.fxFloatIcon(u.x + (i - 1.5) * 22, u.y - 88 - (i % 2) * 13, icon, '#ffb5d8');
-        }));
-        B.fxRing(u.x, u.y - 36, 86, '#ffe27a');
+        B.anim(u, 'cast', .82, 'toodlesLuckRoll');
+        Sound.play('toodles_gamble', { vol: .65 });
+        Sound.play('sparkle', { vol: .55 });
         B.luckyBoost(u, P.dur);
       }
     },
     G: {
       name: 'Lucky Strike', type: 'Physical Damage', cd: 7.5,
-      v: { ratio: 1.34 }, p: { dur: 7 },
-      desc: (S, P) => `Toodles rushes the enemy with the highest Attack for <em>${pcn(S.ratio * 100)}</em> damage and 🥀 Weakens them for ${P.dur}s. Her current Lucky Boost adds a second effect: Damage crits, Defense shields her, Speed strikes twice, Support restores an ally's Energy.`,
-      ai: { prio: 57, cond: () => true },
+      v: { ratio: 1.65 }, p: { dur: 8 },
+      desc: (S, P) => `Toodles leaps forward and slams her oversized toy hammer into the highest-Attack foe for <em>${pcn(S.ratio * 100)}</em> damage, 🥀 Weakening them and shredding their Attack Speed by 30% for ${P.dur}s. Her active 8-Ball fortune empowers the smash: Damage crits and cleaves nearby enemies; Defense shields her and taunts; Speed strikes 3 times; Support stuns and restores 40 Energy to all allies; All Signs Yes triggers every effect!`,
+      ai: { prio: 58, cond: () => true },
       cast: (u, B, S, P) => {
         const t = B.highestStat(B.enemiesOf(u), 'atk'); if (!t) return;
         const boost = u.lastBoost;
-        B.anim(u, 'wind', .52, 'toodlesLuckyStrike'); Sound.play('dash'); Sound.play('sweep', { vol: .26, throttle: 120 });
+        const isSuper = boost === 'all';
+        B.anim(u, 'wind', .52, 'toodlesLuckyStrike');
+        Sound.play('dash');
+        Sound.play('sweep', { vol: .28, throttle: 120 });
         B.fxTargetLine(u, t, '#ff9dd0');
         B.dash(u, t.x - u.face * 55, .2, { depth: t.depth });
         const strike = (crit) => {
-          Sound.play('hit_heavy', { throttle: 10 }); B.hitstop(80); B.shake(10, .28);
-          B.fxSlash(u, t, { col: '#ffe27a', ang: -30, big: true });
+          Sound.play('hit_heavy', { throttle: 10 });
+          Sound.play('pop2', { vol: .75 });
+          B.hitstop(80); B.shake(10, .28);
+          if (B.fxToodlesHammer) B.fxToodlesHammer(u, t, boost);
+          else B.fxSlash(u, t, { col: '#ffe27a', ang: -30, big: true });
           B.damage(u, t, u.st.atk * S.ratio, { type: 'physical', forceCrit: crit, tag: 'Lucky Strike' });
           B.applyStatus(u, t, 'weaken', P.dur, { stacks: 2 });
+          B.applyStatus(u, t, 'armslow', P.dur);
+          if (crit || boost === 'damage' || isSuper) {
+            B.enemiesOf(u).filter(e => e !== t && B.distance(e, t) < 160).forEach(e => {
+              B.damage(u, e, u.st.atk * S.ratio * 0.75, { type: 'physical', area: true, tag: 'Hammer Cleave' });
+            });
+          }
         };
         B.after(.24, () => {
-          strike(boost === 'damage');
-          if (boost === 'speed') B.after(.16, () => strike(false));
-          if (boost === 'defense') B.shield(u, u, u.max.hp * .22, 8);
-          if (boost === 'support') { const a = B.lowestHp(B.alliesOf(u)); if (a) B.energy(a, 50); }
+          strike(boost === 'damage' || isSuper);
+          if (boost === 'speed' || isSuper) {
+            B.after(.14, () => strike(false));
+            B.after(.28, () => strike(false));
+          }
+          if (boost === 'defense' || isSuper) {
+            B.shield(u, u, u.max.hp * .25, 8);
+            B.applyStatus(u, t, 'taunt', 3);
+          }
+          if (boost === 'support' || isSuper) {
+            B.applyStatus(u, t, 'stun', 1.5);
+            B.alliesOf(u).forEach(a => B.energy(a, 40));
+          }
         });
       }
     },
     B: {
-      name: 'Small Miracle', type: 'Shield', cd: 10,
-      v: { shield: .23 }, p: { dur: 9, thr: .55 },
-      desc: (S, P) => `The weakest ally gains a Shield worth <em>${pcn(S.shield * 100)}</em> of Toodles' Max HP and up to three debuffs are stripped. Below ${pc(P.thr)} HP, that Shield is 20% stronger and they gain 2 stacks of 🏃 Speed Up plus 🛡 Ward.`,
+      name: 'Small Miracle', type: 'Shield / Support', cd: 10,
+      v: { shield: .26 }, p: { dur: 9, thr: .55 },
+      desc: (S, P) => `Toodles dashes to protect the lowest-HP ally with her beloved Dog Plush, granting a Starry 8-Ball Shield worth <em>${pcn(S.shield * 100)}</em> of her Max HP, stripping all debuffs and giving 3s CC Immunity. If the ally is below ${pc(P.thr)} HP, the shield is 30% stronger, grants 2 stacks of 🏃 Speed Up and 🛡 Ward, and gives that ally a personal Lucky Boost!`,
       ai: { prio: 56, cond: (u, B) => B.alliesOf(u).some(a => a.hpPct < .85) },
       cast: (u, B, S, P) => {
         const t = B.lowestHp(B.alliesOf(u)); if (!t) return;
-        B.anim(u, 'cast', .68, 'toodlesMiracle'); Sound.play('toodles_gamble', { vol: .34 }); Sound.play('cleanse', { vol: .35 });
-        B.shield(u, t, u.max.hp * S.shield * (t.hpPct < P.thr ? 1.2 : 1), P.dur);
-        B.cleanse(t, 3);
-        if (t.hpPct < P.thr) { B.applyStatus(u, t, 'speedup', P.dur, { stacks: 2 }); B.applyStatus(u, t, 'ward', P.dur); }
-        B.fxRing(t.x, t.y - 40, 104, '#ffe27a'); B.fxSparkle(t.x, t.y - 66, 8, '#fff5bd');
+        B.anim(u, 'cast', .68, 'toodlesMiracle');
+        Sound.play('toodles_gamble', { vol: .42 });
+        Sound.play('cleanse', { vol: .45 });
+        const mult = t.hpPct < P.thr ? 1.3 : 1;
+        B.shield(u, t, u.max.hp * S.shield * mult, P.dur);
+        B.cleanse(t, 5);
+        if (B.fxToodlesMiracle) B.fxToodlesMiracle(t);
+        else {
+          B.fxRing(t.x, t.y - 40, 104, '#ffe27a');
+          B.fxSparkle(t.x, t.y - 66, 8, '#fff5bd');
+        }
+        if (t.hpPct < P.thr) {
+          B.applyStatus(u, t, 'speedup', P.dur, { stacks: 2 });
+          B.applyStatus(u, t, 'ward', P.dur);
+          B.luckyBoost(t, 6);
+        }
       }
     },
     P: {
-      name: 'Always Improving', type: 'Max HP / Defense',
-      v: { per: .06 }, p: {},
-      desc: (S) => `Every Lucky Boost grants nearby allies one stack of its matching buff. Defense’s 🛡 Ward and Support’s 🔋 Overcharge remain with Toodles. Each different Boost she has rolled permanently adds <em>${pcn(S.per * 100)}</em> Max HP and Defense plus 2.5% Attack Speed for the battle.`,
+      name: 'Always Improving', type: 'Max HP / Defense / Scaling',
+      v: { per: .07 }, p: {},
+      desc: (S) => `As the youngest Toon, Toodles studies every trick and learns fast. Beginner's Luck shares its matching boost with nearby allies. Each unique 8-Ball fortune she has rolled permanently adds <em>${pcn(S.per * 100)}</em> Max HP, Defense, and Attack plus 3% Attack Speed and 2% Crit Chance (up to 7 stacks of Junior Detective insight).`,
       passive: (u, B, S) => {
-        u.boostShare = true; u.boostSeen = {};
+        u.boostShare = true;
+        u.boostSeen = {};
+        u._luckCounters = 0;
         B.on(u, 'luckyBoost', kind => {
+          u._luckCounters = Math.min(7, (u._luckCounters || 0) + 1);
           if (u.boostSeen[kind]) return;
           u.boostSeen[kind] = 1;
           const n = Object.keys(u.boostSeen).length;
-          u.flat.hpP = n * S.per; u.flat.defP2 = n * S.per; u.flat.aspdP2 = n * .025; u.dirty = true;
+          u.flat.hpP = n * S.per;
+          u.flat.defP2 = n * S.per;
+          u.flat.atkP = (u.flat.atkP || 0) + S.per;
+          u.flat.aspdP2 = n * .03;
+          u.flat.crit = (u.flat.crit || 0) + .02;
+          u.dirty = true;
         });
       }
     },
     R: {
-      name: 'Lucky Charm', type: 'Upgrade',
+      name: 'Lucky Charm', type: 'Upgrade / Miracle',
       v: {}, p: {},
-      desc: () => `Toodles can never roll the same Lucky Boost twice in a row.`,
-      passive: (u) => { u.noRepeatBoost = true; }
+      desc: () => `Toodles cannot receive the same 8-Ball fortune twice in a row, and every 3rd roll is guaranteed to trigger a Double Boost or an All Signs Yes fortune! Once per battle when falling below 30% HP: "Case Solved!" grants 2s Untargetable, heals 30% Max HP, and reveals all four 8-Ball fortunes simultaneously.`,
+      passive: (u, B) => {
+        u.noRepeatBoost = true;
+        u._miracleRollUsed = false;
+        B.on(u, 'damaged', () => {
+          if (u.hpPct < .30 && !u._miracleRollUsed && u.alive) {
+            u._miracleRollUsed = true;
+            B.applyStatus(u, u, 'untargetable', 2.0);
+            B.heal(u, u, u.max.hp * .30);
+            B.luckyBoost(u, 12, true);
+            Sound.play('get_rare', { vol: .85 });
+            B.fxFloatIcon(u.x, u.y - 110, 'CASE SOLVED! 🎱', '#ffd700');
+          }
+        });
+      }
     }
   }
 });

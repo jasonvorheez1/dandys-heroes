@@ -189,7 +189,7 @@ const Lab = {
   },
 
   makeSpec(id, level, twisted, maxSkills, loadout) {
-    const skillLv = maxSkills ? 450 : Math.max(1, Math.round(level * .9));
+    const skillLv = maxSkills ? SKILL_MAX_LEVEL : Math.max(1, Math.round(level * .9));
     let spec;
     if (twisted && typeof makeTwisted === 'function' && TWISTED_FILE[id]) {
       spec = makeTwisted(id, level, 'normal') || rivalSpec(id, level, { skillLv });

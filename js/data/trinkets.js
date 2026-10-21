@@ -11,28 +11,41 @@
 
 const TRINKET_ICON_DIR = ASSET + 'item/Trinkets/';
 
-const TRINKET_MAX_RANK = 5;
+const TRINKET_MAX_RANK = 20;
 const TRINKET_MERGE_COUNT = 2;   // Rank 1/2 baseline; higher ranks use trinketMergeCost()
-const TRINKET_MERGE_COSTS = [0, 2, 2, 3, 3, 0];
+const TRINKET_MERGE_COSTS = [0, 2, 2, 3, 3, ...Array(TRINKET_MAX_RANK - 5).fill(2), 0];
 const CRAFT_COPY_COST = 90;      // Scrap spent to craft one fresh rank-1 copy
-const TRINKET_SALVAGE = [0, 20, 35, 60, 105, 165]; // Scrap refunded per rank when breaking a copy down
+const TRINKET_SALVAGE = Array.from({ length: TRINKET_MAX_RANK + 1 }, (_, rank) =>
+  rank <= 5 ? [0, 20, 35, 60, 105, 165][rank]
+    : Math.round(165 + 65 * (rank - 5) + 5 * (rank - 5) ** 2));
 const TRINKET_RANK_POWER = [0, 1, 2, 3.2, 4.5, 6];
 const TRINKET_RANK_NAMES = ['', 'Worn', 'Tuned', 'Refined', 'Masterwork', 'Mythic'];
 
 function trinketRankPower(rank) {
   const r = clamp(Math.floor(Number(rank) || 1), 1, TRINKET_MAX_RANK);
-  return TRINKET_RANK_POWER[r] || r;
+  // Preserve existing ranks. Higher ranks keep improving without letting
+  // proc chances and percentage effects grow linearly all the way to 20.
+  return r <= 5 ? TRINKET_RANK_POWER[r]
+    : r <= 10 ? 6 + (r - 5) * .4
+      : 8 + (r - 10) * .25;
 }
 function trinketMergeCost(rank) {
   const r = clamp(Math.floor(Number(rank) || 1), 1, TRINKET_MAX_RANK);
-  return TRINKET_MERGE_COSTS[r] || TRINKET_MERGE_COUNT;
+  return TRINKET_MERGE_COSTS[r] ?? TRINKET_MERGE_COUNT;
+}
+function trinketResonance(rank) {
+  const r = clamp(Math.floor(Number(rank) || 1), 1, TRINKET_MAX_RANK);
+  return Math.min(r, 5) + Math.max(0, r - 5) * .35;
 }
 function trinketRankLabel(rank) {
   const r = clamp(Math.floor(Number(rank) || 1), 1, TRINKET_MAX_RANK);
-  return TRINKET_RANK_NAMES[r] || 'Rank ' + r;
+  return TRINKET_RANK_NAMES[r] || (r <= 10 ? 'Ascended' : r <= 15 ? 'Exalted' : 'Transcendent');
 }
 function trinketStatText(trinket, rank) {
   return trinket && trinket.stat ? trinket.stat(trinketRankPower(rank)) : '';
+}
+function trinketPowerScore(rank) {
+  return Math.round(42 + trinketRankPower(rank) * 48);
 }
 
 const TRINKETS = {};

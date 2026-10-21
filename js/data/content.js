@@ -35,7 +35,7 @@ const RES = {
   tape: { icon: '📼', name: 'Tape', desc: 'Skill material. Upgrades individual skills.' },
   notes: { icon: '✦', name: 'Skill Notes', desc: 'Practice notes used for Hero skill upgrades, preserving Ichor for other progress.' },
   star: { icon: '⭐', name: 'Star Dust', desc: 'Promotes Heroes to higher star ranks.' },
-  tape: { icon: '🎟', name: 'Scratch tape', desc: 'Use anytime on the always-open Prize Parade for big resources and Hero shards.' },
+  ticket: { icon: '🎟', name: 'Scratch Ticket', desc: 'Use anytime on the always-open Prize Parade for big resources and Hero shards.' },
   raidTicket: { icon: '⚡', name: 'Raid Ticket', desc: 'Runs a Trial or Event battle off screen at 10,000× speed. Rewards are paid only if your selected team wins the real battle sim.' },
   counterToken: { icon: '🔄', name: 'Counter Token', desc: "A stamped token Dandy accepts to refresh today's shop stock." },
   elevatorTicket: { icon: '🎫', name: 'Elevator Ticket', desc: 'An express pass that skips five Ichor Depths floors without spending Black Ichor. Skipped rooms give no rewards.' },
@@ -689,6 +689,7 @@ function passTrack(week, mastery) {
 /* ---------------- upgrade costs ---------------- */
 const STAR_COST = [0, 30, 80, 180, 400];          // base shards to reach star n+1; Progress applies Mastery scaling
 const STAR_ICHOR = [0, 1200, 3200, 7600, 15000];
+const STAR_DUST_COST = [0, 30, 80, 180, 400];     // promotion also uses the Star Dust earned throughout the game
 /* Granular rarity costs, indexed by the next full rarity rank (1..75):
    White 1-3, Green 1-5, Blue 1-5, Purple 1-12, Red 1-20, Rainbow 1-30.
    Cores stay predictable and land at about 240 for a complete Hero. Ichor
@@ -713,24 +714,43 @@ const RARITY_CORE = RARITY_CORE_STEPS;
 const RARITY_ICHOR = RARITY_ICHOR_STEPS;
 
 function levelCost(lv) { return Math.round(4.2 * Math.pow(lv, 1.42)); }
-/* EXP should remain a meaningful bottle resource without becoming the hidden
-   half-million-cost wall behind a level-60 Hero. */
-function levelExp(lv) { return Math.round(60 * Math.pow(lv, 1.30)); }
+/* Keep the familiar early curve, then soften its exponent at high Mastery.
+   Levels near 800 still take real EXP, without one Hero needing well over a
+   hundred million bottles to catch up to the account cap. */
+function levelExp(lv) {
+  const rank = Math.max(0, Number(lv) || 0);
+  const early = Math.min(rank, 100);
+  return Math.round(60 * Math.pow(early, 1.30) * Math.max(1, rank / 100));
+}
+const SKILL_MAX_LEVEL = 800;
 function skillCost(lv) {
+  // Keep early training familiar; later ranks grow more slowly so extending
+  // the ceiling to Mastery 800 does not make each of five skills unaffordable.
+  const effective = Math.min(lv, 100) + Math.max(0, lv - 100) * .32;
   return {
-    tape: Math.ceil(1 + lv * 0.42),
-    notes: Math.ceil(2 + lv * 0.24),
+    tape: Math.ceil(1 + effective * 0.42),
+    notes: Math.ceil(2 + effective * 0.24),
     // Skills still take a little Black Ichor, but it is no longer their main
     // Ichor sink; levels, promotions, rarities, and crates keep that role.
     // Ichor remains a small part of skill cost; Tape and Notes are the
     // dedicated skill materials. This keeps a level-60 build from competing
     // with every other Ichor sink at once.
-    ichor: Math.round(2.5 * Math.pow(lv, 1.08))
+    ichor: Math.round(2.5 * Math.pow(effective, 1.08))
   };
 }
 
-/* Skill scaling. Level 450 lands a coefficient near 6x its level-1 value. */
-function skillMult(lv) { return 1 + 0.0112 * (lv - 1); }
+/* Preserve existing skill strength through 450. Mastery beyond the old cap
+   should be a substantial upgrade: level 800 reaches about 10.58x versus
+   6.03x at level 450. */
+function skillMult(lv) {
+  const rank = clamp(Number(lv) || 1, 1, SKILL_MAX_LEVEL) - 1;
+  return 1 + .0112 * Math.min(rank, 449) + .013 * Math.max(0, rank - 449);
+}
+
+function enemySkillLevel(level, kind) {
+  const rate = { weakling: .80, normal: .90, elite: 1, boss: 1.08, rival: .95 }[kind] || .90;
+  return clamp(Math.round(Math.max(1, Number(level) || 1) * rate), 1, SKILL_MAX_LEVEL);
+}
 
 /* Attack and Magic Attack should matter to a skill beyond the damage formula
    written inside its cast. This is deliberately a small nudge: high stats
@@ -776,7 +796,7 @@ function skillStatPowerMultiplier(skill, stats, key) {
    skill was a shield, heal, passive, or control tool.
 
    Utility grows deliberately slower than damage. This keeps a levelled skill
-   feeling broader and more reliable without turning a 450-level stun into an
+   feeling broader and more reliable without turning a level-800 stun into an
    encounter lock. Thresholds, costs, cooldown bookkeeping, and authored
    requirements stay fixed; they are gates, not rewards.
 */
@@ -806,16 +826,19 @@ const SKILL_POWER_KEYS = new Set([
   'base', 'perStack', 'perCdr', 'healRecv', 'critical', 'acc', 'impact',
   'dot', 'burst', 'lineShield', 'rowDamage', 'frontDamage', 'backDamage'
 ]);
-const SKILL_INTERVAL_KEYS = new Set(['every', 'delay', 'icd', 'cd', 'cooldown', 'prep', 'splashEvery', 'basicEvery', 'assistEvery', 'swipeEvery']);
+const SKILL_INTERVAL_KEYS = new Set(['every', 'beat', 'delay', 'icd', 'cd', 'cooldown', 'prep', 'splashEvery', 'basicEvery', 'assistEvery', 'swipeEvery']);
 
 function skillUtilityMult(lv) {
-  return 1 + Math.min(.45, .004 * (Math.max(1, lv || 1) - 1));
+  const rank = clamp(Number(lv) || 1, 1, SKILL_MAX_LEVEL) - 1;
+  return 1 + Math.min(.45, .004 * rank) + .00065 * Math.max(0, rank - 449);
 }
 function skillCountMult(lv) {
-  return 1 + Math.min(.27, .0006 * (Math.max(1, lv || 1) - 1));
+  const rank = clamp(Number(lv) || 1, 1, SKILL_MAX_LEVEL) - 1;
+  return 1 + Math.min(.27, .0006 * rank) + .00042 * Math.max(0, rank - 449);
 }
 function skillCooldownMult(lv) {
-  return Math.max(.72, 1 - .0007 * (Math.max(1, lv || 1) - 1));
+  const rank = clamp(Number(lv) || 1, 1, SKILL_MAX_LEVEL) - 1;
+  return Math.max(.66, Math.max(.72, 1 - .0007 * rank) - .00018 * Math.max(0, rank - 449));
 }
 function skillCooldown(skill, lv) {
   return (skill.cd || 10) * .82 * skillCooldownMult(lv);
@@ -1016,7 +1039,7 @@ const SkillDesc = {
   },
 
   rankPreview(skill, lv, st) {
-    if (!skill || lv >= 450) return '';
+    if (!skill || lv >= SKILL_MAX_LEVEL) return '';
     const next = lv + 1;
     const { S: curS, P: curP } = this.safeParams(skill, lv);
     const { S: nxtS, P: nxtP } = this.safeParams(skill, next);

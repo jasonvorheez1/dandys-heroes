@@ -18,4 +18,21 @@
 .machine-battle-track{position:relative;width:100%;height:27px;display:block;overflow:hidden;border:2px solid #080b0b;border-radius:4px;background:#808887;box-shadow:inset 0 2px 4px #0008;cursor:crosshair}.machine-battle-track i{position:absolute;top:4px;height:15px;border-radius:2px}.machine-battle-silver{background:linear-gradient(#f5f8f3,#b8c2bb);box-shadow:inset 0 1px #fff,0 0 4px #e9f5ee}.machine-battle-gold{top:6px!important;height:11px!important;background:linear-gradient(#fff1a5,#dfa62b);box-shadow:inset 0 1px #fff8,0 0 7px #ffdf5b}.machine-battle-cursor{top:0!important;width:3px;background:#fff;border-radius:0!important;box-shadow:0 0 6px #fff,0 0 3px #050707;transform:translateX(-1px)}
 .machine-battle-check>small{display:block;margin-top:5px;color:#c9d5cc;font-size:6px}.machine-battle-tap{float:right;margin-top:-16px;padding:4px 7px;border:1px solid #0b0d0d;border-radius:4px;background:#f0cf62;color:#211f13;box-shadow:0 2px #080b0b;font-size:7px;font-weight:1000}.machine-battle-tap:active{transform:translateY(2px);box-shadow:0 0 #080b0b}
 .machine-battle-foot{display:flex;justify-content:center;gap:10px;margin-top:7px;color:#c9d5cc;font-size:6px;letter-spacing:.5px}.machine-battle-foot span:first-child{color:#9eeaa8}.machine-battle-foot span:last-child{color:#f6d36c}
-@media(max-width:430px){.machine-battle-prop{width:86px;height:124px}.machine-battle-prop img{width:65px;height:104px}.machine-battle-prop b{font-size:6px}.machine-battle-ui{top:52px}.machine-battle-head{font-size:6px}.machine-battle-head b{font-size:8px}.machine-battle-tank{width:72%}.machine-battle-check{padding:6px}.machine-battle-check>div b{font-size:10px}}
+
+/* Treadmill Generator Battle Visuals */
+.machine-battle-prop.treadmill-prop{width:126px;height:156px}
+.machine-battle-prop.treadmill-prop:before{border-color:#ff9f4388;box-shadow:0 0 24px #ff9f4344}
+.machine-battle-prop.treadmill-prop img{width:112px;height:138px}
+.machine-battle-prop.treadmill-prop b{background:#2b1a0de6;color:#ffb703;border-color:#3a2512}
+.treadmill-beacon{position:absolute;top:10px;right:42px;width:15px;height:14px;clip-path:polygon(50% 0%, 0% 100%, 100% 100%);background:linear-gradient(180deg,#ff6b6b,#ee0000);box-shadow:0 0 10px #ff2222,0 0 22px #ff0000aa;animation:treadmillHazardBlink .8s ease-in-out infinite alternate;z-index:4}
+@keyframes treadmillHazardBlink{0%{opacity:.45;filter:brightness(1)}100%{opacity:1;filter:brightness(1.6) drop-shadow(0 0 6px #ff2222)}}
+.treadmill-ui .machine-battle-head{color:#ffb703}
+.treadmill-ui .machine-battle-head b{color:#ffe49e}
+.machine-battle-tank.treadmill-tank{border-color:#2a2014;background:#201b15db}
+.machine-battle-tank.treadmill-tank em{background:linear-gradient(90deg,#e85d04,#f48c06,#ffba08,#55f0a5);box-shadow:inset 0 1px #fff9,0 0 12px #ffba0888}
+.machine-battle-alert.treadmill-alert{border-color:#fb8500;background:#28180dd9;color:#ffdd99}
+.machine-battle-check.treadmill-check{border-color:#fb8500;background:linear-gradient(180deg,#3a362cf2,#1c1b17f2)}
+.machine-battle-check.treadmill-check>div b{color:#ffb703}
+.machine-battle-tap.treadmill-tap{background:linear-gradient(180deg,#ffb703,#fb8500);color:#1b1202}
+
+@media(max-width:430px){.machine-battle-prop{width:86px;height:124px}.machine-battle-prop img{width:65px;height:104px}.machine-battle-prop b{font-size:6px}.machine-battle-prop.treadmill-prop{width:100px;height:128px}.machine-battle-prop.treadmill-prop img{width:90px;height:114px}.treadmill-beacon{top:8px;right:34px;width:12px;height:11px}.machine-battle-ui{top:52px}.machine-battle-head{font-size:6px}.machine-battle-head b{font-size:8px}.machine-battle-tank{width:72%}.machine-battle-check{padding:6px}.machine-battle-check>div b{font-size:10px}}

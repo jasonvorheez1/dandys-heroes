@@ -7,6 +7,14 @@
    A generic greeting here reads like placeholder copy, so every current
    campaign is covered explicitly. */
 const FRIENDSHIP_GREETING_LINES = {
+  toodles_shelly: [
+    { who: 'Narrator', text: 'Shelly studies a fossil by the elevator. Toodles reaches for it.' },
+    { who: 'Shelly', text: 'Wait, I have not finished recording the tracks.' },
+    { who: 'Toodles', text: 'It is a rock, Shelly. How many notes does it need?' },
+    { who: 'Vee', text: 'More than your last lucky guess did.' },
+    { who: 'Toodles', text: 'Nobody asked for the replay, Vee.' },
+    { who: 'Shelly', text: 'Then let me finish this one.' }
+  ],
   shelly_ribecca: [
     { who: 'Narrator', text: 'Ribecca quietly measures a strip of fabric beside Shelly.' },
     { who: 'CheerbearShelly', text: 'Is that for me?' },
@@ -190,6 +198,63 @@ const FRIENDSHIP_GREETING_LINES = {
     { who: 'WishBearGigi', text: 'Wait... did you wish on my tummy star without telling me?!' },
     { who: 'Gourdy', text: 'Maybe a little bit! But don’t worry, Cocoa and Shelly are here to help!' },
     { who: 'WishBearGigi', text: 'Oh goodness. What did you wish for, Gourdy...?' }
+  ],
+  mrsholloway_gourdy: [
+    { who: 'Narrator', text: 'Gourdy spots a familiar purple bandana floating gently above the overgrown brambles.' },
+    { who: 'Gourdy', text: 'Mama?! MAMA! Is that really you?!' },
+    { who: 'MrsHolloway', text: 'My sweet little pumpkin... you’ve grown so strong and brave.' },
+    { who: 'Gourdy', text: 'I never stopped looking for you! Even when the lights went out!' },
+    { who: 'MrsHolloway', text: 'I felt your warmth through the roots, my darling. Come, let us walk together.' },
+    { who: 'Narrator', text: 'Gourdy clutches his mother’s paw, spiraling violet runes glowing warmly around them.' }
+  ],
+  mrholloway_gourdy: [
+    { who: 'Narrator', text: 'A heavy thud shakes the soil as Mr. Holloway rests a massive claw on a wooden trellis.' },
+    { who: 'MrHolloway', text: 'Standing tall, son? Check your footing before the wind picks up.' },
+    { who: 'Gourdy', text: 'Papa! Mama said we have to stick together!' },
+    { who: 'MrHolloway', text: 'Your mother’s always right. Now chin up, shoulders back. A Holloway never cowers.' },
+    { who: 'Gourdy', text: 'I’m ready, Papa! Nothing in Gardenview can push past us!' },
+    { who: 'MrHolloway', text: '*chuckles deeply* That’s what I like to hear. Let’s tend this garden.' }
+  ],
+  mrsholloway_eclipse: [
+    { who: 'Narrator', text: 'Eclipse slips silently through the shadow of the moonflower arch. Mrs. Holloway turns with a gentle smile.' },
+    { who: 'Eclipse', text: 'You heard me coming. Most Toons don’t notice the dark until it’s already here.' },
+    { who: 'MrsHolloway', text: 'The dark is only quiet, little one. It has nothing to fear from a caring mother.' },
+    { who: 'Eclipse', text: 'People here... they fear shadows. They think everything in the dark is twisted.' },
+    { who: 'MrsHolloway', text: 'Spirals exist in both shadow and starlight. Walk beside me, Eclipse. We will keep each other safe.' },
+    { who: 'Eclipse', text: '...Thank you, Mrs. Holloway.' }
+  ],
+  mrholloway_connie: [
+    { who: 'Narrator', text: 'Connie hovers upside down right in front of Mr. Holloway’s nose.' },
+    { who: 'Connie', text: 'BOO! Did I scare ya?! Did ya jump?!' },
+    { who: 'MrHolloway', text: '*blinks once slowly* You’re hovering a little crooked there, Connie.' },
+    { who: 'Connie', text: 'Aw come on! Not even a flinch? I’m supposed to be terrifying!' },
+    { who: 'MrHolloway', text: 'Takes more than a friendly spirit to scare an old harvest hand. But I like your energy, kid.' },
+    { who: 'Connie', text: 'Alright then, Mr. H! If I can’t spook ya, let’s go spook some Twisteds together!' }
+  ],
+  delilah_bassie: [
+    { who: 'Narrator', text: 'Bassie skips up to Delilah’s workbench, setting down a brightly woven Easter basket.' },
+    { who: 'Bassie', text: 'Good morning, Miss Delilah! I brought fresh medical gauze and spring treats!' },
+    { who: 'Delilah', text: '*adjusts her blue rubber gloves coldly* Unsanitary wicker. Keep it off the clean surfaces.' },
+    { who: 'Bassie', text: 'I wiped it down with laboratory alcohol three times! Even the ribbons are sterile!' },
+    { who: 'Delilah', text: '*pauses, raising an eyebrow behind dark bangs* ...Three times? Perhaps you are more observant than the other specimens.' },
+    { who: 'Bassie', text: 'Hehe! A good helper is always prepared!' }
+  ],
+  delilah_dandy: [
+    { who: 'Narrator', text: 'Dandy leans against the doorframe of Delilah’s observation chamber, grinning broadly.' },
+    { who: 'Dandy', text: 'Well well! If it isn’t our brilliant chief architect. Hard at work as always?' },
+    { who: 'Delilah', text: 'I am calibrating Ichor densities, Dandy. Go back to your shop before you contaminate the batch.' },
+    { who: 'Dandy', text: 'Aw, so cold! You know, without my charming face on the posters, your little formulas would still be in the basement.' },
+    { who: 'Delilah', text: 'And without my formulas, you would be paint on cardboard. Do not forget who brought you to life, flower.' },
+    { who: 'Dandy', text: '*chuckles smoothly* That’s why we make such a wonderful team, Delilah.' }
+  ],
+  connie_waxwell: [
+    { who: 'Narrator', text: 'Waxwell stands atop a crate in the dark, posing theatrically with a violet flame.' },
+    { who: 'Waxwell', text: 'Hear me, denizens of the gloom! The hour of reckoning approaches! Tremble before the—' },
+    { who: 'Narrator', text: 'Connie floats in upside down behind him and casually puffs out his flame.' },
+    { who: 'Waxwell', text: '—*pfft*—HEY! MY AMBIANCE! DO YOU MIND?!' },
+    { who: 'Connie', text: 'Pfffft! Hahahahaha! You should see your face, candle-boy! It’s pitch black!' },
+    { who: 'Waxwell', text: '*furiously relighting his wick* Insolent spirit! You dare extinguish the dark wick of doom?!' },
+    { who: 'Connie', text: 'I do! And I’ll do it again if your villain monologue runs longer than ten seconds! Come on, let’s go spook some Twisteds!' }
   ]
 };
 
@@ -217,7 +282,7 @@ Object.assign(Screens, {
     const head = el('header', 'friendship-hub-head');
     head.innerHTML = `<div class="friendship-head-motifs" aria-hidden="true"><i>✦</i><i>★</i><i>✦</i></div>
       <div class="friendship-head-copy"><small>TEAM STORIES</small><h1>Friendship Campaigns</h1>
-      <p>Own both featured Toons to open their story. Extra cast members can be missing, but each one leaves the party a slot short.</p></div>
+      <p>Own both featured Toons to open their story. Chapter guests join the battle if recruited; missing battle guests leave a slot open.</p></div>
       <div class="friendship-head-stats">
         <div><b>${complete}<span>/${campaigns.length}</span></b><small>BADGES</small></div>
         <div><b>${available}</b><small>READY</small></div>
@@ -297,14 +362,15 @@ Object.assign(Screens, {
     const decorated = campaigns.map((c, index) => ({ c, index, s: state(c) }));
     const name = c => String(c.title || c.id).toLocaleLowerCase();
     const level = c => Number(c.recLevel) || 0;
+    const canon = c => Number(c.canonicalOrder) || 999;
     const readyRank = s => !s.unlocked ? 3 : s.finished ? 2 : s.introSeen ? 0 : 1;
     decorated.sort((a, b) => {
       let result = 0;
       if (sort === 'progress') result = b.s.pct - a.s.pct || b.s.done - a.s.done;
       else if (sort === 'ready') result = readyRank(a.s) - readyRank(b.s) || b.s.pct - a.s.pct;
       else if (sort === 'name') result = name(a.c).localeCompare(name(b.c));
-      else result = level(a.c) - level(b.c);
-      return result || level(a.c) - level(b.c) || name(a.c).localeCompare(name(b.c)) || a.index - b.index;
+      else result = canon(a.c) - canon(b.c) || level(a.c) - level(b.c);
+      return result || canon(a.c) - canon(b.c) || level(a.c) - level(b.c) || name(a.c).localeCompare(name(b.c)) || a.index - b.index;
     });
     return decorated.map(item => item.c);
   },
@@ -317,7 +383,7 @@ Object.assign(Screens, {
     const finished = done >= total;
     const badge = BADGES[c.badge] || { color: '#ffb0dc', name: c.badge || 'Badge', stat: () => '', effect: '' };
     const badgeOwned = Save.ownsBadge(c.badge);
-    const storyIds = Campaign.requiredIds(c);
+    const storyIds = Campaign.requiredIds(c, Math.min(done, total - 1));
     const missing = storyIds.filter(id => !Save.owns(id));
     const maps = ['shelly-floor', 'rainbow-rooms', 'warehouse', 'library-floor'];
     const card = el('article', `friendship-card${unlocked && !introSeen ? ' duo-ready' : ''}${finished ? ' complete' : ''}`);
@@ -327,7 +393,8 @@ Object.assign(Screens, {
     const scene = el('div', 'friendship-scene');
     scene.style.backgroundImage = `linear-gradient(180deg,#10121b1f,#11151ce8),url("${bgForMap(maps[index % maps.length])}")`;
     const primaryMissing = !Save.owns(c.a) || !Save.owns(c.b);
-    const status = primaryMissing ? 'DUO LOCKED' : missing.length ? 'PARTY SHORT' : !introSeen ? 'DUO READY' : finished ? 'COMPLETE' : done ? `CHAPTER ${done + 1}` : 'NEW STORY';
+    const hasPrereq = c.prereq && !Save.campaignDone(c.prereq);
+    const status = primaryMissing ? 'DUO LOCKED' : hasPrereq ? 'PREREQUISITE' : finished ? 'COMPLETE' : missing.length ? 'PARTY SHORT' : !introSeen ? 'DUO READY' : done ? `CHAPTER ${done + 1}` : 'NEW STORY';
     scene.innerHTML = `<div class="friendship-scene-glow"></div>
       <div class="friendship-status">${status}</div>
       <button class="friendship-toon toon-a${Save.owns(c.a) ? '' : ' missing'}" aria-label="View ${HEROES[c.a].name}">
@@ -343,6 +410,8 @@ Object.assign(Screens, {
     $('.toon-b', scene).onclick = () => { Sound.play('ui_move'); openHero(c.b); };
     scene.onclick = e => {
       if (e.target.closest('.friendship-toon')) return;
+      if (primaryMissing) { UI.toast(`Own ${HEROES[c.a].name} and ${HEROES[c.b].name} to open this story`); Sound.play('ui_err'); return; }
+      if (hasPrereq) { UI.toast(c.prereqMsg || 'Clear prerequisite story first'); Sound.play('ui_err'); return; }
       if (!unlocked) { UI.toast(`Own ${HEROES[c.a].name} and ${HEROES[c.b].name} to open this story`); Sound.play('ui_err'); return; }
       Sound.play('ui_ok');
       if (!introSeen) this.friendshipIntro(c);
@@ -354,10 +423,10 @@ Object.assign(Screens, {
     const body = el('div', 'friendship-card-body');
     const proof = el('div', 'friendship-duo-proof');
     const partner = id => Save.owns(id) ? `<span>✓ ${HEROES[id].name}</span>` : `<span class="guest">○ ${HEROES[id].name}</span>`;
-    proof.innerHTML = `${partner(c.a)}${partner(c.b)}<b>${primaryMissing ? 'OWN BOTH TO UNLOCK' : missing.length ? 'STORY CAST · PARTY SHORT' : introSeen ? 'INTRO COMPLETE' : 'DUO READY'}</b>`;
+    proof.innerHTML = `${partner(c.a)}${partner(c.b)}<b>${primaryMissing ? 'OWN BOTH TO UNLOCK' : hasPrereq ? (c.prereqMsg ? c.prereqMsg.toUpperCase() : 'CLEAR PREREQUISITE STORY FIRST') : finished ? 'STORY COMPLETE' : missing.length ? 'STORY CAST · PARTY SHORT' : introSeen ? 'INTRO COMPLETE' : 'DUO READY'}</b>`;
     body.appendChild(proof);
     const progress = el('div', 'friendship-progress');
-    progress.innerHTML = `<div><b>${primaryMissing ? 'Own both featured Toons to unlock' : finished ? 'Story complete' : !introSeen ? 'Story introduction ready' : `${done} of ${total} chapters`}</b>
+    progress.innerHTML = `<div><b>${primaryMissing ? 'Own both featured Toons to unlock' : hasPrereq ? (c.prereqMsg || 'Clear prerequisite story first') : finished ? 'Story complete' : !introSeen ? 'Story introduction ready' : `${done} of ${total} chapters`}</b>
       <span>Recommended level ${c.recLevel} · ${friendshipObtainLabel(c.a, c.b)}</span></div><strong>${Math.round(done / total * 100)}%</strong>`;
     const meter = el('div', 'friendship-meter');
     for (let i = 0; i < total; i++) meter.appendChild(el('i', i < done ? 'filled' : i === done && unlocked && introSeen ? 'next' : ''));
@@ -370,11 +439,14 @@ Object.assign(Screens, {
       const next = i === done && !finished;
       const accessible = introSeen && (cleared || next || finished);
       const node = el('button', `friendship-stage${cleared ? ' cleared' : ''}${next ? ' current' : ''}${accessible ? '' : ' unavailable'}`);
-      node.setAttribute('aria-label', `${!unlocked ? 'Locked until both featured Toons are owned' : !introSeen ? 'Locked until introduction' : finished ? 'Read' : cleared ? 'Replay' : next ? 'Play' : 'Locked'} chapter ${i + 1}: ${stage.name}`);
+      node.setAttribute('aria-label', `${primaryMissing ? 'Locked until both featured Toons are owned' : hasPrereq ? 'Locked until prerequisite cleared' : !introSeen ? 'Locked until introduction' : finished ? 'Read' : cleared ? 'Replay' : next ? 'Play' : 'Locked'} chapter ${i + 1}: ${stage.name}`);
       node.innerHTML = `<i>${cleared ? '✓' : i + 1}</i><span><small>CHAPTER ${i + 1}</small><b>${stage.name}</b></span>${next ? '<em>PLAY</em>' : ''}`;
       node.onclick = () => {
-        if (!unlocked) {
+        if (primaryMissing) {
           UI.toast(`Own ${HEROES[c.a].name} and ${HEROES[c.b].name} first`); Sound.play('ui_err'); return;
+        }
+        if (hasPrereq) {
+          UI.toast(c.prereqMsg || 'Clear prerequisite story first'); Sound.play('ui_err'); return;
         }
         if (!introSeen) {
           UI.toast(`Meet ${HEROES[c.a].name} and ${HEROES[c.b].name} first`); Sound.play('ui_err'); return;
@@ -389,14 +461,18 @@ Object.assign(Screens, {
       trail.appendChild(node);
     });
     const playAt = finished ? total - 1 : done;
-    const play = el('button', 'friendship-play', !unlocked
+    const play = el('button', 'friendship-play', primaryMissing
       ? `🔒 Own ${HEROES[c.a].name} + ${HEROES[c.b].name}`
+      : hasPrereq
+      ? `🔒 ${c.prereqMsg || 'Clear prerequisite story first'}`
       : !introSeen
       ? `▶ Meet ${HEROES[c.a].name} & ${HEROES[c.b].name}`
       : finished
       ? `📖 Read Story`
       : `▶ Play Chapter ${playAt + 1} · ${c.stages[playAt].name}`);
     play.onclick = () => {
+      if (primaryMissing) { UI.toast(`Own ${HEROES[c.a].name} and ${HEROES[c.b].name} first`); Sound.play('ui_err'); return; }
+      if (hasPrereq) { UI.toast(c.prereqMsg || 'Clear prerequisite story first'); Sound.play('ui_err'); return; }
       if (!unlocked) { UI.toast(`Own ${HEROES[c.a].name} and ${HEROES[c.b].name} first`); Sound.play('ui_err'); return; }
       Sound.play('ui_ok');
       if (!introSeen) this.friendshipIntro(c);
@@ -510,8 +586,7 @@ Object.assign(Screens, {
     if (!Campaign.unlocked(c)) { UI.toast(`Own ${HEROES[c.a].name} and ${HEROES[c.b].name} first`); Sound.play('ui_err'); return; }
     const stage = c.stages[stageIdx];
     const replay = stageIdx < Save.campaignStage(c.id);
-    const setupCast = stage.cast || [c.a, c.b];
-    const storyIds = Campaign.requiredIds(c);
+    const storyIds = Campaign.requiredIds(c, stageIdx);
     const ownedStory = storyIds.filter(id => Save.owns(id));
     const partySize = Math.max(1, 5 - storyIds.filter(id => !Save.owns(id)).length);
     const seed = ownedStory.concat(Save.data.team.filter(id => id && !storyIds.includes(id))).slice(0, partySize);
@@ -520,8 +595,8 @@ Object.assign(Screens, {
     body.style.setProperty('--pair-color', BADGES[c.badge]?.color || '#ffb0dc');
     const scroll = el('div', 'team-editor-scroll');
     scroll.innerHTML = `<div class="friendship-setup-scene">
-      <img src="${Art.hero(setupCast[0])}" alt="${HEROES[setupCast[0]].name}" loading="lazy" decoding="async"><div><small>${replay ? 'REPLAY' : `CHAPTER ${stageIdx + 1} OF ${c.stages.length}`}</small>
-      <b>${stage.name}</b><span>${HEROES[setupCast[0]].name} + ${HEROES[setupCast[1]].name}</span></div><img src="${Art.hero(setupCast[1])}" alt="${HEROES[setupCast[1]].name}" loading="lazy" decoding="async"></div>
+      <img src="${Art.hero(c.a)}" alt="${HEROES[c.a].name}" loading="lazy" decoding="async"><div><small>${replay ? 'REPLAY' : `CHAPTER ${stageIdx + 1} OF ${c.stages.length}`}</small>
+      <b>${stage.name}</b><span>${HEROES[c.a].name} + ${HEROES[c.b].name}</span></div><img src="${Art.hero(c.b)}" alt="${HEROES[c.b].name}" loading="lazy" decoding="async"></div>
       <div class="friendship-setup-info"><span>★ Recommended Lv ${c.recLevel}</span><span>${friendshipObtainLabel(c.a, c.b)}</span><span>${RES.ichor.icon} ${300 + c.recLevel * 8}</span><span>${RES.exp.icon} ${250 + c.recLevel * 6}</span></div>
       <div class="friendship-required"><b>Story cast · ${partySize}/5 battle slots</b>${storyIds.map(id => `<span class="${Save.owns(id) ? 'owned' : 'guest'}">${Save.owns(id) ? '✓' : '○'} ${HEROES[id].name}</span>`).join('')}</div>`;
     scroll.appendChild(p.node);

@@ -273,7 +273,7 @@ const HERO_ASPECT_FIX = {
   Astro: .921, Bassie: 1.203, Blot: .934, Bobette: .872, Boxten: 1.241,
   Coal: 1.594, Cocoa: 1.541, Connie: 1.149, Dyle: 1.119, Eclipse: .773,
   Eggson: .922, Flyte: 1.128, Ginger: .68, Goob: 1.256, Looey: .895, Rodger: .822,
-  Pebble: 1.68, Scraps: .848, Shelly: 1.119, Shrimpo: 1.071, Squirm: 1.371, Toodles: 1.126
+  Pebble: 1.68, QOMGourdy: 1.79, Scraps: .848, Shelly: 1.119, Shrimpo: 1.071, Squirm: 1.371, Toodles: 1.126
 };
 /* The battle-only renders have their own crops and action silhouettes,
    so their width correction must be based on those files rather than on the
@@ -335,6 +335,7 @@ class Unit {
     this.mult = Object.assign({ hp: 1, atk: 1, mag: null, def: 1, mdef: null }, spec.mult || {});
     this.isBoss = spec.kind === 'boss';
     this.isElite = !!spec.elite && !this.isBoss; // the data already flagged this, nothing showed it
+    this.immovable = !!(spec.immovable || def.immovable);
     this.boss = spec.boss || null;
     this.lethalBoss = !!spec.lethalBoss;
     this.minion = false;
@@ -1026,20 +1027,54 @@ class Battle {
     if (!data || this._machineState) return;
     const selected = this.units.find(u => u.team === TEAM_P && u.id === data.toonId) || this.units.find(u => u.team === TEAM_P);
     if (!selected) return;
+    const isTreadmill = data.machineType === 'treadmill';
+    const speedStars = data.speedStars || data.primaryStars || 1;
+    const skillStars = data.skillStars || data.secondaryStars || 1;
+    const extractionStars = data.extractionStars || data.primaryStars || 1;
+
     const state = this._machineState = {
       selected, data, progress: 0, great: 0, check: null, raf: 0,
-      tick: 0, checkTimer: 0, haltUntil: 0, settled: false
+      tick: 0, checkTimer: 0, haltUntil: 0, settled: false, isTreadmill
     };
     const host = $('#battle');
-    const prop = el('div', 'machine-battle-prop');
-    prop.innerHTML = '<img src="uploads/image-36.png" alt="Ichor Machine"><b>ICHOR MACHINE</b>';
+    const prop = el('div', 'machine-battle-prop' + (isTreadmill ? ' treadmill-prop' : ''));
+    if (isTreadmill) {
+      prop.innerHTML = '<span class="treadmill-beacon" aria-hidden="true"></span><img src="uploads/treadmill-machine.png" alt="Treadmill Generator"><b>TREADMILL GENERATOR</b>';
+    } else {
+      prop.innerHTML = '<img src="uploads/image-36.png" alt="Ichor Machine"><b>ICHOR MACHINE</b>';
+    }
     host.appendChild(prop);
-    const ui = el('div', 'machine-battle-ui');
-    ui.innerHTML = `<div class="machine-battle-head"><span>FLOOR EVENT // EXTRACTION ONLINE</span><b>${selected.name.toUpperCase()} AT THE MACHINE</b></div>
-      <div class="machine-battle-tank"><div><span>ICHOR TANK</span><b><strong>0</strong>%</b></div><i><em></em></i></div>
-      <div class="machine-battle-alert" aria-live="polite">A MISS WILL ALERT NEARBY TWISTEDS</div>
-      <div class="machine-battle-check" hidden><div><b>SKILL CHECK</b><span>HIT THE GOLDEN CORE FOR A GREAT JOB</span></div><button class="machine-battle-track" type="button" aria-label="Hit the moving skill check cursor"><i class="machine-battle-silver"></i><i class="machine-battle-gold"></i><i class="machine-battle-cursor"></i></button><small>Silver = Good · Gold = Great</small><button class="machine-battle-tap" type="button">HIT CHECK</button></div>
-      <div class="machine-battle-foot"><span>🏃 ${'★'.repeat(data.extractionStars || 1)} EXTRACTION</span><span>✦ ${'★'.repeat(data.skillStars || 1)} SKILL CHECK</span></div>`;
+
+    const ui = el('div', 'machine-battle-ui' + (isTreadmill ? ' treadmill-ui' : ''));
+    ui.innerHTML = `<div class="machine-battle-head">
+        <span>${isTreadmill ? 'FLOOR EVENT // TREADMILL GENERATOR ONLINE' : 'FLOOR EVENT // EXTRACTION ONLINE'}</span>
+        <b>${selected.name.toUpperCase()} ${isTreadmill ? 'SPRINTING ON BELT' : 'AT THE MACHINE'}</b>
+      </div>
+      <div class="machine-battle-tank ${isTreadmill ? 'treadmill-tank' : ''}">
+        <div><span>${isTreadmill ? 'GENERATOR CHARGE' : 'ICHOR TANK'}</span><b><strong>0</strong>%</b></div>
+        <i><em></em></i>
+      </div>
+      <div class="machine-battle-alert ${isTreadmill ? 'treadmill-alert' : ''}" aria-live="polite">
+        ${isTreadmill ? 'A STRIDE FAULT WILL ALERT NEARBY TWISTEDS' : 'A MISS WILL ALERT NEARBY TWISTEDS'}
+      </div>
+      <div class="machine-battle-check ${isTreadmill ? 'treadmill-check' : ''}" hidden>
+        <div>
+          <b>${isTreadmill ? 'CADENCE CHECK' : 'SKILL CHECK'}</b>
+          <span>${isTreadmill ? 'HIT THE GOLDEN STRIDE ZONE' : 'HIT THE GOLDEN CORE FOR A GREAT JOB'}</span>
+        </div>
+        <button class="machine-battle-track" type="button" aria-label="Hit the moving check cursor">
+          <i class="machine-battle-silver"></i>
+          <i class="machine-battle-gold"></i>
+          <i class="machine-battle-cursor"></i>
+        </button>
+        <small>${isTreadmill ? 'Silver = Steady Cadence · Gold = Speed Surge' : 'Silver = Good · Gold = Great'}</small>
+        <button class="machine-battle-tap ${isTreadmill ? 'treadmill-tap' : ''}" type="button">${isTreadmill ? 'HOLD STRIDE' : 'HIT CHECK'}</button>
+      </div>
+      <div class="machine-battle-foot">
+        ${isTreadmill
+          ? `<span>🏃 ${'★'.repeat(speedStars)} RUN SPEED</span><span>✦ ${'★'.repeat(skillStars)} CADENCE CHECK</span>`
+          : `<span>🏃 ${'★'.repeat(extractionStars)} EXTRACTION</span><span>✦ ${'★'.repeat(skillStars)} SKILL CHECK</span>`}
+      </div>`;
     host.appendChild(ui);
     state.prop = prop; state.ui = ui;
 
@@ -1049,33 +1084,43 @@ class Battle {
       if (state.keyHandler) host.removeEventListener('keydown', state.keyHandler);
       if (state.prop) state.prop.remove();
       if (state.ui) state.ui.remove();
+      if (selected) selected.moving = false;
       if (this._machineState === state) this._machineState = null;
       this._machineCleanup = null;
     };
     this._machineCleanup = cleanup;
+
     const revealForMachineResult = () => {
       this.units.forEach(u => {
         u._renderOpacity = null; u.moving = false;
         if (u.team === TEAM_P) {
           u._introOpacity = 1; u.x = u.homeX;
         } else {
-          // A completed machine is not a battle win. Keep the encounter
-          // objects around for result bookkeeping, but never flash the
-          // waiting enemies onto the floor while the payout card opens.
           u._introOpacity = 0;
           if (u.el) { u.el.style.opacity = '0'; u.el.style.visibility = 'hidden'; }
         }
       });
       this.render(0);
     };
+
     this.units.forEach(u => {
       u._introOpacity = 0; u._renderOpacity = null; u.moving = false;
     });
     selected._introOpacity = 1; selected._renderOpacity = null;
     selected.depth = .40;
-    selected.x = clamp(this.W * .23, 92, this.W - 200);
-    prop.style.left = clamp(selected.x - 54, 34, this.W - 132) + 'px';
-    prop.style.top = Math.max(82, this.ground - selected.depth * this.depthSpan - 150) + 'px';
+
+    if (isTreadmill) {
+      selected.x = clamp(this.W * .24, 92, this.W - 200);
+      selected.moving = true; // Actively sprint on the treadmill belt!
+      prop.style.left = clamp(selected.x - 32, 24, this.W - 145) + 'px';
+      prop.style.top = Math.max(76, this.ground - selected.depth * this.depthSpan - 158) + 'px';
+    } else {
+      selected.x = clamp(this.W * .23, 92, this.W - 200);
+      selected.moving = false;
+      prop.style.left = clamp(selected.x - 54, 34, this.W - 132) + 'px';
+      prop.style.top = Math.max(82, this.ground - selected.depth * this.depthSpan - 150) + 'px';
+    }
+
     this.render(0);
     Sound.play('machine_start', { priority: true });
 
@@ -1086,31 +1131,47 @@ class Battle {
       cancelAnimationFrame(state.raf); state.raf = 0; state.check = null;
       const panel = $('.machine-battle-check', ui); if (panel) panel.hidden = true;
     };
+
     const rewardNow = () => {
       const reward = Object.assign({}, data.reward);
-      reward.ichor += state.great * (28 + (data.skillStars || 1) * 7);
-      reward.exp += state.great * 180;
-      if (state.great >= 2) reward.core = (reward.core || 0) + 1;
+      const bonusMult = isTreadmill ? speedStars : (data.skillStars || 1);
+      reward.ichor += state.great * (32 + bonusMult * 8);
+      reward.exp += state.great * 200;
+      if (state.great >= 2) {
+        reward.core = (reward.core || 0) + 1;
+        reward.notes = (reward.notes || 0) + 12;
+        reward.tape = (reward.tape || 0) + 16;
+        reward.star = (reward.star || 0) + 25;
+      }
+      if (state.great >= 3 && Math.random() < 0.5) {
+        reward.gold = (reward.gold || 0) + 1;
+      }
       return reward;
     };
+
     const lockReward = () => {
       const reward = rewardNow();
       Object.keys(data.reward).forEach(k => delete data.reward[k]);
       Object.assign(data.reward, reward);
     };
+
     const success = () => {
       if (state.settled) return;
       state.settled = true; lockReward(); cleanup();
       revealForMachineResult(); this._machineSuccess = true;
       Sound.play('get_rare', { priority: true }); FX.confetti(this.W / 2, this.H * .42, 50);
-      this.finish(true, 'Machine complete');
+      if (state.great >= 2) {
+        UI.toast(isTreadmill ? '⚡ SPEED OVERCLOCK COMPLETE! Bonus items earned.' : '✨ SUPERCHARGE COMPLETE! Bonus items earned.');
+      }
+      this.finish(true, isTreadmill ? 'Treadmill complete' : 'Machine complete');
     };
+
     const fail = () => {
       if (state.settled) return;
       state.settled = true; lockReward(); cleanup();
       this._machineReduced = true; this.meta.machinePrelude = null;
       Sound.play('machine_fail', { priority: true });
-      UI.toast('⚠ FAILED CHECK · Nearby Twisteds alerted! Rewards are reduced to 10%.');
+      UI.toast(isTreadmill ? '⚠ TRIPPED ON BELT · Nearby Twisteds alerted! Rewards reduced to 10%.' : '⚠ FAILED CHECK · Nearby Twisteds alerted! Rewards are reduced to 10%.');
       Music.play('battle');
       Sound.encounter(this.units.filter(u => u.team === TEAM_E));
       this._twistedAmbienceAt = 8 + rnd(0, 4);
@@ -1120,39 +1181,55 @@ class Battle {
         startCombat();
       });
     };
+
     const resolveCheck = () => {
       if (!state.check || state.settled) return;
       const c = state.check, pos = checkPosition(performance.now());
       if (pos >= c.goldLeft && pos <= c.goldLeft + c.goldWidth) {
-        state.great++; state.progress = Math.min(100, state.progress + 5 + c.stars * .8);
-        Sound.play('get_rare', { vol: .46 }); UI.toast('✨ GREAT JOB! Machine surged forward.');
+        state.great++;
+        const boost = isTreadmill ? (6.5 + speedStars * 1.4) : (5 + c.stars * .8);
+        state.progress = Math.min(100, state.progress + boost);
+        Sound.play('get_rare', { vol: .46 });
+        UI.toast(isTreadmill ? '⚡ SPEED SURGE! Stride locked in.' : '✨ GREAT JOB! Machine surged forward.');
       } else if (pos >= c.silverLeft && pos <= c.silverLeft + c.silverWidth) {
-        Sound.play('ding', { vol: .5 }); UI.toast('GOOD JOB!');
+        Sound.play('ding', { vol: .5 });
+        UI.toast(isTreadmill ? 'STEADY STRIDE!' : 'GOOD JOB!');
       } else {
         hideCheck(); fail(); return;
       }
       hideCheck();
       if (state.progress >= 100) { success(); return; }
-      clearTimeout(state.checkTimer); state.checkTimer = setTimeout(showCheck, 2200 + Math.random() * 1800);
+      clearTimeout(state.checkTimer);
+      state.checkTimer = setTimeout(showCheck, isTreadmill ? (1800 + Math.random() * 1600) : (2200 + Math.random() * 1800));
     };
+
     const animateCheck = now => {
       if (!state.check || state.settled) return;
       const cursor = $('.machine-battle-cursor', ui); if (cursor) cursor.style.left = checkPosition(now) + '%';
       if (checkPosition(now) >= 100) { resolveCheck(); return; }
       state.raf = requestAnimationFrame(animateCheck);
     };
+
     function showCheck() {
       if (state.settled || state.check) return;
-      const stars = data.skillStars || 1;
-      const silverWidth = 15 + stars * 5, silverLeft = 8 + Math.random() * (84 - silverWidth);
-      const goldWidth = Math.max(4, silverWidth * (.22 + stars * .025));
-      state.check = { stars, silverLeft, silverWidth, goldLeft: silverLeft + silverWidth / 2 - goldWidth / 2,
-        goldWidth, started: performance.now(), period: 2850 - stars * 150 };
+      const stars = skillStars;
+      const silverWidth = isTreadmill ? (16 + stars * 4.8) : (15 + stars * 5);
+      const silverLeft = 8 + Math.random() * (84 - silverWidth);
+      const goldWidth = Math.max(5, silverWidth * (.22 + stars * .026));
+      const period = isTreadmill
+        ? Math.max(1650, 2750 - speedStars * 130 - stars * 75)
+        : Math.max(1800, 2850 - stars * 150);
+      state.check = {
+        stars, silverLeft, silverWidth,
+        goldLeft: silverLeft + silverWidth / 2 - goldWidth / 2,
+        goldWidth, started: performance.now(), period
+      };
       const panel = $('.machine-battle-check', ui), silver = $('.machine-battle-silver', ui), gold = $('.machine-battle-gold', ui);
       panel.hidden = false; silver.style.left = silverLeft + '%'; silver.style.width = silverWidth + '%';
       gold.style.left = state.check.goldLeft + '%'; gold.style.width = goldWidth + '%';
       state.raf = requestAnimationFrame(animateCheck);
     }
+
     const checkButton = $('.machine-battle-tap', ui), track = $('.machine-battle-track', ui);
     checkButton.onclick = track.onclick = resolveCheck;
     const keyHandler = e => { if ((e.key === ' ' || e.key === 'Enter') && state.check && !e.repeat) { e.preventDefault(); resolveCheck(); } };
@@ -1164,7 +1241,7 @@ class Battle {
       if (fill) fill.style.width = state.progress + '%'; if (pct) pct.textContent = Math.floor(state.progress);
       if (state.progress >= 100) success();
     }, 50);
-    state.checkTimer = setTimeout(showCheck, 2200 + Math.random() * 1800);
+    state.checkTimer = setTimeout(showCheck, isTreadmill ? (1800 + Math.random() * 1600) : (2200 + Math.random() * 1800));
   }
 
   stopMachinePrelude() {
@@ -1952,6 +2029,7 @@ class Battle {
   minionsOf(u) { return this.liveTeam(u.team).filter(a => a.owner === u && !a.trinketSample); }
 
   lowestHp(l) { return l.length ? l.reduce((a, b) => b.hpPct < a.hpPct ? b : a) : null; }
+  lowestEnergy(l) { return l && l.length ? l.reduce((a, b) => (b.energy || 0) < (a.energy || 0) ? b : a) : null; }
   highestHp(l) { return l.length ? l.reduce((a, b) => b.hpPct > a.hpPct ? b : a) : null; }
   highestEnergy(l) { return l.length ? l.reduce((a, b) => b.energy > a.energy ? b : a) : null; }
   highestStat(l, k) { return l.length ? l.reduce((a, b) => b.st[k] > a.st[k] ? b : a) : null; }
@@ -2720,7 +2798,8 @@ class Battle {
   leap(u, x, dur, onLand, depth) {
     this.dash(u, x, dur, { arc: true, onEnd: onLand, depth });
   }
-  blink(u, x, depth) {
+  blink(u, x, depth, force) {
+    if (u.immovable && !force) return;
     FX.burst(u.x, u.y - 40, 8, '#fff', { spMax: 200 });
     // A bad authored target coordinate must never turn a live unit's
     // position into NaN. Once x becomes invalid, distance checks, rendering,
@@ -2733,14 +2812,16 @@ class Battle {
       u.depth = clamp(Number.isFinite(depth) ? depth : fallbackDepth, .04, .92);
     }
   }
-  pull(u, x, dur, depth) {
+  pull(u, x, dur, depth, src) {
+    if (src) this.emitFor(u, 'pullAttempt', { src, x });
     if (u.immovable) return;
     Sound.play('chain', { vol: .5 });
     this.dash(u, x, dur || .3, { depth });
   }
   knockback(src, tgt, dist) {
+    this.emitFor(tgt, 'knockbackAttempt', { src, dist });
     if (tgt.immovable) return;
-    const d = dist * (1 - tgt.st.kbRes) * (src.face || 1);
+    const d = dist * (1 - (tgt.st ? tgt.st.kbRes : 0)) * (src ? (src.face || 1) : 1);
     if (Math.abs(d) < 4) return;
     this.dash(tgt, tgt.x + d, .22, {});
     this.emitFor(tgt, 'knockedBack', { src, dist: d });
@@ -2929,11 +3010,13 @@ class Battle {
     const max = u.bonbonMax || 4;
     u.bonbons = Math.min(max, (u.bonbons || 0) + n);
     if (u.cocoaOverflow && u.bonbons >= max) {
-      const a = this.lowestHp(this.alliesOf(u));
-      if (a && a !== u) {
+      const a = this.lowestHp(this.alliesOf(u)) || u;
+      if (a) {
         this.applyStatus(u, a, 'sugarrush', u.cocoaOverflowDur || 8);
-        this.energy(a, 4);
-        this.fxFloatIcon(a.x, a.y - 88, '🍬', '#c98a5a');
+        this.energy(a, 10);
+        this.heal(u, a, u.max.hp * 0.12, { tag: 'Bonbon Overflow' });
+        this.emitFor(u, 'bonbonDelivered', { target: a, repeated: true });
+        this.fxFloatIcon(a.x, a.y - 88, '🍬 SWEET OVERFLOW', '#c98a5a');
         u.bonbons = max - 1;
       }
     }
@@ -2953,14 +3036,42 @@ class Battle {
     this.fxBassieSkill('stock', u, { count: u.supplies });
   }
 
-  /** Toodles rolls one of four boosts, never the same twice in a row at Red. */
-  luckyBoost(u, dur) {
+  /** Toodles shakes her Magic 8-Ball for an adaptive fortune boost: Damage (Outlook Good!), Defense (It is Certain!), Speed (Signs Point to Yes!), Support (Without a Doubt!), or an All Signs Point to Yes! fortune. */
+  luckyBoost(u, dur, forceAll) {
     // A Boost applies buffs, and Toodles rolls a Boost when buffs are applied.
     // Without this guard the two feed each other into an infinite cascade.
     if (u._rollingBoost) return;
     u._rollingBoost = true;
     this.after(0.01, () => { u._rollingBoost = false; });
-    dur = dur || 8;
+    dur = dur || 9;
+    u._luckRollCount = (u._luckRollCount || 0) + 1;
+    const isAllSigns = forceAll || (u._luckRollCount % 5 === 0 && chance(.45)) || chance(0.12 + (u.st && u.st.crit || 0) * 0.25 + (u._luckCounters || 0) * 0.02);
+    if (isAllSigns) {
+      u.lastBoost = 'all';
+      this.applyStatus(u, u, 'atkup', dur + 3, { stacks: 3 });
+      this.applyStatus(u, u, 'lucky', dur + 3);
+      this.applyStatus(u, u, 'fortify', dur + 3, { stacks: 3 });
+      this.applyStatus(u, u, 'ward', dur + 3);
+      this.applyStatus(u, u, 'speedup', dur + 3, { stacks: 3 });
+      this.applyStatus(u, u, 'haste', dur + 3);
+      this.applyStatus(u, u, 'rally', dur + 3, { stacks: 1 });
+      this.applyStatus(u, u, 'overcharge', dur + 3);
+      this.alliesOf(u).forEach(a => {
+        if (a !== u && this.distance(a, u) < 360) {
+          this.applyStatus(u, a, 'atkup', dur, { stacks: 1 });
+          this.applyStatus(u, a, 'fortify', dur, { stacks: 1 });
+          this.applyStatus(u, a, 'speedup', dur, { stacks: 1 });
+          this.applyStatus(u, a, 'rally', dur, { stacks: 1 });
+        }
+      });
+      Sound.play('get_rare', { vol: .75 });
+      Sound.play('sparkle', { vol: .65 });
+      if (FX.toodlesEightBallFortune) FX.toodlesEightBallFortune(u.x, u.y, 'all', true);
+      FX.floatIcon(u.x, u.y - 110, '🎱 ALL SIGNS POINT TO YES!', '#ffd700');
+      this.emitFor(u, 'luckyBoost', 'all');
+      return;
+    }
+
     let kinds = ['damage', 'defense', 'speed', 'support'];
     if (u.noRepeatBoost && u.lastBoost) kinds = kinds.filter(k => k !== u.lastBoost);
     const kind = pick(kinds);
@@ -2968,15 +3079,33 @@ class Battle {
     const share = (id, st) => {
       this.applyStatus(u, u, id, dur, { stacks: st });
       if (u.boostShare) this.alliesOf(u).forEach(a => {
-        if (a !== u && this.distance(a, u) < 300) this.applyStatus(u, a, id, dur, { stacks: 1 });
+        if (a !== u && this.distance(a, u) < 320) this.applyStatus(u, a, id, dur, { stacks: 1 });
       });
     };
-    if (kind === 'damage') share('atkup', 2);
-    else if (kind === 'defense') { share('fortify', 3); this.applyStatus(u, u, 'ward', dur); }
-    else if (kind === 'speed') share('speedup', 2);
-    else { share('rally', 1); this.applyStatus(u, u, 'overcharge', dur); }
-    Sound.play('coin', { vol: .5 });
-    FX.floatIcon(u.x, u.y - 100, { damage: '⚔', defense: '🛡', speed: '🏃', support: '💚' }[kind]);
+    if (kind === 'damage') {
+      share('atkup', 3);
+      this.applyStatus(u, u, 'lucky', dur);
+    } else if (kind === 'defense') {
+      share('fortify', 3);
+      this.applyStatus(u, u, 'ward', dur);
+    } else if (kind === 'speed') {
+      share('speedup', 3);
+      this.applyStatus(u, u, 'haste', dur);
+    } else {
+      share('rally', 2);
+      this.applyStatus(u, u, 'overcharge', dur);
+      const hurt = this.lowestHp(this.alliesOf(u));
+      if (hurt) this.heal(u, hurt, u.max.hp * .08);
+    }
+    Sound.play('sparkle', { vol: .55 });
+    if (FX.toodlesEightBallFortune) FX.toodlesEightBallFortune(u.x, u.y, kind, false);
+    const fortuneLabels = {
+      damage: '⚔ OUTLOOK GOOD!',
+      defense: '🛡 IT IS CERTAIN!',
+      speed: '🏃 SIGNS POINT YES!',
+      support: '💚 WITHOUT A DOUBT!'
+    };
+    FX.floatIcon(u.x, u.y - 100, fortuneLabels[kind] || '🎱');
     this.emitFor(u, 'luckyBoost', kind);
   }
 
@@ -3113,6 +3242,7 @@ class Battle {
     }
     const treat = pick(GOURDY_TREATS);
     Sound.play('get_item', { vol: .5 }); this.fxFloatIcon(t.x, t.y - 90, treat.icon);
+    this.fxCandyBurst(u.x, u.y - 35, 4);
     this.fxGourdyTreat(u, t, treat);
     this.applyStatus(u, t, treat.status, 8 * (mult || 1));
     this.emitFor(u, 'gourdyTreat', { ally: t, treat });
@@ -3230,6 +3360,23 @@ class Battle {
   fxFloatItem(x, y, img) { FX.floatItem(x, y, img); }
   fxFloatObject(x, y, img, col) { FX.floatObject(x, y, img, col); }
   fxTargetLine(from, to, col) { FX.targetLine(from, to, col); }
+  fxSpiralBurst(x, y, s, opt) { if (!this.offscreen) { if (FX.mrsHollowaySpiralExplosion) FX.mrsHollowaySpiralExplosion(x, y, s, opt); else FX.hollowaySpiral(x, y, s, opt); } }
+  fxAutumnBurst(x, y, s, opt) { if (!this.offscreen) { if (FX.mrHollowayEarthCrash) FX.mrHollowayEarthCrash(x, y, s); else FX.hollowayAutumn(x, y, s, opt); } }
+  fxMrsHollowayExplosion(x, y, s, opt) { if (!this.offscreen && FX.mrsHollowaySpiralExplosion) FX.mrsHollowaySpiralExplosion(x, y, s, opt); }
+  fxMrsHollowayApparition(x, y) { if (!this.offscreen && FX.mrsHollowayApparition) FX.mrsHollowayApparition(x, y); }
+  fxMrsHollowayEmbrace(x, y, dur) { if (!this.offscreen && FX.mrsHollowayEmbrace) FX.mrsHollowayEmbrace(x, y, dur); }
+  fxMrHollowayCrash(x, y, s) { if (!this.offscreen && FX.mrHollowayEarthCrash) FX.mrHollowayEarthCrash(x, y, s); }
+  fxMrHollowayCyclone(x, y, dur) { if (!this.offscreen && FX.mrHollowayAutumnCyclone) FX.mrHollowayAutumnCyclone(x, y, dur); }
+  fxMrHollowayRoots(x, y, dur) { if (!this.offscreen && FX.mrHollowayRootBarrier) FX.mrHollowayRootBarrier(x, y, dur); }
+  fxMrHollowayHarvestShield(x, y, dur) { if (!this.offscreen && FX.mrHollowayHarvestShield) FX.mrHollowayHarvestShield(x, y, dur); }
+  fxMrHollowayClaw(x, y, tx, ty) { if (!this.offscreen && FX.mrHollowayClawSlash) FX.mrHollowayClawSlash(x, y, tx, ty); }
+  fxDelilahContaminationBurst(x, y, s, opt) { if (!this.offscreen && FX.delilahContaminationBurst) FX.delilahContaminationBurst(x, y, s, opt); }
+  fxDelilahContainment(x, y, dur) { if (!this.offscreen && FX.delilahContainmentStasis) FX.delilahContainmentStasis(x, y, dur); }
+  fxDelilahSpill(x, y, dur) { if (!this.offscreen && FX.delilahIchorSpill) FX.delilahIchorSpill(x, y, dur); }
+  fxShellyFossil(x, y, s, opt) { if (!this.offscreen && FX.shellyFossilExcavation) FX.shellyFossilExcavation(x, y, s, opt); }
+  fxShellyInspiration(x, y, dur) { if (!this.offscreen && FX.shellyInspirationWhistle) FX.shellyInspirationWhistle(x, y, dur); }
+  fxShellyAmber(x, y, dur) { if (!this.offscreen && FX.shellyAmberStasis) FX.shellyAmberStasis(x, y, dur); }
+  fxCandyBurst(x, y, n) { if (!this.offscreen) FX.candyBurst(x, y, n); }
   unitFxAnchor(u) {
     const scale = u.depth != null ? 1 - u.depth * DEPTH_SCALE_FALL : 1;
     const x = u.depth != null ? this.W / 2 + (u.x - this.W / 2) * (1 - u.depth * DEPTH_XCOMPRESS) : u.x;
@@ -3371,6 +3518,25 @@ class Battle {
   fxFlyteRescue(u, target) { FX.flyteRescue(u.x, u.y, target.x, target.y); }
   fxFlyteClearWay(u, dest, dur) { FX.flyteClearWay(u.x, u.y, dest, dur); }
   fxFlytePass(target, ally) { FX.flytePass(target.x, target.y, ally); }
+  fxFlyteCyclone(u, target, radius, dur) {
+    const tx = target ? target.x : u.x, ty = target ? target.y : u.y;
+    if (FX.flyteCyclone) FX.flyteCyclone(u.x, u.y, tx, ty, radius, dur);
+    else FX.flyteGust(u.x, u.y, tx, ty, radius, dur);
+  }
+  fxFlyteWingSlam(u, target) {
+    if (FX.flyteWingSlam) FX.flyteWingSlam(u.x, u.y, target.x, target.y);
+    else FX.flyteRescue(u.x, u.y, target.x, target.y);
+  }
+  fxFlyteMockingSwoop(u, ally, dur) {
+    const ax = ally ? ally.x : u.x, ay = ally ? ally.y : u.y;
+    if (FX.flyteMockingSwoop) FX.flyteMockingSwoop(u.x, u.y, ax, ay, dur);
+    else FX.flyteGust(u.x, u.y, ax, ay, 200, dur);
+  }
+  fxFlyteStubbornDowndraft(u, attacker) {
+    const ax = attacker ? attacker.x : u.x + u.face * 60, ay = attacker ? attacker.y : u.y;
+    if (FX.flyteStubbornDowndraft) FX.flyteStubbornDowndraft(u.x, u.y, ax, ay);
+    else FX.flytePass(attacker || u, false);
+  }
   fxFlutterEntry(x, y, toX, dir, dur) { FX.flutterEntry(x, y, toX, dir, dur); }
   fxFlutterDash(x, y, toX, dir, dur, returning) { FX.flutterDash(x, y, toX, dir, dur, returning); }
   fxFlutterGust(x, y, tx, ty, radius, face) { FX.flutterGust(x, y, tx, ty, radius, face); }
@@ -3440,6 +3606,14 @@ class Battle {
     const icons = { stun: '😵', silence: '🔇', slow: '🐢', drain: '🕳' };
     FX.gourdyPumpkinImpact(target.x, target.y, icons[effect] || '🎃');
   }
+  fxGourdyCandyFountain(x, y) { if (FX.gourdyCandyFountain) FX.gourdyCandyFountain(x, y); }
+  fxGourdyMegaPumpkin(u, target, isFamily) { if (FX.gourdyMegaPumpkin) FX.gourdyMegaPumpkin(u, target, isFamily); }
+  fxToodlesHammer(u, target, boost) { if (FX.toodlesHammerSmash) FX.toodlesHammerSmash(u.x, u.y, target.x, target.y, boost); }
+  fxToodlesMiracle(target) {
+    if (FX.toodlesMiracleShield) FX.toodlesMiracleShield(target.x, target.y);
+    if (FX.toodlesDogPlushCheer) FX.toodlesDogPlushCheer(target.x, target.y);
+  }
+  fxQomDrum(x, y, beat, power) { if (FX.qomGourdyDrumBlast) FX.qomGourdyDrumBlast(x, y, beat, power); }
   fxLooeySkill(kind, u, opt) {
     if (!u) return;
     const a = this.unitFxAnchor(u), o = Object.assign({ face: u.face, size: a.size }, opt || {});
@@ -3706,7 +3880,36 @@ class Battle {
         // recovery. Applying the generic cutout transforms on top rotated the
         // entire effects-sized cell, causing clipping and apparent frame
         // merging. Natural sprites only need their frame player here.
-        if (!u.naturalSprite && u.animStyle === 'looeyInflate') {
+        if (!u.naturalSprite && u.animStyle === 'mrsHollowayExplosion') {
+          const rise = Math.sin(phase * Math.PI), pulse = Math.sin(phase * Math.PI * 4);
+          bob -= rise * 24; rot += u.face * pulse * rise * .08;
+          sqx += rise * .24; sqy += rise * .18;
+        } else if (!u.naturalSprite && u.animStyle === 'mrsHollowayApparition') {
+          const glide = Math.sin(phase * Math.PI);
+          lean += u.face * glide * 24; bob -= glide * 16;
+          sqx += glide * .18; sqy -= glide * .10;
+        } else if (!u.naturalSprite && u.animStyle === 'mrsHollowayEmbrace') {
+          const embrace = Math.sin(phase * Math.PI), spin = Math.sin(phase * Math.PI * 2);
+          bob -= embrace * 15; rot += u.face * spin * .06;
+          sqx += embrace * .14; sqy += embrace * .12;
+        } else if (!u.naturalSprite && u.animStyle === 'mrHollowaySlam') {
+          const wind = phase < .42 ? Math.sin(phase / .42 * Math.PI * .5) : 0;
+          const slam = phase >= .42 ? Math.sin((phase - .42) / .58 * Math.PI) : 0;
+          bob -= wind * 14 - slam * 18; lean += u.face * wind * 24 - u.face * slam * 52;
+          rot += u.face * (wind * .08 - slam * .15);
+          sqx += slam * .28; sqy -= wind * .08 - slam * .15;
+        } else if (!u.naturalSprite && u.animStyle === 'mrHollowayBrace') {
+          const plant = Math.sin(phase * Math.PI), stomp = Math.abs(Math.sin(phase * Math.PI * 3));
+          bob += plant * 6; lean -= u.face * plant * 14;
+          rot -= u.face * stomp * .04; sqx += plant * .22; sqy -= plant * .12;
+        } else if (!u.naturalSprite && u.animStyle === 'mrHollowayRoot') {
+          const dig = Math.sin(phase * Math.PI);
+          bob += dig * 9; sqx += dig * .20; sqy -= dig * .10;
+        } else if (!u.naturalSprite && u.animStyle === 'gourdyCandyToss') {
+          const hop = Math.sin(phase * Math.PI);
+          bob -= hop * 18; rot += u.face * hop * .08;
+          sqx += hop * .16; sqy -= hop * .08;
+        } else if (!u.naturalSprite && u.animStyle === 'looeyInflate') {
           const inflate = Math.sin(phase * Math.PI);
           bob -= inflate * 13; sqx += inflate * .24; sqy -= inflate * .13;
           rot += u.face * Math.sin(phase * Math.PI * 2) * inflate * .035;
@@ -4588,7 +4791,7 @@ class Battle {
       if (mv.particles && mv.particles !== 'none') {
         u.pT = (u.pT || 0) - dt;
         if (u.pT <= 0) {
-          u.pT = (u.moving ? .07 : .38) * (this._denseCombat ? 1.8 : 1);
+          u.pT = (u.moving ? .22 : .65) * (this._denseCombat ? 1.8 : 1);
           this.ambient(u, mv);
         }
       }
@@ -4657,7 +4860,9 @@ class Battle {
           // Their status list still updates for gameplay, but it must not
           // throw during rendering just because that optional node is absent.
           if (u.stsEl) {
-            u.stsEl.innerHTML = ordered.map(s => battleStatusChip(s, false)).join('');
+            const overheadShown = ordered.slice(0, 4);
+            const overheadExtra = ordered.length - overheadShown.length;
+            u.stsEl.innerHTML = overheadShown.map(s => battleStatusChip(s, false)).join('') + (overheadExtra > 0 ? battleStatusOverflowChip(overheadExtra) : '');
             this.bindStatusHold(u.stsEl, u);
           }
           if (u.barSts) {

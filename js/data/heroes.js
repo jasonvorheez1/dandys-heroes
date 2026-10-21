@@ -726,57 +726,80 @@ defHero({
 defHero({
   id: 'Cocoa', name: 'Cocoa', folder: 'Cocoa', file: 'Cocoa', icon: 'Cocoa',
   role: 'Support', tier: 'SS', element: 'Chocolate',
-  blurb: 'An endlessly optimistic chocolate bunny who decided everyone needs help whether they asked or not.',
-  // Cocoa is the more advanced support profile: a small edge over Bassie in
-  // survivability, spell output, reach, and tempo without eclipsing dedicated
-  // damage dealers. Her value still comes from delivery and team acceleration.
-  base: { hp: 4720, atk: 210, def: 285, mag: 365, mdef: 310, spd: 121, acc: 198, eva: 138 },
-  hidden: { range: 270, aspd: 1.0, ms: 80, aggro: .60, crit: .08, critDmg: 1.50, healPow: 1.30, shieldPow: 1.50, cdr: .18, ccRes: .22, kbRes: .35, armorPen: 0, magPen: .08 },
-  growth: { hp: .095, atk: .068, def: .085, mag: .102, mdef: .092 },
-  move: { gait: 'hop', bob: 12, freq: 2.3, lean: 6, squash: .10, idle: 'bounce', step: 'bounce',
-    particles: 'crumbs', pcol: '#c98a5a', trail: { on: false }, brake: .25 },
-  basic: { name: 'Candy Flick', type: 'magic', ratio: 1.00, range: 265, proj: 'orb', pcol: '#c98a5a',
-    sfx: 'whoosh', hit: 'hit_light', wind: .20, note: 'A flicked BonBon. Mostly a delivery system.',
-    onHit: (u, t, B) => { if (chance(.28)) B.bonbon(u, 1); } },
+  blurb: 'An endlessly cheerful chocolate rabbit whose portable confectionery supplies ensure no ally ever runs out of stamina. Through expert BonBon crafting, Cocoa accelerates her team\'s tempo, distributes protective candy coatings, and turns combat into a sugar-fueled symphony.',
+  base: { hp: 4900, atk: 220, def: 300, mag: 415, mdef: 325, spd: 128, acc: 215, eva: 150 },
+  hidden: { range: 280, aspd: 1.10, ms: 84, aggro: .55, crit: .10, critDmg: 1.55, healPow: 1.35, shieldPow: 1.55, cdr: .20, ccRes: .25, kbRes: .40, armorPen: 0, magPen: .12 },
+  growth: { hp: .102, atk: .070, def: .090, mag: .110, mdef: .096 },
+  move: { gait: 'hop', bob: 12, freq: 2.4, lean: 7, squash: .12, idle: 'bounce', step: 'bounce',
+    particles: 'crumbs', pcol: '#c98a5a', trail: { on: true, col: '#f3d3a7', rate: .12 }, brake: .25 },
+  basic: {
+    name: 'Candy Flick', type: 'magic', ratio: 1.15, range: 280, proj: 'orb', pcol: '#c98a5a',
+    sfx: 'whoosh', hit: 'hit_light', animStyle: 'cocoaBasicFlick', wind: .18,
+    note: 'Flicks confection-infused treats that deal Magic Damage, recharge team Energy, and craft BonBons.',
+    onHit: (u, t, B) => {
+      if (chance(.35)) B.bonbon(u, 1);
+      u._cocoaBasics = (u._cocoaBasics || 0) + 1;
+      if (u._cocoaBasics % 2 === 0) {
+        const ally = B.lowestEnergy(B.alliesOf(u)) || u;
+        if (ally && ally.alive) {
+          B.energy(ally, 16);
+          B.applyStatus(u, ally, 'speedup', 2.5);
+          B.bonbon(u, 1);
+          B.fxSparkle(ally.x, ally.y - 45, 6, '#f3d3a7');
+          B.fxFloatIcon(ally.x, ally.y - 95, '🍬 SWEET FLICK +16⚡', '#c98a5a');
+          Sound.play('item_pop', { vol: .35, throttle: 120 });
+        }
+      }
+    }
+  },
   skills: {
     W: {
       name: 'BonBon Delivery', type: 'Team Buff', energy: 100, cd: 4.5,
-      v: { en: 32 }, p: { dur: 9, max: 5, prepEvery: 3.2 },
-      desc: (S, P) => `<span class="sk-pas">Cocoa prepares a BonBon every ${P.prepEvery}s, storing up to ${P.max}. Whenever an ally casts a skill she spends one to throw them a BonBon, once every 3.8s per ally. If they already have 🍬 Sugar Rush, the delivery restores <em>${Math.round(S.en)}</em> Energy and extends the buff instead.</span>
-        Active: Cocoa spends her stored BonBons to serve every ally. New recipients gain 🍬 Sugar Rush for ${P.dur}s (Attack Speed, Move Speed, Haste, and Energy generation); already-rushing allies gain Energy and an extended duration. Purple refunds some spent BonBons instead of refunding preparation ticks.`,
+      v: { en: 36 }, p: { prepEvery: 3.0, max: 5, rushDur: 9.0 },
+      desc: (S, P) => `<span class="sk-pas">Cocoa bakes a BonBon every ${P.prepEvery}s (storing up to ${P.max}). Whenever an ally casts a skill, she tosses them a freshly wrapped BonBon (once every 3.5s per ally). Recipients gain 🍬 Sugar Rush for <em>${P.rushDur}s</em> (+25% Attack Speed, +25% Move Speed, +22% Cooldown Reduction, +30% Energy Generation). If an ally already has Sugar Rush, the delivery refreshes its duration, restores <em>${Math.round(S.en)}</em> Energy, and grants them +15% Skill Haste.</span>
+        Active: Cocoa throws open her confection basket, expending all stored BonBons to treat every living ally! All allies receive 🍬 Sugar Rush for <em>${P.rushDur}s</em> and restore <em>${Math.round(S.en * 1.25)}</em> Energy. Allies already rushing gain an extra <em>${Math.round(S.en * 0.75)}</em> bonus Energy and 2s of CC Immunity. Every consumed BonBon has a chance to be refunded by Always Prepared.`,
       ai: { cond: (u, B) => (u.bonbons || 0) > 0 && B.alliesOf(u).some(a => !a.hasStatus('sugarrush') || (a.getStatus('sugarrush').t || 0) < 4) },
       passive: (u, B, S, P) => {
         u.bonbons = P.max; u.bonbonMax = P.max;
         B.every(u, P.prepEvery, () => B.bonbon(u, 1));
         B.on(u, 'waveStart', () => {
-          u.bonbons = u.sugarPlus ? (u.bonbonMax || 6) : Math.min(u.bonbonMax || 5, (u.bonbons || 0) + 2);
+          u.bonbons = u.sugarPlus ? (u.bonbonMax || 7) : Math.min(u.bonbonMax || 5, (u.bonbons || 0) + 3);
           B.alliesOf(u).forEach(a => { a._bonCd = -Infinity; a._freeBon = -Infinity; });
         });
         u._cocoaConsumeBonbon = () => {
           if ((u.bonbons || 0) <= 0) return false;
           u.bonbons--;
-          // Purple refunds consumed BonBons, not preparation ticks.
-          if (u.bonbonRefund && chance(u.bonbonRefund)) u.bonbons = Math.min(u.bonbonMax || P.max, u.bonbons + 1);
+          if (u.bonbonRefund && chance(u.bonbonRefund)) {
+            u.bonbons = Math.min(u.bonbonMax || P.max, u.bonbons + 1);
+            B.fxFloatIcon(u.x, u.y - 95, '🍬 BONBON SAVED!', '#c98a5a');
+            Sound.play('item_pop', { vol: .3, throttle: 150 });
+          }
           return true;
         };
         u._cocoaApplyRush = a => {
           if (!a || !a.alive || a.team !== u.team) return false;
           const rush = a.getStatus('sugarrush');
           const repeated = !!rush;
-          if (rush) { B.energy(a, S.en); rush.t += P.dur * .6; }
-          else B.applyStatus(u, a, 'sugarrush', P.dur);
-          // Keep BonBon delivery observable even when Sugar Rush is refreshed.
+          if (rush) {
+            B.energy(a, S.en);
+            rush.t = Math.max(rush.t, P.rushDur);
+            B.applyStatus(u, a, 'haste', 4.0);
+          } else {
+            B.applyStatus(u, a, 'sugarrush', P.rushDur);
+          }
           B.emitFor(u, 'bonbonDelivered', { target: a, repeated });
           return true;
         };
         u._cocoaDeliverBonbon = (a, respectCooldown) => {
           if (!a || !a.alive || (u.bonbons || 0) <= 0) return false;
-          if (respectCooldown && Number.isFinite(a._bonCd) && B.t - a._bonCd < 3.8) return false;
+          if (respectCooldown && Number.isFinite(a._bonCd) && B.t - a._bonCd < 3.5) return false;
           if (!u._cocoaConsumeBonbon()) return false;
           if (respectCooldown) a._bonCd = B.t;
           u._cocoaApplyRush(a);
           B.fxProj(u, a, { kind: 'orb', col: '#c98a5a' }, () => {
-            Sound.play('get_food', { vol: .5 }); B.fxFloatIcon(a.x, a.y - 80, '🍬');
+            Sound.play('get_food', { vol: .45 });
+            B.fxFloatIcon(a.x, a.y - 85, '🍬 SUGAR RUSH!', '#c98a5a');
+            B.fxSparkle(a.x, a.y - 40, 8, '#f3d3a7');
           });
           return true;
         };
@@ -790,66 +813,100 @@ defHero({
         if (!stock) return;
         u.bonbons = 0;
         for (let i = 0; i < stock; i++) if (u.bonbonRefund && chance(u.bonbonRefund)) u.bonbons++;
-        B.anim(u, 'cast', .72, 'cocoaBonbonBurst'); Sound.play('cheer'); Sound.play('get_food', { vol: .38, throttle: 180 }); B.tint('#c98a5a', .18, .5);
-        B.fxRing(u.x, u.y - 34, 76, '#e8b98a');
+        B.anim(u, 'cast', .72, 'cocoaBonbonBurst');
+        Sound.play('cheer');
+        Sound.play('get_food', { vol: .42, throttle: 180 });
+        B.tint('#c98a5a', .18, .5);
+        B.fxRing(u.x, u.y - 34, 95, '#e8b98a');
         B.after(.28, () => {
           B.alliesOf(u).forEach(a => {
+            const wasRushing = a.hasStatus('sugarrush');
             u._cocoaApplyRush(a);
-            B.fxSparkle(a.x, a.y - 40, 10, '#e8b98a');
+            B.energy(a, S.en * 1.25);
+            if (wasRushing) {
+              B.energy(a, S.en * 0.75);
+              B.applyStatus(u, a, 'ccimmune', 2.0);
+            }
+            B.fxSparkle(a.x, a.y - 40, 12, '#e8b98a');
+            B.fxFloatIcon(a.x, a.y - 90, '🍬 BONBON FEAST!', '#e8b98a');
           });
         });
       }
     },
     G: {
-      name: 'Sharing is Caring', type: 'Shield / Cleanse', cd: 8.5,
-      v: { shield: .26 }, p: { dur: 8, lowThr: .5 },
-      desc: (S, P) => `Whenever an ally gains 🍬 Sugar Rush they also gain a Shield worth <em>${pcn(S.shield * 100)}</em> of Cocoa's Max HP. Already shielded allies heal over time instead. Allies below ${pc(P.lowThr)} HP get a stronger Shield. Casting this applies 🍫 BonBon Blessing, which cleanses up to two negative statuses and grants CC Resistance to each ally.`,
+      name: 'Sharing is Caring', type: 'Shield / Cleanse', cd: 8.0,
+      v: { shield: .28, heal: .14 }, p: { dur: 8.0, lowThr: .50 },
+      desc: (S, P) => `<span class="sk-pas">Whenever an ally gains 🍬 Sugar Rush or receives a BonBon, they gain a Confection Shield worth <em>${pcn(S.shield * 100)}</em> of Cocoa's Max HP for ${P.dur}s (amplified by +50% for allies below ${pc(P.lowThr)} HP). If the ally is already shielded, the coating converts into sweet icing, regenerating <em>${pcn(S.heal * 100)}</em> Max HP over ${P.dur}s and granting +6 Energy.</span>
+        Active: Cocoa scatters a wave of comforting chocolate glaze across the team! Cleanses up to 2 debuffs from every ally, applies 🍫 BonBon Blessing (+15% CC Resistance and debuff purge), and shields everyone for <em>${pcn(S.shield * 100)}</em> Max HP. Allies below ${pc(P.lowThr)} HP are immediately healed for <em>${pcn(S.heal * 100)}</em> of Cocoa's Max HP.`,
       ai: { prio: 54, cond: (u, B) => B.alliesOf(u).some(a => a.hpPct < .9) },
       passive: (u, B, S, P) => {
         B.on(u, 'statusApplied', ev => {
           if (ev.id !== 'sugarrush' || ev.src !== u) return;
           const a = ev.unit;
-          const amt = u.max.hp * S.shield * (a.hpPct < P.lowThr ? 1.6 : 1);
-          if (a.hasStatus('shield')) { B.applyStatus(u, a, 'regen', P.dur, { val: amt / P.dur }); B.energy(a, 4); }
-          else B.shield(u, a, amt, P.dur);
+          if (!a || !a.alive) return;
+          const amt = u.max.hp * S.shield * (a.hpPct < P.lowThr ? 1.5 : 1.0);
+          if (a.hasStatus('shield')) {
+            B.applyStatus(u, a, 'regen', P.dur, { val: (u.max.hp * S.heal) / P.dur });
+            B.energy(a, 6);
+            B.fxFloatIcon(a.x, a.y - 95, '🍯 SWEET REGEN', '#f3d3a7');
+          } else {
+            B.shield(u, a, amt, P.dur);
+            B.fxFloatIcon(a.x, a.y - 95, '🍫 CANDY SHIELD', '#f3d3a7');
+          }
         });
       },
       cast: (u, B, S, P) => {
-        B.anim(u, 'cast', .68, 'cocoaShareCleanse'); Sound.play('guard');
-        B.fxRing(u.x, u.y - 34, 92, '#f3d3a7');
+        B.anim(u, 'cast', .68, 'cocoaShareCleanse');
+        Sound.play('guard');
+        Sound.play('cure_all', { vol: .42 });
+        B.fxRing(u.x, u.y - 34, 110, '#f3d3a7');
         B.alliesOf(u).forEach(a => {
-          B.shield(u, a, u.max.hp * S.shield * (a.hpPct < P.lowThr ? 1.6 : 1), P.dur);
-          const alreadyBlessed = a.hasStatus('bonbonblessing');
+          B.cleanse(a, 2);
           B.applyStatus(u, a, 'bonbonblessing', P.dur);
-          if (alreadyBlessed) B.cleanse(a, 2);
-          B.fxSparkle(a.x, a.y - 44, 8, '#fff1c2');
+          const amt = u.max.hp * S.shield * (a.hpPct < P.lowThr ? 1.5 : 1.0);
+          B.shield(u, a, amt, P.dur);
+          if (a.hpPct < P.lowThr) {
+            B.heal(u, a, u.max.hp * S.heal, { tag: 'Sharing is Caring' });
+            B.fxFloatIcon(a.x, a.y - 110, '💖 CARE HEAL', '#fff1c2');
+          }
+          B.fxSparkle(a.x, a.y - 44, 10, '#fff1c2');
         });
       }
     },
     B: {
-      name: 'Sweet Surprise', type: 'Magic Damage', cd: 10.5,
-      v: { ratio: 1.35 }, p: { dur: 7 },
-      desc: (S, P) => `A chocolate treat bursts over the biggest cluster for <em>${pcn(S.ratio * 100)}</em> Magic, coating them for ${P.dur}s. Coated enemies lose Attack Speed and cooldown speed, and the impact strips one removable buff. Allies who attack coated enemies restore Energy and briefly gain Speed Up.`,
+      name: 'Sweet Surprise', type: 'Magic Damage', cd: 9.5,
+      v: { ratio: 1.45, energyBonus: 5 }, p: { dur: 7.0 },
+      desc: (S, P) => `Cocoa tosses a hefty festive chocolate bomb into the densest cluster of enemies, detonating on impact for <em>${pcn(S.ratio * 100)}</em> Magic Damage and coating all foes within 340 range in molten chocolate for ${P.dur}s. The blast strips up to 2 removable buffs from each target and afflicts them with 🍯 Sticky (-30% Move Speed, -25% Attack Speed) and 🥱 Drowsy (-25% Cooldown Rate).
+        Allies who strike coated enemies restore <em>${Math.round(S.energyBonus)}</em> Energy and gain +20% Move Speed for 2s (up to once every 1.0s per ally).`,
       ai: { prio: 47, cond: () => true },
       cast: (u, B, S, P) => {
-        B.anim(u, 'cast', .78, 'cocoaChocolateToss'); Sound.play('throwsomething', { vol: .35 }); Sound.play('bomb', { vol: .42, delay: 220 });
+        B.anim(u, 'cast', .78, 'cocoaChocolateToss');
+        Sound.play('throwsomething', { vol: .40 });
+        Sound.play('bomb', { vol: .45, delay: 220 });
         B.after(.34, () => {
           const cx = B.avgX(B.enemiesOf(u));
-          B.fxBoom(cx, B.ground - 60, 1.45, '#c98a5a'); B.shake(6, .22);
+          B.fxBoom(cx, B.ground - 60, 1.55, '#c98a5a');
+          B.shake(7, .25);
+          B.fxRing(cx, B.ground - 60, 160, '#c98a5a', .4);
           B.enemiesOf(u).forEach(e => {
-            if (Math.abs(e.x - cx) > 330) return;
+            if (Math.abs(e.x - cx) > 340) return;
             B.damage(u, e, u.st.mag * S.ratio, { type: 'magic', tag: 'Sweet Surprise' });
-            const buff = e.statuses.find(s => STATUS[s.id] && STATUS[s.id].kind === 'buff' && s.id !== 'shield' && !s.apexLocked);
-            if (buff) B.removeStatus(e, buff.id);
-            B.applyStatus(u, e, 'sticky', P.dur); B.applyStatus(u, e, 'drowsy', P.dur);
+            const buffs = e.statuses.filter(s => STATUS[s.id] && STATUS[s.id].kind === 'buff' && s.id !== 'shield' && !s.apexLocked).slice(0, 2);
+            buffs.forEach(b => B.removeStatus(e, b.id));
+            B.applyStatus(u, e, 'sticky', P.dur);
+            B.applyStatus(u, e, 'drowsy', P.dur);
+            B.fxFloatIcon(e.x, e.y - 85, '🍫 CHOCO COATED!', '#c98a5a');
           });
           u._chocoUntil = B.t + P.dur;
           if (!u._cocoaChocolateHook) {
             u._cocoaChocolateHook = true;
             B.on(u, 'allyDamageDealt', ev => {
               if (B.t >= (u._chocoUntil || 0) || !ev.target || !ev.target.hasStatus('sticky') || !ev.src || ev.src.team !== u.team) return;
-              if (Number.isFinite(ev.src._cocoaChocoAt) && B.t - ev.src._cocoaChocoAt < 1.2) return;
-              ev.src._cocoaChocoAt = B.t; B.energy(ev.src, 4); B.applyStatus(u, ev.src, 'speedup', 1.4);
+              if (Number.isFinite(ev.src._cocoaChocoAt) && B.t - ev.src._cocoaChocoAt < 1.0) return;
+              ev.src._cocoaChocoAt = B.t;
+              B.energy(ev.src, S.energyBonus);
+              B.applyStatus(u, ev.src, 'speedup', 2.0);
+              B.fxFloatIcon(ev.src.x, ev.src.y - 80, `⚡ +${Math.round(S.energyBonus)}`, '#f3d3a7');
             });
           }
         });
@@ -857,47 +914,67 @@ defHero({
     },
     P: {
       name: 'Always Prepared', type: 'Energy',
-      v: { refund: .48 }, p: { extra: 2 },
-      desc: (S, P) => `Cocoa's BonBon storage grows by ${P.extra}. Every BonBon consumed has a <em>${pcn(S.refund * 100)}</em> chance to be replaced instantly. When an ally under 🍬 Sugar Rush personally defeats an enemy, Cocoa restores Energy, reduces her cooldowns, and prepares another BonBon.`,
+      v: { refund: .50, killEnergy: 25, killCdr: 2.5 }, p: { extra: 2 },
+      desc: (S, P) => `<span class="sk-pas">Cocoa expands her confection bag capacity by +${P.extra} BonBons (storing up to 7), and increases her Base Cooldown Reduction by +15% and Healing/Shielding Power by +15%. Every BonBon consumed has a <em>${pcn(S.refund * 100)}</em> chance to be immediately refunded into storage.</span>
+        Whenever an ally under 🍬 Sugar Rush defeats an enemy, Cocoa instantly restores <em>${Math.round(S.killEnergy)}</em> Energy, reduces all her skill cooldowns by <em>${S.killCdr.toFixed(1)}s</em>, and bakes an emergency BonBon.`,
       passive: (u, B, S, P) => {
-        u.bonbonMax = (u.bonbonMax || 4) + P.extra;
+        u.bonbonMax = (u.bonbonMax || 5) + P.extra;
         u.bonbonRefund = S.refund;
+        u.flat.cdr = (u.flat.cdr || 0) + 0.15;
+        u.flat.healPowP = (u.flat.healPowP || 0) + 0.15;
+        u.flat.shieldPowP = (u.flat.shieldPowP || 0) + 0.15;
+        u.dirty = true;
         B.on(u, 'enemyDown', e => {
           const killer = e && e._lastHitBy;
-          if (killer && killer.team === u.team && killer.hasStatus('sugarrush')) { B.energy(u, 22); B.reduceCd(u, 2.0); B.bonbon(u, 1); }
+          if (killer && killer.team === u.team && killer.hasStatus('sugarrush')) {
+            B.energy(u, S.killEnergy);
+            B.reduceCd(u, S.killCdr);
+            B.bonbon(u, 1);
+            B.fxFloatIcon(u.x, u.y - 105, `🍬 TAKEDOWN TREAT +${Math.round(S.killEnergy)}⚡`, '#c98a5a');
+            Sound.play('item_pop', { vol: .4 });
+          }
         });
       }
     },
     R: {
       name: 'A Basket for Everyone', type: 'Max HP / Shield',
-      v: {}, p: { thr: .50 },
-      desc: (S, P) => `Cocoa starts at maximum BonBons. 🍬 Sugar Rush now also grants Crit Chance and CC Resistance. Any ally dropping below ${pc(P.thr)} HP is handed a free BonBon without spending storage. While every living ally has Sugar Rush, the team gains extra Haste and Energy generation, their buffs cannot be stripped, and they receive a steady Energy pulse. BonBons prepared while storage is full overflow directly to the lowest-HP ally.`,
+      v: { hasteBonus: .18, energyGen: .25, tickEnergy: 6 }, p: { thr: .50, lowCd: 6.0 },
+      desc: (S, P) => `<span class="sk-pas">Cocoa begins every battle with a full stock of BonBons. 🍬 Sugar Rush is permanently empowered with +15% Crit Chance, +25% Tenacity (CC Resistance), and immunity to being stripped. Any ally dropping below ${pc(P.thr)} HP automatically receives an emergency BonBon without consuming storage, granting instant Sugar Rush, 🍫 BonBon Blessing, and Lucky for 8s (once every ${P.lowCd}s per ally).</span>
+        <b>Sugar Symphony:</b> While all living allies are under Sugar Rush, the team enters a sweet frenzy: gaining +<em>${pcn(S.hasteBonus * 100)}</em> Cooldown Acceleration, +<em>${pcn(S.energyGen * 100)}</em> Energy Generation, full immunity to buff dispels, and a pulse of <em>${Math.round(S.tickEnergy)}</em> Energy every second. Any BonBons baked while storage is full overflow as instant healing treats to the lowest-HP ally (restoring 12% Max HP and 10 Energy).`,
       passive: (u, B, S, P) => {
-        u.bonbons = u.bonbonMax || 6;
+        u.bonbons = u.bonbonMax || 7;
         u.sugarPlus = true;
-        u.cocoaOverflow = true; u.cocoaOverflowDur = 8;
+        u.cocoaOverflow = true;
+        u.cocoaOverflowDur = 8;
         B.on(u, 'allyLow', a => {
-          if (a._freeBon && B.t - a._freeBon < 7) return;
+          if (a._freeBon && B.t - a._freeBon < P.lowCd) return;
           if (a.hpPct > P.thr) return;
           a._freeBon = B.t;
           B.applyStatus(u, a, 'sugarrush', 8);
+          B.applyStatus(u, a, 'bonbonblessing', 8);
           B.applyStatus(u, a, 'lucky', 8);
-          B.fxFloatIcon(a.x, a.y - 90, '🍬');
+          B.heal(u, a, u.max.hp * 0.10, { tag: 'Basket Rescue' });
+          B.fxSparkle(a.x, a.y - 45, 10, '#f3d3a7');
+          B.fxFloatIcon(a.x, a.y - 95, '🍬 EMERGENCY BASKET!', '#c98a5a');
+          Sound.play('item_pop', { vol: .45 });
         });
         B.every(u, 1, () => {
           const all = B.alliesOf(u);
-          const fullTeam = all.length && all.every(a => a.hasStatus('sugarrush'));
+          const fullTeam = all.length > 0 && all.every(a => a.hasStatus('sugarrush'));
           all.forEach(a => {
             const powered = a.hasStatus('sugarrush');
             if (powered) {
               B.applyStatus(u, a, 'lucky', 1.4);
               B.applyStatus(u, a, 'bonbonblessing', 1.4);
             }
-            a.flat.cdr7 = fullTeam ? .15 : 0;
-            a.flat.energyGen7 = fullTeam ? .20 : 0;
+            a.flat.cdr7 = fullTeam ? S.hasteBonus : 0;
+            a.flat.energyGen7 = fullTeam ? S.energyGen : 0;
             a._cocoaBuffGuardUntil = fullTeam ? B.t + 1.2 : 0;
             a.dirty = true;
-            if (fullTeam) B.energy(a, 5);
+            if (fullTeam) {
+              B.energy(a, S.tickEnergy);
+              if (chance(.25)) B.fxSparkle(a.x, a.y - 45, 4, '#e8b98a');
+            }
           });
         });
       }
@@ -1481,158 +1558,376 @@ defHero({
 });
 
 /* ============================================================ CONNIE
-   Evasive Support / Ghost - S Tier */
+   Evasive Spectral Support / Phantom Trickster - DHBM Standards */
 defHero({
   id: 'Connie', name: 'Connie', folder: 'Connie', file: 'Connie', icon: 'Connie',
-  role: 'Support', tier: 'S', element: 'Spirit',
-  blurb: 'A ghost who survives not by being tough but by being extremely difficult to interact with.',
-  base: { hp: 3200, atk: 205, def: 178, mag: 342, mdef: 292, spd: 128, acc: 190, eva: 235 },
-  hidden: { range: 275, aspd: 1.0, ms: 88, aggro: .30, crit: .12, critDmg: 1.65, healPow: 1.10, shieldPow: 1, cdr: .12, ccRes: .20, kbRes: .5, armorPen: 0, magPen: .18 },
-  growth: { hp: .072, atk: .068, def: .062, mag: .096, mdef: .086 },
+  role: 'Support', tier: 'SS', element: 'Spirit',
+  blurb: 'A playful and mischievous ghost Toon whose elusive phase-shifting, spectral decoys, and poltergeist pranks make her impossible to hit while turning enemy aggression into massive team acceleration.',
+  base: { hp: 3680, atk: 210, def: 195, mag: 388, mdef: 315, spd: 132, acc: 215, eva: 260 },
+  hidden: { range: 285, aspd: 1.05, ms: 92, aggro: .55, crit: .14, critDmg: 1.65, healPow: 1.20, shieldPow: 1.25, cdr: .16, ccRes: .25, kbRes: .45, armorPen: .10, magPen: .22 },
+  growth: { hp: .078, atk: .070, def: .068, mag: .102, mdef: .088 },
   move: { gait: 'float', bob: 8, freq: .9, lean: 4, squash: .03, hover: 22, idle: 'drift', step: null,
     particles: 'glow', pcol: '#bfe9ff', trail: { on: true, col: '#bfe9ff', rate: .09 }, brake: .12, sway: 8 },
-  basic: { name: 'Chill Touch', type: 'magic', ratio: .96, range: 275, proj: 'orb', pcol: '#bfe9ff',
-    sfx: 'whoosh', hit: 'hit_magic', wind: .22, note: 'Barely there, and colder than it looks.',
-    onHit: (u, t, B) => { if (chance(.25)) B.applyStatus(u, t, 'dizzy', 4); } },
+  basic: {
+    name: 'Poltergeist Touch',
+    type: 'magic',
+    ratio: 1.05,
+    range: 285,
+    proj: 'orb',
+    pcol: '#bfe9ff',
+    sfx: 'whoosh',
+    hit: 'hit_magic',
+    wind: .20,
+    note: 'Chills targets with ghostly ectoplasm and siphons energy for the squad.',
+    onHit: (u, t, B) => {
+      if (!t || !t.alive) return;
+      B.applyStatus(u, t, 'haunted', 6.0);
+      u._connieBasics = (u._connieBasics || 0) + 1;
+      if (u._connieBasics % 2 === 0) {
+        B.energy(t, -15);
+        const ally = B.lowestEnergy(B.alliesOf(u)) || u;
+        if (ally && ally.alive) {
+          B.energy(ally, 15);
+          B.fxSparkle(ally.x, ally.y - 45, 6, '#bfe9ff');
+          B.fxFloatIcon(ally.x, ally.y - 100, '👻 ECTO SIPHON +15⚡', '#bfe9ff');
+        }
+      }
+    }
+  },
   skills: {
+    // ---------------- WHITE SKILL (Ultimate): Haunting Escape & Séance
     W: {
-      name: 'Haunting Escape', type: 'Utility', energy: 100, cd: 18,
-      v: {}, p: { dur: 4, fear: 4, acc: .25 },
-      desc: (S, P) => `<span class="sk-pas">Connie's ghostly nature strips <em>${pc(P.acc)}</em> Accuracy from anything aiming at her, and every few seconds she can phase into a brief immunity to applied debuffs.</span> Enemies avoid targeting her while other allies stand.
-        Active: when pressured, she slips into the spirit world for ${P.dur}s, untargetable and cleansed of everything. On returning she frightens nearby enemies, cutting their Attack Speed and Accuracy for ${P.fear}s. The escape must recharge before she can vanish again.`,
-      ai: { cond: (u, B) => u.hpPct < .68 || B.enemiesOf(u).some(e => e.target === u && B.distance(e, u) < 245) },
-      passive: (u, B) => {
-        u.flat.aggro = -.7;
-        u.connieDebuffGuardAt = 0;
-        u.connieDebuffImmuneUntil = 0;
-        u.guards = u.guards || [];
-        u.guards.push((id, d, battle) => {
-          if (!d || d.kind !== 'debuff') return false;
-          if (battle.t < u.connieDebuffImmuneUntil) return true;
-          if (battle.t < u.connieDebuffGuardAt) return false;
-          u.connieDebuffGuardAt = battle.t + 7;
-          u.connieDebuffImmuneUntil = battle.t + 2.2;
-          B.applyStatus(u, u, 'ccimmune', 2.2);
-          return true;
+      name: 'Haunting Escape',
+      type: 'Support / Area Control',
+      energy: 100,
+      cd: 16,
+      v: { dmg: 1.80, veilEva: .35 },
+      p: { dur: 3.5, fear: 4.0 },
+      desc: (S, P) => `<span class="sk-pas">Connie permanently gains +25% Evasion. Whenever Connie or an ally dodges an attack, she unleashes a Poltergeist Backlash dealing Magic Damage to the attacker, siphoning 10 Energy, and cutting Connie's cooldowns by 1.5s. Every 8s (or upon dodging 2 attacks), she spawns a Phantom Decoy with 25% Max HP that taunts nearby foes.</span> Active: Connie slips into the Spirit Realm for ${P.dur}s (completely Untargetable, cleanses all debuffs). While vanished, an Ectoplasmic Veil grants all allies +<em>${pcn(S.veilEva * 100)}</em> Evasion, Ward (-30% damage taken), and regenerates 4% Max HP/sec. Re-emerging in the enemy ranks unleashes a terrifying "BOO!": dealing <em>${pcn(S.dmg * 100)}</em> Magic Damage, Stunning all enemies for 1.8s, and inflicting 😱 Terrified (-30% Accuracy and Attack Speed) for ${P.fear}s.`,
+      ai: { cond: (u, B) => u.hpPct < .80 || B.enemiesOf(u).some(e => e.target === u) },
+      passive: (u, B, S, P) => {
+        u.flat.evaP = (u.flat.evaP || 0) + 0.25;
+        u.dirty = true;
+        u._connieDodgeCount = 0;
+        u._connieDecoyAt = 0;
+
+        const summonDecoy = () => {
+          if (!u.alive || B.minionsOf(u).length >= 2) return;
+          B.fxConnieSkill('phantom', u, { twisted: u.twisted });
+          Sound.play('unsummon', { vol: .4 });
+          B.summon(u, {
+            name: u.twisted ? 'Twisted Phantom' : 'Phantom Decoy',
+            art: Art.unit('Connie', u.twisted),
+            hp: u.max.hp * .25,
+            scale: .8,
+            life: 6,
+            taunt: 260,
+            tint: u.twisted ? '#df4c9e' : '#bfe9ff',
+            offset: rndi(-50, 50),
+            noSkills: true
+          });
+          B.fxFloatIcon(u.x, u.y - 100, '👻 PHANTOM DECOY', '#bfe9ff');
+        };
+
+        B.on(u, 'dodged', ev => {
+          u._connieDodgeCount = (u._connieDodgeCount || 0) + 1;
+          if (ev.src && ev.src.alive && ev.src.team !== u.team) {
+            B.damage(u, ev.src, u.st.mag * .65, { type: 'magic', tag: 'Poltergeist Backlash' });
+            B.energy(ev.src, -10);
+            B.reduceCd(u, 1.5);
+            B.fxConnieSkill('dodge', u);
+          }
+          if (u._connieDodgeCount % 2 === 0) summonDecoy();
         });
-        B.on(u, 'damaged', ev => { if (ev.src) ev.amount *= .82; });
+
+        B.on(u, 'allyDodged', ev => {
+          if (ev.src && ev.src.alive && ev.src.team !== u.team) {
+            B.damage(u, ev.src, u.st.mag * .45, { type: 'magic', tag: 'Poltergeist Backlash' });
+            B.reduceCd(u, 1.0);
+          }
+        });
+
+        B.every(u, 8.0, () => summonDecoy());
       },
       cast: (u, B, S, P) => {
         B.anim(u, 'cast', .72, 'connieEscape');
-        Sound.play('unsummon', { vol: u.twisted ? .48 : .36 });
+        Sound.play('unsummon', { vol: .5 });
         B.fxConnieSkill('escape', u, { phase: 'cast', dur: P.dur });
-        B.after(.24, () => {
-          if (!u.alive) return;
-          Sound.play('explode', { vol: u.twisted ? .48 : .36 });
-          B.fxConnieSkill('escape', u, { phase: 'burst', dur: P.dur });
-        });
+
         B.applyStatus(u, u, 'untargetable', P.dur);
         B.cleanseAll(u);
+
+        // Apply Ectoplasmic Veil to team
+        B.alliesOf(u).forEach(a => {
+          B.applyStatus(u, a, 'ward', P.dur);
+          a.flat.evaP_veil = S.veilEva;
+          a.dirty = true;
+          B.applyStatus(u, a, 'regen', P.dur, { val: a.max.hp * .04 });
+          B.fxSparkle(a.x, a.y - 45, 8, '#bfe9ff');
+          B.fxFloatIcon(a.x, a.y - 100, '👻 ECTOPLASMIC VEIL', '#bfe9ff');
+        });
+
         B.after(P.dur, () => {
+          B.alliesOf(u).forEach(a => {
+            a.flat.evaP_veil = 0;
+            a.dirty = true;
+          });
+
           if (!u.alive) return;
-          B.anim(u, 'cast', .46, 'connieReturn');
-          Sound.play('gasp', { vol: u.twisted ? .52 : .4 });
-          B.fxConnieSkill('escape', u, { phase: 'return', dur: P.fear });
-          B.flash(u.twisted ? '#d84b92' : '#bfe9ff', .28, .3); B.shake(8, .3);
+          B.anim(u, 'cast', .48, 'connieReturn');
+          Sound.play('gasp', { vol: .55 });
+          Sound.play('fanfare', { vol: .6 });
+          B.flash('#bfe9ff', .35, .25);
+          B.shake(10, .35);
+
+          // BOO! Jumpscare return
           B.enemiesOf(u).forEach(e => {
-            if (B.distance(e, u) > 300) return;
+            if (!e.alive) return;
+            B.damage(u, e, u.st.mag * S.dmg, { type: 'magic', tag: 'Haunting Return' });
+            B.applyStatus(u, e, 'stun', 1.8);
             B.applyStatus(u, e, 'slow', P.fear, { stacks: 2 });
             B.applyStatus(u, e, 'dizzy', P.fear);
+            B.applyStatus(u, e, 'terrified', P.fear);
             B.fxConnieSkill('fear', u, { target: e, dur: P.fear });
           });
+          B.fxFloatIcon(u.x, u.y - 110, '👻 BOO! JUMPSCARE!', '#bfe9ff');
         });
       }
     },
+
+    // ---------------- GREEN SKILL: Phantom Prank
     G: {
-      name: 'Phantom Prank', type: 'Magic Damage', cd: 9,
-      v: { ratio: 1.15 }, p: { dur: 7 },
-      desc: (S, P) => `Connie blinks behind the enemy backline and strikes the farthest target for <em>${pcn(S.ratio * 100)}</em> Magic, leaving them 👁 Haunted for ${P.dur}s: far more damage taken from Connie, and much slower skill recharge.`,
-      ai: { prio: 58, cond: () => true },
-      cast: (u, B, S, P) => {
-        const t = B.farthestN(u, B.enemiesOf(u), 1)[0]; if (!t) return;
-        u.face = t.x >= u.x ? 1 : -1;
-        B.anim(u, 'wind', .68, 'conniePrankWindup');
-        Sound.play('unsummon', { vol: u.twisted ? .38 : .28 });
-        B.fxConnieSkill('prank', u, { phase: 'cast', target: t });
-        B.after(.32, () => {
-          if (!u.alive || !t.alive) return;
-          B.anim(u, 'attack', .42, 'conniePrankStrike');
-          Sound.play('dash', { vol: u.twisted ? .52 : .4 });
-          B.blink(u, t.x + u.face * 60, t.depth);
-        });
-        B.after(.48, () => {
-          if (!u.alive || !t.alive) return;
-          Sound.play('hit_magic', { vol: u.twisted ? .5 : .38 }); B.hitstop(60); B.shake(7, .25);
-          B.fxConnieSkill('prank', u, { phase: 'impact', target: t });
-          B.damage(u, t, u.st.mag * S.ratio, { type: 'magic', tag: 'Phantom Prank' });
-          B.applyStatus(u, t, 'haunted', P.dur);
-        });
-      },
+      name: 'Phantom Prank',
+      type: 'Backline Ambush / Shielding',
+      cd: 9.0,
+      v: { ratio: 1.65, shield: .22 },
+      p: { dur: 8.0, daze: 2.5 },
+      desc: (S, P) => `<span class="sk-pas">Enemies afflicted by 👻 Haunted take 30% increased Magic Damage from all allies and have their skill cooldown recovery slowed by 25%.</span> Active: Connie phases behind the highest-Attack or Energy enemy, dealing <em>${pcn(S.ratio * 100)}</em> Magic Damage, stripping 2 buffs, and draining 35 Energy. Leaves an Ectoplasmic Trap that Dazes nearby enemies for ${P.daze}s and marks them Haunted for ${P.dur}s, then blinks back to her squad granting the lowest-HP ally a Spectral Shroud (<em>${pcn(S.shield * 100)}</em> Max HP shield + cleanses 1 debuff).`,
+      ai: { prio: 60, cond: () => true },
       passive: (u, B) => {
-        B.on(u, 'dealDamage', ev => { if (ev.target.hasStatus('haunted')) ev.amount *= 1.35; });
-      }
-    },
-    B: {
-      name: 'Spectral Drift', type: 'Self Buff', cd: 12,
-      v: { eva: .35 }, p: { dur: 7 },
-      desc: (S, P) => `For ${P.dur}s Connie phases through attacks, gaining <em>${pcn(S.eva * 100)}</em> Evasion and Move Speed. Every dodge restores Energy and pulls Haunting Escape closer.`,
-      ai: { prio: 54, cond: (u) => u.hpPct < .95 },
-      cast: (u, B, S, P) => {
-        B.anim(u, 'cast', .52, 'connieDrift');
-        Sound.play('dash', { vol: u.twisted ? .45 : .34 });
-        B.fxConnieSkill('drift', u, { phase: 'cast', dur: P.dur });
-        u.flat.evaP2 = S.eva; u.dirty = true;
-        B.applyStatus(u, u, 'speedup', P.dur, { stacks: 2 });
-        B.after(P.dur, () => {
-          u.flat.evaP2 = 0; u.dirty = true;
-          B.fxConnieSkill('drift', u, { phase: 'end' });
-        });
-      },
-      passive: (u, B) => {
-        B.on(u, 'dodged', () => {
-          B.energy(u, 10); u.cds.W = Math.max(0, (u.cds.W || 0) - 1.1);
-          B.fxConnieSkill('dodge', u);
-        });
-      }
-    },
-    P: {
-      name: 'Ghostly Presence', type: 'Control',
-      v: {}, p: { drain: 6, fear: 3 },
-      desc: (S, P) => `Enemies begin combat with reduced Accuracy and slower Energy gain. Anything that misses Connie becomes 😱 Afraid for ${P.fear}s, dealing less damage.`,
-      passive: (u, B, S, P) => {
-        B.after(.3, () => {
-          const foes = B.enemiesOf(u);
-          foes.forEach(e => {
-            B.applyStatus(u, e, 'dizzy', 999); B.applyStatus(u, e, 'drain', P.drain);
-          });
-          B.fxConnieSkill('presence', u, { targets: foes });
-        });
-        B.on(u, 'dodged', ev => {
-          if (ev.src) {
-            B.applyStatus(u, ev.src, 'weaken', P.fear, { stacks: 2 });
-            B.fxConnieSkill('fear', u, { target: ev.src, dur: P.fear });
+        B.on(u, 'allyDamageDealt', ev => {
+          if (ev.target && ev.target.alive && ev.target.hasStatus('haunted') && ev.type === 'magic') {
+            ev.amount *= 1.30;
           }
         });
+      },
+      cast: (u, B, S, P) => {
+        const t = B.highestStat(B.enemiesOf(u), 'atk') || B.highestEnergy(B.enemiesOf(u)) || B.enemiesOf(u)[0];
+        if (!t) return;
+        const returnX = u.x;
+        u.face = t.x >= u.x ? 1 : -1;
+
+        B.anim(u, 'wind', .35, 'conniePrankWindup');
+        Sound.play('unsummon', { vol: .4 });
+        B.fxConnieSkill('prank', u, { phase: 'cast', target: t });
+
+        B.after(.18, () => {
+          if (!u.alive || !t.alive) return;
+          B.blink(u, t.x + (u.face * -55), t.depth);
+          B.anim(u, 'attack', .38, 'conniePrankStrike');
+          Sound.play('dash', { vol: .5 });
+
+          B.after(.22, () => {
+            if (!u.alive || !t.alive) return;
+            Sound.play('hit_magic', { vol: .6 });
+            B.hitstop(80);
+            B.shake(8, .25);
+            B.fxConnieSkill('prank', u, { phase: 'impact', target: t });
+
+            B.dispel(t, 2);
+            B.energy(t, -35);
+            B.damage(u, t, u.st.mag * S.ratio, { type: 'magic', tag: 'Phantom Prank' });
+
+            // Area trap
+            B.enemiesOf(u).filter(e => e.alive && B.distance(e, t) < 170).forEach(e => {
+              B.applyStatus(u, e, 'dazed', P.daze);
+              B.applyStatus(u, e, 'haunted', P.dur);
+              B.fxConnieSkill('fear', u, { target: e, dur: P.dur });
+            });
+
+            // Blink back & shield ally
+            B.after(.25, () => {
+              if (!u.alive) return;
+              B.blink(u, returnX, u.depth);
+              const ally = B.lowestHp(B.alliesOf(u)) || u;
+              if (ally && ally.alive) {
+                B.cleanse(ally, 1);
+                B.shield(u, ally, u.max.hp * S.shield, 6.0);
+                B.fxSparkle(ally.x, ally.y - 45, 8, '#bfe9ff');
+                B.fxFloatIcon(ally.x, ally.y - 100, '🛡 SPECTRAL SHROUD', '#bfe9ff');
+              }
+            });
+          });
+        });
       }
     },
-    R: {
-      name: 'Beyond the Veil', type: 'Magic Damage / Support',
-      v: { eva: .18 }, p: { veil: 2.2 },
-      desc: (S, P) => `Every skill Connie casts drops her into the Veil for ${P.veil}s: untargetable, while allies gain <em>${pcn(S.eva * 100)}</em> Evasion. Each attack she avoids leaves a Phantom Copy that soaks one hit meant for the team.`,
-      passive: (u, B, S, P) => {
-        B.on(u, 'cast', () => {
-          B.applyStatus(u, u, 'untargetable', P.veil);
-          B.alliesOf(u).forEach(a => { a.flat.evaP3 = S.eva; a.dirty = true; });
-          B.fxConnieSkill('veil', u, { allies: B.alliesOf(u), dur: P.veil });
-          B.after(P.veil, () => B.alliesOf(u).forEach(a => { a.flat.evaP3 = 0; a.dirty = true; }));
+
+    // ---------------- BLUE SKILL: Spectral Drift & Bait
+    B: {
+      name: 'Spectral Drift',
+      type: 'Evasion Buff / Retaliatory Shielding',
+      cd: 10.0,
+      v: { eva: .50, move: .30 },
+      p: { dur: 7.0, energy: 15 },
+      desc: (S, P) => `<span class="sk-pas">Mischievous Bait: Connie taunts attackers away from backline allies. Whenever an enemy misses Connie, they are afflicted with 💫 Dizzy and ⏳ Slow for 4s.</span> Active: Connie enters Spectral Drift for ${P.dur}s, gaining +<em>${pcn(S.eva * 100)}</em> Evasion and +<em>${pcn(S.move * 100)}</em> Move Speed. Every attack avoided during the drift restores ${P.energy} Energy and grants all allies a 5% Max HP shield (stacks up to 5 times). Avoiding at least 2 attacks instantly resets Phantom Prank's cooldown!`,
+      ai: { prio: 56, cond: () => true },
+      passive: (u, B) => {
+        B.on(u, 'enemyMissed', ev => {
+          if (ev.src && ev.src.alive && ev.target === u) {
+            B.applyStatus(u, ev.src, 'dizzy', 4.0);
+            B.applyStatus(u, ev.src, 'slow', 4.0, { stacks: 1 });
+            B.fxFloatIcon(ev.src.x, ev.src.y - 95, '💫 DIZZY', '#ffd166');
+          }
         });
-        B.on(u, 'dodged', () => {
-          if (B.minionsOf(u).length >= 2) return;
-          B.fxConnieSkill('phantom', u, { twisted: u.twisted });
-          B.summon(u, {
-            name: u.twisted ? 'Twisted Phantom' : 'Phantom', art: Art.unit('Connie', u.twisted), hp: 1, scale: .8, life: 8,
-            taunt: 240, tint: u.twisted ? '#df4c9e' : '#bfe9ff', offset: rndi(-70, 70), noSkills: true
+      },
+      cast: (u, B, S, P) => {
+        B.anim(u, 'cast', .52, 'connieDrift');
+        Sound.play('dash', { vol: .48 });
+        B.fxConnieSkill('drift', u, { phase: 'cast', dur: P.dur });
+
+        u._driftDodges = 0;
+        u.flat.evaP_drift = S.eva;
+        u.dirty = true;
+        B.applyStatus(u, u, 'speedup', P.dur, { stacks: 2 });
+
+        const onDriftDodge = () => {
+          u._driftDodges = (u._driftDodges || 0) + 1;
+          B.alliesOf(u).forEach(a => {
+            B.energy(a, P.energy);
+            B.shield(u, a, u.max.hp * .05, 6.0);
           });
+          B.fxFloatIcon(u.x, u.y - 100, `💨 DRIFT DODGE (${u._driftDodges})`, '#bfe9ff');
+          if (u._driftDodges === 2) {
+            u.cds.G = 0;
+            B.fxFloatIcon(u.x, u.y - 120, '✨ PRANK RESET!', '#38bdf8');
+          }
+        };
+
+        const unhook = B.on(u, 'dodged', onDriftDodge);
+
+        B.after(P.dur, () => {
+          u.flat.evaP_drift = 0;
+          u.dirty = true;
+          B.fxConnieSkill('drift', u, { phase: 'end' });
+          if (unhook) unhook();
+        });
+      }
+    },
+
+    // ---------------- PURPLE SKILL: Spiritual Tether
+    P: {
+      name: 'Spiritual Tether',
+      type: 'Ally Cleanse / Damage Redirection',
+      v: { heal: .18, tetherEva: .30 },
+      p: { share: .40, cd: 8.0 },
+      desc: (S, P) => `When an ally drops below 50% HP or suffers Hard Crowd Control (Stun, Freeze, Silence, Daze), Connie instantly binds a Spiritual Tether to them: cleansing all crowd control, granting +<em>${pcn(S.tetherEva * 100)}</em> Evasion, nullifying 40% of incoming damage through spirit redirection, and healing them for <em>${pcn(S.heal * 100)}</em> Max HP over 5s while granting Connie +25% Skill Haste. (8s cooldown per ally).`,
+      passive: (u, B, S, P) => {
+        u._tetherAllyCds = u._tetherAllyCds || {};
+
+        const tetherAlly = a => {
+          if (!a || !a.alive || a.team !== u.team || a === u) return;
+          const uid = a.uid || a.id;
+          if (B.t < (u._tetherAllyCds[uid] || 0)) return;
+          u._tetherAllyCds[uid] = B.t + P.cd;
+
+          Sound.play('cure_all', { vol: .55 });
+          B.cleanse(a, 99);
+          B.applyStatus(u, a, 'lucky', 5.0);
+          B.heal(u, a, u.max.hp * S.heal, { tag: 'Spiritual Tether' });
+
+          // Share evasion and nullify 40% damage
+          a.flat.evaP_tether = S.tetherEva;
+          a.flat.dmgTaken_tether = -P.share;
+          a.dirty = true;
+          B.applyStatus(u, u, 'haste', 5.0);
+
+          B.anim(u, 'cast', .35, 'connieTether');
+          B.fxSparkle(a.x, a.y - 45, 10, '#bfe9ff');
+          B.fxFloatIcon(a.x, a.y - 105, '🔗 SPIRITUAL TETHER', '#bfe9ff');
+
+          B.after(5.0, () => {
+            a.flat.evaP_tether = 0;
+            a.flat.dmgTaken_tether = 0;
+            a.dirty = true;
+          });
+        };
+
+        B.on(u, 'allyDamaged', ev => {
+          if (ev.unit && ev.unit.hpPct < .50) tetherAlly(ev.unit);
+        });
+
+        B.on(u, 'statusApplied', ev => {
+          if (ev.unit && ev.unit.team === u.team && STATUS[ev.id]?.cc) tetherAlly(ev.unit);
+        });
+      }
+    },
+
+    // ---------------- RED SKILL: Beyond the Veil
+    R: {
+      name: 'Beyond the Veil',
+      type: 'Vengeful Spirits / Lethal Rescue',
+      v: { wispDmg: .85, saveHp: .35 },
+      p: { veilEva: .20, blind: 3.5 },
+      desc: (S, P) => `Connie dissolves the veil between worlds! At wave start, all allies gain Ghostly Mist (+20% Evasion and +20% Magic Penetration). Whenever Connie or an ally dodges, Connie launches a Vengeful Spirit at the nearest enemy, exploding for <em>${pcn(S.wispDmg * 100)}</em> Magic Damage and Blinding them for ${P.blind}s. Once per battle when an ally would suffer lethal damage, Connie pulls them into the Veil for 3.0s: granting complete Invulnerability, full cleanse, swapping them with a Phantom Decoy that absorbs the blow, and restoring 35% Max HP.`,
+      passive: (u, B, S, P) => {
+        const deployMist = () => {
+          if (!u.alive) return;
+          B.alliesOf(u).forEach(a => {
+            a.flat.evaP_mist = P.veilEva;
+            a.flat.magPen = (a.flat.magPen || 0) + 0.20;
+            a.dirty = true;
+            B.fxSparkle(a.x, a.y - 45, 8, '#bfe9ff');
+          });
+          B.fxFloatIcon(u.x, u.y - 110, '🌫 GHOSTLY MIST ACTIVE', '#bfe9ff');
+        };
+
+        B.on(u, 'waveStart', deployMist);
+        B.after(.35, deployMist);
+
+        // Vengeful spirit on dodges
+        const fireWisp = () => {
+          if (!u.alive) return;
+          const target = B.nearest(u, B.enemiesOf(u).filter(e => e.alive));
+          if (!target) return;
+          Sound.play('hit_magic', { vol: .45 });
+          B.fxArc(u, target, { kind: 'item', img: 'Bonbon', size: 24, col: '#bfe9ff' }, () => {
+            if (!target.alive) return;
+            B.damage(u, target, u.st.mag * S.wispDmg, { type: 'magic', tag: 'Vengeful Spirit' });
+            B.applyStatus(u, target, 'blind', P.blind);
+            B.fxSparkle(target.x, target.y - 45, 8, '#bfe9ff');
+          });
+        };
+
+        B.on(u, 'dodged', fireWisp);
+        B.on(u, 'allyDodged', fireWisp);
+
+        // Lethal damage rescue
+        B.on(u, 'allyLethal', ev => {
+          const a = ev.unit;
+          if (!a || a.team !== u.team || u._veilRescueUsed) return;
+          u._veilRescueUsed = true;
+          ev.prevented = true;
+          a.hp = a.max.hp * P.saveHp;
+          B.cleanse(a, 99);
+          B.applyStatus(u, a, 'untargetable', 3.0);
+          B.applyStatus(u, a, 'ward', 3.0);
+
+          // Spawn Decoy at ally position
+          B.fxConnieSkill('phantom', a, { twisted: u.twisted });
+          B.summon(u, {
+            name: 'Rescue Phantom',
+            art: Art.unit('Connie', u.twisted),
+            hp: u.max.hp * .3,
+            scale: .8,
+            life: 6,
+            taunt: 260,
+            x: a.x,
+            tint: '#bfe9ff'
+          });
+
+          Sound.play('fanfare', { vol: .8 });
+          B.flash('#bfe9ff', .4, .25);
+          B.fxFloatIcon(a.x, a.y - 120, '👻 PHANTASMAL RESCUE!', '#bfe9ff');
         });
       }
     }

@@ -632,7 +632,7 @@ function makeTwisted(id, level, kind, extra) {
     rarity: rarityTier,
     rarityPlus: kind === 'boss' ? (rarityTier >= 6 ? 30 : 20) : rarityPlusForLevel(level, rarityTier, `${id}-${kind || 'normal'}`),
     stars: kind === 'boss' ? 5 : clamp(1 + Math.floor(level / 70), 1, 5),
-    skillLv: Math.max(1, Math.round(level * (kind === 'boss' ? (lethalBoss ? 1.45 : 1.1) : elite ? .95 : .8))),
+    skillLv: enemySkillLevel(level * (lethalBoss ? 1.15 : 1), kind === 'boss' ? 'boss' : kind === 'elite' || elite ? 'elite' : 'normal'),
     mult: {
       hp: mod.hp * dandyBossScale.hp,
       atk: mod.atk * dandyBossScale.atk,

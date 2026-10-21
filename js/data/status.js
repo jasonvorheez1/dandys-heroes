@@ -198,6 +198,22 @@ const STATUS = {
      counterplay, not a permanent shutdown. */
   buffsealed: { icon: '🚫', name: 'Buff Sealed', kind: 'debuff', max: 3,
     desc: 'The next hostile buff applied to this unit is prevented. Consumes one stack.' },
+  stratigraphy: { icon: '🔍', name: 'Stratigraphy', kind: 'debuff', max: 5,
+    desc: 'Geological analysis exposes weaknesses: Magic Defense and Crit Resistance reduced.',
+    mods: (m, s) => { m.mdefP -= 0.08 * (s.stacks || 1); m.critDmgTaken = (m.critDmgTaken || 0) + 0.06 * (s.stacks || 1); } },
+  fullyresearched: { icon: '🦴', name: 'Fully Researched', kind: 'debuff',
+    desc: 'Paleontological analysis complete: deals 20% less damage and takes 30% increased skill damage.',
+    mods: m => { m.dmgDealt -= 0.20; m.dmgTaken += 0.15; },
+    onDamaged: (u, s, ev, B) => { if (!ev.basic && !ev.dot) ev.amount *= 1.30; } },
+  amberstasis: { icon: '💎', name: 'Amber Stasis', kind: 'buff',
+    desc: 'Preserved inside prehistoric amber: immune to all damage and debuffs.',
+    flags: { ccImmune: true, untargetable: true } },
+  haunted: { icon: '👻', name: 'Haunted', kind: 'debuff',
+    desc: 'Afflicted by poltergeist mischief: Accuracy and Attack Speed reduced by 15%. Takes increased Magic Damage.',
+    mods: m => { m.accP -= .15; m.aspdP -= .15; } },
+  terrified: { icon: '😱', name: 'Terrified', kind: 'debuff', cc: true,
+    desc: 'Terrified by Connie’s jumpscare: Accuracy and Attack Speed reduced by 30%.',
+    mods: m => { m.accP -= .30; m.aspdP -= .30; } },
 
   /* ---- sealed-world office machine mechanics ----
      These live in the shared catalog (rather than being appended by the
@@ -610,6 +626,20 @@ const STATUS = {
   flightpath: { icon: '🕊', name: 'Flight Path', kind: 'buff',
     desc: 'Move Speed, Attack Speed, cooldown recovery and CC Resistance all raised.',
     mods: m => { m.msP += .20; m.aspdP += .15; m.cdr += .15; m.ccRes += .15; } },
+  slipstream: { icon: '💨', name: 'Slipstream', kind: 'buff',
+    desc: 'Move Speed +25%, Attack Speed +20%, and Slow Immunity.',
+    mods: m => { m.msP += .25; m.aspdP += .20; } },
+  galebarrier: { icon: '🛡️', name: 'Gale Barrier', kind: 'buff',
+    desc: 'Protective aerodynamic barrier absorbing damage. Reduces incoming damage by 15% and converts 20% into Energy.',
+    mods: m => { m.dmgTaken -= .15; } },
+  turbulence: { icon: '🌪️', name: 'Turbulence', kind: 'debuff', max: 3,
+    desc: 'Violent aerodynamic turbulence reduces Attack Speed by 20% and Damage Dealt by 15% per stack.',
+    mods: (m, s) => { m.aspdP -= .20 * s.stacks; m.dmgDone -= .15 * s.stacks; } },
+  distracted: { icon: '💫', name: 'Distracted', kind: 'debuff',
+    desc: 'Forced to target the distracter; Accuracy and Critical Chance reduced.',
+    flags: { taunt: true }, mods: m => { m.accP -= .20; m.crit -= .15; } },
+  taunt: { icon: '🎯', name: 'Taunted', kind: 'debuff',
+    desc: 'Forced to target the taunter with attacks.' },
 
   /* ---- Waxwell's remote terrain network ---- */
   tiredii: { icon: '🕯', name: 'Tired II', kind: 'special',

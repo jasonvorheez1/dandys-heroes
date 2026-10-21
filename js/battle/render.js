@@ -173,11 +173,17 @@ const BattleScreen = {
     const inner = el('div', 'wrap-inner');
     box.appendChild(inner);
 
-    const machineTitle = res.machineSuccess ? 'EXTRACTION COMPLETE!' : res.machineReduced ? 'CHECK FAILED!' : 'MACHINE INTERRUPTED!';
+    const isTreadmill = !!(cfg.machine && cfg.machine.machineType === 'treadmill');
+    const machineTitle = res.machineSuccess
+      ? (isTreadmill ? 'TREADMILL CHARGED!' : 'EXTRACTION COMPLETE!')
+      : res.machineReduced
+        ? (isTreadmill ? 'TRIPPED ON BELT!' : 'CHECK FAILED!')
+        : 'MACHINE INTERRUPTED!';
+    const machineKicker = isTreadmill ? 'TREADMILL GENERATOR // PAYOUT' : 'ICHOR MACHINE // PAYOUT';
     const title = el('div', 'wrap-title' + (res.win ? '' : ' lose'),
       cfg.machine ? machineTitle : (res.win ? "THAT'S A WRAP!" : 'LIGHTS OUT!'));
     inner.appendChild(title);
-    inner.appendChild(el('div', 'wrap-kicker', cfg.machine ? 'ICHOR MACHINE // PAYOUT' : 'RESULTS'));
+    inner.appendChild(el('div', 'wrap-kicker', cfg.machine ? machineKicker : 'RESULTS'));
 
     if (res.win) Sound.play('cheer_big', { vol: .72 });
     else Sound.play('twisted_caught', { vol: .58, priority: true });
@@ -210,7 +216,12 @@ const BattleScreen = {
 
     // the stat roll-call, Ichor deliberately last and largest
     const lines = [];
-    if (cfg.machine) lines.push(['Machine Payout...', res.machineSuccess ? 'FULL REWARD LOCKED IN!' : res.machineReduced ? '10% REWARD · BATTLE ALERTED!' : 'ROOM CLOSED BEFORE EXTRACTION.']);
+    if (cfg.machine) {
+      lines.push([
+        isTreadmill ? 'Generator Payout...' : 'Machine Payout...',
+        res.machineSuccess ? 'FULL REWARD LOCKED IN!' : res.machineReduced ? '10% REWARD · BATTLE ALERTED!' : 'ROOM CLOSED BEFORE EXTRACTION.'
+      ]);
+    }
     lines.push(['You Survived...', b.meta.survivedLabel || (b.meta.title || 'the room')]);
     lines.push(['You Encountered...', b.meta.encounteredLabel ||
       (foes.length + ' Twisted' + (foes.length === 1 ? '' : 's') + '!')]);
@@ -433,7 +444,7 @@ function rivalSpec(id, level, opt) {
     stars: opt.stars || clamp(1 + Math.floor(level / 80), 1, 5),
     rarity,
     rarityPlus: opt.rarityPlus == null ? rarityPlusForLevel(level, rarity, opt.buildSeed || id) : opt.rarityPlus,
-    skillLv: opt.skillLv || Math.max(1, Math.round(level * .9)),
+    skillLv: opt.skillLv || enemySkillLevel(level, 'rival'),
     cls: opt.cls || training.cls, subcls: opt.subcls || training.subcls,
     cls2: opt.cls2 || null, subcls2: opt.subcls2 || null,
     classRank: opt.classRank || training.classRank,

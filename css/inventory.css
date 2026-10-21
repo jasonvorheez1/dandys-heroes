@@ -15,3 +15,38 @@
 .inventory-material-card{display:flex;align-items:center;gap:8px;min-width:0;min-height:77px;padding:8px;border:3px solid #090d0e;border-radius:12px;color:#f3f8e9;background:linear-gradient(145deg,#485554,#293536);box-shadow:inset 0 1px #fff3,0 4px #101617}.inventory-material-icon{display:grid;place-items:center;flex:0 0 39px;width:39px;height:39px;border:2px solid #1a2829;border-radius:9px;background:#182326;box-shadow:inset 0 1px #fff2}.inventory-material-icon img{width:29px;height:29px;object-fit:contain}.inventory-material-icon:not(:has(img)){font-size:22px}.inventory-material-copy{display:grid;min-width:0}.inventory-material-copy>b{color:#f4ffcf;font-size:16px;line-height:1}.inventory-material-copy>strong{margin-top:3px;overflow:hidden;color:#eef6e9;font-size:8px;text-overflow:ellipsis;white-space:nowrap}.inventory-material-copy>small{display:-webkit-box;overflow:hidden;margin-top:3px;color:#a9c0b7;font-size:6px;line-height:1.25;-webkit-box-orient:vertical;-webkit-line-clamp:2}
 .inventory-craft-card{min-width:0;padding:8px;border:3px solid #090d0e;border-radius:12px;color:#f3f8e9;background:linear-gradient(145deg,#51476a,#2d2b48 62%,#252436);box-shadow:inset 0 1px #fff3,0 4px #101217}.inventory-craft-art{display:grid;place-items:center;height:72px;border-radius:8px;background:radial-gradient(circle at 50% 46%,#b696e755,transparent 58%),repeating-linear-gradient(135deg,#fff1 0 2px,transparent 2px 13px)}.inventory-craft-art img{width:65px;height:65px;object-fit:contain;filter:drop-shadow(0 4px 2px #0008)}.inventory-craft-copy{display:grid;min-width:0;padding:7px 2px 0}.inventory-craft-copy>b{overflow:hidden;color:#fff5d2;font-size:10px;text-overflow:ellipsis;white-space:nowrap}.inventory-craft-copy>small{margin-top:3px;color:#c8c0e4;font-size:6px}.inventory-craft-button{display:flex;align-items:center;justify-content:space-between;width:100%;margin-top:7px;padding:7px 6px;border:3px solid #151025;border-radius:8px;color:#332611;background:linear-gradient(180deg,#ffe98b,#dda94b);box-shadow:inset 0 1px #fff9,0 3px #17131f;font-size:7px;font-weight:1000}.inventory-craft-button b{font-size:8px}.inventory-craft-button:active{transform:translateY(3px);box-shadow:inset 0 1px #fff9,0 0 #17131f}.inventory-craft-button:disabled{filter:grayscale(.7);opacity:.48;pointer-events:none}.craft-info{border-color:#5b4a77;background:linear-gradient(135deg,#322947,#25223a)}.craft-info>i{color:#3c2d23;background:#f2d875}
 @media(max-width:380px){.inventory-hero{min-height:106px;padding:11px 9px}.inventory-hero-copy{max-width:70%}.inventory-hero-copy h1{font-size:22px}.inventory-hero-copy p{font-size:7px}.inventory-scrap{min-width:58px}.inventory-grid{gap:6px}.inventory-trinket-card{grid-template-columns:43px minmax(0,1fr) 10px;padding:6px;min-height:94px}.inventory-item-art{width:39px;height:48px}.inventory-item-art img{width:34px;height:39px}.inventory-item-copy>b{font-size:9px}.inventory-item-copy>span{font-size:5px}.inventory-material-card{padding:6px}.inventory-material-copy>small{font-size:5px}}
+
+/* Rank progression is visible wherever a Trinket can be compared or equipped. */
+.inventory-item-copy .inventory-best-bonus{color:#e4ffa1;font-size:7px;font-weight:800;white-space:normal}
+.trinket-rank-track{height:6px;overflow:hidden;border:1px solid #172b27;border-radius:99px;background:#172223;box-shadow:inset 0 1px 2px #0008}
+.trinket-rank-track i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,#80d9cc,#d9f785 70%,#ffe895);box-shadow:0 0 7px #cfff9d77}
+.trinket-rank-card{margin-bottom:8px;border-color:#506e61;background:linear-gradient(145deg,#2a3b39,#222b31)}
+.trinket-rank-card-head{display:flex;align-items:center;gap:9px;min-width:0}
+.trinket-rank-badge{flex:none;display:grid;place-items:center;width:39px;height:39px;border:2px solid #143b37;border-radius:10px;color:#203d2d;background:linear-gradient(145deg,#e5ff9f,#88d8b0);font:1000 14px/1 Arial,sans-serif}
+.trinket-rank-badge small{font-size:7px}
+.trinket-rank-card-head>div{display:grid;flex:1;min-width:0;gap:2px}
+.trinket-rank-card-head strong{color:#f8f5d8;font-size:11px}
+.trinket-rank-card-head span{color:#d4f4bb;font-size:10px;font-weight:800;line-height:1.3}
+.trinket-rank-card-head em{align-self:start;color:#b8c9c4;font-size:9px;font-style:normal;font-weight:900}
+.trinket-rank-card>.trinket-rank-track{margin-top:8px}
+.trinket-rank-card-gain{display:flex;justify-content:space-between;flex-wrap:wrap;gap:3px 10px;margin-top:6px;color:#a3dcc6;font-size:8px;font-weight:800;line-height:1.3}
+.trinket-rank-card-gain span:last-child{color:#ffe5a2}
+.trinket-equip-preview{display:grid;gap:3px;margin:8px 0;padding:9px;border:1px solid #638c71;border-radius:8px;background:linear-gradient(135deg,#304a43,#243237)}
+.trinket-equip-preview b{color:#e3ffad;font-size:10px}
+.trinket-equip-preview span{color:#f1f9dc;font-size:11px;font-weight:900}
+.trinket-equip-preview small{color:#bed8c7;font-size:8px;line-height:1.4}
+.trinket-equipped-head{display:flex;justify-content:space-between;flex-wrap:wrap;gap:3px;margin-top:5px;color:#cce7c4;font-size:8px;font-weight:900}
+.trinket-equipped-head strong{color:#ffe49b}
+.trinket-equipped-bonus{margin-top:5px;color:#e2ffa4;font-size:10px;font-weight:900;line-height:1.25}
+.trinket-equipped-next{margin:4px 0 5px;color:#b9d0c2;font-size:8px;line-height:1.3}
+.trinket-picker-bonus{margin:3px 0;color:#e3ffa7;font-size:10px;font-weight:900}
+.trinket-picker-gain{margin:4px 0;color:#ffe49b;font-size:8px;font-weight:900}
+.trinket-picker-upgrade{flex:0 0 100%;margin-top:5px;padding:6px;border:1px solid #45602d;border-radius:6px;color:#203920;background:linear-gradient(#e8ffad,#a8df7c);font-size:9px;font-weight:1000;cursor:pointer}
+.hero-stat-trinkets{display:grid;gap:6px}
+.hero-stat-trinket{display:flex;align-items:center;gap:8px;padding:6px;border:1px solid #506d5b;border-radius:7px;background:#273a34}
+.hero-stat-trinket img{flex:none;width:30px;height:30px;object-fit:contain}
+.hero-stat-trinket>div{display:grid;flex:1;min-width:0;gap:2px}
+.hero-stat-trinket b{color:#f5f6d7;font-size:9px}
+.hero-stat-trinket b small{color:#bce99f}
+.hero-stat-trinket span{color:#dcf8ae;font-size:9px;font-weight:800}
+.hero-stat-trinket strong{color:#ffe79b;font-size:8px;white-space:nowrap}

@@ -57,16 +57,26 @@ function qomConnieSolo(u, B, S, spent, ovation) {
   if (ovation) B.after(1.8, () => { if (u.alive) B.removeStatus(u, 'untargetable'); });
 }
 
+QOM_CONnie.basic.note = 'Alternates physical guitar chords and spectral ectoplasm. Every 2nd hit siphons 10 Energy; every 3rd hit or critical strike grants 1 Phantom Note.';
 QOM_CONnie.basic.onHit = (u, target, B) => {
-  // AI.resolveBasic already alternates physical guitar strikes and Magic notes.
+  if (!target || !target.alive) return;
+  u._qomConnieBasics = (u._qomConnieBasics || 0) + 1;
   if (u._qomBasicType === 'magic' && target.alive) qomShow(B, 'phantom', u, target);
+  if (u._qomConnieBasics % 2 === 0) {
+    B.energy(target, -10);
+    B.energy(u, 10);
+    B.fxSparkle(u.x, u.y - 45, 6, '#8cf0da');
+    B.fxFloatIcon(u.x, u.y - 100, '👻 +10⚡', '#8cf0da');
+  }
 };
 
 QOM_CONnie.skills = {
   W: {
     name: 'Queens of Mischief', type: 'Magic / Physical / Control', energy: 100,
-    v: { ratio: .68 }, p: {},
-    desc: () => 'Connie starts with three Phantom Notes. Her Basics alternate guitar strikes and spectral soundwaves; every third Basic and every Dodge builds Notes, each increasing Evasion. Active: vanishes, then sends five supernatural waves that reduce defenses, Energy, Accuracy, and finally punish missing HP. Spending five Notes Stuns and heals.',
+    v: { ratio: .75, stunDur: 2.0 }, p: { noteSpend: 5, noteCap: 8 },
+    desc: (S, P) => `<span class="sk-pas">Passive: Connie starts combat with 3 👻 <b>Phantom Notes</b> (max ${P && P.noteCap || 8}). Each stored note raises Evasion (+3%), Magic (+2%), and Skill Haste (+1%). Every 3rd basic attack, every dodge, and hits on Possessed foes generate Notes. At 8 Notes, Connie becomes a <b>Spectral Headliner</b>!</span><br>
+Active: Connie slips into the Spirit Realm (Untargetable for 3.5s) and spends up to ${P && P.noteSpend || 5} Phantom Notes to unleash 5 consecutive supernatural soundwaves across all foes! Each wave deals <em>${pcn(S.ratio * 100)}%</em> Magic Damage, sequentially shredding Def (-30%), MagDef (-30%), draining 15 Energy, and inflicting <b>Haunted</b> for 7s. Consuming ${P && P.noteSpend || 5} Notes Stuns all foes for <em>${(S && S.stunDur != null ? Number(S.stunDur).toFixed(1) : (P && P.stunDur != null ? Number(P.stunDur).toFixed(1) : '2.0'))}s</em> and heals Connie for 20% missing HP!<br>
+• <b>Ghostly Ovation</b> (5-Star & 8 Notes): Queens of Mischief triggers an extended stadium solo! Grants all allies +25% Attack, +35% Move Speed, and Haste for 10s, unleashes 2 extra soundwaves, and finishes with a massive <b>Grand Finale chord</b> (170% Magic Damage, 1.3s Stun, shields Connie, and refunds 4 Notes)!`,
     passive(u, B) {
       qomConnieNotes(u, B, 3);
       u._qomBasicCount = 0;
@@ -110,8 +120,8 @@ QOM_CONnie.skills = {
   },
   G: {
     name: 'Haunting Escape', type: 'Evasion / Magic / Control', cd: 11,
-    v: { ratio: 1.65 }, p: { dur: 4 },
-    desc: () => 'Connie vanishes for four seconds with Speed and Haste, leaving an attackable Phantom Guitar that feeds her Notes. She reappears behind the strongest attacker to Haunt them. At five Notes, she spends two for an extra Energy-draining, Silencing strike.',
+    v: { ratio: 1.75, phantomStrike: .95 }, p: { dur: 4 },
+    desc: (S, P) => `Connie vanishes for <em>${P.dur}s</em> (Untargetable, +35% Move Speed & Haste), leaving behind an attackable <b>Phantom Guitar decoy</b> (22% Max HP). Attacks hitting the decoy feed Connie Phantom Notes. She reappears behind the highest-Attack foe, dealing <em>${pcn(S.ratio * 100)}% Magic Damage</em> and Haunting them for 8s. Holding 5+ Notes spends 2 to strike a 2nd time (<em>${pcn(S.phantomStrike * 100)}% Mag</em>), burns 20 Energy, and Silences for 1.4s!`,
     cast(u, B, S, P) {
       B.applyStatus(u, u, 'untargetable', P.dur);
       B.applyStatus(u, u, 'speedup', P.dur);
@@ -134,7 +144,7 @@ QOM_CONnie.skills = {
         qomShow(B, 'counter', u, target);
         if (qomStacks(u, 'qom_notes') >= 5) {
           qomSpend(B, u, 'qom_notes', 2);
-          B.damage(u, target, u.st.mag * .85, { type: 'magic', tag: 'Phantom Strike' });
+          B.damage(u, target, u.st.mag * S.phantomStrike, { type: 'magic', tag: 'Phantom Strike' });
           B.energy(target, -20);
           B.applyStatus(u, target, 'silence', 1.4);
         }
@@ -144,8 +154,8 @@ QOM_CONnie.skills = {
   },
   B: {
     name: 'Possessed Performance', type: 'Magic / Control / Support', cd: 12,
-    v: { ratio: 1.25 }, p: { dur: 6 },
-    desc: () => 'A spectral copy Possesses the highest-Skill-Power foe, slowing their attacks and Skills. Their Skills trigger ghostly damage. Connie can burst the possessed weapon and, with six Notes, extend the effect and steal a removable buff for her weakest ally.',
+    v: { ratio: 1.35, feedback: .55 }, p: { dur: 6 },
+    desc: (S, P) => `A spectral copy Possesses the highest-Magic/Skill-Power enemy for <em>${P.dur}s</em>, slowing their Attack Speed and Skill Haste by 25%. Whenever the possessed enemy attempts to cast a Skill, they take <em>${pcn(S.feedback * 100)}% Magic</em> backlash damage. Connie's damage against the possessed foe generates 5 Energy and 1 Phantom Note. At 6+ Notes, spends 3 to extend the possession by 3s and steals a removable buff for her lowest-HP ally!`,
     cast(u, B, S, P) {
       const target = qomTop(qomFoes(B, u), 'mag'); if (!target) return;
       const extended = qomStacks(u, 'qom_notes') >= 6;
@@ -156,7 +166,7 @@ QOM_CONnie.skills = {
       B.after(.28, () => {
         if (!u.alive || !target.alive) return;
         [target, ...qomFoes(B, u).filter(e => e !== target && B.distance(e, target) < 180)].forEach(e => {
-          B.damage(u, e, u.st.mag * .52, { type: 'magic', area: true, tag: 'Ghostly Feedback' });
+          B.damage(u, e, u.st.mag * S.feedback, { type: 'magic', area: true, tag: 'Ghostly Feedback' });
           if (e.casting) B.interrupt(e);
         });
         qomShow(B, 'feedback', u, target);
@@ -170,20 +180,22 @@ QOM_CONnie.skills = {
     }
   },
   P: {
-    name: "Can't Hit a Ghost", type: 'Evasion / Magic / Control', v: { eva: .20 }, p: {},
-    desc: () => 'Every six seconds a Basic can phase through Connie; she teleports behind its source and counters with Haunted. A recent Dodge makes the counter splash. Three Dodges trigger Untouchable for stronger Evasion, double Notes, and healing counters.',
-    passive(u, B, S) {
+    name: "Can't Hit a Ghost", type: 'Evasion / Magic / Control',
+    v: { eva: .25, counterRatio: .85 }, p: { phaseCd: 6.0, dodgesForUntouchable: 3 },
+    desc: (S, P) => `<span class="sk-pas">Connie gains <em>+${pcn(S.eva * 100)}%</em> Evasion and +15% Magic Attack. Once every ${(P && P.phaseCd != null ? Number(P.phaseCd).toFixed(1) : '6.0')}s, an enemy basic attack phases cleanly through her without dealing damage. Whenever Connie dodges, she blinks behind the attacker with a <b>Phantom Counter</b> (<em>${pcn(S.counterRatio * 100)}% Magic Damage</em>, Haunted for 7s). A recent dodge causes the counter to splash to nearby foes.<br>
+• <b>Untouchable</b>: After ${P && P.dodgesForUntouchable || 3} dodges, Connie enters Untouchable for 5s: gains +30% Evasion, doubles note generation, and counters heal her for 5% Max HP!</span>`,
+    passive(u, B, S, P) {
       u.flat.evaPqom = S.eva; u.dirty = true;
       u.dodgeGuard = ev => {
         if (!ev.basic || B.t < (u._qomPhaseAt || 0)) return false;
-        u._qomPhaseAt = B.t + 6;
+        u._qomPhaseAt = B.t + P.phaseCd;
         return true;
       };
       B.on(u, 'dodged', ev => {
         if (!ev.src || !ev.src.alive) return;
         u._qomDodges = (u._qomDodges || 0) + 1;
         qomConnieCounter(u, B, ev.src);
-        if (u._qomDodges >= 3 && B.t >= (u._qomUntouchableAt || 0)) {
+        if (u._qomDodges >= P.dodgesForUntouchable && B.t >= (u._qomUntouchableAt || 0)) {
           u._qomDodges = 0; u._qomUntouchableAt = B.t + 15;
           B.applyStatus(u, u, 'qom_untouchable', 5);
           qomShow(B, 'vanish', u);
@@ -192,10 +204,11 @@ QOM_CONnie.skills = {
     }
   },
   R: {
-    name: 'Grand Finale', type: 'Magic / Control / Support / Evasion', v: { mag: .16 }, p: {},
-    desc: () => 'At four, six, and eight Notes Connie gains stronger Skills, counter Energy drain, then Spectral Headliner. Once per wave, using Queens of Mischief at eight Notes grants team buffs and an extended solo with extra waves, a stunning chord, and a Shield.',
+    name: 'Grand Finale', type: 'Magic / Control / Support / Evasion',
+    v: { mag: .18, critDmg: .25, echoRatio: .45 }, p: { noteTiers: [4, 6, 8] },
+    desc: (S, P) => `<span class="sk-pas">Connie permanently gains <em>+${pcn(S.mag * 100)}%</em> Magic Attack and <em>+${pcn(S.critDmg * 100)}%</em> Crit Damage. Stored Note scaling: at 4+ notes (+6% Mag), at 6+ notes (+11% Mag, +8% CDR, counters pierce 18% Armor and drain 10 Energy), and at 8 notes (<b>Headliner</b>: basic attacks have a 38% chance to echo an extra <em>${pcn(S.echoRatio * 100)}%</em> Magic soundwave to an additional enemy).</span>`,
     passive(u, B, S) {
-      u.flat.magPqom = S.mag; u.flat.critDmgqom = .24; u.dirty = true;
+      u.flat.magPqom = S.mag; u.flat.critDmgqom = S.critDmg; u.dirty = true;
       // Note thresholds: 4 Notes = stronger Skills, 6 = Skill Haste, 8 = Headliner.
       B.every(u, .5, () => {
         const notes = qomStacks(u, 'qom_notes');
@@ -209,7 +222,7 @@ QOM_CONnie.skills = {
       B.on(u, 'basicHit', ev => {
         if (qomStacks(u, 'qom_notes') < 8 && !u.hasStatus('qom_headliner')) return;
         const other = qomFoes(B, u).find(e => e !== ev.target);
-        if (other && Math.random() < .38) B.damage(u, other, u.st.mag * .40, { type: 'magic', tag: 'Spectral Headliner' });
+        if (other && Math.random() < .38) B.damage(u, other, u.st.mag * S.echoRatio, { type: 'magic', tag: 'Spectral Headliner' });
       });
       B.on(u, 'dealDamage', ev => {
         if (ev.tag !== 'Phantom Counter' || !ev.target || qomStacks(u, 'qom_notes') < 6) return;

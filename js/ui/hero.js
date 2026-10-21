@@ -20,12 +20,102 @@ const TISHA_SKILL_PREVIEWS = {
 };
 
 const TOODLES_SKILL_PREVIEWS = {
-  basic: { toodlesMode: 'swing', previewActions: [{ state: 'attack', dur: .28 }], castCue: 'swing_light', impactCue: 'hit_blunt', floatLabel: 'ROLLING SWING' },
-  W: { toodlesMode: 'roll', previewActions: [{ state: 'cast', dur: .72 }], castCue: 'toodles_gamble', impactCue: 'sparkle', previewType: 'LUCK ROLL', floatLabel: 'LUCKY BOOST!' },
-  G: { toodlesMode: 'strike', previewActions: [{ state: 'wind', dur: .38 }], dashes: true, castCue: 'dash', impactCue: 'hit_heavy', previewType: 'LUCKY STRIKE', floatLabel: 'WEAKENED!' },
-  B: { toodlesMode: 'miracle', ally: true, previewActions: [{ state: 'cast', dur: .56 }], castCue: 'toodles_gamble', impactCue: 'cleanse', previewType: 'SMALL MIRACLE', floatLabel: 'SHIELDED!' },
-  P: { toodlesMode: 'improve', passive: true, previewActions: [{ state: 'idle', dur: .78 }], castCue: 'sparkle', impactCue: null, previewType: 'PASSIVE GROWTH', floatLabel: 'ADAPTING' },
+  basic: { toodlesMode: 'swing', previewActions: [{ state: 'attack', dur: .28 }], castCue: 'swing_light', impactCue: 'hit_blunt', floatLabel: 'CONFIDENT SWING' },
+  W: { toodlesMode: 'roll', previewActions: [{ state: 'cast', dur: .72 }], castCue: 'toodles_gamble', impactCue: 'sparkle', previewType: 'MAGIC 8-BALL', floatLabel: 'OUTLOOK GOOD!' },
+  G: { toodlesMode: 'strike', previewActions: [{ state: 'wind', dur: .38 }], dashes: true, castCue: 'dash', impactCue: 'hit_heavy', previewType: 'LUCKY STRIKE', floatLabel: 'HAMMER SMASH!' },
+  B: { toodlesMode: 'miracle', ally: true, previewActions: [{ state: 'cast', dur: .56 }], castCue: 'toodles_gamble', impactCue: 'cleanse', previewType: 'SMALL MIRACLE', floatLabel: 'DOG PLUSH SHIELD' },
+  P: { toodlesMode: 'improve', passive: true, previewActions: [{ state: 'idle', dur: .78 }], castCue: 'sparkle', impactCue: null, previewType: 'ALWAYS IMPROVING', floatLabel: 'LEARNING FAST' },
   R: { toodlesMode: 'charm', passive: true, previewActions: [{ state: 'idle', dur: .78 }], castCue: 'toodles_gamble', impactCue: null, previewType: 'LUCKY CHARM', floatLabel: 'NO REPEATS' }
+};
+
+const QOM_GOURDY_SKILL_PREVIEWS = {
+  basic: { qomGourdyMode: 'beat', previewActions: [{ state: 'attack', dur: .32 }], castCue: 'qom_snare', impactCue: 'qom_crash', floatLabel: 'DRUM BEAT' },
+  W: { qomGourdyMode: 'solo', ally: false, previewActions: [{ state: 'cast', dur: .82 }], castCue: 'qom_riff', impactCue: 'qom_crash', previewType: 'DRUM SOLO', floatLabel: 'SOLO PYRO!' },
+  G: { qomGourdyMode: 'feedback', ally: false, previewActions: [{ state: 'cast', dur: .65 }], castCue: 'qom_bone', impactCue: 'hit_magic', previewType: 'FEEDBACK', floatLabel: 'INTERRUPT!' },
+  B: { qomGourdyMode: 'vip', ally: true, previewActions: [{ state: 'cast', dur: .6 }], castCue: 'qom_guard', impactCue: 'cleanse', previewType: 'VIP PASS', floatLabel: 'VIP PASS!' },
+  P: { qomGourdyMode: 'meter', passive: true, previewActions: [{ state: 'idle', dur: .78 }], castCue: 'qom_snare', impactCue: null, previewType: 'RHYTHM', floatLabel: 'KEEP THE BEAT' },
+  R: { qomGourdyMode: 'encore', ally: false, previewActions: [{ state: 'cast', dur: .9 }], castCue: 'qom_riff', impactCue: 'qom_crash', previewType: 'FINALE', floatLabel: 'ENCORE!' }
+};
+
+const QOM_ECLIPSE_SKILL_PREVIEWS = {
+  basic: { qomEclipseMode: 'riff', dashes: true, previewActions: [{ state: 'attack', dur: .28 }], castCue: 'swing_claw', impactCue: 'hit_slash', previewType: 'CLAW & GUITAR', floatLabel: 'CLAW & GUITAR' },
+  W: { qomEclipseMode: 'solo', dashes: true, previewActions: [{ state: 'cast', dur: .82 }], castCue: 'qom_riff', impactCue: 'qom_crash', previewType: 'FULL VOLUME', floatLabel: 'FULL VOLUME LEAP!' },
+  G: { qomEclipseMode: 'feedback', ally: false, previewActions: [{ state: 'cast', dur: .62 }], castCue: 'qom_riff', impactCue: 'hit_magic', previewType: 'FEEDBACK', floatLabel: 'FEEDBACK FRENZY' },
+  B: { qomEclipseMode: 'howl', dashes: true, previewActions: [{ state: 'move', dur: .32 }, { state: 'attack', dur: .42 }], castCue: 'qom_hey', impactCue: 'hit_slash', previewType: 'HOWLING RIFF', floatLabel: 'HOWLING RIFF' },
+  P: { qomEclipseMode: 'heart', passive: true, previewActions: [{ state: 'idle', dur: .78 }], castCue: 'lock', impactCue: null, previewType: 'WILD AT HEART', floatLabel: 'BACKSTAGE GUARD' },
+  R: { qomEclipseMode: 'headliner', dashes: true, previewActions: [{ state: 'cast', dur: .88 }], castCue: 'qom_riff', impactCue: 'crit', previewType: 'HEADLINER', floatLabel: 'FINAL ENCORE!' }
+};
+
+const QOM_RIBECCA_SKILL_PREVIEWS = {
+  basic: { qomRibeccaMode: 'keytar', previewActions: [{ state: 'attack', dur: .34 }], castCue: 'hit_blunt', impactCue: 'hit_magic', previewType: 'KEYTAR CHORD', floatLabel: 'KEYTAR CHORD' },
+  W: { qomRibeccaMode: 'symphony', ally: true, previewActions: [{ state: 'cast', dur: .82 }], castCue: 'qom_guard', impactCue: 'sparkle', previewType: 'SOUND BARRIER', floatLabel: 'SKELETON SYMPHONY' },
+  G: { qomRibeccaMode: 'bone', previewActions: [{ state: 'attack', dur: .60 }], castCue: 'qom_bone', impactCue: 'qom_counter', previewType: 'BONE BOUNCE', floatLabel: 'BONE RATTLER!' },
+  B: { qomRibeccaMode: 'backstage', ally: true, previewActions: [{ state: 'cast', dur: .68 }], castCue: 'qom_guard', impactCue: 'guard', previewType: 'PROTECTION', floatLabel: 'BACKSTAGE GUARD' },
+  P: { qomRibeccaMode: 'undead', passive: true, previewActions: [{ state: 'idle', dur: .78 }], castCue: 'qom_guard', impactCue: null, previewType: 'THE UNDEAD', floatLabel: 'REASSEMBLE!' },
+  R: { qomRibeccaMode: 'ovation', ally: true, passive: true, previewActions: [{ state: 'cast', dur: .85 }], castCue: 'qom_guard', impactCue: 'cleanse', previewType: 'STANDING OVATION', floatLabel: 'STANDING OVATION' }
+};
+
+const QOM_SOULVESTER_SKILL_PREVIEWS = {
+  basic: { qomSoulvesterMode: 'slash', dashes: true, previewActions: [{ state: 'attack', dur: .30 }], castCue: 'swing_sword', impactCue: 'hit_slash', previewType: 'KNIGHT SLASH', floatLabel: 'KNIGHT SLASH' },
+  W: { qomSoulvesterMode: 'knight', dashes: true, previewActions: [{ state: 'cast', dur: .75 }], castCue: 'qom_counter', impactCue: 'hit_heavy', previewType: 'INTERCEPTION', floatLabel: 'KNIGHT OF MISCHIEF' },
+  G: { qomSoulvesterMode: 'parry', previewActions: [{ state: 'cast', dur: .62 }], castCue: 'qom_counter', impactCue: 'guard', previewType: 'PERFECT PARRY', floatLabel: 'PERFECT PARRY!' },
+  B: { qomSoulvesterMode: 'royal', ally: true, dashes: true, previewActions: [{ state: 'move', dur: .4 }, { state: 'attack', dur: .42 }], castCue: 'dash', impactCue: 'hit_heavy', previewType: 'ROYAL GUARD', floatLabel: 'ROYAL INTERVENTION' },
+  P: { qomSoulvesterMode: 'resolve', passive: true, previewActions: [{ state: 'idle', dur: .78 }], castCue: 'lock', impactCue: null, previewType: 'RESOLVE', floatLabel: 'KNIGHTLY RESOLVE' },
+  R: { qomSoulvesterMode: 'curtain', dashes: true, previewActions: [{ state: 'attack', dur: .88 }], castCue: 'qom_counter', impactCue: 'crit', previewType: 'LAST STAND', floatLabel: 'GRAND RIPOSTE!' }
+};
+
+const QOM_CONNIE_SKILL_PREVIEWS = {
+  basic: { qomConnieMode: 'strum', previewActions: [{ state: 'attack', dur: .28 }], castCue: 'qom_ghost', impactCue: 'hit_magic', previewType: 'SPECTRAL GUITAR', floatLabel: 'SPECTRAL GUITAR' },
+  W: { qomConnieMode: 'solo', previewActions: [{ state: 'cast', dur: .85 }], castCue: 'qom_ghost', impactCue: 'hit_magic', previewType: 'PHANTOM SOLO', floatLabel: 'PHANTOM SOLO!' },
+  G: { qomConnieMode: 'escape', dashes: true, previewActions: [{ state: 'move', dur: .35 }, { state: 'cast', dur: .52 }], castCue: 'qom_ghost', impactCue: 'dash', previewType: 'HAUNTING ESCAPE', floatLabel: 'HAUNTING ESCAPE' },
+  B: { qomConnieMode: 'possess', previewActions: [{ state: 'cast', dur: .64 }], castCue: 'qom_ghost', impactCue: 'curse', previewType: 'POSSESSION', floatLabel: 'POSSESSED PERFORMANCE' },
+  P: { qomConnieMode: 'ghost', passive: true, previewActions: [{ state: 'idle', dur: .78 }], castCue: 'qom_ghost', impactCue: null, previewType: 'UNTOUCHABLE', floatLabel: 'CAN\'T HIT A GHOST' },
+  R: { qomConnieMode: 'ovation', ally: true, previewActions: [{ state: 'cast', dur: .90 }], castCue: 'qom_ghost', impactCue: 'sparkle', previewType: 'GHOSTLY OVATION', floatLabel: 'GHOSTLY OVATION' }
+};
+
+const MRS_HOLLOWAY_SKILL_PREVIEWS = {
+  basic: { previewActions: [{ state: 'attack', dur: .32 }], castCue: 'whoosh', impactCue: 'hit_magic', floatLabel: 'SPIRALING ENERGY' },
+  W: { ally: false, previewActions: [{ state: 'cast', dur: .85 }], castCue: 'beam_fire', impactCue: 'hit_magic', previewType: 'SPECTRAL BURST', floatLabel: 'SPECTRAL BURST' },
+  G: { ally: false, previewActions: [{ state: 'cast', dur: .75 }], castCue: 'spirit_aura', impactCue: 'hit_magic', previewType: 'A FAMILIAR FACE', floatLabel: 'A FAMILIAR FACE' },
+  B: { ally: true, previewActions: [{ state: 'cast', dur: .70 }], castCue: 'spirit_heal', impactCue: 'sparkle', previewType: 'MOTHER’S EMBRACE', floatLabel: 'MOTHER’S EMBRACE' },
+  P: { passive: true, previewActions: [{ state: 'idle', dur: .80 }], castCue: 'spirit_aura', impactCue: 'fanfare', previewType: 'GONE, BUT NOT FORGOTTEN', floatLabel: 'REVIVED: SPIRIT MEMORY' },
+  R: { passive: true, previewActions: [{ state: 'idle', dur: .80 }], castCue: 'spirit_aura', impactCue: null, previewType: 'THE HOLLOWAY LEGACY', floatLabel: 'LINGERING PRESENCE' }
+};
+
+const MR_HOLLOWAY_SKILL_PREVIEWS = {
+  basic: { previewActions: [{ state: 'attack', dur: .35 }], castCue: 'swing_heavy', impactCue: 'hit_heavy', floatLabel: 'CLAW SWIPE' },
+  W: { ally: false, previewActions: [{ state: 'cast', dur: .80 }], castCue: 'impact_heavy', impactCue: 'earth_quake', previewType: 'HARVEST CRASH', floatLabel: 'HARVEST CRASH' },
+  G: { ally: true, previewActions: [{ state: 'cast', dur: .65 }], castCue: 'wind_heavy', impactCue: 'sparkle', previewType: 'AUTUMN DOWNPOUR', floatLabel: 'AUTUMN DOWNPOUR' },
+  B: { ally: true, previewActions: [{ state: 'cast', dur: .70 }], castCue: 'earth_rumble', impactCue: 'sparkle', previewType: 'ROOTED RESOLVE', floatLabel: 'ROOTED RESOLVE' },
+  P: { passive: true, previewActions: [{ state: 'idle', dur: .80 }], castCue: 'warn', impactCue: 'fanfare', previewType: 'STILL STANDING', floatLabel: 'LAST HARVEST SHIELD' },
+  R: { passive: true, previewActions: [{ state: 'idle', dur: .80 }], castCue: 'impact_heavy', impactCue: null, previewType: 'A FATHER’S RESOLVE', floatLabel: 'A FATHER’S RESOLVE' }
+};
+
+const DELILAH_SKILL_PREVIEWS = {
+  basic: { previewActions: [{ state: 'attack', dur: .32 }], castCue: 'whoosh', impactCue: 'hit_magic', floatLabel: 'ICHOR SYRINGE' },
+  W: { ally: false, previewActions: [{ state: 'cast', dur: .78 }], castCue: 'beam_charge', impactCue: 'sparkle', previewType: 'CONTROLLED EXPERIMENT', floatLabel: 'SPECIMEN RELEASE' },
+  G: { ally: false, previewActions: [{ state: 'wind', dur: .65 }, { state: 'attack', dur: .28 }], castCue: 'beam_charge', impactCue: 'spectral', previewType: 'UNSTABLE SAMPLE', floatLabel: 'CONTAMINATION' },
+  B: { ally: false, previewActions: [{ state: 'cast', dur: .72 }], castCue: 'lock', impactCue: 'spectral', previewType: 'CONTAINMENT PROCEDURE', floatLabel: 'STERILE STASIS' },
+  P: { passive: true, previewActions: [{ state: 'idle', dur: .80 }], castCue: 'sparkle', impactCue: null, previewType: 'CLINICAL OBSERVATION', floatLabel: 'CLINICAL INSIGHT' },
+  R: { passive: true, previewActions: [{ state: 'idle', dur: .80 }], castCue: 'warn', impactCue: null, previewType: 'FURTHER TESTING REQUIRED', floatLabel: 'ICHOR CATALYST' }
+};
+
+const SHELLY_SKILL_PREVIEWS = {
+  basic: { previewActions: [{ state: 'attack', dur: .28 }], castCue: 'whoosh', impactCue: 'hit_magic', floatLabel: 'STRATUM EXTRACTION' },
+  W: { ally: true, previewActions: [{ state: 'cast', dur: 1.05 }], castCue: 'lock', impactCue: 'earth_quake', previewType: 'FOSSIL MATRIX', floatLabel: 'FOSSIL DISCOVERY' },
+  G: { ally: true, previewActions: [{ state: 'cast', dur: .95 }], castCue: 'cheer', impactCue: 'fanfare', previewType: 'INSPIRATION!', floatLabel: 'RELENTLESS INSPIRATION!' },
+  B: { ally: true, previewActions: [{ state: 'cast', dur: .85 }], castCue: 'cleanse', impactCue: 'guard', previewType: 'PROBLEM SOLVER', floatLabel: '5★ PROBLEM SOLVED' },
+  P: { passive: true, previewActions: [{ state: 'idle', dur: .80 }], castCue: 'sparkle', impactCue: 'fanfare', previewType: 'PALEONTOLOGIST PASSION', floatLabel: 'EUREKA BREAKTHROUGH' },
+  R: { passive: true, previewActions: [{ state: 'idle', dur: .80 }], castCue: 'earth_quake', impactCue: null, previewType: 'ANCIENT ARCHIVE', floatLabel: 'PREHISTORIC STOMP' }
+};
+
+const CONNIE_SKILL_PREVIEWS = {
+  basic: { previewActions: [{ state: 'attack', dur: .26 }], castCue: 'whoosh', impactCue: 'hit_magic', floatLabel: 'POLTERGEIST TOUCH' },
+  W: { ally: true, previewActions: [{ state: 'cast', dur: .90 }], castCue: 'unsummon', impactCue: 'fanfare', previewType: 'HAUNTING ESCAPE', floatLabel: 'BOO! JUMPSCARE!' },
+  G: { ally: false, previewActions: [{ state: 'wind', dur: .35 }, { state: 'attack', dur: .38 }], dashes: true, castCue: 'dash', impactCue: 'hit_magic', previewType: 'PHANTOM PRANK', floatLabel: 'PRANK STRIKE' },
+  B: { ally: false, previewActions: [{ state: 'cast', dur: .52 }], castCue: 'dash', impactCue: 'buff', previewType: 'SPECTRAL DRIFT', floatLabel: 'SPECTRAL DRIFT' },
+  P: { ally: true, passive: true, previewActions: [{ state: 'idle', dur: .80 }], castCue: 'cure_all', impactCue: 'sparkle', previewType: 'SPIRITUAL TETHER', floatLabel: 'SPIRITUAL TETHER' },
+  R: { ally: true, passive: true, previewActions: [{ state: 'idle', dur: .80 }], castCue: 'fanfare', impactCue: 'unsummon', previewType: 'BEYOND THE VEIL', floatLabel: 'PHANTOM RESCUE' }
 };
 
 function skillScalingLine(S, P, level) {
@@ -79,7 +169,17 @@ const PREVIEW_STATUS_PILL_MAP = {
   regen: { icon: '🌱', label: 'REGEN', col: '#67c84c' },
   invis: { icon: '👻', label: 'VANISHED', col: '#9caaa4' },
   rage: { icon: '🔥', label: 'ENRAGED', col: '#ff5454' },
-  armor: { icon: '🛡️', label: 'ARMORED', col: '#78c6ff' }
+  armor: { icon: '🛡️', label: 'ARMORED', col: '#78c6ff' },
+  contamination: { icon: '☣️', label: 'CONTAMINATION', col: '#00e5a3' },
+  contained: { icon: '⛓️', label: 'CONTAINED', col: '#caa2ff' },
+  sterileprotocol: { icon: '🧼', label: 'STERILE', col: '#5effb7' },
+  testsubject: { icon: '🧪', label: 'TEST SUBJECT', col: '#caa2ff' },
+  failedvariable: { icon: '⚠️', label: 'FAILED VARIABLE', col: '#ff5454' },
+  stratigraphy: { icon: '🔍', label: 'STRATIGRAPHY', col: '#d8b579' },
+  fullyresearched: { icon: '🦴', label: 'RESEARCHED', col: '#d8b579' },
+  amberstasis: { icon: '💎', label: 'AMBER STASIS', col: '#fef08a' },
+  haunted: { icon: '👻', label: 'HAUNTED', col: '#bfe9ff' },
+  terrified: { icon: '😱', label: 'TERRIFIED', col: '#e879f9' }
 };
 
 const SkillPreviewSimulator = {
@@ -277,7 +377,7 @@ const SkillPreviewSimulator = {
 };
 
 function skillRankPreview(skill, lv) {
-  if (!skill || lv >= 450) return '';
+  if (!skill || lv >= SKILL_MAX_LEVEL) return '';
   const next = lv + 1, currentS = {}, nextS = {};
   Object.keys(skill.v || {}).forEach(key => {
     currentS[key] = skill.v[key] * skillMult(lv);
@@ -328,12 +428,18 @@ const VEE_SKILL_PREVIEWS = {
 };
 
 const FLYTE_SKILL_PREVIEWS = {
+  basic: { flyteMode: 'buffet', previewActions: [{ state: 'attack', dur: .28 }],
+    castCue: 'whoosh', impactCue: 'hit_magic', previewType: 'AERO BUFFET', floatLabel: 'GALE SLICE' },
   W: { flyteMode: 'gust', ally: true, projectile: false, previewActions: [{ state: 'cast', dur: .72 }],
-    castCue: 'tornado_s', impactCue: 'whoosh', floatLabel: 'GUST ZONE!' },
-  G: { flyteMode: 'rescue', ally: true, projectile: false, dashes: true, previewActions: [{ state: 'cast', dur: .48 }],
-    castCue: 'dash', impactCue: 'guard', floatLabel: 'SHIELDED!' },
-  B: { flyteMode: 'clear', ally: false, projectile: false, dashes: true, previewActions: [{ state: 'attack', dur: .68 }],
-    castCue: 'dash', impactCue: 'hit_light', floatLabel: 'PUSHED!' }
+    castCue: 'tornado_s', impactCue: 'whoosh', previewType: 'VANGUARD GALE', floatLabel: 'GALE BARRIER + HASTE' },
+  G: { flyteMode: 'wingSlam', ally: false, dashes: true, previewActions: [{ state: 'attack', dur: .52 }],
+    castCue: 'dash', impactCue: 'hit_heavy', previewType: 'WING SLAM', floatLabel: 'STUN + SHRED' },
+  B: { flyteMode: 'mockingSwoop', ally: true, dashes: true, previewActions: [{ state: 'cast', dur: .58 }],
+    castCue: 'dash', impactCue: 'guard', previewType: 'MOCKING SWOOP', floatLabel: 'DISTRACT + REFLECT' },
+  P: { flyteMode: 'stubborn', ally: false, passive: true, previewActions: [{ state: 'idle', dur: .80 }],
+    castCue: 'lock', impactCue: 'whoosh', previewType: 'STUBBORN FLIGHT', floatLabel: 'I DIDN\'T FALL!' },
+  R: { flyteMode: 'record', ally: true, passive: true, previewActions: [{ state: 'cast', dur: .75 }],
+    castCue: 'ult_ready', impactCue: 'sparkle', previewType: 'FOR THE RECORD', floatLabel: 'RECORD LOGGED' }
 };
 
 /* Sprout's preview follows the kit's actual verbs: make a treat, rush to one
@@ -762,7 +868,29 @@ const HeroPage = {
       <div class="hero-stars">${'★'.repeat(h.stars)}${'☆'.repeat(5 - h.stars)}</div>
       <p>${d.blurb}</p></div>
       <div class="hero-art-stage"><i></i><img src="${Art.hero(id)}" alt="${d.name}" loading="lazy" decoding="async"></div>
-      <div class="hero-power" title="Stats ${fmt(powerInfo.stats)} · Skills ${fmt(powerInfo.skills)} · Gear ${fmt(powerInfo.gear)} · Training ${fmt(powerInfo.training)} · ${powerInfo.unlocked} skills unlocked"><span>POWER</span><b>${fmt(powerInfo.total)}</b></div>`;
+      <button class="hero-power" type="button" aria-label="Explain ${d.name}’s Power" aria-expanded="false" title="Tap for Power breakdown"><span>POWER ⓘ</span><b>${fmt(powerInfo.total)}</b></button>`;
+    const powerButton = $('.hero-power', identity);
+    const powerDetails = el('div', 'hero-power-breakdown');
+    powerDetails.hidden = true;
+    powerDetails.innerHTML = `<button type="button" class="hero-power-breakdown-close" aria-label="Close Power breakdown">×</button>
+      <b>HOW POWER ADDS UP</b>
+      <p>Combat stats include Level, Stars, and Rarity, then a role weight. Trained skills count more as the Hero levels up. Power is a guide, not damage or a win guarantee.</p>
+      <div><span>Combat stats <small>${d.role} ×${powerInfo.roleFactor.toFixed(2)}</small></span><b>${fmt(powerInfo.stats)}</b></div>
+      <div><span>Trained skills</span><b>${fmt(powerInfo.skills)}</b></div>
+      <div><span>Class training</span><b>${fmt(powerInfo.training)}</b></div>
+      <div><span>Trinkets + badge</span><b>${fmt(powerInfo.gear + powerInfo.badge)}</b></div>
+      <div><span>Rarity rank bonus</span><b>${fmt(powerInfo.rarity + powerInfo.tier)}</b></div>
+      <div class="total"><span>Total Power</span><b>${fmt(powerInfo.total)}</b></div>`;
+    identity.appendChild(powerDetails);
+    powerButton.onclick = () => {
+      powerDetails.hidden = !powerDetails.hidden;
+      powerButton.setAttribute('aria-expanded', String(!powerDetails.hidden));
+    };
+    $('.hero-power-breakdown-close', powerDetails).onclick = () => {
+      powerDetails.hidden = true;
+      powerButton.setAttribute('aria-expanded', 'false');
+      powerButton.focus();
+    };
     const chips = el('div', 'hero-identity-chips');
     chips.appendChild(UI.roleTag(d.role, d.roleLabel));
     if (d.position) chips.appendChild(el('span', 'pill', d.position));
@@ -915,7 +1043,7 @@ const HeroPage = {
     if (key !== 'basic' && unlocked) {
       const lv = h.skills[key], cost = skillCost(lv), actions = el('div', 'hero-skill-actions');
       const st = SkillDesc.getStats(id);
-      const preview = SkillDesc.rankPreview(skill, lv, st);
+      const preview = lv < Progress.skillCap(id) ? SkillDesc.rankPreview(skill, lv, st) : '';
       if (preview) {
         const nextEl = el('div', 'hero-skill-next');
         nextEl.innerHTML = `<div class="sk-next-head"><span>NEXT RANK PROJECTION</span><small>LV ${lv} → ${lv + 1}</small></div><div class="sk-next-grid">${preview}</div>`;
@@ -956,6 +1084,11 @@ const HeroPage = {
     cfg.originalArt = Art.hero(id);
     cfg.actionArt = Art.skillHero(id, key) || (BATTLE_HERO_ART[id] ? Art.battleHero(id) : null);
     const gourdyPreview = id === 'Gourdy' && GOURDY_SKILL_PREVIEWS[key];
+    const qomGourdyPreview = id === 'QOMGourdy' && QOM_GOURDY_SKILL_PREVIEWS[key];
+    const qomEclipsePreview = id === 'QOMEclipse' && QOM_ECLIPSE_SKILL_PREVIEWS[key];
+    const qomRibeccaPreview = id === 'QOMRibecca' && QOM_RIBECCA_SKILL_PREVIEWS[key];
+    const qomSoulvesterPreview = id === 'QOMSoulvester' && QOM_SOULVESTER_SKILL_PREVIEWS[key];
+    const qomConniePreview = id === 'QOMConnie' && QOM_CONNIE_SKILL_PREVIEWS[key];
     const toodlesPreview = id === 'Toodles' && TOODLES_SKILL_PREVIEWS[key];
     const rodgerPreview = id === 'Rodger' && RODGER_SKILL_PREVIEWS[key];
     const shrimpoPreview = id === 'Shrimpo' && SHRIMPO_SKILL_PREVIEWS[key];
@@ -972,9 +1105,14 @@ const HeroPage = {
     const scrapsPreview = id === 'Scraps' && SCRAPS_SKILL_PREVIEWS[key];
     const flutterPreview = id === 'Flutter' && FLUTTER_SKILL_PREVIEWS[key];
     const ribeccaPreview = id === 'Ribecca' && RIBECCA_SKILL_PREVIEWS[key];
-    const astroPreview = id === 'Astro' && ASTRO_SKILL_PREVIEWS[key];
     const collabPreview = COLLAB_SKILL_PREVIEWS[id] && COLLAB_SKILL_PREVIEWS[id][key];
-    const bespokePreview = gourdyPreview || toodlesPreview || rodgerPreview || shrimpoPreview || veePreview || flytePreview || sproutPreview || bassiePreview || waxwellPreview || phantasiaPreview || rudiePreview || tishaPreview || dandyPreview || pebblePreview || scrapsPreview || flutterPreview || ribeccaPreview || astroPreview || collabPreview;
+    const mrsHollowayPreview = id === 'MrsHolloway' && MRS_HOLLOWAY_SKILL_PREVIEWS[key];
+    const mrHollowayPreview = id === 'MrHolloway' && MR_HOLLOWAY_SKILL_PREVIEWS[key];
+    const astroPreview = id === 'Astro' && (typeof ASTRO_SKILL_PREVIEWS !== 'undefined' ? ASTRO_SKILL_PREVIEWS[key] : null);
+    const delilahPreview = id === 'Delilah' && DELILAH_SKILL_PREVIEWS[key];
+    const shellyPreview = id === 'Shelly' && SHELLY_SKILL_PREVIEWS[key];
+    const conniePreview = id === 'Connie' && CONNIE_SKILL_PREVIEWS[key];
+    const bespokePreview = gourdyPreview || qomGourdyPreview || qomEclipsePreview || qomRibeccaPreview || qomSoulvesterPreview || qomConniePreview || toodlesPreview || rodgerPreview || shrimpoPreview || veePreview || flytePreview || sproutPreview || bassiePreview || waxwellPreview || phantasiaPreview || rudiePreview || tishaPreview || dandyPreview || pebblePreview || scrapsPreview || flutterPreview || ribeccaPreview || astroPreview || collabPreview || mrsHollowayPreview || mrHollowayPreview || delilahPreview || shellyPreview || conniePreview;
     if (bespokePreview) Object.assign(cfg, bespokePreview);
     if (cfg.basic) {
       const hash = id.split('').reduce((n, c) => n + c.charCodeAt(0), 0);
@@ -1095,7 +1233,18 @@ const HeroPage = {
     })() : '';
     const toodlesSprites = cfg.toodlesMode ? `<div class="preview-toodles-layer toodles-${cfg.toodlesMode}">
       <i class="toodles-token damage">⚔</i><i class="toodles-token defense">🛡</i><i class="toodles-token speed">🏃</i><i class="toodles-token support">💚</i>
+      <div class="toodles-preview-eightball">🎱</div>
+      <div class="toodles-preview-dogplush">🐶</div>
+      <div class="toodles-preview-hammer">🔨</div>
       <div class="preview-toodles-star">✦</div><div class="preview-toodles-callout"></div></div>` : '';
+    const qomMode = cfg.qomGourdyMode || cfg.qomEclipseMode || cfg.qomRibeccaMode || cfg.qomSoulvesterMode || cfg.qomConnieMode;
+    const qomIcons = cfg.qomEclipseMode ? ['⚡', '🎸'] : cfg.qomRibeccaMode ? ['💀', '🎹'] : cfg.qomSoulvesterMode ? ['🛡️', '⚔️'] : cfg.qomConnieMode ? ['👻', '✨'] : ['🥁', '💥'];
+    const qomGourdySprites = qomMode ? `<div class="preview-qom-gourdy-layer qom-${qomMode}">
+      <div class="qom-drum">${qomIcons[0]}</div>
+      <div class="qom-drum cymbal">${qomIcons[1]}</div>
+      <div class="qom-note note-1">🎵</div>
+      <div class="qom-note note-2">🎶</div>
+      <div class="preview-qom-callout"></div></div>` : '';
     const rodgerSprites = cfg.rodgerMode ? (() => {
       const items = cfg.rodgerMode === 'research'
         ? [{ kind:'obj', img:'Book' }, { kind:'obj', img:'Magifyingglass' }, { kind:'item', img:'paper' }, { kind:'item', img:'paper' }, { kind:'item', img:'paper' }]
@@ -1237,6 +1386,7 @@ const HeroPage = {
       <div class="preview-float-number"></div>
       <div class="preview-popups-layer"></div>
       ${gourdySprites}
+      ${qomGourdySprites}
       ${toodlesSprites}
       ${rodgerSprites}
       ${shrimpoSprites}
@@ -1447,13 +1597,14 @@ const HeroPage = {
 
       let advance = 0;
       if (cfg.dashes) {
-        const holdUntil = cfg.flyteMode === 'clear' ? .79 : .66;
+        const holdUntil = (cfg.flyteMode === 'clear' || cfg.flyteMode === 'mockingSwoop') ? .79 : .66;
         const arriveAt = cfg.flyteMode ? .30 : .28;
         if (p < arriveAt) advance = easeOut((p - .06) / (arriveAt - .06));
         else if (p < holdUntil) advance = 1;
         else advance = 1 - easeInOut((p - holdUntil) / Math.max(.01, .94 - holdUntil));
       }
-      const travel = stage._previewW * (cfg.flyteMode === 'clear' ? .62 : cfg.flyteMode === 'rescue' ? .52
+      const travel = stage._previewW * ((cfg.flyteMode === 'clear' || cfg.flyteMode === 'mockingSwoop') ? .62
+        : (cfg.flyteMode === 'rescue' || cfg.flyteMode === 'wingSlam') ? .52
         : cfg.shrimpoMode && cfg.dashes ? .54 : cfg.basic && cfg.attackKind === 'reach' ? .20 : .31);
       let bob = Math.sin(now / 210) * 1.5, rot = 0, sx = 1, sy = 1;
       if (active && !cfg.actorAtlases) {
@@ -1529,10 +1680,10 @@ const HeroPage = {
         const lift = Math.sin(clamp((p - .05) / .72, 0, 1) * Math.PI);
         bob -= lift * 18 + Math.sin(p * Math.PI * 6) * lift * 3;
         rot += Math.sin(p * Math.PI * 4) * lift * 8; sx += lift * .08; sy += lift * .10;
-      } else if (cfg.flyteMode === 'rescue') {
+      } else if (cfg.flyteMode === 'rescue' || cfg.flyteMode === 'wingSlam') {
         const dive = Math.sin(clamp((p - .06) / .34, 0, 1) * Math.PI), brace = Math.sin(clamp((p - .27) / .34, 0, 1) * Math.PI);
         bob -= dive * 12 + brace * 7; rot -= dive * 20; sx += dive * .16 + brace * .08; sy -= dive * .12;
-      } else if (cfg.flyteMode === 'clear') {
+      } else if (cfg.flyteMode === 'clear' || cfg.flyteMode === 'mockingSwoop') {
         const sweep = Math.sin(clamp((p - .05) / .73, 0, 1) * Math.PI);
         bob -= sweep * 15 + Math.sin(p * Math.PI * 8) * sweep * 3;
         rot -= sweep * 24; sx += sweep * .24; sy -= sweep * .15;
@@ -1749,7 +1900,7 @@ const HeroPage = {
       prop.style.opacity = showProp ? String(Math.sin(actionP * Math.PI)) : '0';
       prop.style.transform = `translateY(${-10 - Math.sin(actionP * Math.PI) * 16}px) rotate(${actionP * 85 - 20}deg)`;
 
-      const useGenericBurst = cfg.gourdyMode || cfg.rodgerMode || cfg.shrimpoMode || cfg.veeMode || cfg.flyteMode || cfg.sproutMode || cfg.bassieMode || cfg.waxMode || cfg.visualKind === 'impact';
+      const useGenericBurst = cfg.gourdyMode || cfg.qomGourdyMode || cfg.qomEclipseMode || cfg.qomRibeccaMode || cfg.qomSoulvesterMode || cfg.qomConnieMode || cfg.rodgerMode || cfg.shrimpoMode || cfg.veeMode || cfg.flyteMode || cfg.sproutMode || cfg.bassieMode || cfg.waxMode || cfg.visualKind === 'impact';
       burst.style.opacity = useGenericBurst && !support && !noDamage && hitPulse ? String(hitPulse) : '0';
       burst.style.transform = `scale(${.45 + hitPulse * .9}) rotate(${(p - hitAt) * 110}deg)`;
       number.textContent = cfg.floatLabel || sim.label || (cfg.gourdyMode === 'toss' ? `-${fmt(displayNumber)}` : cfg.ally ? 'SHIELD' : cfg.passive ? 'READY' : `-${fmt(displayNumber)}`);
@@ -1758,6 +1909,7 @@ const HeroPage = {
       number.style.transform = `translateY(${-Math.max(hitPulse, buffPulse) * 23}px) scale(${.75 + Math.max(hitPulse, buffPulse) * .25})`;
       flash.style.opacity = cfg.ultimate ? String(clamp(1 - Math.abs(p - hitAt) / .055, 0, 1) * .42) : '0';
       if (cfg.gourdyMode) this.drawGourdyPreview(stage, cfg, p, hitAt);
+      if (cfg.qomGourdyMode || cfg.qomEclipseMode || cfg.qomRibeccaMode || cfg.qomSoulvesterMode || cfg.qomConnieMode) this.drawQomGourdyPreview(stage, cfg, p, hitAt);
       if (cfg.toodlesMode) this.drawToodlesPreview(stage, cfg, p, hitAt);
       if (cfg.rodgerMode) this.drawRodgerPreview(stage, cfg, p, hitAt);
       if (cfg.shrimpoMode) this.drawShrimpoPreview(stage, cfg, p, hitAt);
@@ -1804,7 +1956,7 @@ const HeroPage = {
      combat calls, so a slash, area wave, projectile, and support cast no
      longer collapse into the same generic glow. */
   drawAuthoredPreviewFx(stage, cfg, p, hitAt, node) {
-    if (!node || cfg.gourdyMode || cfg.rodgerMode || cfg.shrimpoMode || cfg.veeMode || cfg.flyteMode || cfg.sproutMode || cfg.bassieMode || cfg.waxMode || cfg.rudieMode || cfg.dandyMode || cfg.pebbleMode || cfg.scrapsMode || cfg.flutterMode || cfg.ribeccaMode || cfg.astroMode || cfg.milkMode || cfg.vanillaMode || cfg.khMode) return;
+    if (!node || cfg.gourdyMode || cfg.qomGourdyMode || cfg.qomEclipseMode || cfg.qomRibeccaMode || cfg.qomSoulvesterMode || cfg.qomConnieMode || cfg.rodgerMode || cfg.shrimpoMode || cfg.veeMode || cfg.flyteMode || cfg.sproutMode || cfg.bassieMode || cfg.waxMode || cfg.rudieMode || cfg.dandyMode || cfg.pebbleMode || cfg.scrapsMode || cfg.flutterMode || cfg.ribeccaMode || cfg.astroMode || cfg.milkMode || cfg.vanillaMode || cfg.khMode) return;
     const w = stage._previewW || stage.clientWidth, h = stage._previewH || stage.clientHeight;
     const hitPulse = Math.max(...(cfg.hitTimes || [hitAt]).map(at => clamp(1 - Math.abs(p - at) / .065, 0, 1)));
     const castPulse = Math.sin(clamp((p - .10) / .32, 0, 1) * Math.PI);
@@ -2081,14 +2233,20 @@ const HeroPage = {
 
   drawToodlesPreview(stage, cfg, p, hitAt) {
     const tokens = this.previewNodes(stage, '.toodles-token'), star = $('.preview-toodles-star', stage), callout = $('.preview-toodles-callout', stage);
+    const eightball = $('.toodles-preview-eightball', stage), dogplush = $('.toodles-preview-dogplush', stage), hammer = $('.toodles-preview-hammer', stage);
     if (!tokens.length || !star || !callout) return;
     const w = stage._previewW || stage.clientWidth, h = stage._previewH || stage.clientHeight;
     const place = (node, x, y, rot, scale, opacity) => {
+      if (!node) return;
       node.style.opacity = String(clamp(opacity, 0, 1));
       node.style.transform = `translate3d(${x}px,${y}px,0) rotate(${rot}deg) scale(${scale})`;
     };
     const pulse = clamp(1 - Math.abs(p - hitAt) / .16, 0, 1);
     tokens.forEach(node => { node.style.opacity = '0'; });
+    if (eightball) eightball.style.opacity = '0';
+    if (dogplush) dogplush.style.opacity = '0';
+    if (hammer) hammer.style.opacity = '0';
+
     if (cfg.toodlesMode === 'roll' || cfg.toodlesMode === 'improve' || cfg.toodlesMode === 'charm') {
       const q = clamp((p - .10) / .46, 0, 1), fade = clamp((.82 - p) / .15, 0, 1);
       tokens.forEach((node, i) => {
@@ -2096,12 +2254,28 @@ const HeroPage = {
         place(node, w * .26 + Math.cos(a) * (34 + q * 28), h * .51 + Math.sin(a) * (27 + q * 18),
           q * (240 + i * 74), .54 + q * .28, q * fade);
       });
+      if (eightball) {
+        place(eightball, w * (.26 + q * .14), h * (.46 - Math.sin(q * Math.PI) * .20), Math.sin(p * 30) * 18, .7 + Math.sin(q * Math.PI) * .45, q * fade);
+      }
       star.style.opacity = String(q * fade);
       star.style.transform = `translate3d(${w * (.22 + q * .10)}px,${h * (.32 - q * .10)}px,0) rotate(${q * 190}deg) scale(${.4 + q * .9})`;
+    } else if (cfg.toodlesMode === 'miracle') {
+      const q = clamp((p - .12) / .42, 0, 1), fade = clamp((.80 - p) / .12, 0, 1);
+      if (dogplush) {
+        place(dogplush, w * .76, h * (.44 - Math.sin(q * Math.PI) * .18), Math.sin(p * 15) * 12, .8 + q * .3, q * fade);
+      }
+      tokens.slice(0, 2).forEach((node, i) => place(node, w * (.72 + i * .08), h * (.52 - q * .08), (i ? 1 : -1) * q * 45, .5 + q * .2, q * fade));
+      star.style.opacity = String(Math.max(pulse, q * fade));
+      star.style.transform = `translate3d(${w * .76}px,${h * (.31 - q * .08)}px,0) rotate(${q * 150}deg) scale(${.45 + q * .75})`;
     } else if (cfg.toodlesMode === 'strike' || cfg.toodlesMode === 'swing') {
       const q = clamp((p - .20) / Math.max(.08, hitAt - .20), 0, 1), burst = Math.sin(q * Math.PI);
       tokens.slice(0, 2).forEach((node, i) => place(node, w * (.78 + (i ? .08 : -.08) * burst), h * (.47 - burst * .18),
         (i ? 1 : -1) * q * 330, .48 + burst * .42, burst));
+      if (hammer) {
+        const hq = clamp((p - .12) / Math.max(.06, hitAt - .12), 0, 1);
+        const ang = lerp(-65, 25, hq);
+        place(hammer, w * .76, h * .36, ang, .7 + pulse * .45, clamp(1 - Math.abs(p - hitAt) / .22, 0, 1));
+      }
       star.style.opacity = String(pulse);
       star.style.transform = `translate3d(${w * .78}px,${h * (.34 - pulse * .08)}px,0) rotate(${p * 480}deg) scale(${.5 + pulse * .8})`;
     } else {
@@ -2152,6 +2326,58 @@ const HeroPage = {
     callout.textContent = cfg.gourdyMode === 'toss' ? cfg.gourdyOutcome : cfg.floatLabel;
     callout.style.opacity = String(pulse);
     callout.style.transform = `translate3d(${w * .67}px,${h * .24 - pulse * 13}px,0) rotate(${(1 - pulse) * -7}deg) scale(${.65 + pulse * .45})`;
+  },
+
+  drawQomGourdyPreview(stage, cfg, p, hitAt) {
+    const drums = this.previewNodes(stage, '.preview-qom-gourdy-layer .qom-drum'),
+          notes = this.previewNodes(stage, '.preview-qom-gourdy-layer .qom-note'),
+          callout = $('.preview-qom-callout', stage);
+    if (!drums.length || !callout) return;
+    const w = stage._previewW || stage.clientWidth, h = stage._previewH || stage.clientHeight;
+    const place = (node, x, y, rot, scale, opacity) => {
+      if (!node) return;
+      node.style.opacity = String(clamp(opacity, 0, 1));
+      node.style.transform = `translate3d(${x}px,${y}px,0) rotate(${rot}deg) scale(${scale})`;
+    };
+    const pulse = clamp(1 - Math.abs(p - hitAt) / .15, 0, 1);
+    drums.forEach(n => { n.style.opacity = '0'; });
+    notes.forEach(n => { n.style.opacity = '0'; });
+
+    const mode = cfg.qomGourdyMode || cfg.qomEclipseMode || cfg.qomRibeccaMode || cfg.qomSoulvesterMode || cfg.qomConnieMode;
+
+    if (mode === 'solo' || mode === 'encore' || mode === 'headliner' || mode === 'curtain' || mode === 'knight') {
+      const q = clamp((p - .12) / .52, 0, 1), fade = clamp((.85 - p) / .12, 0, 1);
+      place(drums[0], w * .26, h * .44, Math.sin(p * 28) * 15, .7 + Math.sin(p * 20) * .25, fade);
+      if (drums[1]) place(drums[1], w * .76, h * .40, (p - hitAt) * 180, .5 + pulse * .8, pulse);
+      notes.forEach((n, i) => {
+        const nq = clamp((p - (.18 + i * .12)) / .45, 0, 1);
+        place(n, w * (.35 + nq * .38), h * (.52 - Math.sin(nq * Math.PI) * (28 + i * 14)), nq * 180, .5 + nq * .4, nq * fade);
+      });
+    } else if (mode === 'feedback' || mode === 'howl' || mode === 'bone' || mode === 'slash' || mode === 'escape' || mode === 'possess') {
+      const q = clamp((p - hitAt) / .25, 0, 1), blast = Math.sin(q * Math.PI);
+      place(drums[0], w * .25, h * .48, 0, .6, clamp((.7 - p) / .15, 0, 1));
+      if (drums[1]) place(drums[1], w * .78, h * .44, (p - hitAt) * 140, .5 + blast * .5, blast);
+      notes.forEach((n, i) => place(n, w * .77 + (i ? 1 : -1) * q * 38, h * .46 - q * (30 + i * 15), (i ? -1 : 1) * q * 300, .45 + blast * .4, blast));
+    } else if (mode === 'vip' || mode === 'symphony' || mode === 'royal' || mode === 'backstage' || mode === 'ovation' || mode === 'parry') {
+      const q = clamp((p - .10) / .42, 0, 1), fade = clamp((.80 - p) / .12, 0, 1);
+      place(drums[0], w * .75, h * .38, -12 + q * 24, .6 + q * .3, q * fade);
+      if (drums[1]) place(drums[1], w * .75, h * .52, q * 180, .5 + pulse * .4, pulse);
+      notes.forEach((n, i) => place(n, w * (.72 + (i ? .06 : -.06)), h * (.48 - q * 18), q * 90, .5 + q * .3, q * fade));
+    } else if (mode === 'meter' || mode === 'heart' || mode === 'undead' || mode === 'resolve' || mode === 'ghost') {
+      const q = clamp((p - .08) / .55, 0, 1), fade = clamp((.85 - p) / .15, 0, 1);
+      place(drums[0], w * .25, h * .34, Math.sin(p * 14) * 10, .68 + Math.sin(p * 10) * .12, fade);
+      if (drums[1]) place(drums[1], w * .25, h * .58, Math.cos(p * 14) * 10, .6, fade);
+      notes.forEach((n, i) => place(n, w * (.20 + i * .10), h * (.46 - q * 22), (i ? 1 : -1) * q * 140, .45 + q * .3, q * fade));
+    } else {
+      const q = clamp((p - .15) / Math.max(.08, hitAt - .15), 0, 1);
+      place(drums[0], w * .25, h * .46, Math.sin(p * 22) * 12, .65 + pulse * .3, clamp(1 - Math.abs(p - .35) / .35, 0, 1));
+      if (drums[1]) place(drums[1], w * .78, h * .44, (p - hitAt) * 90, .5 + pulse * .5, pulse);
+      if (notes[0]) place(notes[0], w * (.32 + q * .42), h * (.48 - Math.sin(q * Math.PI) * 22), q * 120, .45 + q * .3, q * (1 - q * .3));
+      if (notes[1]) place(notes[1], w * .78 + Math.sin(p * 18) * 14, h * .40, p * 160, .4 + pulse * .4, pulse);
+    }
+    callout.textContent = cfg.floatLabel || (mode ? mode.toUpperCase() : 'KEEP THE BEAT');
+    callout.style.opacity = String(pulse);
+    callout.style.transform = `translate3d(${w * .64}px,${h * .18 - pulse * 12}px,0) rotate(${(1 - pulse) * -5}deg) scale(${.68 + pulse * .36})`;
   },
 
   drawRodgerPreview(stage, cfg, p, hitAt) {
@@ -2324,39 +2550,52 @@ const HeroPage = {
         node.style.transform = `translate3d(${w * (.25 + q * .54)}px,${h * (.49 + lane) - Math.sin(q * Math.PI) * (18 + i * 2)}px,0) rotate(${q * 120 + i * 17}deg) scale(${.45 + Math.sin(q * Math.PI) * .45})`;
       });
       const pop = pulse(hitAt, .28);
-      callout.textContent = 'HASTE · SLOW IMMUNE'; callout.style.opacity = String(pop);
+      callout.textContent = 'GALE BARRIER · HASTE'; callout.style.opacity = String(pop);
       callout.style.transform = `translate3d(${w * .63}px,${h * .18 - pop * 10}px,0) scale(${.68 + pop * .34})`;
-    } else if (cfg.flyteMode === 'rescue') {
-      const protect = clamp((p - .24) / .24, 0, 1), fade = clamp((.88 - p) / .12, 0, 1);
+      buffCallout.textContent = '25% ENERGY CONVERT'; buffCallout.style.opacity = String(pop);
+      buffCallout.style.transform = `translate3d(${w * .36}px,${h * .24 - pop * 8}px,0) scale(${.68 + pop * .32})`;
+    } else if (cfg.flyteMode === 'wingSlam') {
+      const impact = pulse(hitAt, .24);
+      push.style.opacity = String(impact);
+      push.style.transform = `translate3d(${w * .82}px,${h * .58}px,0) scale(${.4 + impact * 1.15})`;
+      wind.forEach((node, i) => {
+        const q = clamp((p - (.08 + i * .02)) / .35, 0, 1), fadeTrail = clamp((.65 - p) / .10, 0, 1);
+        node.style.opacity = String(q * fadeTrail);
+        node.style.transform = `translate3d(${w * (.25 + q * .55)}px,${h * (.50 + (i % 3 - 1) * .05)}px,0) rotate(${q * 80}deg) scale(${.42 + q * .35})`;
+      });
+      callout.textContent = 'STUN · REALITY SHRED'; callout.style.opacity = String(impact);
+      callout.style.transform = `translate3d(${w * .64}px,${h * .18 - impact * 10}px,0) scale(${.68 + impact * .34})`;
+    } else if (cfg.flyteMode === 'mockingSwoop') {
+      const protect = clamp((p - .20) / .26, 0, 1), fade = clamp((.88 - p) / .12, 0, 1);
       shield.style.opacity = String(protect * fade);
       shield.style.transform = `translate3d(${w * .81}px,${h * .57}px,0) scale(${.35 + protect * .83})`;
-      push.style.opacity = String(protect * fade);
-      push.style.transform = `translate3d(${w * .81}px,${h * .61}px,0) rotate(${(1 - protect) * -30}deg) scale(${.35 + protect * .95})`;
-      wind.forEach((node, i) => {
-        const q = clamp((p - (.08 + i * .018)) / .24, 0, 1), fadeTrail = clamp((.47 - p) / .08, 0, 1);
-        node.style.opacity = String(q * fadeTrail);
-        node.style.transform = `translate3d(${w * (.23 + q * .55)}px,${h * (.50 + (i % 3 - 1) * .05)}px,0) rotate(${q * 70}deg) scale(${.42 + q * .28})`;
-      });
-      const pop = pulse(hitAt, .25); callout.textContent = 'SHIELD + SPACE'; callout.style.opacity = String(pop);
+      const pop = pulse(hitAt, .25);
+      callout.textContent = 'TAUNT · 35% REFLECT'; callout.style.opacity = String(pop);
       callout.style.transform = `translate3d(${w * .64}px,${h * .18 - pop * 10}px,0) scale(${.68 + pop * .34})`;
+      buffCallout.textContent = 'CLEANSE · REGEN'; buffCallout.style.opacity = String(pop);
+      buffCallout.style.transform = `translate3d(${w * .36}px,${h * .24 - pop * 8}px,0) scale(${.68 + pop * .32})`;
+    } else if (cfg.flyteMode === 'stubborn') {
+      const downdraft = pulse(.45, .32);
+      push.style.opacity = String(downdraft);
+      push.style.transform = `translate3d(${w * .82}px,${h * .62}px,0) rotate(180deg) scale(${.4 + downdraft * 1.1})`;
+      callout.textContent = 'I DIDN\'T FALL!'; callout.style.opacity = String(downdraft);
+      callout.style.transform = `translate3d(${w * .64}px,${h * .18 - downdraft * 10}px,0) scale(${.68 + downdraft * .34})`;
+      buffCallout.textContent = 'TURBULENCE COUNTER'; buffCallout.style.opacity = String(downdraft);
+      buffCallout.style.transform = `translate3d(${w * .34}px,${h * .25 - downdraft * 8}px,0) scale(${.68 + downdraft * .32})`;
+    } else if (cfg.flyteMode === 'buffet') {
+      const slash = pulse(hitAt, .22);
+      push.style.opacity = String(slash);
+      push.style.transform = `translate3d(${w * .78}px,${h * .56}px,0) rotate(45deg) scale(${.3 + slash * .9})`;
+      callout.textContent = 'AERO BUFFET · GALE SLICE'; callout.style.opacity = String(slash);
+      callout.style.transform = `translate3d(${w * .64}px,${h * .18 - slash * 10}px,0) scale(${.68 + slash * .34})`;
     } else {
-      const passX = w * .47, allyPulse = pulse(.35, .24), impact = pulse(hitAt, .22);
-      if (passAlly) {
-        passAlly.style.opacity = String(clamp((p - .08) / .15, 0, 1) * clamp((.86 - p) / .12, 0, 1));
-        passAlly.style.transform = `translate3d(${passX}px,${h * .52 - allyPulse * 7}px,0) scale(${.72 + allyPulse * .09})`;
-      }
-      wind.forEach((node, i) => {
-        const q = clamp((p - (.06 + i * .025)) / .50, 0, 1), fade = clamp((.82 - p) / .12, 0, 1);
-        node.style.opacity = String(q * fade);
-        node.style.transform = `translate3d(${w * (.17 + q * .69)}px,${h * (.46 + (i % 4 - 1.5) * .055)}px,0) rotate(${(i % 2 ? -1 : 1) * q * 100}deg) scale(${.45 + Math.sin(q * Math.PI) * .5})`;
-      });
-      zone.style.opacity = String(allyPulse);
-      zone.style.transform = `translate3d(${passX}px,${h * .68}px,0) rotateX(58deg) scale(${.35 + allyPulse * .54})`;
-      push.style.opacity = String(impact); push.style.transform = `translate3d(${w * .82}px,${h * .57}px,0) rotate(${p * 80}deg) scale(${.4 + impact * 1.05})`;
-      buffCallout.style.opacity = String(allyPulse);
-      buffCallout.style.transform = `translate3d(${w * .38}px,${h * .25 - allyPulse * 10}px,0) scale(${.7 + allyPulse * .32})`;
-      callout.textContent = 'KNOCKBACK!'; callout.style.opacity = String(impact);
-      callout.style.transform = `translate3d(${w * .67}px,${h * .17 - impact * 10}px,0) scale(${.68 + impact * .36})`;
+      const record = pulse(.50, .35);
+      zone.style.opacity = String(record);
+      zone.style.transform = `translate3d(${w * .55}px,${h * .65}px,0) rotateX(58deg) scale(${.4 + record * .6})`;
+      callout.textContent = 'FOR THE RECORD'; callout.style.opacity = String(record);
+      callout.style.transform = `translate3d(${w * .64}px,${h * .18 - record * 10}px,0) scale(${.68 + record * .34})`;
+      buffCallout.textContent = 'STUN HEALS · HARDY'; buffCallout.style.opacity = String(record);
+      buffCallout.style.transform = `translate3d(${w * .34}px,${h * .25 - record * 8}px,0) scale(${.68 + record * .32})`;
     }
   },
 
@@ -2806,7 +3045,7 @@ const HeroPage = {
     lvBtns.appendChild(one); lvBtns.appendChild(five); lvBtns.appendChild(max); lv.appendChild(lvBtns); wrap.appendChild(lv);
 
     const sc = Progress.starCost(id);
-    const star = make('PROMOTION', '★'.repeat(h.stars) + '☆'.repeat(5 - h.stars), sc ? `◈ ${h.shards} / ${sc.shards} · ${RES.ichor.icon} ${fmt(sc.ichor)}` : 'Maximum promotion',
+    const star = make('PROMOTION', '★'.repeat(h.stars) + '☆'.repeat(5 - h.stars), sc ? `◈ ${h.shards} / ${sc.shards} · ${RES.ichor.icon} ${fmt(sc.ichor)} · ${RES.star.icon} ${fmt(sc.star)}` : 'Maximum promotion',
       sc ? h.shards / sc.shards : 1, 'linear-gradient(90deg,#ffe27a,#ffc94d)');
     const sb = el('button', 'hero-growth-main', h.stars >= 5 ? 'MAXIMUM' : `PROMOTE TO ${h.stars + 1}★`);
     sb.disabled = !Progress.canStar(id); sb.onclick = () => { Progress.starUp(id); this.draw(); }; star.appendChild(sb); wrap.appendChild(star);
@@ -2876,6 +3115,20 @@ const HeroPage = {
       c.appendChild(r);
     });
     wrap.appendChild(c);
+
+    const equippedTrinkets = (h.trinkets || []).map(uid => uid && Save.data.trinketInv[uid]).filter(copy => copy && TRINKETS[copy.id]);
+    if (equippedTrinkets.length) {
+      const gear = el('div', 'card hero-stat-trinkets');
+      gear.innerHTML = '<div class="mini muted b" style="letter-spacing:1.5px;margin-bottom:7px">EQUIPPED TRINKET BONUSES</div>';
+      equippedTrinkets.forEach(copy => {
+        const t = TRINKETS[copy.id];
+        const line = el('div', 'hero-stat-trinket');
+        line.innerHTML = `<img src="${trinketIcon(copy.id)}" alt=""><div><b>${t.name} <small>R${copy.rank}</small></b><span>${trinketStatText(t, copy.rank)}</span></div><strong>⚡ +${trinketPowerScore(copy.rank)}</strong>`;
+        gear.appendChild(line);
+      });
+      gear.appendChild(el('div', 'mini muted', 'The attributes above are base values. These bonuses and Signature Fragments activate in battle.'));
+      wrap.appendChild(gear);
+    }
 
     const training = el('div', 'card');
     training.innerHTML = '<div class="mini muted b" style="letter-spacing:1.5px;margin-bottom:6px">CLASS EFFECTS &amp; STAT BONUSES</div>';
@@ -3110,7 +3363,10 @@ const HeroPage = {
           n.innerHTML = `<button type="button" class="trinket-quick-off" title="Unequip Trinket" aria-label="Unequip Trinket">×</button>
             <img src="${trinketIcon(copy.id)}" style="width:40px;height:40px;object-fit:contain">
             <div class="mini b">${t.name}${trinketPlaceholderBadge(copy.id)}</div>
-            <div class="mini muted">Rank ${copy.rank} · ${trinketRankLabel(copy.rank)} · ${trinketStatText(t, copy.rank)}</div>
+            <div class="trinket-equipped-head"><span>R${copy.rank}/${TRINKET_MAX_RANK} · ${trinketRankLabel(copy.rank)}</span><strong>⚡ +${trinketPowerScore(copy.rank)}</strong></div>
+            <div class="trinket-rank-track"><i style="width:${copy.rank / TRINKET_MAX_RANK * 100}%"></i></div>
+            <div class="trinket-equipped-bonus">${trinketStatText(t, copy.rank)}</div>
+            ${copy.rank < TRINKET_MAX_RANK ? `<div class="trinket-equipped-next">NEXT R${copy.rank + 1}: ${trinketStatText(t, copy.rank + 1)}</div>` : '<div class="trinket-equipped-next">MAX RANK</div>'}
             <div class="mini trinket-signature">${trinketSignatureText(copy.id)}</div>`;
           n.style.borderColor = 'var(--gold)';
           const offBtn = n.querySelector('.trinket-quick-off');
@@ -3281,7 +3537,7 @@ const HeroPage = {
       </main>
       <footer class="friendship-badge-actions">
         <button class="friendship-badge-apply ${worn ? 'active' : ''}" type="button" ${owned && !(cookieBadge && worn) ? '' : 'disabled'}>${cookieBadge && worn ? '✓ EQUIPPED · CHOOSE OTHER BADGE' : worn ? '✕ UNEQUIP' : '✓ APPLY TO ' + esc(hero.name.toUpperCase())}</button>
-        <button class="friendship-badge-upgrade" type="button" ${!owned || lvl >= BADGE_MAX_LVL || !friend || friend.shards < badgeUpgradeCost(lvl) ? 'disabled' : ''}>${lvl >= BADGE_MAX_LVL ? 'MAX LEVEL' : owned ? `＋ UPGRADE · ${badgeUpgradeCost(lvl)} ${esc(def.friend.toUpperCase())} SHARDS` : camp ? `CLEAR ${camp.stages.length} CHAPTERS TO EARN` : 'LOCKED'}</button>
+        <button class="friendship-badge-upgrade" type="button" ${(!owned && !camp) || (owned && (lvl >= BADGE_MAX_LVL || !friend || friend.shards < badgeUpgradeCost(lvl))) ? 'disabled' : ''}>${lvl >= BADGE_MAX_LVL ? 'MAX LEVEL' : owned ? `＋ UPGRADE · ${badgeUpgradeCost(lvl)} ${esc(def.friend.toUpperCase())} SHARDS` : camp ? `CLEAR ${camp.stages.length} CHAPTERS TO EARN` : 'LOCKED'}</button>
       </footer>`;
     $('.friendship-badge-close', body).onclick = () => UI.closeModal();
     $('.friendship-badge-apply', body).onclick = () => {
@@ -3290,7 +3546,14 @@ const HeroPage = {
       if (ok) { UI.toast(worn ? `${hero.name}'s badge removed` : `${def.name} applied to ${hero.name}`); UI.closeModal(); this.draw(); }
     };
     $('.friendship-badge-upgrade', body).onclick = () => {
-      if (!owned || lvl >= BADGE_MAX_LVL || !friend || friend.shards < badgeUpgradeCost(lvl)) return;
+      if (!owned) {
+        if (camp) {
+          UI.closeModal();
+          Screens.open('friendship');
+        }
+        return;
+      }
+      if (lvl >= BADGE_MAX_LVL || !friend || friend.shards < badgeUpgradeCost(lvl)) return;
       if (Save.upgradeBadge(bid)) { Sound.play('ui_ok'); UI.closeModal(); this.openBadgeViewer(id, bid); }
     };
     UI.modal(null, body, { bare: true, className: 'friendship-badge-modal' });
@@ -3304,8 +3567,13 @@ const HeroPage = {
     if (HEROES[id] && HEROES[id].noTrinket) return;
     const h = Save.hero(id);
     const wornUid = h.trinkets[slot];
+    const wornCopy = wornUid && Save.data.trinketInv[wornUid];
     const body = el('div');
     body.appendChild(el('div', 'trinket-equip-rule', 'ⓘ Any Hero can equip any Trinket. The source character only determines which Signature Fragment is borrowed.'));
+    if (wornCopy && TRINKETS[wornCopy.id]) {
+      const old = TRINKETS[wornCopy.id];
+      body.appendChild(el('div', 'trinket-equip-preview', `<b>CURRENT · ${old.name} R${wornCopy.rank}</b><span>${trinketStatText(old, wornCopy.rank)}</span><small>⚡ +${trinketPowerScore(wornCopy.rank)} Power</small>`));
+    }
 
     if (wornUid) {
       const off = el('button', 'btn wide', 'Unequip');
@@ -3323,10 +3591,15 @@ const HeroPage = {
       const row = el('div', 'row card');
       row.style.cssText = 'margin-bottom:6px;padding:8px;align-items:center';
       if (owned) {
-        const rank = wornHere ? Save.data.trinketInv[wornUid].rank : Save.trinketBestRank(tid);
+        const best = free.length ? free.reduce((a, b) => Save.data.trinketInv[b].rank > Save.data.trinketInv[a].rank ? b : a, free[0]) : null;
+        const rank = wornHere ? wornCopy.rank : best ? Save.data.trinketInv[best].rank : Save.trinketBestRank(tid);
+        const gain = trinketPowerScore(rank) - (wornCopy ? trinketPowerScore(wornCopy.rank) : 0);
         row.innerHTML = `<img src="${trinketIcon(tid)}" style="width:36px;height:36px;object-fit:contain">
           <div class="grow"><div class="mini b">${t.name}${trinketPlaceholderBadge(tid)}</div>
-          <div class="mini muted">Rank ${rank} · ${trinketRankLabel(rank)} · ${trinketStatText(t, rank)}</div>
+          <div class="mini muted">R${rank}/${TRINKET_MAX_RANK} · ${trinketRankLabel(rank)}</div>
+          <div class="trinket-picker-bonus">${trinketStatText(t, rank)}</div>
+          <div class="trinket-rank-track"><i style="width:${rank / TRINKET_MAX_RANK * 100}%"></i></div>
+          <div class="trinket-picker-gain">${wornHere ? 'EQUIPPED' : free.length ? `⚡ ${gain >= 0 ? '+' : ''}${gain} Power vs current slot` : 'NO FREE COPY'}</div>
           <div class="mini trinket-signature">🧩 ${trinketSignatureText(tid)}</div>
           <div class="mini muted">${t.effect}</div>
           <div class="mini" style="color:${wornHere ? 'var(--gold)' : free.length ? 'var(--good)' : 'var(--dim)'}">
@@ -3335,10 +3608,22 @@ const HeroPage = {
         else if (!free.length) row.style.opacity = .5;
         row.onclick = () => {
           if (wornHere) { Progress.unequipTrinket(id, slot); UI.closeModal(); this.draw(); return; }
-          const best = free.reduce((a, b) => Save.data.trinketInv[b].rank > Save.data.trinketInv[a].rank ? b : a, free[0]);
           if (!best) { UI.toast('No free copies - equip one somewhere else first'); return; }
           Progress.equipTrinket(id, slot, best); UI.closeModal(); this.draw();
         };
+        if (wornHere && best && Save.data.trinketInv[best].rank > wornCopy.rank) {
+          const nextRank = Save.data.trinketInv[best].rank;
+          const upgrade = el('button', 'trinket-picker-upgrade', `SWAP TO R${nextRank} · +${trinketPowerScore(nextRank) - trinketPowerScore(wornCopy.rank)} ⚡`);
+          upgrade.type = 'button';
+          upgrade.title = trinketStatText(t, nextRank);
+          upgrade.onclick = e => {
+            e.stopPropagation();
+            Progress.unequipTrinket(id, slot);
+            Progress.equipTrinket(id, slot, best);
+            UI.closeModal(); this.draw();
+          };
+          row.appendChild(upgrade);
+        }
       } else {
         row.style.opacity = .55;
         row.innerHTML = `<img src="${trinketIcon(tid)}" style="width:36px;height:36px;object-fit:contain;filter:grayscale(.8)">

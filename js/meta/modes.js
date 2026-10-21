@@ -9,7 +9,7 @@
     can never silently change after the player presses Fight. */
 function equipEnemyLoadout(spec, depth, rng, opt) {
   if (!spec) return spec;
-  if (HEROES[spec.id] && HEROES[spec.id].noTrinket) { spec.trinkets = []; return spec; }
+  const noTrinket = !!(HEROES[spec.id] && HEROES[spec.id].noTrinket);
   opt = opt || {};
   rng = rng || seeded(`enemy-loadout:${spec.id}:${depth}`);
   const level = Math.max(1, Number(spec.level) || Number(depth) || 1);
@@ -24,26 +24,32 @@ function equipEnemyLoadout(spec, depth, rng, opt) {
   spec.rarity = clamp(Number(spec.rarity) || 1, 1, 6);
   if (spec.rarityPlus == null) spec.rarityPlus = rarityPlusForLevel(level, spec.rarity, `${spec.id}-${kind}-${depth}`);
   if (spec.stars == null) spec.stars = kind === 'boss' ? 5 : clamp(1 + Math.floor(level / 70), 1, 5);
-  if (spec.skillLv == null) spec.skillLv = Math.max(1, Math.round(level * (kind === 'boss' ? 1.1 : kind === 'elite' ? .95 : .8)));
-  const rank = clamp(opt.rank || (1 + Math.floor(Math.max(0, depth - 8) / 28)), 1, TRINKET_MAX_RANK);
+  if (spec.skillLv == null) spec.skillLv = enemySkillLevel(level, kind);
+  else spec.skillLv = clamp(Math.round(Number(spec.skillLv) || 1), 1, SKILL_MAX_LEVEL);
+  const rank = clamp(opt.rank || (1 + Math.floor(Math.max(0, level - 120) / 220)), 1, TRINKET_MAX_RANK);
   let count = opt.trinketCount;
   if (count == null) {
-    count = depth >= 38 ? (rng.chance(.55) ? 2 : 1)
-      : depth >= 8 ? 1 : rng.chance(Math.max(0, depth - 3) * .07) ? 1 : 0;
+    count = level >= 280 ? (rng.chance(.55) ? 2 : 1)
+      : level >= 70 ? 1 : rng.chance(Math.max(0, level - 20) * .009) ? 1 : 0;
   }
   // Standard hostile encounters should always show at least one piece of
   // gear. Tutorial Buds explicitly clear this after hardening, so they keep
   // their teaching-only loadout while every normal mode has visible gear.
   if (opt.allowEmpty !== true) count = Math.max(1, count);
-  const owned = trinketsForOwner(spec.id).filter(id => !TRINKETS[id].eventOnly);
-  const generic = rng.shuffle(TRINKET_IDS.filter(id => !TRINKETS[id].owner && !TRINKETS[id].eventOnly));
-  const pool = owned.concat(generic).filter((id, i, a) => a.indexOf(id) === i);
-  spec.trinkets = rng.shuffle(pool).slice(0, count).map(id => ({ id, rank }));
+  if (noTrinket) spec.trinkets = [];
+  else {
+    const owned = trinketsForOwner(spec.id).filter(id => !TRINKETS[id].eventOnly);
+    const generic = rng.shuffle(TRINKET_IDS.filter(id => !TRINKETS[id].owner && !TRINKETS[id].eventOnly));
+    const pool = owned.concat(generic).filter((id, i, a) => a.indexOf(id) === i);
+    spec.trinkets = rng.shuffle(pool).slice(0, count).map(id => ({ id, rank }));
+  }
 
   const badgeIds = BADGE_IDS_FOR(spec.id);
-  const badgeChance = opt.badgeChance == null ? clamp(.04 + depth * .006, .04, .55) : opt.badgeChance;
+  const badgeChance = opt.badgeChance == null
+    ? clamp(.03 + Math.max(0, level - 60) * .00072 + (kind === 'boss' ? .22 : kind === 'elite' ? .12 : 0), .03, .85)
+    : opt.badgeChance;
   if (badgeIds.length && rng.chance(badgeChance)) {
-    spec.badge = { id: rng.pick(badgeIds), lvl: clamp(opt.badgeLvl || (1 + Math.floor(depth / 15)), 1, BADGE_MAX_LVL) };
+    spec.badge = { id: rng.pick(badgeIds), lvl: clamp(opt.badgeLvl || (1 + Math.floor(Math.max(0, level - 80) / 160)), 1, BADGE_MAX_LVL) };
   }
   return spec;
 }
@@ -58,7 +64,7 @@ function enemyLoadoutParts(spec) {
   const badges = badgeRefs.slice(-1).map(ref => {
     const id = typeof ref === 'string' ? ref : ref && ref.id;
     return id && BADGES[id] ? { id, lvl: typeof ref === 'string' ? Save.badgeLvl(id) : ref.lvl,
-      name: BADGES[id].name, icon: BADGES[id].icon } : null;
+      name: BADGES[id].name, icon: BADGES[id].icon, image: BADGES[id].image } : null;
   }).filter(Boolean);
   return { trinkets, badges, badge: badges[0] || null };
 }
@@ -66,7 +72,7 @@ function enemyLoadoutParts(spec) {
 function enemyLoadoutChips(spec) {
   const gear = enemyLoadoutParts(spec);
   return gear.trinkets.map(t => `<span class="enemy-gear-chip" title="${t.name} · Rank ${t.rank}"><img src="${t.icon}" alt=""><i>R${t.rank}</i></span>`).join('') +
-    gear.badges.map(b => `<span class="enemy-gear-chip badge" title="${b.name} · Level ${b.lvl}"><b>${b.icon}</b><i>L${b.lvl}</i></span>`).join('');
+    gear.badges.map(b => `<span class="enemy-gear-chip badge" title="${b.name} · Level ${b.lvl}">${b.image ? `<img src="${b.image}" alt="">` : `<b>${b.icon}</b>`}<i>L${b.lvl}</i></span>`).join('');
 }
 
 function enemyLoadoutText(spec) {
@@ -115,13 +121,14 @@ function openEnemyPreview(spec) {
   );
   entries.forEach(({ key, skill, unlocked }) => {
     const row = el('article', 'enemy-preview-move' + (unlocked ? '' : ' locked'));
-    const label = key === 'basic' ? 'BASIC' : `${RARITY_NAMES[SKILL_RARITY[key]]} SKILL`;
+    const moveLevel = key === 'basic' ? 1 : clamp(Number(spec.skillLevels && spec.skillLevels[key]) || skillLv, 1, SKILL_MAX_LEVEL);
+    const label = key === 'basic' ? 'BASIC' : `${RARITY_NAMES[SKILL_RARITY[key]]} SKILL · LV ${moveLevel}`;
     const meta = key === 'basic'
       ? `${skill.range || 0} RANGE`
-      : skill.cd ? `${skillCooldown(skill, skillLv).toFixed(1)}s CD`
+      : skill.cd ? `${skillCooldown(skill, moveLevel).toFixed(1)}s CD`
         : skill.energy ? '100 ENERGY' : 'PASSIVE';
     row.innerHTML = `<div class="enemy-preview-move-top"><span>${label}</span><b>${skill.name}</b><i>${unlocked ? meta : 'LOCKED'}</i></div>
-      ${unlocked ? `<div class="enemy-preview-move-desc sk-desc-root sk-mode-both">${enemyPreviewDescription(skill, key, skillLv, spec)}</div>` : `<div class="enemy-preview-move-desc">Unlocks at ${RARITY_NAMES[SKILL_RARITY[key]]} rarity.</div>`}`;
+      ${unlocked ? `<div class="enemy-preview-move-desc sk-desc-root sk-mode-both">${enemyPreviewDescription(skill, key, moveLevel, spec)}</div>` : `<div class="enemy-preview-move-desc">Unlocks at ${RARITY_NAMES[SKILL_RARITY[key]]} rarity.</div>`}`;
     moveList.appendChild(row);
   });
   moves.appendChild(moveList); body.appendChild(moves);
@@ -138,7 +145,7 @@ function openEnemyPreview(spec) {
   });
   gear.badges.forEach(b => {
     const def = BADGES[b.id], row = el('div', 'enemy-preview-gear badge');
-    row.innerHTML = `<strong>${b.icon}</strong><div class="grow"><b>${b.name} <small>LEVEL ${b.lvl}</small></b>
+    row.innerHTML = `${b.image ? `<img src="${b.image}" alt="">` : `<strong>${b.icon}</strong>`}<div class="grow"><b>${b.name} <small>LEVEL ${b.lvl}</small></b>
       <span>${def && def.stat ? def.stat(b.lvl) : ''}</span><p>${def && def.effect || ''}</p></div>`;
     gearList.appendChild(row);
   });
@@ -475,13 +482,12 @@ const Depths = {
     return true;
   },
 
-  /** Permanent Trinkets get a real Depths identity: every equipped rank adds
-      a small bundle of core stats, then Gem Resonance can turn equipment into
-      the spine of a run. This leaves Trinket behaviour in other modes intact. */
+  /** Rank 5 keeps its original Depths bonus. Higher ranks add resonance at
+      a gentler pace so two Rank 20 pieces do not overwhelm the run deck. */
   trinketRanksFor(u) {
     return (u.trinkets || []).reduce((n, uid) => {
       const copy = Save.data.trinketInv && Save.data.trinketInv[uid];
-      return n + (copy ? copy.rank || 1 : 0);
+      return n + (copy ? trinketResonance(copy.rank) : 0);
     }, 0);
   },
   applyRunBuild(B) {
@@ -588,7 +594,7 @@ const Depths = {
         B.applyStatus(u, t, 'atkup', 5, { stacks: sweep });
       });
     }));
-    if (this.cardCount()) B.log(`<b>Depth Deck:</b> ${this.cardCount()} cards · ${sum(allies.map(u => this.trinketRanksFor(u)))} Trinket ranks resonating.`);
+    if (this.cardCount()) B.log(`<b>Depth Deck:</b> ${this.cardCount()} cards · ${Number(sum(allies.map(u => this.trinketRanksFor(u))).toFixed(1))} Trinket resonance.`);
   },
 
   /* Enemy scaling is stretched across the full Depths journey. At Mastery
@@ -627,13 +633,10 @@ const Depths = {
       ? Progress.teamPower(team) : 0;
     if (!teamPower) return clamp(base, 1, 4000);
 
-    // Progress.recommendedPower() treats 400 power as roughly one level of
-    // encounter pressure. Use that same readable unit, but only blend gently
-    // toward it after the early climb. The old .80 pressure value treated a
-    // strong five-Hero roster's total power as a near-direct floor level,
-    // which could turn Floor 24 into a level-130 encounter. Floor progression
-    // stays in charge; team power now nudges the curve instead of replacing it.
-    const powerLevel = teamPower / 400;
+    // Translate the new team rating through its matching recommendation
+    // curve before applying pressure. Raw power divided by a fixed constant
+    // would make a high-Mastery squad inflate enemy levels by thousands.
+    const powerLevel = Progress.powerEquivalentLevel(teamPower);
     const pressure = .36 + Math.min(.18, depth / 1000);
     const teamTarget = Math.round(powerLevel * pressure + node * roomRamp);
     const floorGate = clamp((depth - 8) / 28, 0, 1);
@@ -1208,13 +1211,29 @@ const Banter = {
    be absent; each absent guest leaves that campaign party one slot short. */
 const Campaign = {
   list() { return Object.values(CAMPAIGNS); },
-  unlocked(c) { return !!c && Save.owns(c.a) && Save.owns(c.b); },
-  requiredIds(camp) {
-    return [...new Set([camp && camp.a, camp && camp.b, ...(camp && Array.isArray(camp.guests) ? camp.guests : [])]
-      .filter(id => id && HEROES[id]))];
+  unlocked(c) {
+    if (!c || !Save.owns(c.a) || !Save.owns(c.b)) return false;
+    if (c.prereq && !Save.campaignDone(c.prereq)) return false;
+    return true;
   },
-  team(camp, team) {
-    const required = this.requiredIds(camp);
+  prereqMet(c) {
+    return !c || !c.prereq || Save.campaignDone(c.prereq);
+  },
+  requiredIds(camp, stageIdx) {
+    if (!camp) return [];
+    const pair = [...new Set([camp.a, camp.b].filter(id => id && HEROES[id]))];
+    const index = Number.isInteger(stageIdx) ? stageIdx : Math.min(Save.campaignStage(camp.id), camp.stages.length - 1);
+    const stage = camp.stages[index];
+    // A chapter's guests take precedence over the whole story cast. Some
+    // stories mention six or seven Toons, but a battle has five slots.
+    const source = stage && Array.isArray(stage.guests) ? stage.guests
+      : stage && Array.isArray(stage.cast) ? stage.cast : camp.guests || [];
+    const guests = [...new Set(source.filter(id => id && HEROES[id] && !pair.includes(id)))];
+    const ordered = guests.filter(id => Save.owns(id)).concat(guests.filter(id => !Save.owns(id)));
+    return pair.concat(ordered.slice(0, Math.max(0, 5 - pair.length)));
+  },
+  team(camp, team, stageIdx) {
+    const required = this.requiredIds(camp, stageIdx);
     const ownedRequired = required.filter(id => Save.owns(id));
     const free = (team || []).filter((id, i, list) => id && Save.owns(id) && !required.includes(id) && list.indexOf(id) === i);
     // Every story-present character owns a formation slot. An absent guest
@@ -1222,9 +1241,9 @@ const Campaign = {
     const partySize = Math.max(1, 5 - required.filter(id => !Save.owns(id)).length);
     return ownedRequired.slice(0, partySize).concat(free.slice(0, Math.max(0, partySize - ownedRequired.length)));
   },
-  ownedTeam(camp, team) { return this.team(camp, team); },
-  teamSpecs(camp, team) {
-    return this.team(camp, team).map(id => playerSpec(id));
+  ownedTeam(camp, team, stageIdx) { return this.team(camp, team, stageIdx); },
+  teamSpecs(camp, team, stageIdx) {
+    return this.team(camp, team, stageIdx).map(id => playerSpec(id));
   },
 
   /** A loose, randomized enemy squad around the campaign's recommended level -
@@ -1237,9 +1256,14 @@ const Campaign = {
     const pool = twistedPool(pseudoFloor);
     const n = clamp(3 + Math.floor(stageIdx / 2), 3, 5);
     const ids = Depths.compose(rng, pool, Math.min(n, pool.length), pseudoFloor);
-    const kind = stageIdx === camp.stages.length - 1 ? 'elite' : 'normal';
+    const isHollowayDelilah = (camp.id === 'mrsholloway_gourdy' || camp.id === 'mrholloway_gourdy') && stageIdx >= 2;
+    if (isHollowayDelilah && !ids.includes('Delilah')) {
+      ids[0] = 'Delilah';
+    }
+    const isFinalStage = stageIdx === camp.stages.length - 1;
+    const kind = isFinalStage ? 'elite' : 'normal';
     return ids.map((id, i) => equipEnemyLoadout(
-      makeTwisted(id, lvl, kind), pseudoFloor, seeded(`campaign-loadout:${camp.id}:${stageIdx}:${i}`), {
+      makeTwisted(id, lvl, id === 'Delilah' && isFinalStage ? 'boss' : kind), pseudoFloor, seeded(`campaign-loadout:${camp.id}:${stageIdx}:${i}`), {
         trinketCount: stageIdx >= camp.stages.length - 2 ? 2 : 1,
         rank: clamp(1 + Math.floor(pseudoFloor / 28), 1, TRINKET_MAX_RANK),
         badgeChance: stageIdx === camp.stages.length - 1 ? .7 : .2,
@@ -1253,12 +1277,14 @@ const Campaign = {
 
   start(campId, stageIdx, team, onDone) {
     const camp = CAMPAIGNS[campId];
-    if (!camp || !this.unlocked(camp)) return;
-    const deployed = this.team(camp, team);
+    if (!camp || !this.unlocked(camp) || !Save.campaignIntroSeen(campId)
+      || !Number.isInteger(stageIdx) || stageIdx < 0 || stageIdx >= camp.stages.length
+      || stageIdx > Save.campaignStage(campId)) return false;
+    const deployed = this.team(camp, team, stageIdx);
     const stage = camp.stages[stageIdx];
     const foes = this.foes(camp, stageIdx);
     BattleScreen.launch({
-      team: this.teamSpecs(camp, deployed),
+      team: this.teamSpecs(camp, deployed, stageIdx),
       foes,
       meta: {
         title: camp.title + ' · ' + stage.name,
@@ -1275,7 +1301,7 @@ const Campaign = {
       onDone: (res) => {
         if (res.win) {
           const wasDone = Save.campaignDone(campId);
-          payoutBattle(this.ownedTeam(camp, deployed), masteryRewardBundle({ ichor: 300 + camp.recLevel * 8, exp: 250 + camp.recLevel * 6 }),
+          payoutBattle(this.ownedTeam(camp, deployed, stageIdx), masteryRewardBundle({ ichor: 300 + camp.recLevel * 8, exp: 250 + camp.recLevel * 6 }),
             { mastery: 80, pass: 30 });
           /* Cleared chapters are replayable from the new story path. A replay
              still pays battle rewards, but only the current next chapter may
@@ -1283,9 +1309,10 @@ const Campaign = {
           if (Save.campaignStage(campId) === stageIdx) Save.advanceCampaign(campId);
           if (!wasDone && Save.campaignDone(campId)) UI.toast('🤝 Friendship Badge earned: ' + BADGES[camp.badge].name);
         }
-        onDone(res);
+        if (typeof onDone === 'function') onDone(res);
       }
     });
+    return true;
   }
 };
 
@@ -1293,7 +1320,7 @@ const Campaign = {
 /* Simulated ladder. Generated bots and saved player defenses share the daily
    lineup; bot opponents never contain duplicate heroes. */
 const Arena = {
-  TEAM_VERSION: 9,
+  TEAM_VERSION: 10,
   liveDefenses: [],
   liveDefenseSignature: '',
   // Arena uses a subjective roster read rather than copying the authored
@@ -1396,14 +1423,23 @@ const Arena = {
   },
 
   rookieLadder() {
-    // Rank counts down toward #1. A new account should meet this band at any
-    // rank; established players meet it once they reach the low-rank ladder.
-    return Save.data.mastery <= 100 || Save.data.arena.rank <= 1000;
+    // Rank counts down toward #1. An established account climbing the top
+    // thousand should face stronger defenders, not return to rookie teams.
+    return Save.data.mastery <= 100;
+  },
+
+  activeSkillLevel() {
+    const levels = (Save.data.team || []).filter(Boolean).flatMap(id => {
+      const h = Save.hero(id), d = HEROES[id];
+      if (!h || !d) return [];
+      return SKILL_ORDER.filter(key => d.skills[key] && h.rarity >= SKILL_RARITY[key])
+        .map(key => clamp(Number(h.skills[key]) || 1, 1, SKILL_MAX_LEVEL));
+    });
+    return levels.length ? Math.round(sum(levels) / levels.length) : 1;
   },
 
   rookieLevelCap(rank) {
-    // Ranks 1-1000 resolve to a deliberately readable Level 10-100 range.
-    // It makes the beginner band feel like actual developing rosters.
+    // Keep early Mastery opponents in a readable Level 10-100 range.
     return clamp(Math.round(10 + Math.min(1000, Math.max(1, rank)) * .09), 10, 100);
   },
 
@@ -1439,16 +1475,20 @@ const Arena = {
       ? sum(activeTeam.map(h => Math.max(1, Number(h.level) || 1))) / activeTeam.length : 1;
     const teamHighest = activeTeam.length
       ? Math.max(...activeTeam.map(h => Math.max(1, Number(h.level) || 1))) : 1;
+    const trained = this.activeSkillLevel();
+    // Skills can now exceed Hero level. Reflect some of that investment in
+    // opponent levels without letting one maxed skill create a huge stat gap.
+    const skillPressure = Math.min(teamAverage * .25, Math.max(0, trained - teamAverage) * .08);
     const ladderPressure = clamp((1000 - Math.min(1000, Math.max(1, a.rank))) / 250, 0, 4);
     const teamCap = Math.max(5, Math.round(Math.max(
-      teamAverage * 1.12 + teamHighest * .10 + 3 + ladderPressure,
-      teamAverage + 8 + ladderPressure
+      teamAverage * 1.12 + teamHighest * .10 + 3 + ladderPressure + skillPressure,
+      teamAverage + 8 + ladderPressure + skillPressure
     )));
     // Account-new players still get the readable rookie band. Established
     // players are capped from their active squad, with a modest pressure
     // bump for climbing the ladder rather than a Mastery-based level jump.
     const cap = rookie
-      ? Math.min(teamCap, Save.data.mastery <= 100 ? Math.min(rookieCap, Save.data.mastery) : rookieCap)
+      ? Math.min(teamCap, rookieCap, Save.data.mastery)
       : Math.min(800, teamCap);
     // Arena is a sparring service, not a live obtainment pool. Seasonal and
     // collab Heroes belong here year-round, which lets visitors like Sora
@@ -1495,11 +1535,19 @@ const Arena = {
       });
     }
     const saved = seeded('arena-saved-defenses-' + day + '-' + Math.floor(a.rank / 100))
-      .shuffle(this.liveDefenses.filter(defense => defense && Array.isArray(defense.team) && defense.team.length))
+      .shuffle(this.liveDefenses.filter(defense => {
+        if (!defense || !Array.isArray(defense.team) || !defense.team.length) return false;
+        const slots = defense.team.filter(slot => slot && HEROES[slot.id]);
+        if (!slots.length) return false;
+        const averageLevel = sum(slots.map(slot => Number(slot.level) || 1)) / slots.length;
+        const averageSkill = sum(slots.map(slot => Number(slot.skillLv) || 1)) / slots.length;
+        return averageLevel >= Math.max(1, cap * .55) && averageLevel <= Math.max(10, cap * 1.35)
+          && averageSkill <= Math.max(25, trained * 1.5, cap * 1.1);
+      }))
       .slice(0, Math.min(2, out.length));
     saved.forEach((defense, index) => {
       const team = defense.team.map(slot => slot.id).filter(Boolean).slice(0, 5);
-      const levels = defense.team.slice(0, team.length).map(slot => clamp(Math.floor(Number(slot.level) || 1), 1, 1000));
+      const levels = defense.team.slice(0, team.length).map(slot => clamp(Math.floor(Number(slot.level) || 1), 1, 800));
       if (!team.length) return;
       out[(index * 3) % out.length] = {
         name: String(defense.username || 'Player'), arch: 'saved', label: 'Saved Player', tag: 'tagC',
@@ -1513,20 +1561,30 @@ const Arena = {
 
   specs(opp) {
     if (opp && opp.savedDefense && typeof ArenaLive !== 'undefined') return ArenaLive.snapshotSpecs(opp.savedDefense);
+    const mastery = clamp(Number(Save.data.mastery) || 1, 1, SKILL_MAX_LEVEL);
+    const trained = this.activeSkillLevel();
     return opp.team.map((id, i) => {
       const level = opp.levels[i];
+      // Displayed level and the player's real skill investment both matter.
+      // A high-Mastery team with trained skills may meet skill ranks above
+      // the defender's Hero level, just as the player now can.
+      const baseSkill = enemySkillLevel(level, opp.rookie ? 'weakling' : opp.arch === 'whale' ? 'elite' : 'rival');
+      const skillLv = clamp(Math.round((baseSkill + trained) * .5 *
+        (opp.arch === 'whale' ? 1.12 : opp.rookie ? .90 : 1)), 1, mastery);
       const spec = rivalSpec(id, level, {
         buildSeed: `${opp.name}-${i}`,
         mult: { hp: 1, atk: 1, def: 1 },
+        skillLv,
         rarity: opp.arch === 'whale' ? (level >= 220 ? 6 : 5) : clamp(1 + Math.floor(level / (opp.rookie ? 35 : 60)), 1, opp.rookie ? 3 : 6),
         stars: opp.arch === 'whale' ? 5 : clamp(1 + Math.floor(level / (opp.rookie ? 45 : 70)), 1, opp.rookie ? 3 : 5)
       });
       const rng = seeded(`arena-loadout:${opp.name}:${opp.rank}:${i}`);
       return equipEnemyLoadout(spec, Math.max(8, Math.round(level / 3)), rng, {
         trinketCount: opp.rookie ? 1 : opp.arch === 'whale' ? 2 : 1,
-        rank: clamp(1 + Math.floor(level / 160), 1, TRINKET_MAX_RANK),
-        badgeChance: opp.rookie ? 0 : opp.arch === 'whale' ? 1 : .55,
-        badgeLvl: clamp(1 + Math.floor(level / 100), 1, BADGE_MAX_LVL)
+        rank: clamp(1 + Math.floor(Math.max(0, level - 120) / 220), 1, TRINKET_MAX_RANK),
+        badgeChance: opp.rookie ? (level >= 45 ? .12 : 0)
+          : opp.arch === 'whale' ? 1 : clamp(.28 + level / 1200, .28, .85),
+        badgeLvl: clamp(1 + Math.floor(Math.max(0, skillLv - 60) / 160), 1, BADGE_MAX_LVL)
       });
     });
   },
@@ -1536,7 +1594,10 @@ const Arena = {
     const arenaCoin = Math.round(18 + Math.min(22, Save.data.mastery / 40));
     const core = 3 + Math.min(5, Math.floor(Math.max(0, Save.data.mastery - 20) / 80));
     const exp = Math.round(4800 + Save.data.mastery * 22);
-    return { ichor, arenaCoin, exp, core, star: masteryRewardValue(90), tape: masteryRewardValue(1), manual: masteryRewardValue(6), diamond: chance(.3) ? masteryRewardValue(1) : 0 };
+    return { ichor, arenaCoin, exp, core, star: masteryRewardValue(90),
+      tape: masteryRewardValue(3 + Math.floor(Save.data.mastery / 160)),
+      notes: masteryRewardValue(3 + Math.floor(Save.data.mastery / 180)),
+      manual: masteryRewardValue(6), diamond: chance(.3) ? masteryRewardValue(1) : 0 };
   },
 
   coinStore() {
@@ -1547,7 +1608,6 @@ const Arena = {
       { id: 'stardust', cost: 14, gain: masteryRewardBundle({ star: 85 }) },
       { id: 'exp', cost: 8, gain: masteryRewardBundle({ exp: 8000 }) },
       { id: 'manual', cost: 12, gain: masteryRewardBundle({ manual: 5 }) },
-      { id: 'tape', cost: 11, gain: masteryRewardBundle({ tape: 2 }) },
       { id: 'core', cost: 24, gain: masteryRewardBundle({ core: 2 }) },
       { id: 'gold', cost: 42, gain: masteryRewardBundle({ gold: 1 }) },
       { id: 'diamond', cost: 70, gain: masteryRewardBundle({ diamond: 1 }) },
@@ -1988,8 +2048,9 @@ const RaidTicket = {
 
   async runCampaign(camp, stage, team) {
     if (!camp || !Array.isArray(camp.stages) || !Number.isFinite(stage) || stage < 0 || stage >= camp.stages.length) return null;
-    if (!Campaign.unlocked(camp)) return { win: false, why: 'Own both featured Heroes first', consumed: false };
-    const ids = Campaign.team(camp, team);
+    if (!Campaign.unlocked(camp)) return { win: false, why: camp.prereq && !Save.campaignDone(camp.prereq) ? (camp.prereqMsg || 'Clear prerequisite story first') : 'Own both featured Heroes first', consumed: false };
+    if (!Save.campaignIntroSeen(camp.id) || stage > Save.campaignStage(camp.id)) return { win: false, why: 'Clear earlier chapters first', consumed: false };
+    const ids = Campaign.team(camp, team, stage);
     if (!Save.spend({ raidTicket: 1 })) return { win: false, why: 'No Raid Tickets', consumed: false };
 
     const stageDef = camp.stages[stage];
@@ -1997,7 +2058,7 @@ const RaidTicket = {
     let result;
     try {
       result = await battle.simulateOffscreenAsync(
-        Campaign.teamSpecs(camp, ids),
+        Campaign.teamSpecs(camp, ids, stage),
         Campaign.foes(camp, stage),
         {
           title: camp.title + ' · ' + stageDef.name + ' · Raid Ticket',
@@ -2023,7 +2084,7 @@ const RaidTicket = {
       rewards = masteryRewardBundle({ ichor: 300 + camp.recLevel * 8, exp: 250 + camp.recLevel * 6 });
       const wasDone = Save.campaignDone(camp.id);
       const wasNext = Save.campaignStage(camp.id) === stage;
-      payoutBattle(Campaign.ownedTeam(camp, ids), rewards, { mastery: 80, pass: 30 });
+      payoutBattle(Campaign.ownedTeam(camp, ids, stage), rewards, { mastery: 80, pass: 30 });
       if (wasNext) {
         Save.advanceCampaign(camp.id);
         campaignAdvanced = true;
@@ -2076,7 +2137,13 @@ function weeklyEvents(week) {
     title: 'Unknown World: Familiar Targets',
     blurb: 'A sealed door opens onto an office-world invasion. The machines recognize your Toons as the same targets they have been trying to take over and make sad. They call in bulk reinforcements. Clear three brutal waves, recover Gears, and trade them for superior Trinkets.'
   };
-  return [COOKIE_EVENT, qomEvent, phantasiaEvent, unknownWorldEvent,
+  const drawParentsEvent = {
+    id: 'draw-parents-event', label: "Draw Parents", kind: 'draw-parents', isDrawParents: true,
+    bossIds: [], featuredIds: ['MrsHolloway', 'MrHolloway'], tag: 'FADED MEMORIES', minMastery: 1,
+    title: "Draw Gourdy's Parents",
+    blurb: "Sketch Gourdy's parents on paper using Scratch Tickets! Every click has chances for Memory Lockets (5%), Holloway Shards (2%), and Full Recruits (0.1%)."
+  };
+  return [drawParentsEvent, COOKIE_EVENT, qomEvent, phantasiaEvent, unknownWorldEvent,
     { id: 'collab-door-opens', label: 'The Door Opens', kind: 'collab', isCollab: true,
       bossIds: ['Riku', 'Sora', 'Kairi'], featuredIds: ['Sora', 'Riku', 'Kairi', 'Goofy'],
       tag: 'COLLAB ENDURANCE', rewardMult: 1.8, minMastery: 100,
@@ -2336,7 +2403,7 @@ const Raid = {
     if (b) { spec.boss = b; spec.name = 'Twisted ' + HEROES[bossId].name; }
     if (bossId === 'Delilah') {
       spec.mult.hp *= 1.65; spec.mult.atk *= 1.28; spec.mult.def *= 1.30;
-      spec.skillLv = Math.round(spec.skillLv * 1.20);
+      spec.skillLv = clamp(Math.round(spec.skillLv * 1.20), 1, SKILL_MAX_LEVEL);
       spec.name = 'Twisted Delilah · Failed Experiment';
     }
     return spec;
@@ -2374,7 +2441,7 @@ const Raid = {
     const waveMult = [1.24, 1.46, 1.7][wave - 1] || 1.24;
     const depthMult = 1 + Math.max(0, level - 44) * .0022;
     return { id, name: HEROES[id].name, level, stars: 5, rarity: 5, rarityPlus: 18,
-      skillLv: clamp(Math.round(level * 1.08), 45, 420), kind: 'elite', elite: true,
+      skillLv: clamp(enemySkillLevel(level, 'elite'), 45, SKILL_MAX_LEVEL), kind: 'elite', elite: true,
       mult: { hp: waveMult * depthMult, atk: (1.32 + wave * .07) * depthMult, mag: (1.34 + wave * .07) * depthMult,
         def: (1.18 + wave * .05) * depthMult, mdef: (1.20 + wave * .05) * depthMult },
       artSrc: UNKNOWN_WORLD_ART[id], twisted: false, unknownWorld: true, formationLine: index % 3, encounterOnly: true };
@@ -2382,7 +2449,7 @@ const Raid = {
 
   makeBigWigFoe(level) {
     return { id: 'BigWig', name: 'Big Wig', level, stars: 6, rarity: 6, rarityPlus: 30,
-      skillLv: clamp(Math.round(level * 1.42), 260, 650), kind: 'boss', boss: { id: 'BigWig', title: 'Big Wig', phases: [
+      skillLv: clamp(enemySkillLevel(level * 1.2, 'boss'), 260, SKILL_MAX_LEVEL), kind: 'boss', boss: { id: 'BigWig', title: 'Big Wig', phases: [
         { at: 1, name: 'Court Opens', mods: { dmgTaken: -.10 } },
         { at: .72, name: 'Contempt of Court', mods: { atkP: .28, magP: .28, cdr: .20, dmgTaken: -.13 }, onEnter: (u, B) => {
           B.energy(u, 100); B.shield(u, u, u.max.hp * .12, 10);
@@ -2431,7 +2498,7 @@ const Raid = {
     };
     return ['Riku', 'Sora', 'Kairi'].map(id => ({
       id, name: id + ' · Event Challenger', level, stars: 5, rarity: 5,
-      skillLv: clamp(Math.max(120, Math.round(level * 1.08)), 120, 450), kind: 'boss', boss: COLLAB_BOSS_PHASES[id],
+      skillLv: clamp(enemySkillLevel(level, 'boss'), 120, SKILL_MAX_LEVEL), kind: 'boss', boss: COLLAB_BOSS_PHASES[id],
       mult: { hp: endurance * tune[id].hp, atk: attack * tune[id].atk, def: defense * tune[id].def },
       artSrc: Art.hero(id), twisted: false, collabBoss: true
     }));
@@ -2445,7 +2512,7 @@ const Raid = {
       const stage = Math.max(0, this.stageLevels(e).indexOf(level));
       return ids.map((id,i) => ({ id, name: HEROES[id].name, level, stars: 4 + (stage >= 4 ? 1 : 0),
         rarity: stage >= 5 ? 5 : stage >= 2 ? 4 : 3, rarityPlus: 3 + Math.min(12,stage*2),
-        skillLv: Math.max(35,Math.round(level*1.03)), kind: wave === 3 ? 'boss' : 'elite', elite: wave !== 3,
+        skillLv: clamp(enemySkillLevel(level, wave === 3 ? 'boss' : 'elite'), 35, SKILL_MAX_LEVEL), kind: wave === 3 ? 'boss' : 'elite', elite: wave !== 3,
         mult: { hp: wave === 3 ? .94 + stage*.11 : 1.3 + stage*.12,
           atk: .84 + stage*.065, mag: .84 + stage*.065, def: 1.02 + stage*.05, mdef: 1.02 + stage*.05 },
         artSrc: Art.hero(id), twisted: false, formationLine: id === 'QOMGourdy' || id === 'QOMConnie' ? 2 : 0,

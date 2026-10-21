@@ -2,6 +2,97 @@
 'use strict';
 
 defCampaign({
+  id: 'toodles_shelly', badge: 'toodles_shelly', a: 'Toodles', b: 'Shelly',
+  recLevel: friendshipRecLevel('Toodles', 'Shelly'), title: 'Field Notes',
+  guests: ['Vee'],
+  stages: [
+    { name: 'The Find', lines: [
+      { who: 'Narrator', text: 'Shelly carefully brushes dust off a fossil beside the elevator.' },
+      { who: 'Shelly', text: 'Toodles, look at this! The imprint is almost complete.' },
+      { who: 'Toodles', text: 'Wow. A rock with a scratch on it.' },
+      { who: 'Shelly', text: 'It is a track. If I can map the others, we might find a safe route.' },
+      { who: 'Toodles', text: 'Or we could let someone with actual luck pick the route.' },
+      { who: 'Narrator', text: 'Toodles takes the fossil from Shelly before she can object.' },
+      { who: 'Shelly', text: 'Please be careful with that.' },
+      { who: 'Toodles', text: 'Please stop acting like your rock is the most important thing here.' }
+    ]},
+    { name: 'On Camera', lines: [
+      { who: 'Narrator', text: 'Vee finds Toodles holding the fossil up to a studio light.' },
+      { who: 'Vee', text: 'Shelly was still working on that.' },
+      { who: 'Toodles', text: 'She has been working on it forever. I am speeding things up.' },
+      { who: 'Vee', text: 'By turning it upside down?' },
+      { who: 'Toodles', text: 'I knew that.' },
+      { who: 'Shelly', text: 'The narrow end points toward the next set of tracks.' },
+      { who: 'Toodles', text: 'Then say that without the whole dinosaur lecture.' },
+      { who: 'Vee', text: 'She tried. You talked over her.' },
+      { who: 'Toodles', text: 'Great. Now I have two lectures.' }
+    ]},
+    { name: 'Lucky Guess', lines: [
+      { who: 'Narrator', text: 'At a fork in the hallway, Shelly checks her notes.' },
+      { who: 'Shelly', text: 'The tracks bend left. We should follow them.' },
+      { who: 'Toodles', text: 'Too slow. Right looks clear.' },
+      { who: 'Vee', text: 'My camera shows movement on the right.' },
+      { who: 'Toodles', text: 'Your camera sees everything, huh? Then watch me be right.' },
+      { who: 'Narrator', text: 'Toodles charges right. A Twisted lunges out of the dark.' },
+      { who: 'Shelly', text: 'Toodles, back!' },
+      { who: 'Narrator', text: 'Shelly pulls her clear as Vee slams the security door.' },
+      { who: 'Toodles', text: 'I had it handled.' },
+      { who: 'Vee', text: 'You were screaming.' },
+      { who: 'Toodles', text: 'I was warning you.' }
+    ]},
+    { name: 'A Real Problem', lines: [
+      { who: 'Narrator', text: 'The next fight leaves a crack through the fossil.' },
+      { who: 'Shelly', text: 'You kept it in your pocket during the battle?' },
+      { who: 'Toodles', text: 'Where else was I supposed to put it?' },
+      { who: 'Shelly', text: 'Back in my hands, when I asked.' },
+      { who: 'Toodles', text: 'It is just a rock.' },
+      { who: 'Shelly', text: 'It was my work. You took it, mocked it, and broke it.' },
+      { who: 'Narrator', text: 'Shelly holds out her hand. Toodles gives it back.' },
+      { who: 'Shelly', text: 'I am not helping you if you keep treating me this way.' },
+      { who: 'Toodles', text: 'Fine. Do your own thing.' },
+      { who: 'Narrator', text: 'Shelly walks away. Toodles has no clever answer.' }
+    ]},
+    { name: 'Playback', lines: [
+      { who: 'Narrator', text: 'Vee replays the hallway recording for Toodles.' },
+      { who: 'Toodles', text: 'I was there. I do not need the replay.' },
+      { who: 'Vee', text: 'Then tell me when Shelly said the right route was clear.' },
+      { who: 'Toodles', text: 'She said left.' },
+      { who: 'Vee', text: 'Twice. You did not let her finish either time.' },
+      { who: 'Toodles', text: 'So I made a bad guess.' },
+      { who: 'Vee', text: 'You made Shelly feel small so you could feel clever.' },
+      { who: 'Toodles', text: '...I did not mean to.' },
+      { who: 'Vee', text: 'That does not fix it. Go talk to her.' }
+    ]},
+    { name: 'The Apology', lines: [
+      { who: 'Narrator', text: 'Toodles finds Shelly fitting the cracked fossil into a padded case.' },
+      { who: 'Toodles', text: 'I was a jerk.' },
+      { who: 'Shelly', text: 'Yes, you were.' },
+      { who: 'Toodles', text: 'I took your fossil and made fun of your notes. I am sorry.' },
+      { who: 'Shelly', text: 'Thank you for saying it. I am still angry.' },
+      { who: 'Toodles', text: 'You should be. Can I help fix the map?' },
+      { who: 'Shelly', text: 'You can carry the case. Carefully. And listen.' },
+      { who: 'Toodles', text: 'I can do one of those things easily.' },
+      { who: 'Shelly', text: 'Try both.' },
+      { who: 'Toodles', text: '...Okay.' }
+    ]},
+    { name: 'Field Notes', lines: [
+      { who: 'Narrator', text: 'After the final battle, Toodles waits while Shelly finishes tracing the tracks.' },
+      { who: 'Shelly', text: 'There. The safe path goes through the old exhibit.' },
+      { who: 'Toodles', text: 'So the boring notes saved us. Do not look so smug.' },
+      { who: 'Vee', text: 'I am saving that quote.' },
+      { who: 'Toodles', text: 'Delete it.' },
+      { who: 'Vee', text: 'No.' },
+      { who: 'Narrator', text: 'Shelly gives Toodles a small, labeled fossil token.' },
+      { who: 'Shelly', text: 'A reminder to check the evidence before you make a guess.' },
+      { who: 'Toodles', text: 'You made me a badge? After all that?' },
+      { who: 'Shelly', text: 'You listened when it mattered. Keep doing that.' },
+      { who: 'Toodles', text: 'I will. Probably. Do not make me say it on camera.' },
+      { who: 'Vee', text: 'Too late.' }
+    ]}
+  ]
+});
+
+defCampaign({
   id: 'phantasia_dandy', badge: 'phantasia_dandy', a: 'Phantasia', b: 'Dandy',
   recLevel: friendshipRecLevel('Phantasia', 'Dandy'), title: 'A Star for the Shop',
   guests: ['Sora', 'Delilah'],
@@ -1438,3 +1529,302 @@ defCampaign({
     ]}
   ]
 });
+
+/* ============================================================ HOLLOWAY PARENTS CAMPAIGNS */
+
+/* 1. Mrs. Holloway & Gourdy - CANONICALLY EXPLORED FIRST */
+defCampaign({
+  id: 'mrsholloway_gourdy', badge: 'mrsholloway_gourdy', a: 'MrsHolloway', b: 'Gourdy',
+  recLevel: friendshipRecLevel('MrsHolloway', 'Gourdy'), title: 'Before the Records',
+  canonicalOrder: 1,
+  guests: ['Delilah'],
+  stages: [
+    { name: 'A Scent in the Dust', lines: [
+      { who: 'Narrator', text: 'Mrs. Holloway and Gourdy step past the rusted turnstiles into the overgrown lower garden.' },
+      { who: 'Gourdy', text: 'Mama! The soil smells like old pumpkin blossoms down here!' },
+      { who: 'MrsHolloway', text: 'It was our patch, sweet pumpkin. Long before the concrete and elevator shafts were built.' },
+      { who: 'Gourdy', text: 'I kept looking for you... every time the elevator doors opened, I looked.' },
+      { who: 'MrsHolloway', text: 'I know, my darling. But Mother never truly left your side. The spirals always remember.' },
+      { who: 'Narrator', text: 'In the distance, an unsettling mechanical hum echoes through the corridors.' }
+    ]},
+    { name: 'Redacted Files', lines: [
+      { who: 'Narrator', text: 'Gourdy picks up a fallen laboratory clipboard bearing Delilah Keen’s signature.' },
+      { who: 'Gourdy', text: 'Mama... look at this paper. It says "Holloway: Unregistered Anomaly. Termination Scheduled."' },
+      { who: 'Gourdy', text: 'Did... did she make us? Are we just failed drawings?' },
+      { who: 'MrsHolloway', text: 'No, Gourdy. Delilah made creatures of ink and machinery. You were born of true love in fertile soil.' },
+      { who: 'MrsHolloway', text: 'She hated what she could not control, and she could never control a real family.' },
+      { who: 'Gourdy', text: '*clutches his locket tight* Then she can’t erase us, right Mama?' },
+      { who: 'MrsHolloway', text: 'Never. Let her try.' }
+    ]},
+    { name: 'The Cold Creator', lines: [
+      { who: 'Narrator', text: 'Delilah Keen steps out from a cracked observation chamber, clutching glass sample vials.' },
+      { who: 'Delilah', text: 'Look what crawled out of the forgotten mulch. An uncatalogued pumpkin and his unregistered mother.' },
+      { who: 'Delilah', text: 'You are errors in my Gardenview records. Unsanctioned variables that should have decayed years ago.' },
+      { who: 'MrsHolloway', text: 'Gardenview fell because you treated living souls like disposable sketches, Delilah.' },
+      { who: 'Delilah', text: 'I created this world! I decide what stays and what is erased. Hand over the boy.' },
+      { who: 'Gourdy', text: 'NO! You don’t touch my family!' },
+      { who: 'MrsHolloway', text: 'Stay behind Mother, Gourdy. She is about to learn what happens when you threaten my child.' }
+    ]},
+    { name: 'Spiraling Defiance', lines: [
+      { who: 'Narrator', text: 'Delilah signals her containment Twisteds to swarm the pair.' },
+      { who: 'Delilah', text: 'Contain them! Dissect the core and extract the seasonal essence!' },
+      { who: 'MrsHolloway', text: '*floats upward, her purple bandana billowing with radiant spectral energy*' },
+      { who: 'MrsHolloway', text: 'The spiral never unravels, Delilah! And a mother’s love has no expiration date!' },
+      { who: 'Gourdy', text: 'Go Mama! Show her your spirals!' },
+      { who: 'Narrator', text: 'Shockwaves of brilliant violet light shatter the containment barriers, sending Delilah reeling backwards.' }
+    ]},
+    { name: 'Love Outlasts the Lab', lines: [
+      { who: 'Narrator', text: 'With her experiments crushed and her vials shattered, Delilah retreats into the shadows.' },
+      { who: 'Delilah', text: 'This isn’t over, Holloway! You don’t belong in my park!' },
+      { who: 'MrsHolloway', text: 'We belong together. That is all that will ever matter.' },
+      { who: 'Gourdy', text: '*runs and hugs Mrs. Holloway’s arm tightly* You did it, Mama! You sent her running!' },
+      { who: 'MrsHolloway', text: '*strokes Gourdy’s pumpkin stem gently* We did it together, little one.' },
+      { who: 'Gourdy', text: 'Will you stay with me now? For real?' },
+      { who: 'MrsHolloway', text: 'Always, my sweet pumpkin. Even if the walls crumble, Mother is home.' }
+    ]}
+  ]
+});
+
+/* 2. Mr. Holloway & Gourdy */
+defCampaign({
+  id: 'mrholloway_gourdy', badge: 'mrholloway_gourdy', a: 'MrHolloway', b: 'Gourdy',
+  recLevel: friendshipRecLevel('MrHolloway', 'Gourdy'), title: 'Roots of the Harvest',
+  prereq: 'mrsholloway_gourdy', prereqMsg: "Canonically explored after Mrs. Holloway's story ('Before the Records')",
+  canonicalOrder: 2,
+  guests: ['Delilah'],
+  stages: [
+    { name: 'Deep Soil', lines: [
+      { who: 'Narrator', text: 'Mr. Holloway kneels down beside Gourdy, digging his heavy claws into the dark garden earth.' },
+      { who: 'MrHolloway', text: 'Feel that soil, son? Real roots don’t give up just because winter comes.' },
+      { who: 'Gourdy', text: 'Papa, look! My vines are getting longer too!' },
+      { who: 'MrHolloway', text: '*smiles warmly* That’s my boy. A Holloway stands tall and plants his feet firm.' },
+      { who: 'Narrator', text: 'A sudden burst of sterile green gas hisses from a nearby ventilation pipe.' }
+    ]},
+    { name: 'Cold Footsteps', lines: [
+      { who: 'Narrator', text: 'Delilah’s Twisted trackers emerge from the mist, clicking with mechanical syringes.' },
+      { who: 'Gourdy', text: 'Papa... they’re surrounding us!' },
+      { who: 'MrHolloway', text: 'Keep behind me, Gourdy. Tuck behind my tail and hold your ground.' },
+      { who: 'Gourdy', text: 'Aren’t you scared of them?' },
+      { who: 'MrHolloway', text: 'Not a chance. A father doesn’t back down from scrap metal.' }
+    ]},
+    { name: 'Delilah’s Demand', lines: [
+      { who: 'Narrator', text: 'Delilah Keen emerges, tapping a syringe against her palm with cold impatience.' },
+      { who: 'Delilah', text: 'Mr. Holloway. The failed harvest guardian. I should have turned you to mulch months ago.' },
+      { who: 'MrHolloway', text: 'You tried, Keen. Your machines broke. I’m still here.' },
+      { who: 'Delilah', text: 'Surrender the child. His seasonal resilience belongs in my genetic registry, not with a dead-end Toon.' },
+      { who: 'MrHolloway', text: '*roars, stomping both paws as autumn leaves swirl furiously* Touch my son and I will grind your laboratory into dust!' }
+    ]},
+    { name: 'Immovable Oak', lines: [
+      { who: 'Narrator', text: 'Delilah’s elite experiment charges with electrified needles.' },
+      { who: 'Delilah', text: 'Break his armor! Crack that pumpkin shell!' },
+      { who: 'MrHolloway', text: '*braces with impenetrable Fortitude, deflecting every needle with a resounding clank*' },
+      { who: 'Gourdy', text: 'PAPA IS UNSTOPPABLE!' },
+      { who: 'MrHolloway', text: 'You need bigger needles than that, Keen! Harvest Crash incoming!' },
+      { who: 'Narrator', text: 'Mr. Holloway leaps into the air and crashes down, sending shockwaves through the entire floor.' }
+    ]},
+    { name: 'Harvest Justice', lines: [
+      { who: 'Narrator', text: 'Delilah stumbles back against the wall, her equipment shattered beyond repair.' },
+      { who: 'Delilah', text: 'Savages... unscientific brutes...' },
+      { who: 'MrHolloway', text: 'Get out of here, Keen. And if you ever look at Gourdy again, you won’t get a warning.' },
+      { who: 'Narrator', text: 'Delilah scowls and flees through the emergency stairwell.' },
+      { who: 'Gourdy', text: 'PAPA! That was the coolest thing I’ve ever seen!' },
+      { who: 'MrHolloway', text: '*picks Gourdy up and sets him safely on his broad shoulder* That’s what a dad does, son. Come on, let’s go show your mother.' }
+    ]}
+  ]
+});
+
+/* 3. Mrs. Holloway & Eclipse */
+defCampaign({
+  id: 'mrsholloway_eclipse', badge: 'mrsholloway_eclipse', a: 'MrsHolloway', b: 'Eclipse',
+  recLevel: friendshipRecLevel('MrsHolloway', 'Eclipse'), title: 'Spirals of Twilight',
+  prereq: 'mrsholloway_gourdy', prereqMsg: "Requires Mrs. Holloway's 1st campaign ('Before the Records')",
+  canonicalOrder: 3,
+  stages: [
+    { name: 'Night Patrol', lines: [
+      { who: 'Narrator', text: 'Mrs. Holloway and Eclipse walk along the moonlit garden balcony during the facility’s dark cycle.' },
+      { who: 'Eclipse', text: 'Your energy... it’s so quiet. Most magic down here crackles with angry ichor.' },
+      { who: 'MrsHolloway', text: 'Spiritual energy doesn’t scream, dear Eclipse. It flows like a river of memory.' },
+      { who: 'Eclipse', text: 'Sometimes I worry the shadows will swallow everything.' },
+      { who: 'MrsHolloway', text: 'Shadows only exist where there is light to cast them. You have plenty of light.' }
+    ]},
+    { name: 'Shadows in the Garden', lines: [
+      { who: 'Narrator', text: 'A band of Twisted lurkers ambushes them near the moonflower trellis.' },
+      { who: 'Eclipse', text: 'Watch out! Behind you!' },
+      { who: 'MrsHolloway', text: '*calmly raises a paw, forming an intricate spinning purple barrier*' },
+      { who: 'MrsHolloway', text: 'Stay close, child. Mother’s Embrace will shield us both.' },
+      { who: 'Eclipse', text: 'It feels... so warm. Like a mother tucking you in.' }
+    ]},
+    { name: 'Eclipsed Memories', lines: [
+      { who: 'Narrator', text: 'After the fight, Eclipse gazes up at the glass skylight.' },
+      { who: 'Eclipse', text: 'Did you always protect the other Toons?' },
+      { who: 'MrsHolloway', text: 'I protected anyone who needed home. Gourdy, his father, and every child who wandered into our patch.' },
+      { who: 'Eclipse', text: 'I wish I had someone like you when I first woke up in the dark.' },
+      { who: 'MrsHolloway', text: 'You have me now, Eclipse. No child walks alone under my watch.' }
+    ]},
+    { name: 'Dawn in the Depths', lines: [
+      { who: 'Narrator', text: 'Eclipse holds up a polished crescent brooch etched with glowing spiral runes.' },
+      { who: 'Eclipse', text: 'Here. I carved twilight starlight into your bandana’s pattern.' },
+      { who: 'MrsHolloway', text: 'It is magnificent, Eclipse. Together, our light will guide every lost soul home.' },
+      { who: 'Narrator', text: 'They stand side by side on the balcony as purple spirals and lunar radiance bathe the garden below.' }
+    ]}
+  ]
+});
+
+/* 4. Mr. Holloway & Connie */
+defCampaign({
+  id: 'mrholloway_connie', badge: 'mrholloway_connie', a: 'MrHolloway', b: 'Connie',
+  recLevel: friendshipRecLevel('MrHolloway', 'Connie'), title: 'Spooks & Pumpkin Patches',
+  prereq: 'mrholloway_gourdy', prereqMsg: "Requires Mr. Holloway's 1st campaign ('Roots of the Harvest')",
+  canonicalOrder: 4,
+  stages: [
+    { name: 'Boo in the Patch', lines: [
+      { who: 'Narrator', text: 'Connie sneaks up behind Mr. Holloway while he is checking the vine trellises.' },
+      { who: 'Connie', text: '*leaps into the air* BOOOOOOOO!' },
+      { who: 'MrHolloway', text: '*doesn’t even flinch, casually inspects a leaf* Nice breeze today.' },
+      { who: 'Connie', text: 'WHAT?! You didn’t even twitch! I’m a terrifying ghost!' },
+      { who: 'MrHolloway', text: '*chuckles deeply* I’ve weathered autumn frosts, girl. A friendly ghost is a walk in the park.' }
+    ]},
+    { name: 'Ghost in the Lantern', lines: [
+      { who: 'Narrator', text: 'Connie decides to float inside Mr. Holloway’s carved wooden pumpkin lantern.' },
+      { who: 'Connie', text: 'Hey! Look at me! I’m a haunted jack-o’-lantern!' },
+      { who: 'MrHolloway', text: 'Careful in there, don’t blow out the candle.' },
+      { who: 'Connie', text: 'Ghosts don’t blow out candles, we make them glow blue! Check this out!' },
+      { who: 'Narrator', text: 'The lantern flares with brilliant ghostly azure flames, startling a group of approaching Twisteds.' },
+      { who: 'MrHolloway', text: 'Well now. That’s actually pretty handy.' }
+    ]},
+    { name: 'Spooky Teamwork', lines: [
+      { who: 'Narrator', text: 'Surrounded by enemies, Connie and Mr. Holloway coordinate their moves.' },
+      { who: 'Connie', text: 'Mr. H! You crash the ground and I’ll phase through the floor to trip them up!' },
+      { who: 'MrHolloway', text: 'Sounds like a solid harvest tactic. Hold on tight!' },
+      { who: 'Narrator', text: 'Mr. Holloway slams down with Harvest Crash while Connie creates illusory ghost traps, routing the enemies completely.' }
+    ]},
+    { name: 'The Pumpkin Lantern', lines: [
+      { who: 'Narrator', text: 'After the battle, Connie hovers beside Mr. Holloway with a glowing spectral pumpkin charm.' },
+      { who: 'Connie', text: 'Here! A ghost lantern just for you. So nobody can sneak up on you—not that they can move you anyway.' },
+      { who: 'MrHolloway', text: '*takes it gently in his giant claw* You’re a good kid, Connie. You remind me of Gourdy’s trick-or-treat nights.' },
+      { who: 'Connie', text: 'Hehe! Best prank team in Gardenview!' }
+    ]}
+  ]
+});
+
+/* 5. Delilah & Bassie */
+defCampaign({
+  id: 'delilah_bassie', badge: 'delilah_bassie', a: 'Delilah', b: 'Bassie',
+  recLevel: friendshipRecLevel('Delilah', 'Bassie'), title: 'Sterile Supplies',
+  stages: [
+    { name: 'Laboratory Clutter', lines: [
+      { who: 'Narrator', text: 'Delilah Keen enters her sterile storage bay to find Bassie carefully rearranging chemical vials.' },
+      { who: 'Delilah', text: 'You are moving calibrated reagents. That is a violation of laboratory protocol, Bassie.' },
+      { who: 'Bassie', text: 'Oh! Hello Miss Delilah! I saw your shelves were getting a little messy, so I brought extra baskets!' },
+      { who: 'Delilah', text: 'Woven wicker has zero antiseptic rating. Explain why you brought pastel ribbons into an extraction ward.' },
+      { who: 'Bassie', text: 'Because ribbons keep everything neat! And look, I packed bandages, tea, and little chocolate eggs for energy!' }
+    ]},
+    { name: 'Empirical Results', lines: [
+      { who: 'Narrator', text: 'During an unexpected specimen containment breach, Delilah runs low on stabilizing serum.' },
+      { who: 'Delilah', text: 'Tsk. The cold storage valves jammed. This reaction is accelerating.' },
+      { who: 'Bassie', text: 'Don’t worry! I’ve got just the thing in my basket!' },
+      { who: 'Narrator', text: 'Bassie tosses a tightly sealed supply canister directly into Delilah’s gloved hand.' },
+      { who: 'Delilah', text: '*rapidly runs a chemical scan* ...Curious. The glucose-electrolyte suspension perfectly buffers raw Ichor.' },
+      { who: 'Bassie', text: 'See? Being prepared always works out!' }
+    ]},
+    { name: 'Containment Routine', lines: [
+      { who: 'Narrator', text: 'A swarm of hostile entities surges down the corridor toward the laboratory doors.' },
+      { who: 'Delilah', text: 'Specimens, deploy. We will isolate the variables and sterilize the corridor.' },
+      { who: 'Bassie', text: 'I’ll cover the backline with my basket! Extra supplies incoming!' },
+      { who: 'Narrator', text: 'Bassie hurls supplies to keep Delilah’s active Twisteds fortified, while Delilah’s syringes crush the vanguard.' }
+    ]},
+    { name: 'The Sterile Basket', lines: [
+      { who: 'Narrator', text: 'With the corridor secured, Bassie hands Delilah a specially reinforced laboratory capsule basket.' },
+      { who: 'Bassie', text: 'I wrapped this one in sterile latex tubing just like you wanted! Now your emergency capsules won’t shatter!' },
+      { who: 'Delilah', text: '*inspects the craftsmanship, a faint wry smile appearing* An unexpected efficiency. I will log this in the project manifest.' },
+      { who: 'Bassie', text: 'Yay! High five, Miss Delilah!' },
+      { who: 'Delilah', text: '*taps Bassie’s basket with a gloved finger* Let us not push our luck, specimen.' }
+    ]}
+  ]
+});
+
+/* 6. Delilah & Dandy */
+defCampaign({
+  id: 'delilah_dandy', badge: 'delilah_dandy', a: 'Delilah', b: 'Dandy',
+  recLevel: friendshipRecLevel('Delilah', 'Dandy'), title: 'The Catalyst & The Scapegoat',
+  stages: [
+    { name: 'The Old Office', lines: [
+      { who: 'Narrator', text: 'Dandy hums cheerfully while organizing tapes on a dusty counter as Delilah steps into the doorway.' },
+      { who: 'Delilah', text: 'Still playing shopkeeper, Dandy? Even after the power died and the elevators fell?' },
+      { who: 'Dandy', text: 'Well well, if it isn’t our brilliant chief architect! Come to buy some tape? Or did you just miss your favorite star?' },
+      { who: 'Delilah', text: 'You know exactly why I am here. Prototype Unit 01. The core formula Arthur and I signed off on.' },
+      { who: 'Dandy', text: '*smile tightens slightly* Ah, yes. The good old days. Before you blamed everything on the flower on the poster.' }
+    ]},
+    { name: 'Unresolved Ledgers', lines: [
+      { who: 'Narrator', text: 'Delilah drops an aged ledger onto the counter, covered in ink and dried Ichor.' },
+      { who: 'Delilah', text: 'Arthur built the illusions. You wore the smile. But my hands were the ones that mixed the catalyst.' },
+      { who: 'Dandy', text: 'And you were very proud of it too, weren’t you, Delilah? Until things got a little... messy.' },
+      { who: 'Delilah', text: 'Science requires volatile steps. You overstepped your behavioral bounds, Dandy.' },
+      { who: 'Dandy', text: 'A star has to give the people what they want! But hey, water under the bridge, right?' }
+    ]},
+    { name: 'Partners in Ruin', lines: [
+      { who: 'Narrator', text: 'The facility’s sirens howl as rogue Twisted breach the central atrium.' },
+      { who: 'Dandy', text: 'Looks like our audience is getting impatient! Mind lending a hand, Doctor?' },
+      { who: 'Delilah', text: 'Do not flatter yourself. I am protecting my data.' },
+      { who: 'Narrator', text: 'Delilah’s research syringes and Dandy’s dazzling mascot aura overwhelm the invading forces with synchronized fury.' }
+    ]},
+    { name: 'The Original Prototype', lines: [
+      { who: 'Narrator', text: 'Dandy reaches behind his counter and pulls out a golden glass syringe encased in amber flower petals.' },
+      { who: 'Dandy', text: 'Found this in the safe on floor zero. Figured you’d want the very first catalyst back.' },
+      { who: 'Delilah', text: '*takes the prototype syringe, gazing into the swirling golden-black liquid* You kept this?' },
+      { who: 'Dandy', text: 'Gardenview wouldn’t exist without either of us, Delilah. We built the dream together.' },
+      { who: 'Delilah', text: '...Keep your shop stocked, Dandy. We still have testing to conclude.' }
+    ]}
+  ]
+});
+
+/* 7. Connie & Waxwell */
+defCampaign({
+  id: 'connie_waxwell', badge: 'connie_waxwell', a: 'Connie', b: 'Waxwell',
+  recLevel: friendshipRecLevel('Connie', 'Waxwell'), title: 'The Melodramatic Séance',
+  stages: [
+    { name: 'Midnight Monologues', lines: [
+      { who: 'Narrator', text: 'Waxwell stands atop a crate in the dark corridor, dramatically arranging four silver candelabras and posing with his cape.' },
+      { who: 'Waxwell', text: 'Shadows gather! The dark master of the eternal wick shall command the lost apparitions to kneel before his dread dominion!' },
+      { who: 'Narrator', text: 'Connie floats in upside down right in front of his face, leaning on her elbows in mid-air.' },
+      { who: 'Connie', text: 'Who are you talking to? There’s literally nobody here, candle-boy.' },
+      { who: 'Waxwell', text: '*jumps and drops a candlestick* Connie?! Insolent spirit! You were supposed to remain veiled in the ethereal mists until summoned!' },
+      { who: 'Connie', text: 'First off, I don’t do summons or cue cards. Second, your "ethereal mists" is just the floor four ventilation shaft. It’s rattling.' },
+      { who: 'Waxwell', text: '*splutters indignantly* Silence! A dark ritual demands discipline, atmosphere, and sheer terror!' }
+    ]},
+    { name: 'The Melodramatic Wick', lines: [
+      { who: 'Narrator', text: 'Waxwell pulls a ludicrously ornate, violet candle with miniature gothic skull carvings from his robe and holds it high.' },
+      { who: 'Waxwell', text: 'Behold! The Melodramatic Séance Wick! Forged from sacred nocturnal wax! With this relic, your ghostly resonance shall amplify my dark sorcery!' },
+      { who: 'Connie', text: '*sniffs it curiously* ...Waxwell. It smells like lavender.' },
+      { who: 'Waxwell', text: '*glares* It is the solemn incense of the netherworld!' },
+      { who: 'Connie', text: 'It’s a bathroom air freshener you melted into a skull mold. Soulvester told me you spent two hours carving it.' },
+      { who: 'Waxwell', text: 'Soulvester has no appreciation for the dramatic arts! Now take the wick and embrace your destiny as my phantom familiar!' },
+      { who: 'Connie', text: 'Nope! But I’m keeping the wick anyway. It makes great purple sparklers.' },
+      { who: 'Narrator', text: 'Connie casually blows on Waxwell’s head: *Puff!*' },
+      { who: 'Waxwell', text: 'MY FLAME! WHY DO YOU ALWAYS DO THAT?!' }
+    ]},
+    { name: 'Stage Fright & Real Fights', lines: [
+      { who: 'Narrator', text: 'The hallway tremors violently as a horde of heavy Twisteds shatters the adjacent security gate.' },
+      { who: 'Waxwell', text: 'Ha! Fools! Tremble before the wrath of the dark lord and his dread—' },
+      { who: 'Narrator', text: 'A feral Twisted lunges straight for Waxwell’s wick. Connie instantly vanishes into the Spirit Realm.' },
+      { who: 'Narrator', text: 'Connie phases directly into the Twisted’s face with a deafening "BOO!", staggering the entire pack in sheer terror.' },
+      { who: 'Connie', text: 'Less monologuing, more dodging! Watch out for the violet wax!' },
+      { who: 'Narrator', text: 'Connie waves the séance wick, setting the floor ablaze in dancing violet flame while blinding the attackers.' },
+      { who: 'Waxwell', text: '*hurriedly spreading fire trails* J-just as I orchestrated! A tactical feint to trap them in our web of doom!' },
+      { who: 'Connie', text: '*laughs as she phases through three claw swipes* Whatever helps you sleep, drama queen! Now let’s finish them!' }
+    ]},
+    { name: 'Contractually Spooky', lines: [
+      { who: 'Narrator', text: 'The corridor falls quiet once more. Scented violet smoke swirls gently around the scorched elevator doors.' },
+      { who: 'Waxwell', text: '*brushes soot off his cape with grand dignity* Ahem. The historical archives shall record this as an absolute triumph of my dark dominion.' },
+      { who: 'Connie', text: '*twirling the violet wick like a baton* You know, for a guy who almost got snuffed out ten seconds into the fight, your purple wax trick wasn’t half bad.' },
+      { who: 'Waxwell', text: '*brightens up slightly, flame growing taller* Truly? You... you found my pyrotechnics awe-inspiring?' },
+      { who: 'Connie', text: 'Totally. Looked like a real haunted house! Almost as spooky as me.' },
+      { who: 'Waxwell', text: '*puffs out chest proudly* Indeed! Together, our reign of theatrical terror shall—' },
+      { who: 'Narrator', text: 'Connie casually leans in: *Puff!*' },
+      { who: 'Waxwell', text: 'IN THE DARK AGAIN! CONNIEEEEEEE!' },
+      { who: 'Connie', text: '*voice echoing down the hallway* See ya at the elevator, dark master! Don’t trip over your own cape!' }
+    ]}
+  ]
+});
+
+

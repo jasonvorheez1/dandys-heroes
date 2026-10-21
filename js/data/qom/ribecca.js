@@ -28,11 +28,28 @@ function qomRibeccaReassemble(u, B) {
   });
 }
 
+QOM_RIBECCA.basic.note = 'Strikes with her keytar. Every 2nd attack emits a reverberating Keytar Bass Pulse in a cone that slows enemy Attack Speed and generates 1 Resonance pip.';
+QOM_RIBECCA.basic.onHit = (u, target, B) => {
+  if (!target || !target.alive) return;
+  u._qomRibeccaBasics = (u._qomRibeccaBasics || 0) + 1;
+  if (u._qomRibeccaBasics % 2 === 0) {
+    qomFoes(B, u).filter(e => B.distance(u, e) < 160).forEach(e => {
+      B.damage(u, e, u.st.mag * .40, { type: 'magic', area: true, tag: 'Keytar Bass Pulse' });
+      B.applyStatus(u, e, 'armslow', 3.0);
+    });
+    qomRibeccaResonate(u, B);
+    Sound.play('qom_guard', { vol: .42, rate: 1.15, throttle: 180 });
+    B.fxSparkle(u.x, u.y - 45, 6, '#a9f482');
+    B.fxFloatIcon(u.x, u.y - 100, '🎵 KEYTAR PULSE', '#a9f482');
+  }
+};
+
 QOM_RIBECCA.skills = {
   W: {
     name: 'Skeleton Symphony', type: 'Magic / Shield / Control', energy: 100,
-    v: { ratio: 1.35 }, p: { dur: 8 },
-    desc: () => 'Starts with a Sound Barrier worth 30% Max HP. While it holds, Ribecca redirects and softens allied damage. Absorbed hits build Resonance for a knockback wave. Active: refreshes personal Sound Barrier, grants team Shields and damage reduction for eight seconds, retaliatory sound pulses, then a bass note powered by absorbed damage.',
+    v: { ratio: 1.35, shield: .24, barrier: .30 }, p: { dur: 8, resMax: 5 },
+    desc: (S, P) => `<span class="sk-pas">Passive: Enters every wave with a 🛡️ <b>Sound Barrier</b> equal to <em>${pcn(S.barrier * 100)}% Max HP</em> for 15s. While it holds, 28% of allied damage is redirected to Ribecca and softened by 32%. Absorbed damage builds 💀 <b>Resonance</b> (up to ${P.resMax} pips). At 5 pips, Ribecca detonates a bone-shattering shockwave: knocks foes back 40px, drains 10 Energy, and inflicts <b>Offbeat</b> for 5s!</span><br>
+Active: Ribecca refreshes her personal Sound Barrier (+30% Max HP), grants all allies Sound Field shields (<em>${pcn(S.shield * 100)}% Max HP</em>) and 20% Damage Reduction for <em>${P.dur}s</em>. When shielded allies take hits, Ribecca fires retaliatory Keytar Pulses that slow the attacker. After ${P.dur}s, releases an amplified <b>Symphony Bass Note</b> dealing <em>${pcn(S.ratio * 100)}%</em> Magic Damage + 20% of all absorbed damage!`,
     passive(u, B) {
       B.shield(u, u, u.max.hp * .30, 15);
       B.on(u, 'waveStart', () => {
@@ -69,7 +86,7 @@ QOM_RIBECCA.skills = {
       qomShow(B, 'barrier', u);
       Sound.play('qom_guard', { vol: .7, priority: true });
       qomAllies(B, u).forEach(a => {
-        B.shield(u, a, u.max.hp * .22, P.dur);
+        B.shield(u, a, u.max.hp * S.shield, P.dur);
         B.applyStatus(u, a, 'qom_sound_field', P.dur);
       });
       B.shield(u, u, u.max.hp * .30, P.dur + 4);
@@ -83,15 +100,15 @@ QOM_RIBECCA.skills = {
     }
   },
   G: {
-    name: 'Bone Rattler', type: 'Physical / Control', cd: 8.5, v: { ratio: 1.45 }, p: { dur: 6 },
-    desc: () => 'Ribecca sends her detached arm at the strongest foe, Stunning them, then it bounces to two others and leaves them Offbeat. Reattaching grants Armor. An already Offbeat first target is Stunned longer and heals her.',
+    name: 'Bone Rattler', type: 'Physical / Control', cd: 8.5, v: { ratio: 1.45, bounceRatio: .65 }, p: { dur: 6 },
+    desc: (S, P) => `Ribecca detaches her skeleton arm and hurls it at the strongest foe! Deals <em>${pcn(S.ratio * 100)}% Physical Damage</em>, Stuns for 1.25s (1.9s if already <b>Offbeat</b>), then bounces to 2 other enemies for <em>${pcn(S.ratio * S.bounceRatio * 100)}%</em> damage, leaving all targets <b>Offbeat</b> for <em>${P.dur}s</em>. Reattaching fortifies Ribecca with +35% Armor for 8s. If the primary target was Offbeat, heals Ribecca for 12% missing HP.`,
     cast(u, B, S, P) {
       const foes = qomFoes(B, u);
       const first = qomTop(foes, 'atk'); if (!first) return;
       const offbeat = first.hasStatus('qom_offbeat');
       [first, ...foes.filter(e => e !== first).slice(0, 2)].forEach((e, i) => B.after(i * .16, () => {
         if (!u.alive || !e.alive) return;
-        B.damage(u, e, u.st.atk * S.ratio * (i ? .65 : 1), { type: 'physical', tag: 'Bone Rattler' });
+        B.damage(u, e, u.st.atk * S.ratio * (i ? S.bounceRatio : 1), { type: 'physical', tag: 'Bone Rattler' });
         B.applyStatus(u, e, 'qom_offbeat', P.dur);
         if (!i) B.applyStatus(u, e, 'stun', offbeat ? 1.9 : 1.25);
         qomShow(B, 'bone', u, e);
@@ -104,8 +121,8 @@ QOM_RIBECCA.skills = {
   },
   B: {
     name: 'Backstage Protection', type: 'Shield / Support / Control', cd: 10,
-    v: { shield: .28 }, p: { dur: 8 },
-    desc: () => 'Keytar chords Shield the two most wounded allies. While protected, 40% of damage is redirected to Ribecca and softened; attackers lose Attack. A broken Shield heals Ribecca and leaves the ally with damage reduction.',
+    v: { shield: .28, redirect: .40 }, p: { dur: 8 },
+    desc: (S, P) => `Keytar chords wrap the 2 most wounded allies in 🛡️ <b>Backstage Shields</b> (<em>${pcn(S.shield * 100)}% Max HP</em> for <em>${P.dur}s</em>). While protected, <em>${pcn(S.redirect * 100)}%</em> of their damage is redirected to Ribecca and softened by 35%, and attackers suffer -10% Attack for 6s. If a shield breaks, Ribecca heals for 8% Max HP and the ally gains a 4s Sound Field. If the shield expires unbroken, Ribecca heals for 4% Max HP and restores 6 Energy.`,
     cast(u, B, S, P) {
       qomAllies(B, u).sort((a, b) => a.hpPct - b.hpPct).slice(0, 2).forEach(a => {
         B.applyStatus(u, a, 'qom_backstage_protected', P.dur);
@@ -125,15 +142,16 @@ QOM_RIBECCA.skills = {
     }
   },
   P: {
-    name: 'The Undead', type: 'Tank / Support', v: { hp: .12 }, p: {},
-    desc: () => 'Ribecca ignores removable debuffs and turns them into stacking Armor and Magic Defense. Every third resisted debuff heals her. Once per wave below 40% HP, she separates, becomes untargetable, reassembles, heals, and Taunts nearby enemies.',
+    name: 'The Undead', type: 'Tank / Support', v: { hp: .16, healOnResist: .06 }, p: { resistPips: 3 },
+    desc: (S, P) => `<span class="sk-pas">Ribecca gains <em>+${pcn(S.hp * 100)}%</em> Max HP and +20% Armor. She is completely immune to removable debuffs; resisted debuffs grant stacking <b>Undead Resilience</b> (+6% Def/MDef per stack) and every ${P.resistPips}rd resisted debuff heals her for <em>${pcn(S.healOnResist * 100)}% Max HP</em>.<br>
+• <b>Skeleton Reassembly</b>: Once per wave upon taking lethal damage or dropping &lt;40% HP, Ribecca detaches into rattling skeleton bones, becomes Untargetable for 1.5s, then snaps back together, restoring 25% missing HP and Taunting all nearby foes for 4s!</span>`,
     passive(u, B, S) {
       u.flat.hpPqom = S.hp; u.dirty = true;
       u.guards.push((id, def) => {
         if (def.kind !== 'debuff') return false;
         B.applyStatus(u, u, 'qom_resilience', 10);
         u._qomResists = (u._qomResists || 0) + 1;
-        if (u._qomResists % 3 === 0) B.heal(u, u, u.max.hp * .06);
+        if (u._qomResists % 3 === 0) B.heal(u, u, u.max.hp * S.healOnResist);
         qomShow(B, 'reassemble', u);
         return true;
       });
@@ -147,14 +165,16 @@ QOM_RIBECCA.skills = {
     }
   },
   R: {
-    name: 'Unbreakable Performance', type: 'Shield / Control / Magic Damage', v: { hp: .16 }, p: {},
-    desc: () => 'Every 14 seconds, Ribecca Shields and reinforces the whole team. Five Resonance also drains enemy Energy and applies Offbeat. Once per wave, Standing Ovation prevents an ally’s KO, Taunts every foe, and ends in a healing shockwave.',
+    name: 'Unbreakable Performance', type: 'Shield / Control / Magic Damage',
+    v: { hp: .16, passiveShield: .14, shockwave: .80 }, p: { interval: 14 },
+    desc: (S, P) => `<span class="sk-pas">Ribecca permanently gains <em>+${pcn(S.hp * 100)}%</em> Max HP, +18% Defense, and +18% Magic Defense. Every ${P.interval}s, plays a defensive chord that grants all allies a <em>${pcn(S.passiveShield * 100)}% Max HP</em> Sound Shield and Fortify (+25% Def) for 8s.<br>
+• <b>Standing Ovation</b>: Once per wave, if an ally would suffer fatal damage, Ribecca prevents their death, leaves them with 18% Max HP, grants them an emergency shield (32% Max HP), Taunts ALL enemies for 5s, and absorbs all focus fire. After 5s, Ribecca unleashes a concussive shockwave (<em>${pcn(S.shockwave * 100)}% Magic</em>, 80px knockback) and heals herself for 12% Max HP!</span>`,
     passive(u, B, S) {
       u.flat.hpPqomR = S.hp; u.flat.defPqomR = .18; u.flat.mdefPqomR = .18; u.dirty = true;
       B.on(u, 'waveStart', () => { u._qomStandingOvation = false; });
       B.every(u, 14, () => {
         qomAllies(B, u).forEach(a => {
-          B.shield(u, a, u.max.hp * .14, 8);
+          B.shield(u, a, u.max.hp * S.passiveShield, 8);
           B.applyStatus(u, a, 'qom_keytar_fortify', 8);
         });
         qomShow(B, 'barrier', u);

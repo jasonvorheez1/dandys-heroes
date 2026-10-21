@@ -76,9 +76,9 @@ const AI = {
       return;
     }
 
-    const distractor = u._teaganDistractor;
+    const distractor = u._distractor || u._teaganDistractor;
     let tgt = distractor && distractor.team !== u.team && B.isTargetable(distractor)
-      && B.t < (u._teaganDistractUntil || 0) ? distractor : B.bestTarget(u);
+      && B.t < (u._distractUntil || u._teaganDistractUntil || 0) ? distractor : B.bestTarget(u);
     // A target cache can be one tick behind after a Lab duel is assembled or
     // after an entrance status expires. Refresh directly from the live team so
     // a valid solo opponent never leaves the AI in an idle fallback.
@@ -213,6 +213,7 @@ const AI = {
   },
 
   moveToward(u, B, x, dt, mult, depth) {
+    if (u.immovable || (u.flags && u.flags.noMove)) { this.holdPosition(u); return; }
     if (depth == null) depth = u.depth;
     const dx = x - u.x, dy = (depth - u.depth) * B.depthSpan;
     const dist = Math.hypot(dx, dy);

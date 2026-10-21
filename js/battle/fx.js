@@ -21,9 +21,9 @@ const FX = {
     this.quality = this._qualityMax;
     this._particleInterval = width <= 700 ? 1 / 30 : 1 / 60;
     this._baseParticleInterval = this._particleInterval;
-    this._particleMin = width <= 430 ? 24 : width <= 700 ? 36 : 52;
-    this._particleBase = width <= 430 ? 42 : width <= 700 ? 70 : 150;
-    this._popCap = width <= 430 ? 14 : width <= 700 ? 22 : 36;
+    this._particleMin = width <= 430 ? 18 : width <= 700 ? 28 : 40;
+    this._particleBase = width <= 430 ? 36 : width <= 700 ? 54 : 85;
+    this._popCap = width <= 430 ? 16 : width <= 700 ? 24 : 32;
     this._particleAccum = 0;
     this._stageTransform = '';
     this._slowFrames = 0;
@@ -524,6 +524,22 @@ const FX = {
       this.ring(tx, ty - 55, 66, colors[1], .25);
     }
     if (id === 'QOMGourdy') this.floatIcon(x, y - 95, '♪', colors[0]);
+  },
+
+  qomGourdyDrumBlast(x, y, beat, power) {
+    if (!this.front) return;
+    power = power || 1;
+    const colors = ['#a7f05f', '#ba59e0', '#8cf0da', '#f4ffd9'];
+    const col = colors[(beat - 1) % 4] || '#a7f05f';
+    const r = beat === 4 ? 220 * Math.min(1.5, power) : (80 + beat * 28) * Math.min(1.3, power);
+    this.ring(x, y - 40, r, col, beat === 4 ? .45 : .28);
+    if (beat === 4) {
+      this.shake(2, .18);
+      this.floatIcon(x, y - 110, '💥 CRASH!', '#f4ffd9');
+    } else {
+      const symbols = ['🥁 BASS', '🎵 HI-HAT', '🎶 TOM'];
+      this.floatIcon(x, y - 95, symbols[beat - 1] || '♪', col);
+    }
   },
 
   heroSignature(kind, phase, x, y, opt) {
@@ -1773,21 +1789,24 @@ const FX = {
       bright core, hot embers, and a directionally flowing wick. */
   waxZone(x, anchorY, type, radius, dur) {
     if (!this.back) return;
-    const flame = type === 'flame', w = Math.max(58, radius * 2), h = flame ? 29 : 24;
+    const isViolet = type === 'scented_violet' || type === 'violet_flame';
+    const flame = type === 'flame' || isViolet, w = Math.max(58, radius * 2), h = flame ? 29 : 24;
     const n = el('div');
-    n.className = 'fx-wax-zone ' + (flame ? 'flame' : 'soft');
+    n.className = 'fx-wax-zone ' + (isViolet ? 'violet-flame' : flame ? 'flame' : 'soft');
     n.style.cssText = `position:absolute;left:${x - w / 2}px;top:${anchorY - h - 4}px;width:${w}px;height:${h}px;
       z-index:2;pointer-events:none;opacity:0;transform:scaleX(.22) scaleY(.55);transform-origin:50% 100%;border-radius:50%;
-      border:2px solid ${flame ? '#ffbc54' : '#f8d875'};background:${flame
+      border:2px solid ${isViolet ? '#c084fc' : flame ? '#ffbc54' : '#f8d875'};background:${isViolet
+        ? 'radial-gradient(ellipse at 50% 66%,#f5d0fe 0 9%,#c084fc 22%,#9333ea 48%,#581c87 70%,transparent 80%)'
+        : flame
         ? 'radial-gradient(ellipse at 50% 66%,#fff7bd 0 9%,#ffbf45 18%,#fa6b2f 43%,#a9271e 63%,transparent 74%)'
         : 'radial-gradient(ellipse at 35% 28%,#fff8c8 0 5%,#f6d56d 15%,#c98d38 43%,#74401e 68%,transparent 75%)'};
-      box-shadow:inset 0 3px 4px #fff8,inset 0 -5px 8px ${flame ? '#8b1e18' : '#5e3018'}aa,0 0 ${flame ? 19 : 12}px ${flame ? '#ff642fbb' : '#e7bd54aa'}`;
+      box-shadow:inset 0 3px 4px #fff8,inset 0 -5px 8px ${isViolet ? '#581c87' : flame ? '#8b1e18' : '#5e3018'}aa,0 0 ${flame ? (isViolet ? 22 : 19) : 12}px ${isViolet ? '#a855f7cc' : flame ? '#ff642fbb' : '#e7bd54aa'}`;
     n.innerHTML = '<b></b><b></b><b></b>' + (flame ? '<i></i><i></i><i></i><i></i>' : '<em></em><em></em>');
     this.back.appendChild(n);
-    n.querySelectorAll('b').forEach((b, k) => b.style.cssText = `position:absolute;left:${13 + k * 27}%;top:${flame ? 11 + (k % 2) * 3 : 7 + (k % 2) * 5}px;width:${flame ? 16 : 20}px;height:${flame ? 4 : 5}px;border-radius:50%;background:${flame ? '#fff3a2aa' : '#fff4b477'};filter:blur(1px);`);
+    n.querySelectorAll('b').forEach((b, k) => b.style.cssText = `position:absolute;left:${13 + k * 27}%;top:${flame ? 11 + (k % 2) * 3 : 7 + (k % 2) * 5}px;width:${flame ? 16 : 20}px;height:${flame ? 4 : 5}px;border-radius:50%;background:${isViolet ? '#f5d0feaa' : flame ? '#fff3a2aa' : '#fff4b477'};filter:blur(1px);`);
     if (flame) n.querySelectorAll('i').forEach((i, k) => {
       i.style.cssText = `position:absolute;left:${11 + k * 23}%;bottom:${4 + (k % 2) * 2}px;width:${9 + (k % 2) * 2}px;height:${15 + (k % 3) * 5}px;
-        border-radius:65% 35% 60% 40%;background:linear-gradient(#fffbd0 0 22%,#ffd35b 31%,#ff7131 66%,#b9231d);transform:rotate(${(k - 1.5) * 8}deg);filter:drop-shadow(0 0 6px #ff8a38);animation:waxFlicker ${.42 + k * .07}s ease-in-out infinite alternate;`;
+        border-radius:65% 35% 60% 40%;background:${isViolet ? 'linear-gradient(#faf5ff 0 22%,#e9d5ff 31%,#c084fc 66%,#7e22ce)' : 'linear-gradient(#fffbd0 0 22%,#ffd35b 31%,#ff7131 66%,#b9231d)'};transform:rotate(${(k - 1.5) * 8}deg);filter:${isViolet ? 'drop-shadow(0 0 8px #c084fc)' : 'drop-shadow(0 0 6px #ff8a38)'};animation:waxFlicker ${.42 + k * .07}s ease-in-out infinite alternate;`;
     }); else n.querySelectorAll('em').forEach((e, k) => e.style.cssText = `position:absolute;left:${28 + k * 32}%;bottom:-5px;width:${7 + k * 2}px;height:${9 + k * 4}px;border-radius:0 0 60% 60%;background:#a96428;opacity:.72;`);
     requestAnimationFrame(() => { n.style.transition = 'transform .22s cubic-bezier(.1,1.3,.3,1),opacity .16s'; n.style.opacity = .92; n.style.transform = 'scaleX(1) scaleY(1)'; });
     setTimeout(() => { n.style.transition = 'opacity .6s'; n.style.opacity = 0; }, Math.max(200, dur * 1000 - 600));
@@ -2347,6 +2366,179 @@ const FX = {
     this.sparkle(x, y - 58, 5, '#ffcf7a');
   },
 
+  gourdyCandyFountain(x, y) {
+    if (!this.front) return;
+    const candies = ['Skillcheckcandy', 'Speedcandy', 'Staminacandy', 'Enigmacandy'];
+    for (let i = 0; i < 7; i++) {
+      setTimeout(() => {
+        const c = candies[i % candies.length];
+        const ang = -60 - (i * 12) + (Math.random() * 10 - 5);
+        const rad = (ang * Math.PI) / 180;
+        const dist = 45 + Math.random() * 55;
+        const tx = x + Math.cos(rad) * dist * (i % 2 === 0 ? 1 : -1);
+        const ty = y - 40 + Math.sin(rad) * dist;
+        this.itemArc(x, y - 45, tx, ty, c, {
+          size: 20 + (i % 3) * 3, dur: .42 + i * .04, arc: 40 + (i % 3) * 10, col: '#ff9d4d'
+        });
+        this.sparkle(tx, ty, 3, '#ffd08a');
+      }, i * 45);
+    }
+    this.confetti(x, y - 50, 18);
+    this.ring(x, y - 25, 90, '#ff9d4d', .35);
+  },
+
+  gourdyMegaPumpkin(u, target, isFamily) {
+    if (!this.front || !target) return;
+    const tx = target.x, ty = target.y;
+    this.ring(tx, ty - 32, 130, '#ff7d1a', .45);
+    this.burst(tx, ty - 50, 22, ['#ff7d1a', '#ffb834', '#60a638', '#9333ea', '#fff'], {
+      shape: 'shard', spMin: 90, spMax: 260, lift: 70, sMin: 5, sMax: 12, life: .7, g: 420
+    });
+    this.floatIcon(tx, ty - 105, isFamily ? '🎃💜' : '🎃💥', '#ffa534');
+    this.sparkle(tx, ty - 50, 8, '#ffe17d');
+    if (isFamily) {
+      this.ring(tx, ty - 35, 175, '#be69f6', .55);
+      this.sparkle(tx, ty - 60, 12, '#e9b6ff');
+    }
+    const n = el('div', 'gourdy-mega-pumpkin');
+    n.style.cssText = `left:${tx - 38}px;top:${ty - 88}px;`;
+    n.innerHTML = '<span class="gourdy-pumpkin-face">🎃</span>';
+    this.front.appendChild(n);
+    requestAnimationFrame(() => n.classList.add('active'));
+    setTimeout(() => { n.classList.remove('active'); n.classList.add('leaving'); }, 350);
+    setTimeout(() => n.remove(), 600);
+  },
+
+  toodlesEightBallFortune(x, y, kind, isSuper) {
+    if (!this.front) return;
+    const fortuneTexts = {
+      damage: 'OUTLOOK GOOD!',
+      defense: 'IT IS CERTAIN!',
+      speed: 'SIGNS POINT YES!',
+      support: 'NO DOUBT!',
+      all: 'ALL SIGNS YES!'
+    };
+    const fortuneColors = {
+      damage: '#ff6b6b',
+      defense: '#4ea8de',
+      speed: '#ffd166',
+      support: '#06d6a0',
+      all: '#ffd700'
+    };
+    const col = fortuneColors[kind] || '#ffe27a';
+    const text = fortuneTexts[kind] || 'OUTLOOK GOOD!';
+
+    const ball = el('div', 'toodles-magic-eightball' + (isSuper ? ' super' : ''));
+    ball.style.cssText = `left:${x - 30}px;top:${y - 85}px;--fortune-col:${col};`;
+    ball.innerHTML = `
+      <div class="eightball-sphere">
+        <div class="eightball-front">
+          <div class="eightball-white-circle">
+            <span class="eightball-number">8</span>
+          </div>
+        </div>
+        <div class="eightball-window">
+          <div class="eightball-liquid">
+            <div class="eightball-triangle">
+              <span class="eightball-fortune-text">${text}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+    this.front.appendChild(ball);
+    requestAnimationFrame(() => ball.classList.add('shaking'));
+    setTimeout(() => {
+      ball.classList.remove('shaking');
+      ball.classList.add('reveal');
+      this.ring(x, y - 55, isSuper ? 130 : 80, col, .35);
+      this.sparkle(x, y - 60, isSuper ? 12 : 6, col);
+    }, 380);
+    setTimeout(() => {
+      ball.classList.remove('reveal');
+      ball.classList.add('leaving');
+    }, 1100);
+    setTimeout(() => ball.remove(), 1450);
+  },
+
+  toodlesDogPlushCheer(x, y) {
+    if (!this.front) return;
+    const plush = el('div', 'toodles-dogplush-cheer');
+    plush.style.cssText = `left:${x - 22}px;top:${y - 95}px;`;
+    plush.innerHTML = '<span class="dogplush-icon">🐶</span><span class="dogplush-heart">💖</span><span class="dogplush-star">✨</span>';
+    this.front.appendChild(plush);
+    requestAnimationFrame(() => plush.classList.add('active'));
+    this.sparkle(x, y - 70, 6, '#ffd166');
+    setTimeout(() => { plush.classList.remove('active'); plush.classList.add('leaving'); }, 850);
+    setTimeout(() => plush.remove(), 1200);
+  },
+
+  toodlesHammerSmash(x, y, tx, ty, boost) {
+    if (!this.front) return;
+    const isSuper = boost === 'all';
+    const hammer = el('div', 'toodles-live-hammer' + (isSuper ? ' super' : ''));
+    hammer.style.cssText = `left:${tx - 26}px;top:${ty - 135}px;`;
+    hammer.innerHTML = '<div class="hammer-head"></div><div class="hammer-handle"></div>';
+    this.front.appendChild(hammer);
+    requestAnimationFrame(() => hammer.classList.add('slamming'));
+    setTimeout(() => {
+      hammer.classList.remove('slamming');
+      hammer.classList.add('impact');
+      this.ring(tx, ty - 32, isSuper ? 120 : 85, isSuper ? '#ffd700' : '#ffe27a', .32);
+      this.burst(tx, ty - 45, isSuper ? 16 : 10, ['#ffe27a', '#ff9dd0', '#ff6b8b', '#fff'], {
+        shape: 'shard', spMin: 55, spMax: 180, lift: 45, sMin: 3, sMax: 8, life: .45
+      });
+      const pow = el('div', 'toodles-pow-starburst');
+      pow.style.cssText = `left:${tx - 40}px;top:${ty - 85}px;`;
+      pow.textContent = isSuper ? 'ALL SIGNS YES!' : (boost === 'damage' ? 'BONK!' : 'POW!');
+      this.front.appendChild(pow);
+      requestAnimationFrame(() => pow.classList.add('active'));
+      setTimeout(() => pow.remove(), 650);
+
+      const dizzy = el('div', 'toodles-dizzy-stars');
+      dizzy.style.cssText = `left:${tx - 28}px;top:${ty - 90}px;`;
+      dizzy.innerHTML = '<span>⭐</span><span>💫</span><span>⭐</span>';
+      this.front.appendChild(dizzy);
+      setTimeout(() => dizzy.remove(), 800);
+    }, 220);
+    setTimeout(() => hammer.remove(), 600);
+  },
+
+  toodlesMiracleShield(tx, ty) {
+    if (!this.front) return;
+    this.ring(tx, ty - 35, 96, '#a7ef67', .4);
+    this.ring(tx, ty - 35, 120, '#ffe27a', .45);
+    this.sparkle(tx, ty - 60, 10, '#fff5bd');
+    const orb = el('div', 'toodles-miracle-orb');
+    orb.style.cssText = `left:${tx - 45}px;top:${ty - 88}px;`;
+    orb.innerHTML = '<span class="clover-orbit c1">🍀</span><span class="clover-orbit c2">✨</span><span class="clover-orbit c3">🧲</span>';
+    this.front.appendChild(orb);
+    requestAnimationFrame(() => orb.classList.add('active'));
+    setTimeout(() => { orb.classList.remove('active'); orb.classList.add('leaving'); }, 900);
+    setTimeout(() => orb.remove(), 1250);
+  },
+
+  qomGourdyDrumBlast(x, y, beat, power) {
+    if (!this.front) return;
+    const colors = { 1: '#a7f05f', 2: '#ba59e0', 3: '#8cf0da', 4: '#f4ffd9' };
+    const col = colors[beat] || '#bbfa79';
+    const rad = beat === 4 ? 140 : 85 + beat * 12;
+    this.ring(x, y - 40, rad, col, beat === 4 ? .45 : .3);
+    const blast = el('div', 'qom-drum-blast beat-' + beat);
+    blast.style.cssText = `left:${x - 30}px;top:${y - 85}px;--blast-col:${col};`;
+    const label = beat === 1 ? '🥁 BASS' : beat === 2 ? '🎵 HI-HAT' : beat === 3 ? '🎶 TOM' : '💥 CRASH!';
+    blast.innerHTML = `<span>${label}</span>`;
+    this.front.appendChild(blast);
+    requestAnimationFrame(() => blast.classList.add('active'));
+    if (beat === 4) {
+      this.burst(x, y - 55, 18, ['#f4ffd9', '#d9a5ff', '#bbfa79', '#fff'], {
+        shape: 'spark', spMin: 65, spMax: 200, lift: 50, sMin: 3, sMax: 7, life: .55
+      });
+      this.shake(3, .22);
+    }
+    setTimeout(() => blast.remove(), 650);
+  },
+
   /** Looey's actions are physical comedy: inflate, launch, ricochet, then
       turn the whole arena into a small circus stage. */
   looeySkill(kind, x, y, opt) {
@@ -2762,6 +2954,81 @@ const FX = {
       shape: 'streak', spMin: 55, spMax: ally ? 130 : 190, lift: 30, sMin: 3, sMax: 7, life: .42
     });
     this.floatIcon(x, y - 96, ally ? 'HASTE' : 'PUSH', ally ? '#bdf5c7' : '#dffcff');
+  },
+
+  flyteCyclone(x, y, tx, ty, radius, dur) {
+    if (!this.back) return;
+    const size = clamp(radius || 260, 180, 360);
+    this.flyteWindRibbon(x, y - 65, tx, ty - 50, .45, '#bfefff');
+    this.flyteWindRibbon(x, y - 45, tx, ty - 35, .50, '#86dff5', 20);
+
+    const storm = el('div', 'flyte-cyclone-vanguard active');
+    storm.style.cssText += `left:${tx - size / 2}px;top:${ty - size * .32}px;width:${size}px;height:${size * .64}px`;
+    storm.innerHTML = '<div class="cyclone-eye"></div><div class="cyclone-swirl c1"></div><div class="cyclone-swirl c2"></div><div class="cyclone-swirl c3"></div><div class="cyclone-rings"></div>';
+    this.back.appendChild(storm);
+
+    this.ring(tx, ty - 30, size * .75, '#bfefff', .55);
+    this.ring(tx, ty - 30, size * .45, '#e9ffff', .45);
+    this.sparkle(tx, ty - 60, 14, '#e9ffff');
+    Sound.play('tornado_s', { vol: .65 });
+
+    setTimeout(() => {
+      storm.classList.remove('active');
+      storm.classList.add('leaving');
+    }, Math.max(.7, (dur || 8) - .5) * 1000);
+    setTimeout(() => storm.remove(), (dur || 8) * 1000 + 150);
+  },
+
+  flyteWingSlam(x, y, tx, ty) {
+    this.flyteWindRibbon(x, y - 60, tx, ty - 55, .20, '#dffcff');
+    this.flyteWindRibbon(x, y - 40, tx, ty - 35, .24, '#7ee8f7', 15);
+    const slam = el('div', 'flyte-wing-slam active');
+    slam.style.cssText += `left:${tx - 65}px;top:${ty - 110}px;width:130px;height:130px`;
+    slam.innerHTML = '<div class="slam-shockwave"></div><div class="slam-feathers"></div><div class="slam-crater"></div>';
+    this.front.appendChild(slam);
+
+    this.ring(tx, ty - 32, 130, '#80e5ff', .45);
+    this.ring(tx, ty - 32, 70, '#fff', .3);
+    this.burst(tx, ty - 45, 12, ['#bfefff', '#80e5ff', '#fff'], {
+      shape: 'streak', spMin: 120, spMax: 260, lift: 45, sMin: 4, sMax: 9, life: .45
+    });
+    this.floatIcon(tx, ty - 115, '🦅 WING SLAM!', '#80e5ff');
+
+    setTimeout(() => { slam.classList.remove('active'); slam.classList.add('leaving'); }, 420);
+    setTimeout(() => slam.remove(), 700);
+  },
+
+  flyteMockingSwoop(x, y, tx, ty, dur) {
+    this.flyteWindRibbon(x, y - 60, tx, ty - 55, .28, '#ffe066');
+    this.flyteWindRibbon(x, y - 40, tx, ty - 35, .32, '#80e5ff', 20);
+
+    const shield = el('div', 'flyte-mocking-diversion active');
+    shield.style.cssText += `left:${tx - 70}px;top:${ty - 130}px;width:140px;height:140px`;
+    shield.innerHTML = '<div class="diversion-aura"></div><div class="diversion-prisms"></div><div class="diversion-glyph">🦋</div>';
+    this.front.appendChild(shield);
+
+    this.ring(tx, ty - 32, 140, '#ffe066', .45);
+    this.sparkle(tx, ty - 50, 10, '#fff3b0');
+    this.floatIcon(tx, ty - 120, '🦋 MOCKING SWOOP', '#ffe066');
+
+    setTimeout(() => { shield.classList.remove('active'); shield.classList.add('leaving'); }, Math.max(.5, (dur || 4.5) - .4) * 1000);
+    setTimeout(() => shield.remove(), (dur || 4.5) * 1000 + 120);
+  },
+
+  flyteStubbornDowndraft(x, y, ax, ay) {
+    const down = el('div', 'flyte-stubborn-downdraft active');
+    down.style.cssText += `left:${ax - 60}px;top:${ay - 120}px;width:120px;height:130px`;
+    down.innerHTML = '<div class="downdraft-cone"></div><div class="downdraft-impact"></div>';
+    this.front.appendChild(down);
+
+    this.ring(ax, ay - 30, 110, '#80e5ff', .4);
+    this.burst(ax, ay - 40, 10, ['#80e5ff', '#bfefff', '#fff'], {
+      shape: 'streak', spMin: 90, spMax: 210, lift: -20, sMin: 3, sMax: 8, life: .38
+    });
+    this.floatIcon(ax, ay - 105, '🌪️ TURBULENCE', '#80e5ff');
+
+    setTimeout(() => { down.classList.remove('active'); down.classList.add('leaving'); }, 400);
+    setTimeout(() => down.remove(), 680);
   },
 
   flutterEntry(x, y, toX, dir, dur) {
@@ -3280,18 +3547,25 @@ const FX = {
   },
 
   floatIcon(x, y, char, col) {
+    if (!this.combatNumbers && typeof char === 'string' && char.length > 2) return;
     this.trimPops();
-    const n = el('div', 'pop');
-    n.style.cssText = `left:${x}px;top:${y}px;font-size:22px;transform:translate(-50%,0) scale(.3);opacity:0;color:${col || '#fff'}`;
-    n.textContent = char;
+    const str = String(char != null ? char : '');
+    const isGlyph = str.length <= 2 && !/[A-Za-z0-9]/.test(str);
+    const n = el('div', 'pop ' + (isGlyph ? 'pop-glyph' : 'pop-banner'));
+    n.style.left = x + 'px';
+    n.style.top = y + 'px';
+    if (col) {
+      if (isGlyph) {
+        n.style.color = col;
+      } else {
+        n.style.borderColor = col;
+        n.style.color = col;
+        n.style.boxShadow = `0 4px 12px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.25), 0 0 8px ${col}44`;
+      }
+    }
+    n.textContent = str;
     this.pop.appendChild(n);
-    requestAnimationFrame(() => {
-      n.style.transition = 'transform .3s cubic-bezier(.2,1.6,.4,1),opacity .2s';
-      n.style.transform = 'translate(-50%,-26px) scale(1)'; n.style.opacity = 1;
-      setTimeout(() => { n.style.transition = 'transform .45s,opacity .45s'; n.style.opacity = 0;
-        n.style.transform = 'translate(-50%,-60px) scale(.85)'; }, 480);
-    });
-    setTimeout(() => n.remove(), 1050);
+    setTimeout(() => { if (n.parentNode) n.remove(); }, 660);
   },
 
   /** Same beat as floatIcon, but a real item PNG instead of an emoji glyph -
@@ -3329,7 +3603,7 @@ const FX = {
 
   /** Damage / heal number. */
   number(x, y, txt, kind, crit, superCrit) {
-    if (!this.combatNumbers) return;
+    if (!this.combatNumbers || !this.pop) return;
     // Damage-over-time ticks are intentionally quieter in a full battle. The
     // status/effect still resolves and crit/heal/shield numbers remain exact;
     // this only prevents ten nearby periodic ticks from spawning nearly
@@ -3341,26 +3615,24 @@ const FX = {
       this._denseNumberStamps[key] = now;
     }
     this.trimPops();
-    const cols = { dmg: '#fff', crit: '#ffd166', supercrit: '#ff714d', heal: '#7bd66a', shield: '#7be0ff',
-      true: '#ff7ad6', miss: '#a394bb', dot: '#c98fff', block: '#8fb4ff' };
-    const n = el('div', 'pop' + (crit ? ' crit' : '') + (superCrit ? ' supercrit' : ''));
-    const size = superCrit ? 34 : crit ? 27 : kind === 'dot' ? 13 : 18;
-    n.style.cssText = `left:${x}px;top:${y}px;font-size:${size}px;color:${cols[kind] || '#fff'};
-      transform:translate(-50%,0) scale(${superCrit ? .3 : crit ? .4 : .7});opacity:0`;
+    let kindCls = 'pop-dmg';
+    if (superCrit) kindCls = 'supercrit';
+    else if (crit) kindCls = 'crit';
+    else if (kind === 'magic') kindCls = 'pop-magic';
+    else if (kind === 'true') kindCls = 'pop-true';
+    else if (kind === 'dot') kindCls = 'pop-dot';
+    else if (kind === 'heal') kindCls = 'pop-heal';
+    else if (kind === 'shield') kindCls = 'pop-shield';
+    else if (kind === 'miss' || kind === 'block') kindCls = 'pop-' + kind;
+
+    const n = el('div', 'pop pop-num ' + kindCls + (crit ? ' crit' : '') + (superCrit ? ' supercrit' : ''));
+    const jitterX = Math.round(rnd(-4, 4));
+    n.style.left = (x + jitterX) + 'px';
+    n.style.top = y + 'px';
     n.textContent = txt;
     this.pop.appendChild(n);
-    const dx = rnd(-22, 22), dy = rnd(-52, -34);
-    requestAnimationFrame(() => {
-      n.style.transition = `transform .22s cubic-bezier(.15,1.7,.4,1),opacity .12s`;
-      n.style.transform = `translate(calc(-50% + ${dx * .4}px),${dy * .5}px) scale(${superCrit ? 1.38 : crit ? 1.25 : 1})`;
-      n.style.opacity = 1;
-      setTimeout(() => {
-        n.style.transition = 'transform .55s ease-out,opacity .55s';
-        n.style.transform = `translate(calc(-50% + ${dx}px),${dy - 34}px) scale(${superCrit ? 1 : crit ? .9 : .78})`;
-        n.style.opacity = 0;
-      }, 200);
-    });
-    setTimeout(() => n.remove(), 900);
+    const lifeMs = superCrit || crit ? 640 : 560;
+    setTimeout(() => { if (n.parentNode) n.remove(); }, lifeMs);
   },
 
   /* projectile: returns a node the sim animates */
@@ -3897,5 +4169,538 @@ const FX = {
     setTimeout(() => cloud.remove(), dur * 1000 + 120);
   },
 
-  steam(x, y, n) { this.smoke(x, y, n, '#e0d0b8'); }
+  steam(x, y, n) { this.smoke(x, y, n, '#e0d0b8'); },
+
+  hollowaySpiral(x, y, radius, opt) {
+    if (!this.front || this.reducedEffects) return;
+    opt = opt || {};
+    const rad = radius || 140;
+    const dur = opt.dur || 0.65;
+    const n = el('div');
+    n.style.cssText = `position:absolute;left:${x - rad}px;top:${y - rad}px;width:${rad * 2}px;height:${rad * 2}px;
+      border-radius:50%;pointer-events:none;z-index:8;opacity:0;
+      border: 3px dashed #c070ed;
+      box-shadow: 0 0 25px rgba(192, 112, 237, 0.6), inset 0 0 20px rgba(168, 85, 247, 0.4);
+      transform: scale(0.2) rotate(0deg);`;
+    this.front.appendChild(n);
+    requestAnimationFrame(() => {
+      n.style.transition = `transform ${dur}s cubic-bezier(0.1, 0.8, 0.2, 1), opacity ${dur * 0.4}s ease-out`;
+      n.style.opacity = '0.9';
+      n.style.transform = `scale(1) rotate(${opt.rev ? -360 : 360}deg)`;
+    });
+    const pCount = Math.min(12, Math.round(rad / 15));
+    for (let i = 0; i < pCount; i++) {
+      const ang = (i / pCount) * Math.PI * 2;
+      const dist = rad * 0.75;
+      this.part({
+        x: x + Math.cos(ang) * dist,
+        y: y + Math.sin(ang) * dist,
+        vx: Math.cos(ang + Math.PI / 2) * 50,
+        vy: Math.sin(ang + Math.PI / 2) * 50,
+        g: 0,
+        size: rnd(7, 14),
+        col: pick(['#e0b0ff', '#c070ed', '#a855f7', '#ffd54d']),
+        life: rnd(0.4, 0.8),
+        drag: 1.5,
+        layer: 'f'
+      });
+    }
+    setTimeout(() => {
+      n.style.transition = 'opacity 0.25s, transform 0.25s ease-in';
+      n.style.opacity = '0';
+      n.style.transform = `scale(1.25) rotate(${opt.rev ? -450 : 450}deg)`;
+    }, (dur - 0.25) * 1000);
+    setTimeout(() => n.remove(), dur * 1000 + 100);
+  },
+
+  hollowayAutumn(x, y, radius, opt) {
+    if (!this.front || this.reducedEffects) return;
+    opt = opt || {};
+    const rad = radius || 160;
+    const dur = opt.dur || 0.75;
+    const n = el('div');
+    n.style.cssText = `position:absolute;left:${x - rad}px;top:${y - rad}px;width:${rad * 2}px;height:${rad * 2}px;
+      border-radius:50%;pointer-events:none;z-index:7;opacity:0;
+      border: 2px solid rgba(245, 158, 11, 0.4);
+      background: radial-gradient(circle, rgba(217, 119, 6, 0.25) 0%, rgba(180, 83, 9, 0.1) 60%, transparent 75%);
+      box-shadow: 0 0 20px rgba(245, 158, 11, 0.4);
+      transform: scale(0.3) rotate(0deg);`;
+    this.front.appendChild(n);
+    requestAnimationFrame(() => {
+      n.style.transition = `transform ${dur}s ease-out, opacity 0.2s ease-out`;
+      n.style.opacity = '0.85';
+      n.style.transform = `scale(1) rotate(180deg)`;
+    });
+    const leaves = ['🍂', '🍁'];
+    const pCount = Math.min(10, Math.round(rad / 18));
+    for (let i = 0; i < pCount; i++) {
+      const ang = (i / pCount) * Math.PI * 2 + rnd(-0.2, 0.2);
+      this.floatIcon(x + Math.cos(ang) * (rad * 0.5), y + Math.sin(ang) * (rad * 0.4) - 20, pick(leaves), '#f59e0b');
+      this.part({
+        x: x + rnd(-rad * 0.5, rad * 0.5),
+        y: y + rnd(-rad * 0.3, rad * 0.3),
+        vx: rnd(-60, 60),
+        vy: rnd(-75, -20),
+        g: 25,
+        size: rnd(8, 16),
+        col: pick(['#f59e0b', '#d97706', '#b45309', '#fed7aa']),
+        life: rnd(0.5, 0.9),
+        drag: 1.8,
+        layer: 'f'
+      });
+    }
+    setTimeout(() => {
+      n.style.transition = 'opacity 0.3s, transform 0.3s ease-in';
+      n.style.opacity = '0';
+      n.style.transform = 'scale(1.2) rotate(240deg)';
+    }, (dur - 0.3) * 1000);
+    setTimeout(() => n.remove(), dur * 1000 + 100);
+  },
+
+  candyBurst(x, y, count) {
+    if (!this.front || this.reducedEffects) return;
+    const n = Math.min(count || 6, 12);
+    const candies = ['🍬', '🍭', '🍫', '🎃'];
+    for (let i = 0; i < n; i++) {
+      const angle = rnd(-Math.PI * 0.85, -Math.PI * 0.15);
+      const speed = rnd(60, 140);
+      this.part({
+        x: x + rnd(-10, 10),
+        y: y + rnd(-10, 10),
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        g: 110,
+        size: rnd(14, 22),
+        col: pick(['#ff9d4d', '#ff6b6b', '#ffd54d', '#c070ed']),
+        life: rnd(0.6, 1.1),
+        drag: 0.8,
+        layer: 'f'
+      });
+    }
+    Sound.play('candy_pop', { vol: 0.55, rate: rnd(0.9, 1.1), throttle: 120 });
+  },
+
+  /* Mrs. Holloway Spectral Spiral Explosion */
+  mrsHollowaySpiralExplosion(x, y, radius, opt) {
+    if (!this.front || this.reducedEffects) return;
+    opt = opt || {};
+    const rad = radius || 280;
+    const dur = opt.dur || 0.75;
+    const v = el('div', 'mrs-holloway-spiral-vortex');
+    v.style.cssText = `left:${x - rad}px;top:${y - rad}px;width:${rad * 2}px;height:${rad * 2}px;`;
+    v.innerHTML = `
+      <div class="spiral-vortex-core"></div>
+      <div class="spiral-vortex-ring r1"></div>
+      <div class="spiral-vortex-ring r2"></div>
+      <div class="spiral-vortex-ring r3"></div>
+    `;
+    this.front.appendChild(v);
+    requestAnimationFrame(() => v.classList.add('active'));
+
+    const runes = ['🌀', '✨', '💜', '🔮'];
+    const pCount = Math.min(16, Math.round(rad / 15));
+    for (let i = 0; i < pCount; i++) {
+      const ang = (i / pCount) * Math.PI * 2 + rnd(-0.2, 0.2);
+      const dist = rad * rnd(0.3, 0.75);
+      this.floatIcon(x + Math.cos(ang) * dist, y + Math.sin(ang) * dist - 15, pick(runes), '#d8b4fe');
+      this.part({
+        x: x + Math.cos(ang) * dist,
+        y: y + Math.sin(ang) * dist,
+        vx: Math.cos(ang + Math.PI / 2) * 65,
+        vy: Math.sin(ang + Math.PI / 2) * 65,
+        g: 0,
+        size: rnd(8, 18),
+        col: pick(['#f3e8ff', '#d8b4fe', '#c084fc', '#a855f7', '#7e22ce']),
+        life: rnd(0.45, 0.85),
+        drag: 1.2,
+        layer: 'f'
+      });
+    }
+
+    setTimeout(() => {
+      v.classList.remove('active');
+      v.classList.add('leaving');
+    }, Math.max(100, (dur - 0.25) * 1000));
+    setTimeout(() => v.remove(), dur * 1000 + 120);
+  },
+
+  /* Mrs. Holloway Phantom Apparition (A Familiar Face) */
+  mrsHollowayApparition(x, y) {
+    if (!this.front || this.reducedEffects) return;
+    const ap = el('div', 'mrs-holloway-apparition');
+    ap.style.cssText = `left:${x - 60}px;top:${y - 140}px;`;
+    ap.innerHTML = `
+      <div class="apparition-silhouette">
+        <div class="apparition-eyes">
+          <div class="apparition-eye"></div>
+          <div class="apparition-eye"></div>
+        </div>
+      </div>
+    `;
+    this.front.appendChild(ap);
+    requestAnimationFrame(() => ap.classList.add('active'));
+
+    // Expanding purple pulse waves
+    this.ring(x, y - 50, 260, '#c084fc', 0.6);
+    this.ring(x, y - 50, 340, '#a855f7', 0.8);
+
+    setTimeout(() => {
+      ap.classList.remove('active');
+      ap.classList.add('leaving');
+    }, 1100);
+    setTimeout(() => ap.remove(), 1550);
+  },
+
+  /* Mrs. Holloway Mother's Embrace Aura */
+  mrsHollowayEmbrace(x, y, dur) {
+    if (!this.front || this.reducedEffects) return;
+    const duration = dur || 2.5;
+    const ea = el('div', 'mrs-holloway-embrace-aura');
+    ea.style.cssText = `left:${x - 40}px;top:${y - 50}px;`;
+    ea.innerHTML = `
+      <div class="embrace-heart h1">💜</div>
+      <div class="embrace-heart h2">✨</div>
+    `;
+    this.front.appendChild(ea);
+    requestAnimationFrame(() => ea.classList.add('active'));
+
+    setTimeout(() => {
+      ea.classList.remove('active');
+      ea.classList.add('leaving');
+    }, Math.max(100, (duration - 0.25) * 1000));
+    setTimeout(() => ea.remove(), duration * 1000 + 100);
+  },
+
+  /* Mr. Holloway Ground Slam Earth Fissure (Harvest Crash) */
+  mrHollowayEarthCrash(x, y, radius) {
+    if (!this.front || this.reducedEffects) return;
+    const rad = radius || 240;
+    const gf = el('div', 'mr-holloway-ground-fissure');
+    gf.style.cssText = `left:${x - rad * 0.5}px;top:${y - 20}px;width:${rad}px;height:40px;`;
+
+    // Multiple jagged glowing cracks radiating outward
+    const angles = [-35, -15, 0, 18, 35];
+    angles.forEach(deg => {
+      const crack = el('div', 'fissure-crack');
+      const len = rad * rnd(0.35, 0.55);
+      crack.style.cssText = `left:50%;top:50%;width:${len}px;transform:rotate(${deg + rnd(-8, 8)}deg);`;
+      gf.appendChild(crack);
+    });
+
+    this.front.appendChild(gf);
+    requestAnimationFrame(() => gf.classList.add('active'));
+
+    // Flying autumn leaves & rock sparks
+    const leaves = ['🍁', '🍂'];
+    for (let i = 0; i < 8; i++) {
+      const ang = rnd(-Math.PI * 0.85, -Math.PI * 0.15);
+      const dist = rnd(30, rad * 0.45);
+      this.floatIcon(x + Math.cos(ang) * dist, y + Math.sin(ang) * dist - 15, pick(leaves), '#f59e0b');
+      this.part({
+        x: x + rnd(-30, 30),
+        y: y + rnd(-10, 10),
+        vx: Math.cos(ang) * rnd(60, 140),
+        vy: Math.sin(ang) * rnd(80, 160),
+        g: 130,
+        size: rnd(10, 20),
+        col: pick(['#f59e0b', '#d97706', '#b45309', '#fed7aa', '#78350f']),
+        life: rnd(0.5, 0.95),
+        drag: 0.9,
+        layer: 'f'
+      });
+    }
+
+    setTimeout(() => {
+      gf.classList.remove('active');
+      gf.classList.add('leaving');
+    }, 600);
+    setTimeout(() => gf.remove(), 950);
+  },
+
+  /* Mr. Holloway Autumn Cyclone (Autumn Downpour) */
+  mrHollowayAutumnCyclone(x, y, dur) {
+    if (!this.front || this.reducedEffects) return;
+    const duration = dur || 3.0;
+    const cyc = el('div', 'mr-holloway-autumn-cyclone');
+    cyc.style.cssText = `left:${x - 55}px;top:${y - 65}px;`;
+    this.front.appendChild(cyc);
+    requestAnimationFrame(() => cyc.classList.add('active'));
+
+    const leaves = ['🍂', '🍁'];
+    for (let i = 0; i < 6; i++) {
+      this.floatIcon(x + rnd(-40, 40), y + rnd(-50, 0), pick(leaves), '#f59e0b');
+    }
+
+    setTimeout(() => {
+      cyc.classList.remove('active');
+      cyc.classList.add('leaving');
+    }, Math.max(100, (duration - 0.3) * 1000));
+    setTimeout(() => cyc.remove(), duration * 1000 + 100);
+  },
+
+  /* Mr. Holloway Root Barricade (Rooted Resolve) */
+  mrHollowayRootBarrier(x, y, dur) {
+    if (!this.front || this.reducedEffects) return;
+    const duration = dur || 2.5;
+    const rb = el('div', 'mr-holloway-root-barricade');
+    rb.style.cssText = `left:${x - 48}px;top:${y - 35}px;`;
+    rb.innerHTML = `
+      <div class="root-tendril t1"></div>
+      <div class="root-tendril t2"></div>
+      <div class="root-tendril t3"></div>
+      <div class="root-tendril t4"></div>
+    `;
+    this.front.appendChild(rb);
+    requestAnimationFrame(() => rb.classList.add('active'));
+
+    this.ring(x, y - 20, 160, '#854d0e', 0.5);
+
+    setTimeout(() => {
+      rb.classList.remove('active');
+      rb.classList.add('leaving');
+    }, Math.max(100, (duration - 0.25) * 1000));
+    setTimeout(() => rb.remove(), duration * 1000 + 100);
+  },
+
+  /* Mr. Holloway Harvest Shield (Still Standing) */
+  mrHollowayHarvestShield(x, y, dur) {
+    if (!this.front || this.reducedEffects) return;
+    const duration = dur || 3.0;
+    const hs = el('div', 'mr-holloway-harvest-shield');
+    hs.style.cssText = `left:${x - 42}px;top:${y - 55}px;`;
+    hs.innerHTML = `<div class="harvest-shield-pumpkin">🎃</div>`;
+    this.front.appendChild(hs);
+    requestAnimationFrame(() => hs.classList.add('active'));
+
+    setTimeout(() => {
+      hs.classList.remove('active');
+      hs.classList.add('leaving');
+    }, Math.max(100, (duration - 0.25) * 1000));
+    setTimeout(() => hs.remove(), duration * 1000 + 100);
+  },
+
+  /* Mr. Holloway Heavy Claw Slash */
+  mrHollowayClawSlash(x, y, tx, ty) {
+    if (!this.front || this.reducedEffects) return;
+    const targetX = tx != null ? tx : x + 50;
+    const targetY = ty != null ? ty : y - 25;
+    const cs = el('div', 'mr-holloway-claw-slash');
+    cs.style.cssText = `left:${targetX - 32}px;top:${targetY - 32}px;`;
+    cs.innerHTML = `
+      <div class="claw-slash-trail c1"></div>
+      <div class="claw-slash-trail c2"></div>
+      <div class="claw-slash-trail c3"></div>
+    `;
+    this.front.appendChild(cs);
+    requestAnimationFrame(() => cs.classList.add('active'));
+
+    this.part({
+      x: targetX,
+      y: targetY,
+      vx: rnd(-40, 40),
+      vy: rnd(-50, -10),
+      g: 50,
+      size: rnd(10, 16),
+      col: '#f59e0b',
+      life: 0.45,
+      drag: 1.2,
+      layer: 'f'
+    });
+
+    setTimeout(() => {
+      cs.classList.remove('active');
+      cs.classList.add('leaving');
+    }, 180);
+    setTimeout(() => cs.remove(), 360);
+  },
+
+  /* Delilah Keen Ichor Contamination Burst */
+  delilahContaminationBurst(x, y, radius, opt) {
+    if (!this.front || this.reducedEffects) return;
+    opt = opt || {};
+    const rad = radius || 180;
+    const dur = opt.dur || 0.65;
+    const v = el('div', 'delilah-contamination-burst');
+    v.style.cssText = `left:${x - rad}px;top:${y - rad}px;width:${rad * 2}px;height:${rad * 2}px;`;
+    v.innerHTML = `
+      <div class="contamination-core"></div>
+      <div class="contamination-shockwave s1"></div>
+      <div class="contamination-shockwave s2"></div>
+      <div class="contamination-mist"></div>
+    `;
+    this.front.appendChild(v);
+    requestAnimationFrame(() => v.classList.add('active'));
+
+    const runes = ['☣️', '🧪', '💜', '⚡'];
+    const pCount = Math.min(14, Math.round(rad / 14));
+    for (let i = 0; i < pCount; i++) {
+      const ang = (i / pCount) * Math.PI * 2 + rnd(-0.25, 0.25);
+      const dist = rad * rnd(0.25, 0.7);
+      this.floatIcon(x + Math.cos(ang) * dist, y + Math.sin(ang) * dist - 10, pick(runes), '#caa2ff');
+      this.part({
+        x: x + Math.cos(ang) * dist,
+        y: y + Math.sin(ang) * dist,
+        vx: Math.cos(ang) * rnd(40, 90),
+        vy: Math.sin(ang) * rnd(40, 90),
+        g: 20,
+        size: rnd(8, 16),
+        col: pick(['#caa2ff', '#bd82ff', '#00e5a3', '#10b981', '#3b0764']),
+        life: rnd(0.4, 0.75),
+        drag: 1.25,
+        layer: 'f'
+      });
+    }
+
+    setTimeout(() => {
+      v.classList.remove('active');
+      v.classList.add('leaving');
+    }, Math.max(100, (dur - 0.2) * 1000));
+    setTimeout(() => v.remove(), dur * 1000 + 100);
+  },
+
+  /* Delilah Keen Containment Stasis Cell */
+  delilahContainmentStasis(x, y, dur) {
+    if (!this.front || this.reducedEffects) return;
+    const duration = dur || 3.5;
+    const cell = el('div', 'delilah-containment-stasis');
+    cell.style.cssText = `left:${x - 48}px;top:${y - 95}px;`;
+    cell.innerHTML = `
+      <div class="containment-stasis-ring top"></div>
+      <div class="containment-stasis-bars">
+        <div class="bar b1"></div>
+        <div class="bar b2"></div>
+        <div class="bar b3"></div>
+        <div class="bar b4"></div>
+      </div>
+      <div class="containment-stasis-ring bot"></div>
+      <div class="containment-stasis-glyph">⛓️</div>
+    `;
+    this.front.appendChild(cell);
+    requestAnimationFrame(() => cell.classList.add('active'));
+
+    this.ring(x, y - 40, 110, '#bd82ff', 0.45);
+    this.ring(x, y - 40, 140, '#00e5a3', 0.6);
+
+    setTimeout(() => {
+      cell.classList.remove('active');
+      cell.classList.add('leaving');
+    }, Math.max(150, (duration - 0.3) * 1000));
+    setTimeout(() => cell.remove(), duration * 1000 + 120);
+  },
+
+  /* Delilah Keen Ichor Spill Pool */
+  delilahIchorSpill(x, y, dur) {
+    if (!this.back || this.reducedEffects) return;
+    const duration = dur || 8.0;
+    const pool = el('div', 'delilah-ichor-pool');
+    pool.style.cssText = `left:${x - 65}px;top:${y - 25}px;`;
+    pool.innerHTML = `
+      <div class="ichor-pool-liquid"></div>
+      <div class="ichor-pool-bubble b1"></div>
+      <div class="ichor-pool-bubble b2"></div>
+      <div class="ichor-pool-bubble b3"></div>
+    `;
+    this.back.appendChild(pool);
+    requestAnimationFrame(() => pool.classList.add('active'));
+
+    setTimeout(() => {
+      pool.classList.remove('active');
+      pool.classList.add('leaving');
+    }, Math.max(200, (duration - 0.5) * 1000));
+    setTimeout(() => pool.remove(), duration * 1000 + 100);
+  },
+
+  /* Shelly Prehistoric Fossil Excavation */
+  shellyFossilExcavation(x, y, radius, opt) {
+    if (!this.front || this.reducedEffects) return;
+    opt = opt || {};
+    const rad = radius || 260;
+    const dur = opt.dur || 0.85;
+    const v = el('div', 'shelly-fossil-matrix');
+    v.style.cssText = `left:${x - rad}px;top:${y - rad}px;width:${rad * 2}px;height:${rad * 2}px;`;
+    v.innerHTML = `
+      <div class="fossil-matrix-core"></div>
+      <div class="fossil-matrix-strata r1"></div>
+      <div class="fossil-matrix-strata r2"></div>
+      <div class="fossil-matrix-strata r3"></div>
+      <div class="fossil-matrix-amber"></div>
+    `;
+    this.front.appendChild(v);
+    requestAnimationFrame(() => v.classList.add('active'));
+
+    const runes = ['🐚', '🦴', '🦖', '🔍', '✨', '💎'];
+    const pCount = Math.min(16, Math.round(rad / 16));
+    for (let i = 0; i < pCount; i++) {
+      const ang = (i / pCount) * Math.PI * 2 + rnd(-0.2, 0.2);
+      const dist = rad * rnd(0.25, 0.75);
+      this.floatIcon(x + Math.cos(ang) * dist, y + Math.sin(ang) * dist - 12, pick(runes), '#d8b579');
+      this.part({
+        x: x + Math.cos(ang) * dist,
+        y: y + Math.sin(ang) * dist,
+        vx: Math.cos(ang) * rnd(45, 95),
+        vy: Math.sin(ang) * rnd(45, 95) - 20,
+        g: 35,
+        size: rnd(10, 18),
+        col: pick(['#fef08a', '#f59e0b', '#d97706', '#d8b579', '#78350f']),
+        life: rnd(0.45, 0.8),
+        drag: 1.2,
+        layer: 'f'
+      });
+    }
+
+    setTimeout(() => {
+      v.classList.remove('active');
+      v.classList.add('leaving');
+    }, Math.max(120, (dur - 0.25) * 1000));
+    setTimeout(() => v.remove(), dur * 1000 + 100);
+  },
+
+  /* Shelly Relentless Inspiration Whistle */
+  shellyInspirationWhistle(x, y, dur) {
+    if (!this.front || this.reducedEffects) return;
+    const duration = dur || 2.5;
+    const w = el('div', 'shelly-inspiration-aura');
+    w.style.cssText = `left:${x - 55}px;top:${y - 65}px;`;
+    w.innerHTML = `
+      <div class="inspiration-sun-core"></div>
+      <div class="inspiration-radiance-ring"></div>
+      <div class="inspiration-whistle-glyph">🌞</div>
+    `;
+    this.front.appendChild(w);
+    requestAnimationFrame(() => w.classList.add('active'));
+
+    this.ring(x, y - 40, 220, '#f59e0b', 0.55);
+    this.ring(x, y - 40, 320, '#fef08a', 0.7);
+
+    setTimeout(() => {
+      w.classList.remove('active');
+      w.classList.add('leaving');
+    }, Math.max(150, (duration - 0.4) * 1000));
+    setTimeout(() => w.remove(), duration * 1000 + 100);
+  },
+
+  /* Shelly Prehistoric Amber Stasis */
+  shellyAmberStasis(x, y, dur) {
+    if (!this.front || this.reducedEffects) return;
+    const duration = dur || 3.5;
+    const gem = el('div', 'shelly-amber-stasis');
+    gem.style.cssText = `left:${x - 45}px;top:${y - 85}px;`;
+    gem.innerHTML = `
+      <div class="amber-stasis-facet f1"></div>
+      <div class="amber-stasis-facet f2"></div>
+      <div class="amber-stasis-crystal">💎</div>
+    `;
+    this.front.appendChild(gem);
+    requestAnimationFrame(() => gem.classList.add('active'));
+
+    this.ring(x, y - 35, 110, '#fef08a', 0.45);
+    this.ring(x, y - 35, 145, '#f59e0b', 0.6);
+
+    setTimeout(() => {
+      gem.classList.remove('active');
+      gem.classList.add('leaving');
+    }, Math.max(150, (duration - 0.3) * 1000));
+    setTimeout(() => gem.remove(), duration * 1000 + 120);
+  }
 };
+

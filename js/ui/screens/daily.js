@@ -91,6 +91,21 @@ Object.assign(Screens, {
     });
     s.appendChild(oc);
 
+    // Draw Gourdy's Parents Event Card
+    this.section(s, "FADED MEMORIES · DRAW GOURDY'S PARENTS");
+    const dpc = el('button', 'card tap wide scratch-preview');
+    dpc.style.background = 'linear-gradient(135deg, rgba(58, 25, 84, 0.9), rgba(28, 17, 34, 0.95))';
+    dpc.style.borderColor = 'rgba(192, 112, 237, 0.4)';
+    const dpState = DrawParents.state();
+    dpc.innerHTML = `<div class="scratch-preview-burst" style="background:#c070ed">🎨</div><div class="row">
+      <img src="${Art.icon('MrsHolloway')}" alt="Mrs. Holloway" class="scratch-preview-hero">
+      <img src="${Art.icon('MrHolloway')}" alt="Mr. Holloway" class="scratch-preview-hero">
+      <div class="grow" style="text-align:left"><small>SPECIAL EVENT · 50 🎟 / CLICK</small><div class="b">Draw Gourdy's Parents</div>
+      <div class="tiny muted">${Math.round(dpState.progress)}% sketched · 5% Memory Locket, 2% Shards, 0.1% Full Recruit!</div></div>
+      <div class="scratch-ticket-count" style="color:#ffd8a8">🎟 <b>${Save.res('ticket')}</b></div></div>`;
+    dpc.onclick = () => this.openDrawParents();
+    s.appendChild(dpc);
+
     // Scratch Tickets
     this.section(s, 'PRIZE PARADE');
     const sc = el('button', 'card tap wide scratch-preview');
@@ -101,7 +116,7 @@ Object.assign(Screens, {
       ${heroes.map(h => `<img src="${Art.icon(h)}" alt="" class="scratch-preview-hero">`).join('')}
       <div class="grow" style="text-align:left"><small>ALWAYS OPEN · CARD #${Scratch.cardNumber()}</small><div class="b">${heroes.map(h => HEROES[h].name).join(' & ')}</div>
       <div class="tiny muted">${scratch.jackpot ? 'Jackpot claimed. Flip a fresh card anytime!' : panelsLeft + ' prize panels left. Find the grand prize!'} · Mastery ${scratch.rewardMastery} prizes ×${Scratch.rewardMultiplier().toFixed(2)}</div></div>
-      <div class="scratch-ticket-count">🎟 <b>${Save.res('tape')}</b></div></div>`;
+      <div class="scratch-ticket-count">🎟 <b>${Save.res('ticket')}</b></div></div>`;
     sc.onclick = () => this.openScratch();
     s.appendChild(sc);
 
@@ -146,8 +161,8 @@ Object.assign(Screens, {
     const info = el('div', 'scratch-modal-head');
     info.innerHTML = `<div class="scratch-modal-stars">✦ ✦ ✦</div><div class="scratch-modal-title">PRIZE PARADE</div>
       <div class="scratch-modal-feature">${heroes.map(h => `<img src="${Art.icon(h)}" alt="">`).join('')}<span>Grand prize: ${heroes.map(h => HEROES[h].name).join(' & ')} shards</span></div>
-      <div class="scratch-modal-copy">One tape flips one panel. Every card has a huge shard jackpot, premium supply prizes, and a Mastery ${st.rewardMastery} boost of ×${Scratch.rewardMultiplier().toFixed(2)}. It refreshes instantly when you find the jackpot.</div>
-      <div class="scratch-modal-tapes">🎟 <b>${Save.res('tape')}</b> tapes</div>`;
+      <div class="scratch-modal-copy">One ticket flips one panel. Every card has a huge shard jackpot, premium supply prizes, and a Mastery ${st.rewardMastery} boost of ×${Scratch.rewardMultiplier().toFixed(2)}. It refreshes instantly when you find the jackpot.</div>
+      <div class="scratch-modal-tapes">🎟 <b>${Save.res('ticket')}</b> tickets</div>`;
     body.appendChild(info);
     body.appendChild(el('div', 'spacer'));
 
@@ -156,6 +171,8 @@ Object.assign(Screens, {
     const cardActions = el('div');
     const draw = () => {
       clear(grid);
+      const ticketCount = $('.scratch-modal-tapes b', info);
+      if (ticketCount) ticketCount.textContent = fmt(Save.res('ticket'));
       board.forEach((cell, i) => {
         const rev = st.revealed.includes(i);
         const c = el('div', 'scrcell' + (rev ? ' rev' : '') + (rev && cell.jackpot ? ' jack' : ''));

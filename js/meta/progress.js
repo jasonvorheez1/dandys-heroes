@@ -22,7 +22,7 @@ const Progress = {
       Save.spend(cost);
       h.level++; done++;
     }
-    if (done) { Sound.play('sparkle'); this.checkTrinketMilestone(id); Save.addMasteryXp(done * 3); Achievements.record('heroLevel', done); Save.write(); }
+    if (done) { if (!this._bulkQuiet) Sound.play('sparkle'); this.checkTrinketMilestone(id); Save.addMasteryXp(done * 3, !!this._bulkQuiet); Achievements.record('heroLevel', done); Save.write(); }
     return done;
   },
 
@@ -34,7 +34,6 @@ const Progress = {
       const cost = { ichor: levelCost(h.level), exp: levelExp(h.level) };
       if (!Save.can(cost)) break;
       Save.spend(cost); h.level++; n++;
-      if (n > 500) break;
     }
     if (n) { Sound.play('sparkle'); UI.toast('+' + n + ' levels'); this.checkTrinketMilestone(id); Save.addMasteryXp(n * 3); Achievements.record('heroLevel', n); }
     else UI.toast(h.level >= this.levelCap() ? 'Mastery cap reached' : 'Not enough resources');
@@ -54,15 +53,19 @@ const Progress = {
       h.trinketMilestone = (h.trinketMilestone || 0) + 1;
       owners.forEach(tid => {
         const res = Save.addTrinketCopy(tid);
-        if (res === 'new') { UI.toast('🔧 ' + TRINKETS[tid].name + ' unlocked!'); Sound.play('get_rare'); }
-        else { UI.toast('🔧 +1 ' + TRINKETS[tid].name); Sound.play('get_item'); }
+        if (!this._bulkQuiet) {
+          if (res === 'new') { UI.toast('🔧 ' + TRINKETS[tid].name + ' unlocked!'); Sound.play('get_rare'); }
+          else { UI.toast('🔧 +1 ' + TRINKETS[tid].name); Sound.play('get_item'); }
+        }
       });
     }
   },
 
   starCost(id) {
     const h = Save.hero(id);
-    if (h.stars >= 5) return null;
+    // Event shops show shards for featured Heroes before they are recruited.
+    // Those offers use unlock progress instead of a promotion quote.
+    if (!h || h.stars >= 5) return null;
     // Shard rewards grow with account Mastery. Scale the shard side of a
     // promotion by that same curve so high-Mastery rewards do not make every
     // star-up progressively cheaper in real play. Ichor stays on its own
@@ -73,21 +76,22 @@ const Progress = {
     const masteryShardBoost = this.promotionShardMultiplier();
     return {
       shards: Math.max(1, Math.round(STAR_COST[h.stars] * m * masteryShardBoost)),
-      ichor: Math.round(STAR_ICHOR[h.stars] * m)
+      ichor: Math.round(STAR_ICHOR[h.stars] * m),
+      star: Math.max(1, Math.round(STAR_DUST_COST[h.stars] * m * masteryShardBoost))
     };
   },
   promotionShardMultiplier(mastery) { return masteryRewardMultiplier(mastery); },
   canStar(id) {
     const c = this.starCost(id); if (!c) return false;
     const h = Save.hero(id);
-    return h.shards >= c.shards && Save.res('ichor') >= c.ichor;
+    return h.shards >= c.shards && Save.can({ ichor: c.ichor, star: c.star });
   },
   starUp(id) {
     if (!this.canStar(id)) return false;
     const h = Save.hero(id), c = this.starCost(id);
-    h.shards -= c.shards; Save.spend({ ichor: c.ichor });
+    h.shards -= c.shards; Save.spend({ ichor: c.ichor, star: c.star });
     h.stars++;
-    Sound.play('get_rare'); UI.toast('⭐ ' + HEROES[id].name + ' is now ' + h.stars + '-star');
+    if (!this._bulkQuiet) { Sound.play('get_rare'); UI.toast('⭐ ' + HEROES[id].name + ' is now ' + h.stars + '-star'); }
     Save.write(); return true;
   },
 
@@ -109,7 +113,7 @@ const Progress = {
     h.rarity = next.tier; h.rarityPlus = next.plus;
     const rank = rarityRank(next.tier, next.plus);
     const k = next.plus === 1 ? SKILL_ORDER.find(x => SKILL_RARITY[x] === next.tier) : null;
-    Sound.play('get_rare');
+    if (!this._bulkQuiet) Sound.play('get_rare');
     if (next.tier === 6 && next.plus === 1) {
       h.rainbowUnlocked = true;
       h.classRanks = h.classRanks || {}; h.subclassRanks = h.subclassRanks || {};
@@ -117,17 +121,16 @@ const Progress = {
       h.subcls2 = Object.keys(SUBCLASSES).find(k => k !== h.subcls) || null;
       if (h.cls2 && !h.classRanks[h.cls2]) h.classRanks[h.cls2] = 1;
       if (h.subcls2 && !h.subclassRanks[h.subcls2]) h.subclassRanks[h.subcls2] = 1;
-      UI.toast('🌈 Rainbow 1: Reforged Class path unlocked');
+      if (!this._bulkQuiet) UI.toast('🌈 Rainbow 1: Reforged Class path unlocked');
     } else {
-      UI.toast(rarityLabel(h.rarity, h.rarityPlus) + ': ' + (k && HEROES[id].skills[k] ? HEROES[id].skills[k].name + ' unlocked' : 'stats increased'));
+      if (!this._bulkQuiet) UI.toast(rarityLabel(h.rarity, h.rarityPlus) + ': ' + (k && HEROES[id].skills[k] ? HEROES[id].skills[k].name + ' unlocked' : 'stats increased'));
     }
     Save.write(); return true;
   },
 
   skillCap(id) {
-    const h = Save.hero(id);
-    // a skill can never exceed the hero's level, and never exceeds 450
-    return Math.min(450, Math.max(1, h.level));
+    if (!Save.hero(id)) return 1;
+    return clamp(Math.floor(Number(Save.data.mastery) || 1), 1, SKILL_MAX_LEVEL);
   },
   skillUp(id, key, times) {
     const h = Save.hero(id);
@@ -138,7 +141,7 @@ const Progress = {
       if (!Save.can(c)) break;
       Save.spend(c); h.skills[key]++; n++;
     }
-    if (n) { Sound.play('get_item'); Save.write(); }
+    if (n) { if (!this._bulkQuiet) Sound.play('get_item'); Save.write(); }
     else if (h.skills[key] >= this.skillCap(id)) UI.toast('Skill is at the level cap');
     else {
       const cost = skillCost(h.skills[key]);
@@ -322,9 +325,14 @@ const Progress = {
     const tank = d.role === 'Tank';
     const hpWeight = tank ? .075 : .105;
     const defenseWeight = tank ? .58 : .78;
-    const stats = value('hp') * hpWeight + value('atk') * 1.15 + value('mag') * 1.15 +
+    const rawStats = value('hp') * hpWeight + value('atk') * 1.15 + value('mag') * 1.15 +
       value('def') * defenseWeight + value('mdef') * defenseWeight + value('spd') * .18 +
       value('acc') * .08 + value('eva') * .08;
+    // A support's lower personal damage buys team-wide buffs, heals, and
+    // control. Rate those contributions without pretending their Attack stat
+    // is as important as a damage dealer's. Tanks also protect other slots.
+    const roleFactor = { Support: 1.40, Tank: 1.16, Control: 1.05, Damage: 1 }[d.role] || 1;
+    const stats = rawStats * roleFactor;
 
     // Skills are worth something because they are unlocked, not merely
     // because a fresh save contains placeholder level-1 fields for them.
@@ -333,7 +341,10 @@ const Progress = {
       if (!d.skills[key] || h.rarity < SKILL_RARITY[key]) return;
       unlocked++;
       const level = Math.max(1, Number(h.skills[key]) || 1);
-      skills += 72 + level * 3.7;
+      // Skill coefficients multiply a Hero's combat stats. Give trained
+      // skills more rating as the Hero grows, while a level-1 skill never
+      // gains power just because its owner gained levels.
+      skills += 72 + (skillMult(level) - 1) * 330 * (1 + (lv - 1) / 95);
     });
 
     // Rarity already participates in the real stat multiplier above. This
@@ -347,7 +358,7 @@ const Progress = {
       const copy = typeof worn === 'string' ? (Save.data.trinketInv || {})[worn] : worn;
       if (!copy) return score;
       const rank = clamp(Number(copy.rank) || 1, 1, typeof TRINKET_MAX_RANK === 'number' ? TRINKET_MAX_RANK : 3);
-      return score + 42 + rank * 48;
+      return score + trinketPowerScore(rank);
     }, 0);
     const badge = Save.equippedBadges(id).reduce((score,bid)=>score+Save.badgeLvl(bid)*42,0);
     const primaryClass = this.classRank(id), primarySubclass = this.subclassRank(id);
@@ -355,7 +366,8 @@ const Progress = {
     const secondSubclass = h.subcls2 ? this.subclassRank(id, h.subcls2) : 0;
     const training = primaryClass * 52 + primarySubclass * 38 + secondClass * 22 + secondSubclass * 16;
     const total = Math.round(stats + skills + rarityScore + tierScore + gear + badge + training);
-    return { total, stats: Math.round(stats), skills: Math.round(skills), rarity: Math.round(rarityScore),
+    return { total, stats: Math.round(stats), rawStats: Math.round(rawStats), roleFactor,
+      skills: Math.round(skills), rarity: Math.round(rarityScore),
       training: Math.round(training), gear, badge, tier: tierScore, unlocked, level: lv };
   },
   power(id) { return this.powerBreakdown(id).total; },
@@ -373,14 +385,24 @@ const Progress = {
   teamPower(ids) {
     return this.teamPowerBreakdown(ids).total;
   },
-  /** A readable team-power target for stage selection screens. This is a
-      guidance number, not an entry gate: mechanics and team composition still
-      matter, but players can now see the rough investment a stage expects. */
+  /** A readable five-Hero team target at an enemy level. Skills and rarity
+      raise real teams above their level, so the curve is guidance, not a gate. */
   recommendedPower(level, options) {
     options = options || {};
     const stageLevel = Math.max(1, Number(level) || 1);
     const factor = Math.max(.5, Number(options.factor) || 1);
-    return Math.max(1, Math.round(stageLevel * 400 * factor));
+    const core = Math.min(stageLevel, 800);
+    const perHero = 800 + 150 * core + .65 * core * core + Math.max(0, stageLevel - 800) * 1190;
+    return Math.max(1, Math.round(perHero * 5 * factor));
+  },
+  /** Convert a whole team's rating back to an approximate encounter level.
+      Depths uses this inverse so changing the display scale does not turn
+      a stronger-looking team into a thousands-of-levels difficulty jump. */
+  powerEquivalentLevel(teamPower) {
+    const perHero = Math.max(0, Number(teamPower) || 0) / 5;
+    const at800 = 800 + 150 * 800 + .65 * 800 * 800;
+    if (perHero >= at800) return 800 + (perHero - at800) / 1190;
+    return Math.max(1, (-150 + Math.sqrt(150 * 150 + 2.6 * Math.max(0, perHero - 800))) / 1.3);
   },
 
   /** Best five owned heroes with a sane role spread. */

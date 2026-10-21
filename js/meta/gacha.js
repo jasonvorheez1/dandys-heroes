@@ -11,6 +11,43 @@ const Gacha = {
     const c = Save.data.crates;
     return clamp(1 + Math.floor(((Number(c.goldPulls) || 0) + (Number(c.diamondPulls) || 0) + (Number(c.mainPulls) || 0) * 2) / 40), 1, 20);
   },
+  projectedCrateLevel(extra = 0) {
+    const c = Save.data.crates;
+    const opened = (Number(c.goldPulls) || 0) + (Number(c.diamondPulls) || 0) + (Number(c.mainPulls) || 0) * 2;
+    const held = Save.res('gold') + Save.res('diamond') + Save.res('main') * 2;
+    return clamp(1 + Math.floor((opened + held + extra) / 40), 1, 20);
+  },
+  /** What one Star Dust can return through the counter's Gold Crates. The
+      counter charges four times the cache, and reveal prizes are included. */
+  starCashRate(level = this.projectedCrateLevel()) {
+    const gold = this.supplyCache('gold', level);
+    const expectedStars = gold.star + .16 * this.rewardValue(310, 'gold', level);
+    const netStars = Math.max(1, Math.ceil(gold.star * 4) - expectedStars);
+    const expectedIchor = gold.ichor + .02 * this.rewardValue(18500, 'gold', level);
+    return expectedIchor / netStars;
+  },
+  crateLiquidValue(kind, level = this.projectedCrateLevel()) {
+    const cache = this.supplyCache(kind, level);
+    const ichorChance = kind === 'gold' ? .02 : kind === 'diamond' ? .01 : .015;
+    const starChance = kind === 'gold' ? .16 : kind === 'diamond' ? .11 : .05;
+    const ichor = cache.ichor + ichorChance * this.rewardValue(18500, kind, level);
+    const star = cache.star + starChance * this.rewardValue(310, kind, level);
+    return ichor + star * this.starCashRate(level);
+  },
+  /** Approximate liquid Ichor value of one ticket, including its Star Dust
+      and crate prizes plus the occasional extra ticket. */
+  ticketLiquidValue(level = this.projectedCrateLevel()) {
+    const mastery = this.mastery();
+    const scratchScale = masteryRewardMultiplier(mastery) * scratchRewardMultiplier(mastery);
+    const prizeChance = 5 / 84; // non-jackpot panels seen before finding the jackpot
+    const prizes = 28000 * scratchScale + 1025 * scratchScale * this.starCashRate(level)
+      + 1.5 * this.crateLiquidValue('gold', level)
+      + this.crateLiquidValue('diamond', level)
+      + this.crateLiquidValue('main', level);
+    // The ticket panel returns 2–4 tickets; a Main Crate adds one more.
+    const repeatFactor = 1 / (1 - 4 * prizeChance);
+    return prizes * prizeChance * repeatFactor;
+  },
   nextLevelAt() {
     const c = Save.data.crates;
     const total = (Number(c.goldPulls) || 0) + (Number(c.diamondPulls) || 0) + (Number(c.mainPulls) || 0) * 2;
@@ -41,7 +78,7 @@ const Gacha = {
     };
     if (kind === 'diamond') cache.core = this.rewardValue(1, kind, level);
     if (kind === 'main') Object.assign(cache, {
-      core: this.rewardValue(2, kind, level), tape: this.rewardValue(1, kind, level), raidTicket: this.rewardValue(1, kind, level)
+      core: this.rewardValue(2, kind, level), ticket: 1, raidTicket: this.rewardValue(1, kind, level)
     });
     return cache;
   },
@@ -122,12 +159,24 @@ const Gacha = {
     return out;
   },
 
-  /* Buying crates with Ichor is the sink that makes Ichor matter late. */
-  buyCost(kind, n) { return { ichor: (kind === 'main' ? 18000 : kind === 'diamond' ? 7500 : 2700) * n }; }
+  /* A purchased crate pays back Ichor, Star Dust, and Scratch Tickets.
+     Price above both liquid returns. Count held crates too, so buying a pile
+     before opening cannot lock in an early price for late-level rewards. */
+  buyCost(kind, n) {
+    if (!['gold', 'diamond', 'main'].includes(kind)) return { ichor: 0 };
+    let cost = 0;
+    for (let i = 0, count = Math.max(0, Math.floor(Number(n) || 0)); i < count; i++) {
+      const level = this.projectedCrateLevel(i * (kind === 'main' ? 2 : 1));
+      const cache = this.supplyCache(kind, level);
+      const ticketCash = (cache.ticket || 0) * this.ticketLiquidValue(level);
+      cost += Math.ceil((this.crateLiquidValue(kind, level) + ticketCash) * 1.35 + 1500);
+    }
+    return { ichor: cost };
+  }
 };
 
-/* ============================================================ SCRATCH tapeS */
-/* An always-open prize board. tapes are earned through play, then spent
+/* ============================================================ SCRATCH TICKETS */
+/* An always-open prize board. Tickets are earned through play, then spent
    whenever the player wants - no calendar lockout and no dead seventh day. */
 /* Scratch cards are a high-excitement reward source. Their Mastery curve sits
    on top of the shared reward curve: the card locks its Mastery when opened,
@@ -159,7 +208,7 @@ const Scratch = {
    * A card's jackpot target is part of that card, not the weekly feature.
    * Shuffle the eligible roster into a new deterministic lineup each cycle:
    * refreshing cannot reroll a prize, while completing cards cannot leave one
-   * Hero (notably the first weekly scratch pick) on every tape.
+   * Hero (notably the first weekly scratch pick) on every ticket.
    */
   heroes() {
     const s = this.state();
@@ -185,7 +234,7 @@ const Scratch = {
     const reward = value => scratchRewardValue(value, s.rewardMastery);
     // One huge Hero jackpot, plus supply panels that feel like a real pull.
     // Each amount is intentionally well above an ordinary battle payout: a
-    // tape is a prize-board commitment, not a minor consumable drip.
+    // ticket is a prize-board commitment, not a minor consumable drip.
     const jackIdx = rng.i(0, this.CELLS - 1);
     for (let i = 0; i < this.CELLS; i++) {
       if (i === jackIdx && heroes.length) {
@@ -197,13 +246,15 @@ const Scratch = {
           { res: 'tape', n: reward(rng.i(160, 460)) },
           { res: 'notes', n: reward(rng.i(130, 380)) },
           { res: 'star', n: reward(rng.i(550, 1500)) },
-          { res: 'gold', n: reward(rng.i(2, 4)) },
-          { res: 'diamond', n: reward(rng.i(2, 3)) },
-          { res: 'main', n: reward(1) },
+          { res: 'gold', n: rng.i(1, 2) },
+          { res: 'diamond', n: 1 },
+          { res: 'main', n: 1 },
           { res: 'core', n: reward(rng.i(3, 7)) },
           { res: 'manual', n: reward(rng.i(45, 115)) },
           { res: 'exp', n: reward(rng.i(18000, 52000)) },
-          { res: 'tape', n: reward(rng.i(3, 7)) },
+          // Tickets are not Mastery-multiplied: a self-replacing ticket panel
+          // would make the repeatable board generate unlimited free flips.
+          { res: 'ticket', n: rng.i(2, 4) },
           { res: 'raidTicket', n: reward(rng.i(1, 3)) }
         ]));
       }
@@ -392,9 +443,9 @@ const Daily = {
   ORDERS: [
     { need: 1, label: 'Win 1 battle', reward: { ichor: 1800, tape: 18, notes: 8, exp: 1200 } },
     { need: 3, label: 'Win 3 battles', reward: { ichor: 2800, star: 75, tape: 30, gold: 1, manual: 8 } },
-    { need: 6, label: 'Win 6 battles', reward: { ichor: 5200, exp: 2800, notes: 18, tape: 1, manual: 15 } },
+    { need: 6, label: 'Win 6 battles', reward: { ichor: 5200, exp: 2800, notes: 18, ticket: 1, manual: 15 } },
     { need: 10, label: 'Win 10 battles', reward: { ichor: 7600, star: 150, tape: 48, gold: 1, core: 1, manual: 22 } },
-    { need: 15, label: 'Win 15 battles', reward: { ichor: 12000, exp: 6500, star: 250, diamond: 1, tape: 2, manual: 32 } }
+    { need: 15, label: 'Win 15 battles', reward: { ichor: 12000, exp: 6500, star: 250, diamond: 1, ticket: 2, manual: 32 } }
   ],
   mastery() {
     const d = this.state();

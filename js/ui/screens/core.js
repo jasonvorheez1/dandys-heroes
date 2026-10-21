@@ -355,8 +355,9 @@ const Screens = {
       n.onclick = locked ? () => this.showModeGate(mode) : fn; return n;
     };
     collectGrid.appendChild(collectCard('📅', 'Daily', passiveReady ? 'Free cache ready' : ordersReady ? 'Order ready' : Daily.available() ? 'Delivery ready' : `${orders.wins} wins`, passiveReady || ordersReady || Daily.available(), () => Screens.go('events'), null, '!'));
-    const tapeCount = Save.res('tape');
-    collectGrid.appendChild(collectCard('🎟', 'Scratch', tapeCount > 0 ? `${tapeCount} tape${tapeCount === 1 ? '' : 's'}` : '0 tapes', tapeCount > 0, () => { Screens.go('events'); setTimeout(() => Screens.openScratch(), 60); }, null, tapeCount > 0 ? tapeCount : null));
+    const ticketCount = Save.res('ticket');
+    collectGrid.appendChild(collectCard('🎟', 'Scratch', ticketCount > 0 ? `${ticketCount} ticket${ticketCount === 1 ? '' : 's'}` : '0 tickets', ticketCount > 0, () => { Screens.go('events'); setTimeout(() => Screens.openScratch(), 60); }, null, ticketCount > 0 ? ticketCount : null));
+    collectGrid.appendChild(collectCard('🎨', 'Draw', ticketCount > 0 ? `${ticketCount} 🎟 held` : 'Sketchbook', ticketCount > 0, () => Screens.openDrawParents(), null, ticketCount > 0 ? '✏️' : null));
     const crateCount = Save.res('gold') + Save.res('diamond') + Save.res('main');
     collectGrid.appendChild(collectCard('📦', 'Crates', crateCount > 0 ? `${crateCount} held` : '0 held', crateCount > 0, () => Screens.go('crates'), 'crates', crateCount > 0 ? crateCount : null));
     collectGrid.appendChild(collectCard('📜', 'Pass', passReady ? `${passReady} reward${passReady === 1 ? '' : 's'}` : passInfo.complete ? 'Complete' : `Lv ${passInfo.lv}/${passInfo.max}`, passReady > 0, () => Screens.openPass('home'), 'pass', passReady > 0 ? passReady : null));
@@ -385,9 +386,17 @@ const Screens = {
     const mastery = el('section', 'home-mastery');
     const masteryNeed = Save.masteryNeed(d.mastery);
     const masteryPct = Math.min(100, Math.round((d.masteryXp / masteryNeed) * 100));
-    mastery.innerHTML = `<header><i>🏅</i><span class="grow"><small>ACCOUNT PROGRESS</small><b>MASTERY ${d.mastery}</b></span><span class="home-mastery-meta"><em>${masteryPct}%</em><small>CAP ${cap}</small></span></header>`;
+    mastery.innerHTML = `<header><i>🏅</i><span class="grow"><small>ACCOUNT PROGRESS · TRAIN</small><b>MASTERY ${d.mastery}</b></span><span class="home-mastery-meta"><em>${masteryPct}%</em><small>CAP ${cap}</small></span></header>`;
     mastery.appendChild(UI.bar(d.masteryXp / masteryNeed, 'linear-gradient(90deg,#ff5b7f,#ffc94d)'));
     mastery.appendChild(el('div', 'home-mastery-copy', d.mastery < cap ? `${fmt(d.masteryXp)} / ${fmt(masteryNeed)} XP · Next: ${Object.keys(reward).filter(k => RES[k]).map(k => RES[k].icon + fmt(reward[k])).join(' ')}` : 'Recruit more Heroes to raise the account cap.'));
+    mastery.classList.add('tap');
+    mastery.tabIndex = 0;
+    mastery.setAttribute('role', 'button');
+    mastery.setAttribute('aria-label', 'Open Mastery training');
+    mastery.onclick = () => this.openMasteryTraining();
+    mastery.onkeydown = event => {
+      if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); this.openMasteryTraining(); }
+    };
     hub.appendChild(mastery);
     const settings = el('button', 'home-settings', '⚙ Settings & Save Data'); settings.onclick = () => this.openSettings(); hub.appendChild(settings);
     s.appendChild(hub);
@@ -502,8 +511,8 @@ const Screens = {
     const ordersReady = Daily.orders().some((o, i) => orders.wins >= o.need && !Daily.orderState().orderClaimed.includes(i));
     strip.appendChild(mk('📅', 'Daily', ordersReady ? 'Order ready' : (Daily.available() ? 'Delivery ready' : orders.wins + ' wins'),
       () => Screens.go('events'), ordersReady || Daily.available()));
-    strip.appendChild(mk('🎟', 'Scratch', Save.res('tape') + ' tapes',
-      () => { Screens.go('events'); setTimeout(() => Screens.openScratch(), 60); }, Save.res('tape') > 0));
+    strip.appendChild(mk('🎟', 'Scratch', Save.res('ticket') + ' tickets',
+      () => { Screens.go('events'); setTimeout(() => Screens.openScratch(), 60); }, Save.res('ticket') > 0));
     const crateCount = Save.res('gold') + Save.res('diamond') + Save.res('main');
     strip.appendChild(mk('📦', 'Crates', crateCount + ' held', () => Screens.go('crates'), crateCount > 0));
     s.appendChild(strip);
@@ -546,7 +555,7 @@ const Screens = {
     prog.appendChild(el('div', 'mini muted', d.mastery < cap
       ? `${fmt(d.masteryXp)} / ${fmt(Save.masteryNeed(d.mastery))} XP · Next reward: ${rewardText}`
       : 'Mastery caps every Hero\'s level. Recruit more Heroes to raise it.'));
-    prog.appendChild(el('div', 'mini muted', 'Wins, Toon unlocks and levels, claimed rewards, Journal discoveries, and Trinket upgrades grant Mastery XP.'));
+    prog.appendChild(el('div', 'mini muted', 'Wins, Toon unlocks and levels, claimed rewards, Journal discoveries, Trinket upgrades, and Mastery training grant XP.'));
     const stats = el('div', 'row tiny');
     stats.style.marginTop = '8px';
     stats.innerHTML = `<div class="grow">Deepest floor <b>${d.bestFloor}</b></div>
@@ -568,6 +577,40 @@ const Screens = {
   /** Sound, save backup/restore as real files, and Reset - everything
       destructive or save-related lives behind one modal instead of loose
       buttons on the Hub. */
+  openMasteryTraining() {
+    const d = Save.data, cap = globalCap();
+    const body = el('div', 'mastery-training');
+    body.appendChild(el('div', 'mini muted', `Mastery ${d.mastery} / ${cap} · ${fmt(d.masteryXp)} / ${fmt(Save.masteryNeed(d.mastery))} XP`));
+    if (d.mastery >= cap) {
+      body.appendChild(el('div', 'mini muted', 'Recruit another Hero to raise your account cap. Saved XP carries over.'));
+      UI.modal('🏅 Mastery Training', body);
+      return;
+    }
+    body.appendChild(el('div', 'mini muted', 'Spend Black Ichor, Tape, Skill Notes, and Star Dust to finish one or more Mastery levels. Each level raises the Hero and skill caps.'));
+    const costs = spent => Object.entries(spent).filter(([, amount]) => amount > 0)
+      .map(([key, amount]) => `${RES[key].icon} ${fmt(amount)}`).join('  ');
+    const row = el('div', 'mastery-training-actions');
+    [1, 10, 800].forEach(limit => {
+      const plan = Save.masteryTrainingPlan(limit);
+      const box = el('div', 'mastery-training-option');
+      const label = limit === 800 ? 'Train max' : `Train ${Math.min(limit, cap - d.mastery)}`;
+      const button = el('button', 'btn', `${label}${plan.levels ? ` · +${plan.levels}` : ''}`);
+      button.disabled = !plan.levels || (limit === 10 && plan.levels < Math.min(10, cap - d.mastery));
+      button.onclick = () => {
+        UI.closeModal();
+        const result = Save.trainMastery(limit);
+        if (!result.levels) UI.toast('Not enough training materials');
+        this.render();
+      };
+      box.appendChild(button);
+      box.appendChild(el('div', 'mini muted', plan.levels ? `To Mastery ${plan.to} · ${costs(plan.spent) || 'Banked XP'}`
+        : `Next level needs ${costs(Save.masteryTrainingCost(d.mastery, Math.max(0, Save.masteryNeed(d.mastery) - d.masteryXp) / Save.masteryNeed(d.mastery)))}`));
+      row.appendChild(box);
+    });
+    body.appendChild(row);
+    UI.modal('🏅 Mastery Training', body);
+  },
+
   askSaveName(title, initial, onDone) {
     const body = el('div');
     body.appendChild(el('div', 'muted tiny', 'Use a short name so this save is easy to spot later.'));

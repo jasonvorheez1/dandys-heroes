@@ -3,7 +3,7 @@
    in that it equips into a slot and applies a small always-on effect, but a
    Badge is tied to a *specific* Hero (only they can wear it) and levels up by
    spending the friend's shards rather than drops/rank-merging. Enemies can
-   also be dressed in a Badge - see Depths.badgeForFloor() in meta/modes.js -
+   also be dressed in a Badge by equipEnemyLoadout() in meta/modes.js,
    which is how a run keeps some pressure on badge-heavy player teams.
    `friend` is campaign/upgrade metadata only; Badge effects are self-contained
    and never look for that friend in the active team. */
@@ -954,5 +954,4 @@ defBadge({
     });
   }
 });
-
 

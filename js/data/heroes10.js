@@ -678,7 +678,7 @@ function goofyIntercept(u, ally, attacker, B, S, P, ev, automatic) {
 
 defHero({
   id: 'Goofy', name: 'Goofy', folder: 'Goofy', file: 'Goofy', icon: 'Goofy',
-  scale: 1.55, nativeFace: -1,
+  scale: 1.55, nativeFace: 1,
   role: 'Tank', roleLabel: 'Shield Tank', tier: 'A', position: 'Frontline', element: 'Shield',
   blurb: 'A dependable frontline guardian who blocks attacks, intercepts danger, and resets enemy pressure with his shield.',
   base: { hp: 5980, atk: 298, def: 334, mag: 118, mdef: 318, spd: 94, acc: 184, eva: 88 },

@@ -16,8 +16,9 @@ function arenaLiveSnapshotTeam(ids) {
       const item = inventory[uid];
       return item && item.id ? { id: item.id, rank: Math.max(1, Number(item.rank) || 1) } : null;
     }).filter(Boolean);
-    spec.badge = h.badge ? { id: h.badge, lvl: Math.max(1, Number(Save.badgeLvl(h.badge)) || 1) } : null;
-    spec.badges = Save.equippedBadges(id).map(bid => ({ id: bid, lvl: Math.max(1, Number(Save.badgeLvl(bid)) || 1) }));
+    const badgeId = Save.equippedBadges(id)[0];
+    spec.badge = badgeId ? { id: badgeId, lvl: Math.max(1, Number(Save.badgeLvl(badgeId)) || 1) } : null;
+    spec.badges = spec.badge ? [spec.badge] : [];
     return spec;
   });
 }
@@ -83,6 +84,8 @@ const ArenaLive = {
   snapshotSpecs(defense) {
     return (defense && defense.team || []).map(slot => {
       if (!slot || !HEROES[slot.id]) return null;
+      const badge = slot.badge && BADGES[slot.badge.id] && BADGES[slot.badge.id].owner === slot.id
+        ? { id: slot.badge.id, lvl: clamp(Number(slot.badge.lvl) || 1, 1, BADGE_MAX_LVL) } : null;
       return Object.assign({}, slot, {
         id: slot.id,
         level: Math.max(1, Number(slot.level) || 1),
@@ -90,9 +93,11 @@ const ArenaLive = {
         twisted: false,
         pvpDefense: true,
         mult: { hp: 1, atk: 1, def: 1 },
-        trinkets: Array.isArray(slot.trinkets) ? slot.trinkets.slice(0, 3) : [],
-        badge: slot.badge && typeof slot.badge === 'object' ? slot.badge : null,
-        badges: Array.isArray(slot.badges) ? slot.badges.slice(-1).filter(ref => ref && BADGES[ref.id]) : []
+        trinkets: Array.isArray(slot.trinkets) ? slot.trinkets.slice(0, 3)
+          .filter(item => item && TRINKETS[item.id] && (!TRINKETS[item.id].owner || TRINKETS[item.id].owner === slot.id))
+          .map(item => ({ id: item.id, rank: clamp(Number(item.rank) || 1, 1, TRINKET_MAX_RANK) })) : [],
+        badge,
+        badges: badge ? [badge] : []
       });
     }).filter(Boolean).slice(0, 5);
   },

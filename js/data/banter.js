@@ -16,6 +16,18 @@
 
 const BANTER = [
   {
+    id: 'gourdy-holloway-family',
+    cast: ['Gourdy', 'MrsHolloway', 'MrHolloway'],
+    lines: [
+      { who: 'Gourdy', text: 'Mama! Papa! You\'re really both walking with me?!' },
+      { who: 'MrsHolloway', text: 'Always, my sweet pumpkin. Even through the darkest spirals, Mother never left.' },
+      { who: 'MrHolloway', text: 'Keep close behind me, Gourdy. Nothing in these Depths gets past your old man.' },
+      { who: 'Gourdy', text: 'I kept my locket safe the whole time! See? Inside is our family portrait!' },
+      { who: 'MrHolloway', text: 'You did good, son. A real Holloway stands tall.' },
+      { who: 'MrsHolloway', text: 'And now our family stands together again. Look ahead, little one!' }
+    ]
+  },
+  {
     id: 'gourdy-soulvester-eclipse',
     cast: ['Gourdy', 'Soulvester', 'Eclipse'],
     lines: [

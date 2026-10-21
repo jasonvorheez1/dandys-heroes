@@ -85,18 +85,29 @@
 
 #battle:not(.kh-battle):not(.unknown-world-battle) #logBox{
   left:10px;
-  right:10px;
-  bottom:132px;
-  max-height:54px;
-  padding:5px 8px;
-  border-left:2px solid #6b857f;
-  border-radius:5px;
-  background:linear-gradient(90deg,#0b1314d9,#0b131400);
+  right:auto;
+  bottom:130px;
+  max-width:340px;
+  max-height:56px;
+  padding:4px 8px;
+  border-left:3px solid var(--accent);
+  border-radius:6px;
+  background:rgba(9,15,20,0.8);
+  backdrop-filter:blur(4px);
+  box-shadow:0 3px 8px rgba(0,0,0,0.5);
 }
 
 #battle:not(.kh-battle):not(.unknown-world-battle) #logBox div{
-  font-size:9px;
-  -webkit-text-stroke:2px #080b0c;
+  font-size:10px;
+  line-height:1.25;
+  color:#f1f5f9;
+  font-weight:700;
+  text-shadow:0 1px 2px #000, 0 1px 3px rgba(0,0,0,0.85);
+  -webkit-text-stroke:0;
+}
+#battle:not(.kh-battle):not(.unknown-world-battle) #logBox div b{
+  color:#fde047;
+  font-weight:900;
 }
 
 #battle:not(.kh-battle):not(.unknown-world-battle) #allyDock{

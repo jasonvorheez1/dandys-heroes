@@ -3,36 +3,153 @@
    (Event, Treasure, Rest). Extends Screens (screens/core.js). */
 'use strict';
 
+/* Canonical Dandy's World Toon Stat Registry (1★ to 5★ ratings) */
+const DW_TOON_STATS = {
+  Vee:        { extraction: 5, skill: 5, speed: 2, stamina: 2, stealth: 3, role: 'Master Extractor' },
+  Shelly:     { extraction: 5, skill: 5, speed: 2, stamina: 2, stealth: 2, role: 'Master Extractor' },
+  Delilah:    { extraction: 5, skill: 5, speed: 2, stamina: 2, stealth: 2, role: 'Master Extractor' },
+  Boxten:     { extraction: 4, skill: 4, speed: 3, stamina: 3, stealth: 3, role: 'Reliable Extractor' },
+  Cosmo:      { extraction: 4, skill: 4, speed: 3, stamina: 3, stealth: 2, role: 'Baker Extractor' },
+  Sprout:     { extraction: 4, skill: 4, speed: 3, stamina: 3, stealth: 3, role: 'Support Extractor' },
+  Brightney:  { extraction: 4, skill: 4, speed: 3, stamina: 3, stealth: 1, role: 'Illuminator' },
+  Rodger:     { extraction: 4, skill: 5, speed: 2, stamina: 2, stealth: 2, role: 'Lead Researcher' },
+  Connie:     { extraction: 4, skill: 3, speed: 3, stamina: 3, stealth: 5, role: 'Silent Operative' },
+  Bassie:     { extraction: 4, skill: 4, speed: 2, stamina: 2, stealth: 2, role: 'Steady Extractor' },
+  Eggson:     { extraction: 4, skill: 4, speed: 2, stamina: 2, stealth: 3, role: 'Methodical Extractor' },
+  Dyle:       { extraction: 4, skill: 3, speed: 2, stamina: 3, stealth: 2, role: 'Heavy Extractor' },
+  Gigi:       { extraction: 3, skill: 4, speed: 3, stamina: 3, stealth: 4, role: 'Lucky Gambler' },
+  Glisten:    { extraction: 3, skill: 4, speed: 3, stamina: 3, stealth: 2, role: 'Perfectionist' },
+  Teagan:     { extraction: 3, skill: 4, speed: 3, stamina: 3, stealth: 3, role: 'Patient Tea Host' },
+  Astro:      { extraction: 3, skill: 3, speed: 3, stamina: 4, stealth: 4, role: 'Dream Support' },
+  Dandy:      { extraction: 3, skill: 3, speed: 3, stamina: 3, stealth: 3, role: 'Star Host' },
+  Coal:       { extraction: 3, skill: 3, speed: 3, stamina: 3, stealth: 3, role: 'Steady Worker' },
+  Cocoa:      { extraction: 3, skill: 3, speed: 3, stamina: 3, stealth: 3, role: 'Sweet Runner' },
+  Bobette:    { extraction: 3, skill: 3, speed: 3, stamina: 3, stealth: 3, role: 'Precision Crafter' },
+  Ginger:     { extraction: 3, skill: 3, speed: 3, stamina: 3, stealth: 3, role: 'Festive Runner' },
+  Brusha:     { extraction: 3, skill: 3, speed: 3, stamina: 3, stealth: 3, role: 'Painter' },
+  Looey:      { extraction: 3, skill: 3, speed: 3, stamina: 3, stealth: 3, role: 'Juggler' },
+  Squirm:     { extraction: 3, skill: 3, speed: 3, stamina: 3, stealth: 3, role: 'Energetic Buddy' },
+  Gourdy:     { extraction: 3, skill: 3, speed: 3, stamina: 3, stealth: 3, role: 'Candy Sprinter' },
+  Eclipse:    { extraction: 3, skill: 3, speed: 3, stamina: 3, stealth: 3, role: 'Solar/Lunar Operator' },
+  Soulvester: { extraction: 3, skill: 3, speed: 3, stamina: 3, stealth: 3, role: 'Knight Runner' },
+  Finn:       { extraction: 3, skill: 3, speed: 4, stamina: 3, stealth: 2, role: 'Swift Swimmer' },
+  Yatta:      { extraction: 3, skill: 3, speed: 4, stamina: 3, stealth: 3, role: 'Party Sprinter' },
+  Flyte:      { extraction: 3, skill: 3, speed: 4, stamina: 3, stealth: 4, role: 'Sky Flyer' },
+  Flutter:    { extraction: 2, skill: 3, speed: 4, stamina: 3, stealth: 3, role: 'Winged Scout' },
+  Poppy:      { extraction: 2, skill: 3, speed: 5, stamina: 4, stealth: 3, role: 'Champion Sprinter' },
+  Goob:       { extraction: 2, skill: 3, speed: 5, stamina: 4, stealth: 2, role: 'Speed Hugger' },
+  Scraps:     { extraction: 2, skill: 3, speed: 4, stamina: 4, stealth: 3, role: 'Agile Crafter' },
+  Toodles:    { extraction: 2, skill: 2, speed: 4, stamina: 3, stealth: 4, role: 'Nimble Toddler' },
+  Blot:       { extraction: 2, skill: 3, speed: 4, stamina: 4, stealth: 2, role: 'Inky Rusher' },
+  Rudie:      { extraction: 2, skill: 2, speed: 4, stamina: 4, stealth: 3, role: 'Charging Rusher' },
+  Shrimpo:    { extraction: 1, skill: 1, speed: 1, stamina: 1, stealth: 1, role: 'Angriest Bully' }
+};
+if (typeof window !== 'undefined') window.DW_TOON_STATS = DW_TOON_STATS;
+
+function getDwFallback(id) {
+  const d = typeof HEROES !== 'undefined' ? HEROES[id] : null;
+  if (!d) return { extraction: 3, skill: 3, speed: 3, stamina: 3, stealth: 3, role: 'Operative' };
+  const spd = (d.base && d.base.spd) || 80;
+  const acc = (d.base && d.base.acc) || 100;
+  const ms = (d.hidden && d.hidden.ms) || 70;
+  return {
+    extraction: clamp(Math.round(spd / 28), 1, 5),
+    skill: clamp(Math.round(acc / 35), 1, 5),
+    speed: clamp(Math.round(ms / 20), 1, 5),
+    stamina: 3, stealth: 3, role: 'Operative'
+  };
+}
+
 function machineStars(actual, expected) {
   const ratio = actual / Math.max(1, expected);
-  if (ratio >= 1.30) return 5;
-  if (ratio >= 1.14) return 4;
-  if (ratio >= .96) return 3;
-  if (ratio >= .82) return 2;
+  if (ratio >= 1.25) return 5;
+  if (ratio >= 1.10) return 4;
+  if (ratio >= .95) return 3;
+  if (ratio >= .80) return 2;
   return 1;
 }
 
-function machineToonStats(id, floor, node) {
-  const h = Save.hero(id), d = HEROES[id];
-  let unit;
-  try { unit = new Unit(playerSpec(id), 0, 0, { auras: [] }); } catch (e) { unit = null; }
-  const speed = unit && unit.st ? unit.st.spd : (d.base && d.base.spd) || 80;
-  const accuracy = unit && unit.st ? unit.st.acc : (d.base && d.base.acc) || 100;
-  // Machine stars are relative to the current floor, not universal raw-stat
-  // cutoffs. Build a same-Toon comparison unit at the floor's enemy level so
-  // character level, growth, rarity, and the floor's pressure all matter.
+function machineToonStats(id, floor, node, machineType = 'ichor') {
+  const h = (typeof Save !== 'undefined' && Save.hero(id)) || { level: 1, rarity: 1, rarityPlus: 1 };
+  const d = (typeof HEROES !== 'undefined' && HEROES[id]) || { name: id };
+  const canon = DW_TOON_STATS[id] || getDwFallback(id);
+  const isTreadmill = machineType === 'treadmill';
+
+  // Roguelite progression bonuses: Toon level and rarity scale effective performance
+  const lvl = Math.max(1, h.level || 1);
+  const lvlBonus = (lvl - 1) / 29; // 0.0 at Lv 1 -> 1.0 at Lv 30
+  const rRank = typeof rarityRank === 'function' ? rarityRank(h.rarity, h.rarityPlus) : 1;
+  const rBonus = Math.max(0, (rRank - 1) / 18);
+
+  // Floor difficulty pressure: deeper floors demand higher performance
+  const f = Math.max(1, floor || 1);
+  const floorPressure = (f - 1) * 0.025;
+
+  // Effective Stars (bounded 1 to 5)
+  const extractionStars = clamp(Math.round(canon.extraction + lvlBonus * 0.65 + rBonus * 0.4 - floorPressure * 0.35), 1, 5);
+  const skillStars = clamp(Math.round(canon.skill + lvlBonus * 0.55 + rBonus * 0.35 - floorPressure * 0.3), 1, 5);
+  const speedStars = clamp(Math.round(canon.speed + lvlBonus * 0.75 + rBonus * 0.45 - floorPressure * 0.35), 1, 5);
+
+  // Raw numerical ratings for stat display and comparisons
+  const rawExtraction = Math.round(canon.extraction * 24 + lvl * 1.5 + rRank * 2);
+  const rawSkill = Math.round(canon.skill * 24 + lvl * 1.2 + rRank * 1.8);
+  const rawSpeed = Math.round(canon.speed * 24 + lvl * 1.6 + rRank * 2.2);
+
+  const expectedExtraction = Math.round(72 + f * 2.2);
+  const expectedSkill = Math.round(72 + f * 1.8);
+  const expectedSpeed = Math.round(72 + f * 2.2);
+
+  let rate, primaryStars, primaryLabel, primaryVal, expectedPrimary, secondaryStars, secondaryLabel, secondaryVal, expectedSecondary, rateDesc, windowDesc;
+
+  if (isTreadmill) {
+    // TREADMILL GENERATOR: Relies directly on RUN SPEED (Movement Speed)
+    primaryStars = speedStars;
+    primaryLabel = 'RUN SPEED';
+    primaryVal = rawSpeed;
+    expectedPrimary = expectedSpeed;
+
+    secondaryStars = skillStars;
+    secondaryLabel = 'CADENCE CHECK';
+    secondaryVal = rawSkill;
+    expectedSecondary = expectedSkill;
+
+    // Treadmill rate: speed stars drive generator charging velocity
+    rate = 4.8 + speedStars * 2.85 + (lvlBonus * 2.2);
+    rateDesc = `${rate.toFixed(1)}% charge / sec · ${speedStars >= 5 ? 'blistering sprint' : speedStars >= 4 ? 'high velocity run' : speedStars >= 3 ? 'steady running pace' : 'slow jog'}`;
+    windowDesc = `${skillStars >= 4 ? 'wide cadence zone' : skillStars >= 3 ? 'standard cadence zone' : 'tight cadence zone'}`;
+  } else {
+    // ICHOR EXTRACTION: Relies directly on EXTRACTION SPEED
+    primaryStars = extractionStars;
+    primaryLabel = 'EXTRACTION SPEED';
+    primaryVal = rawExtraction;
+    expectedPrimary = expectedExtraction;
+
+    secondaryStars = skillStars;
+    secondaryLabel = 'SKILL CHECK';
+    secondaryVal = rawSkill;
+    expectedSecondary = expectedSkill;
+
+    // Ichor rate: extraction stars drive siphon pump
+    rate = 5.2 + extractionStars * 2.45 + (lvlBonus * 1.8);
+    rateDesc = `${rate.toFixed(1)}% tank / sec · ${extractionStars >= 5 ? 'master siphon' : extractionStars >= 4 ? 'rapid extraction' : extractionStars >= 3 ? 'standard extraction' : 'slow drip'}`;
+    windowDesc = `${skillStars >= 4 ? 'wide check windows' : skillStars >= 3 ? 'standard check windows' : 'tight check windows'}`;
+  }
+
   const floorLevel = typeof Depths !== 'undefined' && Depths.enemyLevel
-    ? Depths.enemyLevel(Math.max(1, floor || 1), Math.max(0, node || 0))
-    : Math.max(1, floor || 1);
-  let floorUnit;
-  try { floorUnit = new Unit(Object.assign({}, playerSpec(id), { level: floorLevel }), 0, 0, { auras: [] }); } catch (e) { floorUnit = null; }
-  const expectedSpeed = floorUnit && floorUnit.st ? floorUnit.st.spd : speed;
-  const expectedAccuracy = floorUnit && floorUnit.st ? floorUnit.st.acc : accuracy;
-  const extractionStars = machineStars(speed, expectedSpeed);
-  const skillStars = machineStars(accuracy, expectedAccuracy);
-  return { h, speed, accuracy, floorLevel, expectedSpeed, expectedAccuracy, extractionStars, skillStars,
-    // A machine is a short floor risk, not an idle activity.
-    rate: 6.5 + extractionStars * 1.8 };
+    ? Depths.enemyLevel(f, Math.max(0, node || 0))
+    : f;
+
+  return {
+    h, d, canon, role: canon.role, machineType, isTreadmill, floorLevel,
+    primaryStars, primaryLabel, primaryVal, expectedPrimary,
+    secondaryStars, secondaryLabel, secondaryVal, expectedSecondary,
+    extractionStars, skillStars, speedStars,
+    rawExtraction, rawSkill, rawSpeed,
+    expectedExtraction, expectedSkill, expectedSpeed,
+    speed: primaryVal, expectedSpeed: expectedPrimary,
+    accuracy: secondaryVal, expectedAccuracy: expectedSecondary,
+    rate, rateDesc, windowDesc
+  };
 }
 
 Object.assign(Screens, {
@@ -86,6 +203,8 @@ Object.assign(Screens, {
     const zoneWords = zone.name.split(' ');
     const zoneLead = zoneWords.shift();
     const zoneAccent = zoneWords.join(' ');
+    const activeMachineVariant = Depths.roomRng(r.floor, r.node, 'machine_variant').chance(0.5) ? 'treadmill' : 'ichor';
+    const isTreadmillRoom = activeMachineVariant === 'treadmill';
     const roomCopy = {
       battle: ['HOSTILE CONTACT', 'A Twisted squad blocks the shaft. Damage carries into the next room.'],
       elite: ['ELITE INTERCEPT', 'A reinforced squad with higher stats and no weaklings.'],
@@ -93,7 +212,9 @@ Object.assign(Screens, {
       event: ['UNKNOWN SIGNAL', 'A decision waits beyond the door. Outcomes may injure the whole squad.'],
       treasure: ['SUPPLY CACHE', 'No hostiles detected. Claim the cache and choose a run card.'],
       rest: ['SAFE ROOM', 'Recover part of the squad. This is not a full heal.'],
-      machine: ['ICHOR MACHINE', 'A lone extraction machine hums in the corner. Send one Toon to work it.']
+      machine: isTreadmillRoom
+        ? ['TREADMILL GENERATOR', 'An industrial extraction treadmill waits in the chamber. Send your fastest runner to power it up!']
+        : ['ICHOR MACHINE', 'A classic extraction machine hums in the corner. Send a skilled extractor to work it.']
     }[battleType] || ['UNMAPPED ROOM', 'No reliable scan is available.'];
     const nextStep = r.pendingDraft
       ? ['1', 'Choose a run card', 'Then the elevator can move.']
@@ -104,7 +225,9 @@ Object.assign(Screens, {
         : ['1', `Open the ${String(activeInfo.label || 'room').toLowerCase()}`, 'Follow the room prompt, then continue.'];
     const enterLabel = r.pendingDraft ? 'CHOOSE RUN CARD' : isCombat
       ? canEnterCombat ? 'REVIEW TEAM & ENTER' : 'RECOVER TEAM FIRST'
-      : 'OPEN ' + String(activeInfo.label || 'ROOM').toUpperCase();
+      : battleType === 'machine'
+        ? (isTreadmillRoom ? 'OPEN TREADMILL ROOM' : 'OPEN ICHOR MACHINE')
+        : 'OPEN ' + String(activeInfo.label || 'ROOM').toUpperCase();
 
     const page = el('div', `endless-page redzone-tier-${zoneTier}`);
     const buds = Save.data.buds || {};
@@ -211,15 +334,18 @@ Object.assign(Screens, {
 
     const route = $('#endlessRoute', page);
     L.nodes.forEach((type, i) => {
-      const info = NODE[type] || NODE.battle;
+      let info = NODE[type] || NODE.battle;
       const known = i <= knownRooms;
       const state = i < r.node ? 'cleared' : i === r.node ? 'current' : known ? 'known' : 'hidden';
-      const n = el('button', 'endless-room ' + state);
+      const isTreadmill = type === 'machine' && Depths.roomRng(r.floor, i, 'machine_variant').chance(0.5);
+      if (type === 'machine' && isTreadmill) {
+        info = { icon: '🏃', label: 'Treadmill' };
+      }
+      const n = el('button', 'endless-room ' + type + (isTreadmill ? ' treadmill-room' : '') + ' ' + state);
       n.type = 'button'; n.disabled = state !== 'current';
       n.innerHTML = `<span class="endless-room-index">${String(i + 1).padStart(2, '0')}</span>
         <strong>${known ? info.icon : '·'}</strong><b>${known ? info.label : 'UNKNOWN'}</b>
         <small>${state === 'cleared' ? 'CLEARED' : state === 'current' ? 'NEXT' : known ? 'SCOUTED' : 'HIDDEN'}</small>`;
-      n.className = 'endless-room ' + type + ' ' + state;
       if (state === 'current') n.onclick = () => { Sound.play('endless_enter', { vol: .62 }); this.enterNode(type, i); };
       route.appendChild(n);
       if (i < L.nodes.length - 1) route.appendChild(el('i', 'endless-route-link'));
@@ -938,46 +1064,127 @@ Object.assign(Screens, {
     const screen = this, r = Depths.run();
     const team = Save.data.team.filter(id => id && Save.owns(id) && (r.hp[id] == null || r.hp[id] > 0));
     if (!team.length) { UI.toast('Everyone is down. Rest before using the machine.'); Sound.play('ui_err'); return; }
+    const machineType = Depths.roomRng(r.floor, r.node, 'machine_variant').chance(0.5) ? 'treadmill' : 'ichor';
+    const isTreadmill = machineType === 'treadmill';
     const state = { selected: null };
-    const body = el('div', 'machine-event');
+    const body = el('div', 'machine-event' + (isTreadmill ? ' treadmill-theme' : ''));
+
+    let topPickId = team[0], bestScore = -1;
+    team.forEach(id => {
+      const s = machineToonStats(id, r.floor, r.node, machineType);
+      const score = s.primaryStars * 10 + s.secondaryStars + ((Save.hero(id).level || 1) * 0.1);
+      if (score > bestScore) { bestScore = score; topPickId = id; }
+    });
+
     const startMachine = () => {
       if (!state.selected) return;
-      const s = machineToonStats(state.selected, r.floor, r.node);
+      const s = machineToonStats(state.selected, r.floor, r.node, machineType);
       const bonus = 0;
-      const reward = { ichor: Math.round(1050 + r.floor * 180 + bonus), exp: 900 + r.floor * 95,
-        tape: 22 + r.floor * 2, notes: 14 + r.floor, manual: 5 + Math.ceil(r.floor / 4), star: 35 + r.floor * 4,
-        core: 1 };
+      const reward = {
+        ichor: Math.round(1050 + r.floor * 180 + bonus),
+        exp: 900 + r.floor * 95,
+        tape: 22 + r.floor * 2,
+        notes: 14 + r.floor,
+        manual: 5 + Math.ceil(r.floor / 4),
+        star: 35 + r.floor * 4,
+        core: 1
+      };
       const roll = Depths.roomRng(r.floor, r.node, 'machine-reward');
       if (roll.chance(.22)) reward.gold = 1;
       if (roll.chance(.08)) reward.diamond = 1;
       UI.closeModal({ skipHook: true });
-      screen.startDepthBattle('battle', r.node, null, { chain: true,
-        machine: { toonId: state.selected, reward, extractionStars: s.extractionStars, skillStars: s.skillStars, rate: s.rate } });
+      screen.startDepthBattle('battle', r.node, null, {
+        chain: true,
+        machine: {
+          machineType,
+          toonId: state.selected,
+          reward,
+          primaryStars: s.primaryStars,
+          secondaryStars: s.secondaryStars,
+          extractionStars: s.extractionStars,
+          skillStars: s.skillStars,
+          speedStars: s.speedStars,
+          rate: s.rate
+        }
+      });
     };
+
     const renderChooser = () => {
-      const floorTarget = machineToonStats(team[0], r.floor, r.node);
-      body.innerHTML = `<div class="machine-top"><div><small>FLOOR EVENT // UNIQUE STATION</small><b>ICHOR EXTRACTION</b></div></div>
+      const floorTarget = machineToonStats(team[0], r.floor, r.node, machineType);
+      const machineBadgeImg = isTreadmill ? 'uploads/treadmill-machine.png' : 'uploads/image-36.png';
+      const machineBadgeClass = isTreadmill ? 'machine-select-badge treadmill-badge' : 'machine-select-badge';
+      const topTitle = isTreadmill ? 'TREADMILL GENERATOR' : 'ICHOR EXTRACTION';
+      const topSub = isTreadmill ? 'FLOOR EVENT // HIGH-SPEED GENERATOR' : 'FLOOR EVENT // UNIQUE STATION';
+      const heroKicker = isTreadmill ? 'ENDURANCE & SPEED DRILL' : 'THE ROOM HAS ONE JOB';
+      const heroTitle = isTreadmill ? 'CHOOSE YOUR RUNNER' : 'CHOOSE YOUR OPERATOR';
+      const heroDesc = isTreadmill
+        ? 'Sprint on the industrial treadmill to generate power. <b>Run Speed</b> drives charging velocity; <b>Cadence Check</b> sets your stride timing windows.'
+        : 'Pick the Toon whose build can beat this floor\'s pressure. <b>Extraction Speed</b> fills the tank faster; <b>Skill Check</b> sets the size of the check windows.';
+      const demandLabel = isTreadmill ? 'BELT VELOCITY DEMAND' : 'FLOOR PRESSURE';
+      const demandSub = isTreadmill
+        ? `${Math.round(floorTarget.expectedPrimary)} run speed · ${Math.round(floorTarget.expectedSecondary)} cadence`
+        : `${Math.round(floorTarget.expectedPrimary)} extraction · ${Math.round(floorTarget.expectedSecondary)} accuracy`;
+      const payoutLabel = isTreadmill ? '100% + SPEED OVERCLOCK' : '100% + SUPERCHARGE';
+
+      body.innerHTML = `<div class="machine-top"><div><small>${topSub}</small><b>${topTitle}</b></div></div>
         <div class="machine-select-hero">
-          <div class="machine-select-badge"><img src="uploads/image-36.png" alt="Ichor Machine"><i>ONLINE</i></div>
-          <div><small class="machine-select-kicker">THE ROOM HAS ONE JOB</small><h2>CHOOSE YOUR OPERATOR</h2><p>Pick the Toon whose build can beat this floor's pressure. Extraction Speed fills the tank faster; Accuracy sets the size of the skill-check windows.</p></div>
+          <div class="${machineBadgeClass}"><img src="${machineBadgeImg}" alt="${topTitle}"><i>${isTreadmill ? 'GENERATOR' : 'ONLINE'}</i></div>
+          <div><small class="machine-select-kicker">${heroKicker}</small><h2>${heroTitle}</h2><p>${heroDesc}</p></div>
         </div>
-        <div class="machine-targets"><div><span>FLOOR PRESSURE</span><b>LV ${floorTarget.floorLevel}</b><small>${Math.round(floorTarget.expectedSpeed)} extraction · ${Math.round(floorTarget.expectedAccuracy)} accuracy</small></div><div><span>SUCCESS PAYOUT</span><b>100%</b><small>10% if a check fails and battle begins</small></div></div>
+        <div class="machine-targets">
+          <div><span>${demandLabel}</span><b>LV ${floorTarget.floorLevel}</b><small>${demandSub}</small></div>
+          <div><span>SUCCESS PAYOUT</span><b>${payoutLabel}</b><small>10% if a check fails and battle begins</small></div>
+        </div>
         <div class="machine-select-label"><span>AVAILABLE OPERATORS</span><b>${team.length} READY TO WORK</b></div>
-        <div class="machine-select-preview" aria-live="polite"><div class="machine-preview-empty"><b>SELECT A TOON</b><span>Compare their stars against this floor before you start.</span></div></div>
+        <div class="machine-select-preview" aria-live="polite"><div class="machine-preview-empty"><b>SELECT A TOON</b><span>Compare their stars against this station before you start.</span></div></div>
         <div class="machine-toon-grid"></div><button class="machine-start" type="button" disabled>SELECT A TOON TO BEGIN ›</button>`;
+
       const grid = $('.machine-toon-grid', body);
       const preview = $('.machine-select-preview', body);
       const updatePreview = (id, s) => {
         const h = Save.hero(id), d = HEROES[id];
-        const speedDelta = Math.round(s.speed - s.expectedSpeed), accuracyDelta = Math.round(s.accuracy - s.expectedAccuracy);
+        const primaryDelta = Math.round(s.primaryVal - s.expectedPrimary);
+        const secondaryDelta = Math.round(s.secondaryVal - s.expectedSecondary);
         const delta = value => value > 0 ? `+${value}` : `${value}`;
-        preview.innerHTML = `<div class="machine-preview-art"><img src="${Art.hero(id)}" alt="${d.name}"></div><div class="machine-preview-copy"><small>SELECTED OPERATOR</small><h3>${d.name}</h3><span>Lv ${h.level} · ${rarityLabel(h.rarity, h.rarityPlus)}</span></div><div class="machine-preview-stat extraction"><b>${'★'.repeat(s.extractionStars)}<i>${'☆'.repeat(5 - s.extractionStars)}</i></b><span>EXTRACTION SPEED <em>${Math.round(s.speed)} vs ${Math.round(s.expectedSpeed)} <strong>${delta(speedDelta)}</strong></em></span></div><div class="machine-preview-stat skill"><b>${'★'.repeat(s.skillStars)}<i>${'☆'.repeat(5 - s.skillStars)}</i></b><span>SKILL CHECK <em>${Math.round(s.accuracy)} vs ${Math.round(s.expectedAccuracy)} <strong>${delta(accuracyDelta)}</strong></em></span></div><div class="machine-preview-note"><b>PROJECTED RATE</b><span>${s.rate.toFixed(1)}% tank / sec · ${s.skillStars >= 4 ? 'wide check windows' : s.skillStars >= 3 ? 'standard check windows' : 'tight check windows'}</span></div>`;
+        const isTop = id === topPickId;
+        preview.innerHTML = `<div class="machine-preview-art"><img src="${Art.hero(id)}" alt="${d.name}"></div>
+          <div class="machine-preview-copy">
+            <small>${isTreadmill ? 'SELECTED RUNNER' : 'SELECTED OPERATOR'}${isTop ? ' · ⭐ TOP PICK' : ''}</small>
+            <h3>${d.name}</h3>
+            <span>Lv ${h.level} · ${rarityLabel(h.rarity, h.rarityPlus)} · ${s.role}</span>
+          </div>
+          <div class="machine-preview-stat primary ${isTreadmill ? 'treadmill-speed' : 'extraction'}">
+            <b>${'★'.repeat(s.primaryStars)}<i>${'☆'.repeat(5 - s.primaryStars)}</i></b>
+            <span>${s.primaryLabel} <em>${Math.round(s.primaryVal)} vs ${Math.round(s.expectedPrimary)} <strong>${delta(primaryDelta)}</strong></em></span>
+          </div>
+          <div class="machine-preview-stat secondary skill">
+            <b>${'★'.repeat(s.secondaryStars)}<i>${'☆'.repeat(5 - s.secondaryStars)}</i></b>
+            <span>${s.secondaryLabel} <em>${Math.round(s.secondaryVal)} vs ${Math.round(s.expectedSecondary)} <strong>${delta(secondaryDelta)}</strong></em></span>
+          </div>
+          <div class="machine-preview-note">
+            <b>PROJECTED PERFORMANCE</b>
+            <span>${s.rateDesc} · ${s.windowDesc}</span>
+          </div>`;
       };
+
       team.forEach(id => {
-        const s = machineToonStats(id, r.floor, r.node), h = Save.hero(id), card = el('button', 'machine-toon', `<img src="${Art.icon(id)}" alt=""><span><b>${HEROES[id].name}</b><small>Lv ${h.level} · ${rarityLabel(h.rarity, h.rarityPlus)}</small></span><i><em>${'★'.repeat(s.extractionStars)}</em><small>EXTRACTION</small><em>${'★'.repeat(s.skillStars)}</em><small>SKILL CHECK</small></i>`);
+        const s = machineToonStats(id, r.floor, r.node, machineType);
+        const h = Save.hero(id);
+        const isTop = id === topPickId;
+        const card = el('button', 'machine-toon' + (isTop ? ' top-pick' : ''), `
+          <img src="${Art.icon(id)}" alt="">
+          <span>
+            <b>${HEROES[id].name}${isTop ? ' <mark class="machine-top-tag">BEST</mark>' : ''}</b>
+            <small>Lv ${h.level} · ${rarityLabel(h.rarity, h.rarityPlus)}</small>
+          </span>
+          <i>
+            <em>${'★'.repeat(s.primaryStars)}</em><small>${isTreadmill ? 'RUN SPEED' : 'EXTRACTION'}</small>
+            <em>${'★'.repeat(s.secondaryStars)}</em><small>${isTreadmill ? 'CADENCE' : 'SKILL CHECK'}</small>
+          </i>
+        `);
         card.type = 'button';
         card.setAttribute('aria-pressed', 'false');
-        card.setAttribute('aria-label', `${HEROES[id].name}. ${s.extractionStars} extraction stars, ${s.skillStars} skill-check stars.`);
+        card.setAttribute('aria-label', `${HEROES[id].name}. ${s.primaryStars} ${s.primaryLabel.toLowerCase()} stars, ${s.secondaryStars} ${s.secondaryLabel.toLowerCase()} stars.`);
         card.onclick = () => {
           state.selected = id;
           $$('.machine-toon', body).forEach(x => {
@@ -985,28 +1192,63 @@ Object.assign(Screens, {
             x.classList.toggle('selected', active);
             x.setAttribute('aria-pressed', String(active));
           });
-          card.classList.add('selected'); updatePreview(id, s);
-          const start = $('.machine-start', body); start.disabled = false; start.textContent = `START WITH ${HEROES[id].name.toUpperCase()} ›`; Sound.play('ui_move');
-        }; grid.appendChild(card);
+          card.classList.add('selected');
+          updatePreview(id, s);
+          const start = $('.machine-start', body);
+          start.disabled = false;
+          start.textContent = isTreadmill
+            ? `RUN WITH ${HEROES[id].name.toUpperCase()} ›`
+            : `START WITH ${HEROES[id].name.toUpperCase()} ›`;
+          Sound.play('ui_move');
+        };
+        grid.appendChild(card);
       });
       $('.machine-start', body).onclick = startMachine;
+
+      // Auto-select the top pick by default so the player immediately sees optimal stats
+      if (topPickId) {
+        const topCard = grid.querySelector('.machine-toon.top-pick') || grid.firstElementChild;
+        if (topCard) topCard.click();
+      }
     };
+
     let introClosed = false;
     const introTimers = [];
     const playIntro = () => {
       const cast = team.map((id, i) => `<div class="machine-intro-toon toon-${i}" style="--i:${i}"><img src="${Art.hero(id)}" alt="${HEROES[id].name}"><b>${HEROES[id].name}</b></div>`).join('');
-      body.innerHTML = `<div class="machine-intro">
-        <div class="machine-intro-kicker">FLOOR ${String(r.floor).padStart(2, '0')} // UNIDENTIFIED SIGNAL</div>
-        <div class="machine-intro-title"><small>THE ROOM GOES QUIET</small><b>WHAT IS THAT THING?</b></div>
-        <div class="machine-intro-stage">
-          <div class="machine-intro-scan"></div><div class="machine-intro-floor"></div>
-          <div class="machine-intro-team">${cast}</div>
-          <div class="machine-intro-machine"><i></i><img src="uploads/image-36.png" alt="Giant Ichor Machine"><b>ICHOR MACHINE</b></div>
-          <div class="machine-intro-drip drip-a"></div><div class="machine-intro-drip drip-b"></div><div class="machine-intro-drip drip-c"></div>
-          <div class="machine-intro-caption"><b>ICHOR EXTRACTION STATION</b><span>One Toon can work it. Nobody knows what happens if they mess up.</span></div>
-        </div>
-        <button class="machine-intro-skip" type="button">SKIP TO TOON SELECT ›</button>
-      </div>`;
+      if (isTreadmill) {
+        body.innerHTML = `<div class="machine-intro treadmill-intro">
+          <div class="machine-intro-kicker">FLOOR ${String(r.floor).padStart(2, '0')} // INDUSTRIAL GENERATOR</div>
+          <div class="machine-intro-title"><small>THE CONVEYOR POWERS ON</small><b>TREADMILL DISCOVERED!</b></div>
+          <div class="machine-intro-stage">
+            <div class="machine-intro-scan"></div><div class="machine-intro-floor"></div>
+            <div class="machine-intro-team">${cast}</div>
+            <div class="machine-intro-machine treadmill-intro-prop">
+              <span class="treadmill-intro-beacon" aria-hidden="true"></span>
+              <i></i><img src="uploads/treadmill-machine.png" alt="Treadmill Generator">
+              <b>TREADMILL GENERATOR</b>
+            </div>
+            <div class="machine-intro-caption">
+              <b>TREADMILL EXTRACTION DRILL</b>
+              <span>Run Speed powers the generator cylinder. Maintain steady runner cadence or Twisteds will rush the room!</span>
+            </div>
+          </div>
+          <button class="machine-intro-skip" type="button">SKIP TO RUNNER SELECT ›</button>
+        </div>`;
+      } else {
+        body.innerHTML = `<div class="machine-intro">
+          <div class="machine-intro-kicker">FLOOR ${String(r.floor).padStart(2, '0')} // UNIDENTIFIED SIGNAL</div>
+          <div class="machine-intro-title"><small>THE ROOM GOES QUIET</small><b>WHAT IS THAT THING?</b></div>
+          <div class="machine-intro-stage">
+            <div class="machine-intro-scan"></div><div class="machine-intro-floor"></div>
+            <div class="machine-intro-team">${cast}</div>
+            <div class="machine-intro-machine"><i></i><img src="uploads/image-36.png" alt="Giant Ichor Machine"><b>ICHOR MACHINE</b></div>
+            <div class="machine-intro-drip drip-a"></div><div class="machine-intro-drip drip-b"></div><div class="machine-intro-drip drip-c"></div>
+            <div class="machine-intro-caption"><b>ICHOR EXTRACTION STATION</b><span>One Toon can work it. Nobody knows what happens if they mess up.</span></div>
+          </div>
+          <button class="machine-intro-skip" type="button">SKIP TO TOON SELECT ›</button>
+        </div>`;
+      }
       const intro = $('.machine-intro', body);
       const finishIntro = () => {
         if (introClosed) return;
@@ -1021,8 +1263,6 @@ Object.assign(Screens, {
     };
     const machineBox = UI.modal('', body, { bare: true, className: 'machine-modal', onClose: () => {
       introClosed = true; introTimers.forEach(clearTimeout);
-      // Closing the machine picker cancels that room interaction; it should
-      // not throw the player out of the active Endless run.
       if (screen.cur === 'depths' && !screen._endlessLeaving && !BattleScreen.active) screen.render();
     } });
     machineBox.style.setProperty('--machine-bg', `url("${bgForFloor(r.floor, r.node)}")`);
@@ -1187,10 +1427,13 @@ Object.assign(Screens, {
     });
     const trinketRanks = Save.data.team.filter(Boolean).reduce((total, id) => {
       const h = Save.hero(id);
-      return total + (h.trinkets || []).reduce((n, uid) => n + ((uid && Save.data.trinketInv[uid] && Save.data.trinketInv[uid].rank) || 0), 0);
+      return total + (h.trinkets || []).reduce((n, uid) => {
+        const copy = uid && Save.data.trinketInv[uid];
+        return n + (copy ? trinketResonance(copy.rank) : 0);
+      }, 0);
     }, 0);
-    const note = el('div', 'depth-resonance-note', `<b>🔧 Trinket Resonance · ${trinketRanks} ranks</b>
-      <span>In Endless Run, every equipped rank adds 2.5% Max HP and 1.8% Attack, Magic, and defenses. Gem Resonance amplifies it.</span>`);
+    const note = el('div', 'depth-resonance-note', `<b>🔧 Trinket Resonance · ${Number(trinketRanks.toFixed(1))}</b>
+      <span>In Endless Run, each equipped rank through 5 adds 2.5% Max HP and 1.8% Attack, Magic, and defenses. Higher ranks add 35% as much resonance per rank. Gem Resonance amplifies it.</span>`);
     body.appendChild(note);
     UI.modal('Endless Deck', body, {
       onClose: () => {

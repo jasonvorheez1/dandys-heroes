@@ -125,8 +125,8 @@ Object.assign(Screens, {
     this._eventFilter = this._eventFilter || 'all';
     const filterRow = el('div', 'event-filters');
     const allCount = events.length;
-    const specialCount = events.filter(e => e.isCookieRun || e.isQOM || e.isPhantasia || e.isUnknownWorld || e.isCollab).length;
-    const weeklyCount = events.filter(e => !e.isCookieRun && !e.isQOM && !e.isPhantasia && !e.isUnknownWorld && !e.isCollab).length;
+    const specialCount = events.filter(e => e.isCookieRun || e.isQOM || e.isPhantasia || e.isUnknownWorld || e.isCollab || e.isDrawParents).length;
+    const weeklyCount = events.filter(e => !e.isCookieRun && !e.isQOM && !e.isPhantasia && !e.isUnknownWorld && !e.isCollab && !e.isDrawParents).length;
     const unclearedCount = events.filter(e => Raid.stageProgress(e.id) < Raid.STAGES).length;
 
     const filters = [
@@ -150,8 +150,8 @@ Object.assign(Screens, {
     board.appendChild(filterRow);
 
     const filteredEvents = events.filter(e => {
-      if (this._eventFilter === 'special') return e.isCookieRun || e.isQOM || e.isPhantasia || e.isUnknownWorld || e.isCollab;
-      if (this._eventFilter === 'weekly') return !e.isCookieRun && !e.isQOM && !e.isPhantasia && !e.isUnknownWorld && !e.isCollab;
+      if (this._eventFilter === 'special') return e.isCookieRun || e.isQOM || e.isPhantasia || e.isUnknownWorld || e.isCollab || e.isDrawParents;
+      if (this._eventFilter === 'weekly') return !e.isCookieRun && !e.isQOM && !e.isPhantasia && !e.isUnknownWorld && !e.isCollab && !e.isDrawParents;
       if (this._eventFilter === 'uncleared') return Raid.stageProgress(e.id) < Raid.STAGES;
       return true;
     });
@@ -172,26 +172,27 @@ Object.assign(Screens, {
         const unknownWorld = !!e.isUnknownWorld;
         const isComplete = cleared >= Raid.STAGES;
 
-        const banner = el('button', 'event-banner' + (isDelilah ? ' delilah' : '') + (e.isCollab ? ' collab' : '') + (e.isPhantasia ? ' phantasia' : '') + (e.isCookieRun ? ' cookie-banner' : '') + (e.isQOM ? ' qom' : '') + (unknownWorld ? ' unknown-world' : '') + (entryOpen ? '' : ' locked'));
+        const banner = el('button', 'event-banner' + (isDelilah ? ' delilah' : '') + (e.isCollab ? ' collab' : '') + (e.isPhantasia ? ' phantasia' : '') + (e.isCookieRun ? ' cookie-banner' : '') + (e.isQOM ? ' qom' : '') + (unknownWorld ? ' unknown-world' : '') + (e.isDrawParents ? ' draw-parents-banner' : '') + (entryOpen ? '' : ' locked'));
         banner.style.setProperty('--event-hue', String([38, 272, 214, 322][i % 4]));
 
-        const badgeHtml = !entryOpen ? `<span class="event-banner-badge locked">🔒 MASTERY ${e.minMastery}</span>`
+        const badgeHtml = e.isDrawParents ? `<span class="event-banner-badge ready">🎨 ${Math.round(DrawParents.state().progress)}% DRAWN</span>`
+          : !entryOpen ? `<span class="event-banner-badge locked">🔒 MASTERY ${e.minMastery}</span>`
           : isComplete ? `<span class="event-banner-badge complete">★ CLEARED</span>`
           : `<span class="event-banner-badge ready">STAGE ${nextStage}/8</span>`;
 
         banner.innerHTML = `
           ${badgeHtml}
-          <span class="event-crest">${e.isCookieRun ? '🍪' : e.isQOM ? '♫' : e.isPhantasia ? '🌠' : unknownWorld ? '⚙' : isDelilah ? '⌬' : e.isCollab ? '🔑' : '!'}</span>
-          <div class="event-art">${e.isCookieRun ? COOKIE_HERO_IDS.map(id => `<img src="${Art.hero(id)}" alt="${HEROES[id].name}">`).join('') : e.isQOM ? e.featuredIds.map(id => `<img src="${Art.hero(id)}" alt="${HEROES[id].name}">`).join('') : e.isPhantasia ? `<img src="${Art.hero('Phantasia')}" alt="Phantasia">` : unknownWorld ? e.featuredIds.map(id => `<img src="${UNKNOWN_WORLD_ART[id]}" alt="${HEROES[id].name}">`).join('') : e.bossIds.map(id => `<img src="${e.isCollab ? Art.hero(id) : Art.twisted(id)}" alt="${HEROES[id].name}">`).join('')}</div>
+          <span class="event-crest">${e.isDrawParents ? '🎨' : e.isCookieRun ? '🍪' : e.isQOM ? '♫' : e.isPhantasia ? '🌠' : unknownWorld ? '⚙' : isDelilah ? '⌬' : e.isCollab ? '🔑' : '!'}</span>
+          <div class="event-art">${e.isDrawParents ? e.featuredIds.map(id => `<img src="${Art.hero(id)}" alt="${HEROES[id].name}">`).join('') : e.isCookieRun ? COOKIE_HERO_IDS.map(id => `<img src="${Art.hero(id)}" alt="${HEROES[id].name}">`).join('') : e.isQOM ? e.featuredIds.map(id => `<img src="${Art.hero(id)}" alt="${HEROES[id].name}">`).join('') : e.isPhantasia ? `<img src="${Art.hero('Phantasia')}" alt="Phantasia">` : unknownWorld ? e.featuredIds.map(id => `<img src="${UNKNOWN_WORLD_ART[id]}" alt="${HEROES[id].name}">`).join('') : e.bossIds.map(id => `<img src="${e.isCollab ? Art.hero(id) : Art.twisted(id)}" alt="${HEROES[id].name}">`).join('')}</div>
           <div class="event-copy">
-            <small>${e.isQOM ? 'THREE-SET CONCERT' : e.isPhantasia ? 'MID-GAME GRIND' : unknownWorld ? 'ENCOUNTER-ONLY INVASION' : e.isCollab ? '5:00 ENDURANCE' : 'THREE-WAVE EVENT'} · ${e.tag}</small>
+            <small>${e.isDrawParents ? 'INTERACTIVE DRAWING EVENT' : e.isQOM ? 'THREE-SET CONCERT' : e.isPhantasia ? 'MID-GAME GRIND' : unknownWorld ? 'ENCOUNTER-ONLY INVASION' : e.isCollab ? '5:00 ENDURANCE' : 'THREE-WAVE EVENT'} · ${e.tag}</small>
             <strong>${title}</strong>
-            <em>${e.isCookieRun ? 'GingerBrave’s oven · battles · Cookie gacha' : e.isQOM ? 'Backstage Passes · five variants' : e.isPhantasia ? 'Wish Coins · Phantasia rewards' : unknownWorld ? 'Gears · superior Trinkets · not recruitable' : e.isCollab ? e.bossIds.map(id => HEROES[id].name).join(' & ') : targets}</em>
+            <em>${e.isDrawParents ? 'Use Scratch Tickets to draw Gourdy’s parents · Lockets, Shards, Full Recruits' : e.isCookieRun ? 'GingerBrave’s oven · battles · Cookie gacha' : e.isQOM ? 'Backstage Passes · five variants' : e.isPhantasia ? 'Wish Coins · Phantasia rewards' : unknownWorld ? 'Gears · superior Trinkets · not recruitable' : e.isCollab ? e.bossIds.map(id => HEROES[id].name).join(' & ') : targets}</em>
           </div>
           ${unknownWorld ? '<div class="unknown-world-banner-strip"><b>⚙</b><span>FAMILIAR TARGETS DETECTED</span><i>3 WAVES</i></div>' : ''}
           <div class="event-meter">
-            <span>${entryOpen ? `${cleared} / ${Raid.STAGES} CLEARED ${isComplete ? '· ALL BEATEN' : `· NEXT ${nextStage}`}` : `🔒 MASTERY ${e.minMastery}`}</span>
-            <i><u style="width:${cleared / Raid.STAGES * 100}%"></u></i>
+            <span>${e.isDrawParents ? `SKETCHBOOK · ${Math.round(DrawParents.state().progress)}% COMPLETE` : entryOpen ? `${cleared} / ${Raid.STAGES} CLEARED ${isComplete ? '· ALL BEATEN' : `· NEXT ${nextStage}`}` : `🔒 MASTERY ${e.minMastery}`}</span>
+            <i><u style="width:${e.isDrawParents ? DrawParents.state().progress : (cleared / Raid.STAGES * 100)}%"></u></i>
           </div>`;
         banner.onclick = () => { Sound.play('choose'); this._raidDossier = e.id; this.render(); };
         list.appendChild(banner);
@@ -203,6 +204,7 @@ Object.assign(Screens, {
   },
 
   raidDossier(s, ev) {
+    if (ev.isDrawParents) { this.drawParents(s, ev); return; }
     if (ev.isCookieRun) { this.cookieRun(s, ev); return; }
     const cleared = Raid.stageProgress(ev.id);
     this._raidStages = this._raidStages || {};

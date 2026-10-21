@@ -99,3 +99,73 @@ defBadge({
     });
   }
 });
+
+/* ============================================================ FLYTE [FLUTTER] DISK (DHBM) */
+defBadge({
+  id: 'flyte_flutter', owner: 'Flyte', friend: 'Flutter',
+  name: "Flutter's Field Diary", icon: '🦋', color: '#7ce8f7',
+  desc: "Flutter's handwritten diary containing her perspective on every aerial mission, complete with corrections to Flyte's embellished landing stories.",
+  stat: lvl => `+${(lvl * 3.5).toFixed(1)}% Stun Duration · +${(lvl * 3.0).toFixed(1)}% Max Health`,
+  effect: 'Whenever Flutter dashes or Flyte casts Wing Slam, both gain an aerodynamic Gale Barrier and refund 50% of the other\'s skill cooldown (once every 8s). While Flutter is alive, Flyte\'s Stuns inflict 2 stacks of Turbulence, and Mocking Swoop heals Flutter for 50% of Flyte\'s self-heal.',
+  apply(u, B, lvl) {
+    u.flat.hpP = (u.flat.hpP || 0) + lvl * .03;
+    u.dirty = true;
+
+    B.on(u, 'cast', ev => {
+      if (ev.key === 'G') {
+        const flutter = B.alliesOf(u).find(a => a.id === 'Flutter' && a.alive);
+        if (flutter && B.t >= (u._flyteFlutterSyncAt || 0)) {
+          u._flyteFlutterSyncAt = B.t + 8.0;
+          const shieldVal = u.max.hp * (.15 + lvl * .03) + u.st.mag * .4;
+          B.shield(u, u, shieldVal, 5.0);
+          B.shield(u, flutter, shieldVal, 5.0);
+          B.applyStatus(u, flutter, 'speedup', 4.0);
+          if (flutter.cds && flutter.cds.W > 0) flutter.cds.W *= .5;
+          B.fxSparkle(flutter.x, flutter.y - 40, 8, '#7ce8f7');
+          B.fxFloatIcon(flutter.x, flutter.y - 100, '🦋 FLIGHT SYNC', '#7ce8f7');
+        }
+      }
+    });
+
+    B.on(u, 'statusApplied', ev => {
+      if (ev && ev.id === 'stun' && ev.src === u && ev.unit && ev.unit.team !== u.team) {
+        B.applyStatus(u, ev.unit, 'turbulence', 6.0, { stacks: 2 });
+      }
+    });
+  }
+});
+
+/* ============================================================ FLYTE [BASSIE] DISK (DHBM) */
+defBadge({
+  id: 'flyte_bassie', owner: 'Flyte', friend: 'Bassie',
+  name: "Bassie's Emergency Rations", icon: '🧺', color: '#ffeaa7',
+  desc: 'An emergency ration basket packed tight by Bassie, because even stubborn flyers need fuel on long descent runs.',
+  stat: lvl => `+${(lvl * 4.0).toFixed(1)}% Shield Power · +${(lvl * 2.5).toFixed(1)}% Damage Reduction`,
+  effect: 'Whenever Flyte\'s Gale Barrier breaks or expires on an ally, it drops a Ration Basket that heals that ally for 16% Max HP + Magic and grants 25 Energy. Additionally, when Flyte triggers Mocking Swoop, Bassie hurls a smoke bomb that Blinds all nearby foes for 3.5s.',
+  apply(u, B, lvl) {
+    u.flat.shieldPowP = (u.flat.shieldPowP || 0) + lvl * .04;
+    u.flat.wardP = (u.flat.wardP || 0) + lvl * .025;
+    u.dirty = true;
+
+    B.on(u, 'shieldDone', ev => {
+      const ally = ev && ev.target;
+      if (!ally || ally.team !== u.team || !ally.alive) return;
+      const healAmt = ally.max.hp * (.16 + lvl * .02) + u.st.mag * .3;
+      B.heal(u, ally, healAmt, { tag: 'Emergency Rations' });
+      B.energy(ally, 25);
+      B.fxFloatIcon(ally.x, ally.y - 100, '🧺 RATIONS +25⚡', '#ffeaa7');
+      B.fxSparkle(ally.x, ally.y - 40, 8, '#ffeaa7');
+    });
+
+    B.on(u, 'cast', ev => {
+      if (ev.key === 'B') {
+        Sound.play('bomb', { vol: .4 });
+        B.enemiesOf(u).filter(e => e.alive && B.distance(e, u) < 240).forEach(e => {
+          B.applyStatus(u, e, 'blind', 3.5);
+          B.fxSparkle(e.x, e.y - 40, 6, '#ffeaa7');
+        });
+        B.fxFloatIcon(u.x, u.y - 110, '💨 SMOKE SCREEN', '#ffeaa7');
+      }
+    });
+  }
+});

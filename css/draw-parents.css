@@ -1,0 +1,750 @@
+/* draw-parents.css - Aesthetics for "Draw Gourdy's Parents" event.
+   Implements hand-drawn sketchbook aesthetics, parchment canvas, progressive reveal,
+   and responsive UI without tier labels. */
+
+:root {
+  --holloway-purple: #c070ed;
+  --holloway-purple-dark: #3a1954;
+  --holloway-purple-glow: rgba(192, 112, 237, 0.45);
+  --holloway-orange: #ff9d4d;
+  --holloway-orange-dark: #5c2c06;
+  --holloway-amber: #ffd54d;
+  --parchment-bg: #f5eedb;
+  --parchment-border: #d4c29d;
+  --ink-color: #24192b;
+}
+
+/* Event Screen Wrapper */
+.draw-event-page {
+  padding: 12px;
+  max-width: 960px;
+  margin: 0 auto 80px;
+  color: #f1e9f8;
+}
+
+/* Header */
+.draw-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 14px 18px;
+  background: linear-gradient(135deg, rgba(38, 20, 56, 0.95), rgba(20, 14, 29, 0.95));
+  border: 1px solid rgba(192, 112, 237, 0.35);
+  border-radius: 14px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4), inset 0 0 15px rgba(192, 112, 237, 0.1);
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+}
+
+.draw-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.draw-back-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  color: #fff;
+  padding: 6px 14px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.draw-back-btn:hover {
+  background: rgba(192, 112, 237, 0.25);
+  border-color: var(--holloway-purple);
+}
+
+.draw-title-group h1 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 900;
+  letter-spacing: 0.5px;
+  background: linear-gradient(90deg, #ffb370, #e6b0ff);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.draw-title-group span {
+  font-size: 11px;
+  color: #caa5e8;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.draw-header-wallet {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.draw-ticket-badge {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 157, 77, 0.15);
+  border: 1px solid rgba(255, 157, 77, 0.4);
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 800;
+  color: #ffd8a8;
+}
+
+.draw-prize-parade-btn {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  color: #fff;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(217, 119, 6, 0.35);
+  transition: all 0.2s;
+}
+
+.draw-prize-parade-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px rgba(217, 119, 6, 0.5);
+}
+
+/* Gourdy Speech Companion */
+.draw-gourdy-box {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  background: linear-gradient(135deg, rgba(46, 25, 68, 0.8), rgba(28, 17, 43, 0.8));
+  border: 1px solid rgba(255, 157, 77, 0.35);
+  border-radius: 12px;
+  padding: 12px 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+}
+
+.draw-gourdy-avatar {
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 30%, #ff9d4d, #b45309);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #ffd8a8;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+.draw-gourdy-avatar:hover {
+  transform: scale(1.08) rotate(-4deg);
+}
+
+.draw-gourdy-avatar img {
+  width: 90%;
+  height: 90%;
+  object-fit: contain;
+}
+
+.draw-gourdy-speech {
+  flex: 1;
+}
+
+.draw-gourdy-name {
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--holloway-orange);
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  margin-bottom: 3px;
+}
+
+.draw-gourdy-text {
+  font-size: 13px;
+  line-height: 1.4;
+  color: #f7eddc;
+}
+
+.draw-combo-badge {
+  display: inline-block;
+  margin-top: 4px;
+  padding: 2px 8px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #ef4444, #f97316);
+  color: #fff;
+  font-size: 11px;
+  font-weight: 800;
+  animation: comboPulse 0.4s infinite alternate ease-in-out;
+}
+
+@keyframes comboPulse {
+  from { transform: scale(0.96); }
+  to { transform: scale(1.04); }
+}
+
+/* Two-column layout */
+.draw-main-grid {
+  display: grid;
+  grid-template-columns: 1fr 340px;
+  gap: 16px;
+}
+
+@media (max-width: 820px) {
+  .draw-main-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Sketchbook / Paper Board */
+.draw-sketch-board {
+  background: #181220;
+  border: 2px solid rgba(192, 112, 237, 0.3);
+  border-radius: 16px;
+  padding: 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  position: relative;
+  overflow: hidden;
+}
+
+.draw-paper-clip {
+  width: 90px;
+  height: 18px;
+  background: linear-gradient(180deg, #d4af37, #996515);
+  border-radius: 4px;
+  margin-bottom: -9px;
+  z-index: 10;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+  border: 1px solid #ffd700;
+}
+
+.draw-paper {
+  width: 100%;
+  max-width: 500px;
+  aspect-ratio: 4 / 3.4;
+  background: var(--parchment-bg);
+  background-image: 
+    radial-gradient(#d6c9af 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(245, 238, 219, 0.98), rgba(235, 224, 198, 0.98));
+  background-size: 16px 16px, 100% 100%;
+  border-radius: 8px;
+  box-shadow: 
+    inset 0 0 35px rgba(138, 108, 62, 0.35),
+    0 12px 30px rgba(0, 0, 0, 0.5),
+    0 2px 4px rgba(0, 0, 0, 0.2);
+  position: relative;
+  overflow: hidden;
+  cursor: crosshair;
+  user-select: none;
+  transition: transform 0.1s, box-shadow 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--parchment-border);
+}
+
+.draw-paper:active {
+  transform: scale(0.99) rotate(-0.25deg);
+}
+
+.draw-paper.masterpiece {
+  border: 3px solid #f59e0b;
+  box-shadow: 
+    0 0 25px rgba(245, 158, 11, 0.5),
+    inset 0 0 30px rgba(245, 158, 11, 0.2);
+}
+
+/* Corner Accents */
+.draw-paper::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 55px;
+  height: 55px;
+  background: radial-gradient(circle at 100% 0%, #2e1d3d 0%, #2e1d3d 50%, transparent 55%);
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+.draw-paper::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 60px;
+  height: 45px;
+  background: radial-gradient(ellipse at 0% 100%, #2e1d3d 0%, #2e1d3d 45%, transparent 50%);
+  opacity: 0.7;
+  pointer-events: none;
+}
+
+/* Artwork Layers Inside Paper */
+.draw-art-stage {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.draw-paper-sketch-wrapper {
+  width: 82%;
+  height: 82%;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+/* The actual uploaded drawing of Gourdy's Parents */
+.draw-artwork-img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  transition: opacity 0.3s ease, filter 0.3s ease;
+  filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.15));
+}
+
+/* Dynamic Ink & Pencil strokes overlay */
+.draw-ink-surface {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.draw-pencil-stroke {
+  position: absolute;
+  border-radius: 2px;
+  opacity: 0.75;
+  pointer-events: none;
+  animation: drawPencilFade 1.2s forwards ease-out;
+}
+
+@keyframes drawPencilFade {
+  0% { transform: scaleX(0.2); opacity: 0.9; }
+  100% { transform: scaleX(1); opacity: 0.35; }
+}
+
+.draw-signature-label {
+  position: absolute;
+  bottom: 12px;
+  font-family: 'Comic Sans MS', 'Caveat', cursive, sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  color: #3b204e;
+  letter-spacing: 0.5px;
+  pointer-events: none;
+  text-shadow: 0 1px 1px rgba(255, 255, 255, 0.5);
+  animation: signStamp 0.5s ease-out;
+}
+
+@keyframes signStamp {
+  0% { transform: scale(2) rotate(-10deg); opacity: 0; }
+  100% { transform: scale(1) rotate(0deg); opacity: 1; }
+}
+
+.draw-tap-hint {
+  position: absolute;
+  bottom: 8px;
+  font-size: 11px;
+  color: #8c729c;
+  font-weight: 700;
+  pointer-events: none;
+  transition: opacity 0.3s;
+}
+
+.draw-tap-hint.fade {
+  opacity: 0;
+}
+
+/* Click particle effects */
+.draw-ink-blot {
+  position: absolute;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(60, 30, 80, 0.65) 0%, rgba(120, 60, 160, 0.2) 70%, transparent 100%);
+  pointer-events: none;
+  transform: translate(-50%, -50%) scale(0.3);
+  animation: inkSplash 0.65s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
+}
+
+@keyframes inkSplash {
+  0% { transform: translate(-50%, -50%) scale(0.2); opacity: 0.9; }
+  50% { opacity: 0.7; }
+  100% { transform: translate(-50%, -50%) scale(1.4); opacity: 0; }
+}
+
+.draw-click-spark {
+  position: absolute;
+  font-size: 18px;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  animation: sparkFloat 0.8s ease-out forwards;
+}
+
+@keyframes sparkFloat {
+  0% { transform: translate(-50%, -50%) scale(0.5); opacity: 1; }
+  100% { transform: translate(-50%, -100%) scale(1.3); opacity: 0; }
+}
+
+/* Progress Section */
+.draw-progress-wrap {
+  width: 100%;
+  margin-top: 14px;
+}
+
+.draw-progress-labels {
+  display: flex;
+  justify-content: space-between;
+  font-size: 12px;
+  margin-bottom: 6px;
+  color: #d1b8e8;
+}
+
+.draw-progress-labels b {
+  color: var(--holloway-amber);
+}
+
+.draw-progress-bar {
+  width: 100%;
+  height: 12px;
+  background: rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  position: relative;
+}
+
+.draw-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #c070ed, #ff9d4d, #ffd54d);
+  border-radius: 6px;
+  transition: width 0.3s ease;
+  box-shadow: 0 0 10px rgba(192, 112, 237, 0.6);
+}
+
+.draw-milestone-marker {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  width: 2px;
+  background: rgba(255, 255, 255, 0.4);
+  pointer-events: none;
+}
+.draw-milestone-marker.m25 { left: 25%; }
+.draw-milestone-marker.m50 { left: 50%; }
+.draw-milestone-marker.m75 { left: 75%; }
+.draw-milestone-marker.m100 { left: 99%; background: #ffd700; width: 3px; }
+
+/* Click Action Buttons */
+.draw-action-row {
+  display: flex;
+  gap: 10px;
+  width: 100%;
+  margin-top: 14px;
+}
+
+.draw-stroke-btn {
+  flex: 1;
+  padding: 10px 12px;
+  background: linear-gradient(135deg, #a855f7, #7c3aed);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 10px;
+  color: #fff;
+  font-weight: 800;
+  font-size: 13px;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(124, 58, 237, 0.45);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  transition: all 0.15s ease;
+}
+
+.draw-stroke-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(124, 58, 237, 0.6);
+}
+
+.draw-stroke-btn:active:not(:disabled) {
+  transform: translateY(1px);
+}
+
+.draw-stroke-btn small {
+  font-size: 11px;
+  font-weight: 600;
+  opacity: 0.9;
+  color: #ffd8a8;
+}
+
+.draw-stroke-btn.multi {
+  background: linear-gradient(135deg, #f59e0b, #d97706);
+  box-shadow: 0 4px 14px rgba(217, 119, 6, 0.45);
+}
+
+.draw-stroke-btn.burst {
+  background: linear-gradient(135deg, #ec4899, #8b5cf6);
+  box-shadow: 0 4px 14px rgba(236, 72, 153, 0.45);
+}
+
+.draw-stroke-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  box-shadow: none;
+  filter: grayscale(0.5);
+}
+
+/* Completed Frame Action */
+.draw-frame-action {
+  width: 100%;
+  margin-top: 10px;
+  padding: 10px 14px;
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: #fff;
+  font-weight: 800;
+  font-size: 13px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+  transition: all 0.2s;
+}
+
+.draw-frame-action:hover {
+  transform: translateY(-1px);
+}
+
+/* Side Info / Showcase Panel */
+.draw-side-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* Rate Card */
+.draw-rates-card {
+  background: rgba(30, 20, 44, 0.85);
+  border: 1px solid rgba(192, 112, 237, 0.25);
+  border-radius: 12px;
+  padding: 14px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+}
+
+.draw-card-title {
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: #ffd8a8;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.draw-rate-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  font-size: 12px;
+}
+
+.draw-rate-row:last-child {
+  border-bottom: none;
+}
+
+.draw-rate-val {
+  font-weight: 800;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-size: 11px;
+}
+
+.draw-rate-locket {
+  background: rgba(255, 157, 77, 0.2);
+  color: #ffb885;
+}
+
+.draw-rate-shards {
+  background: rgba(192, 112, 237, 0.2);
+  color: #e2aeff;
+}
+
+.draw-rate-full {
+  background: rgba(255, 213, 77, 0.2);
+  color: #ffe382;
+}
+
+/* Hero Showcase Tabs (NO TIERS) */
+.draw-hero-preview-card {
+  background: rgba(30, 20, 44, 0.85);
+  border: 1px solid rgba(192, 112, 237, 0.25);
+  border-radius: 12px;
+  padding: 14px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+}
+
+.draw-hero-tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 12px;
+}
+
+.draw-hero-tab-btn {
+  flex: 1;
+  padding: 8px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 6px;
+  color: #d1b8e8;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.draw-hero-tab-btn.active {
+  background: rgba(192, 112, 237, 0.3);
+  border-color: var(--holloway-purple);
+  color: #fff;
+}
+
+.draw-hero-dossier {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.draw-hero-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.draw-hero-thumb {
+  width: 54px;
+  height: 54px;
+  border-radius: 10px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: #110c17;
+  object-fit: contain;
+}
+
+.draw-hero-meta h3 {
+  margin: 0;
+  font-size: 15px;
+  font-weight: 800;
+}
+
+.draw-hero-badges {
+  display: flex;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.draw-badge-role {
+  font-size: 10px;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  color: #ddd;
+}
+
+.draw-hero-specialty {
+  font-size: 11px;
+  line-height: 1.4;
+  color: #c4b5d4;
+  font-style: italic;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 6px 10px;
+  border-radius: 6px;
+  border-left: 3px solid var(--holloway-purple);
+}
+
+.draw-hero-shards-held {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 12px;
+  font-weight: 700;
+  background: rgba(255, 255, 255, 0.04);
+  padding: 6px 10px;
+  border-radius: 6px;
+}
+
+.draw-inspect-btn {
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  color: #fff;
+  padding: 8px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.draw-inspect-btn:hover {
+  background: rgba(192, 112, 237, 0.2);
+  border-color: var(--holloway-purple);
+}
+
+/* Drop Modal Popup */
+.draw-drop-modal {
+  text-align: center;
+  padding: 16px;
+}
+
+.draw-drop-glow {
+  width: 90px;
+  height: 90px;
+  margin: 0 auto 12px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 25px rgba(255, 157, 77, 0.6);
+}
+
+.draw-drop-glow.locket {
+  background: radial-gradient(circle, #ff9d4d, #b45309);
+}
+
+.draw-drop-glow.hero {
+  background: radial-gradient(circle, #a855f7, #6b21a8);
+}
+
+.draw-drop-glow img {
+  width: 75%;
+  height: 75%;
+  object-fit: contain;
+}
+
+.draw-drop-title {
+  font-size: 18px;
+  font-weight: 900;
+  margin-bottom: 6px;
+}
+
+.draw-drop-desc {
+  font-size: 13px;
+  line-height: 1.5;
+  color: #d1b8e8;
+  margin-bottom: 16px;
+}

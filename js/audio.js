@@ -172,8 +172,8 @@ const CUE5 = {
   riku_guard: ['rikutaunt.wav'],
   goofy_start: ['goofyyeah-2.wav', 'goofyboyoh-2.wav'],
   goofy_attack: ['Goofyattack.wav', 'goofytakethat__1_.wav', 'goofytakethat__2_.wav'],
-  goofy_skill: ['goofycomeon-2.wav', 'goofytakethat__1_.wav', 'goofytakethat__2_.wav'],
-  goofy_protect: ['goofythankspal-2.wav', 'goofycomeon-2.wav'],
+  goofy_skill: ['Goofyattack.wav', 'goofytakethat__1_.wav', 'goofytakethat__2_.wav'],
+  goofy_protect: ['goofyyeah-2.wav', 'goofyboyoh-2.wav'],
   goofy_hurt: ['goofydamaged.wav', 'goofydamaged2.wav'],
   goofy_down: ['goofykoed-2.wav'],
   phantasia_start: ['phantasialetmehandlethisone.mp3', 'Phantasia_COMEONEVERYPONY.mp3.mp3'],
@@ -313,12 +313,21 @@ const COLLAB_AUDIO = {
 
 const HERO_AUDIO = {
   Bobette: { talk: 'hero_bobette_talk' },
-  Gourdy: { talk: 'hero_gourdy_talk' },
+  Gourdy: { talk: 'hero_gourdy_talk', ability: 'tw_gourdy_attack' },
   Bassie: { talk: 'hero_bassie_talk' },
   Astro: { talk: 'hero_astro_talk', ability: 'hero_astro_ability' },
-  Sprout: { talk: 'hero_sprout_talk' },
+  Sprout: { talk: 'hero_sprout_talk', ability: 'tw_sprout_skill' },
   Vee: { talk: 'hero_vee_talk', ability: 'hero_vee_ability' },
-  Shelly: { talk: 'hero_shelly_talk', ability: 'hero_shelly_ability' }
+  Shelly: { talk: 'hero_shelly_talk', ability: 'hero_shelly_ability' },
+  Glisten: { ability: 'hero_glisten_ability' },
+  Gigi: { ability: 'gigi_ability' },
+  Flutter: { ability: 'flutter_white' },
+  Toodles: { ability: 'toodles_gamble' },
+  Rudie: { ability: 'rudie_wind' },
+  Tisha: { ability: 'tisha_wind' },
+  Pebble: { talk: 'pebble_talk', ability: 'pebble_speak' },
+  MrsHolloway: { talk: 'whisper', ability: 'spectral' },
+  MrHolloway: { talk: 'sweep', ability: 'hit_heavy' }
 };
 
 const TWISTED_AUDIO = {
@@ -362,12 +371,23 @@ const SFX_FILE_GAIN = {
   'twistedpebblesnarl.ogg': 1.23, 'TwistedBlotHandAttack.mp3.mp3': 1.10,
   'TwistedRNDWake.mp3.mp3': .45, 'TwistedRNDAttack.mp3.mp3': .40,
   'TwistedRNDActivate.mp3.mp3': .42, 'TwistedRNDSleep.mp3.mp3': .38,
-  'TwistedBlotHandSpawn.mp3.mp3': 1.54, 'TwistedBlotHandDespawn.mp3.mp3': 2.96
+  'TwistedBlotHandSpawn.mp3.mp3': 1.54, 'TwistedBlotHandDespawn.mp3.mp3': 2.96,
+  'GlistenUsingHisAbilityAudio.mp3.mp3': .82, 'Gigi_Ability.mp3.mp3': .75,
+  'GamblingAbility.ogg': .85, 'flutterwhite.ogg': .78,
+  'AstroActiveAbility.mp3.mp3': .85, 'Veeabilityaudio.mp3.mp3': .80,
+  'ShellyAbility.mp3.mp3': .82, 'Gourdydialouge.mp3.mp3': 1.25
 };
 
 /* Named cues mapped to real files in SFX/Common. Arrays get randomised so
    repeated hits never sound like a loop. */
 const CUE = {
+  // drawing & sketching
+  tapdraw: ['tapdraw.wav'],
+  scratch_pencil: ['ACT_SCRATCH_1.wav', 'ACT_SCRATCH_2.wav', 'ACT_SCRATCH_3.wav'],
+  candy_pop: ['candy-pop.wav'],
+  ghost_vanish: ['ghost-vanish.wav'],
+  earth_quake: ['019_quake_1.wav'],
+  bone_rattle: ['bone-rattle.wav'],
   // swings
   swing_sword: ['010_swing_sword_0.wav', '010_swing_sword_1.wav', '010_swing_sword_2.wav'],
   swing_blade: ['006_swing_blade_0.wav', '006_swing_blade_1.wav', '006_swing_blade_2.wav'],

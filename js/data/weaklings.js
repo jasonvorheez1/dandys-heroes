@@ -371,7 +371,7 @@ function makeWeakling(id, level) {
     // which a short weakling fight often never reaches, so they were
     // effectively basic-attack-only with a kit nobody ever saw fire.
     rarity: 2, rarityPlus: 1, stars: clamp(1 + Math.floor(level / 80), 1, 4),
-    skillLv: Math.max(1, Math.round(level * .85)),
+    skillLv: enemySkillLevel(level, 'weakling'),
     cls: training.cls, subcls: training.subcls,
     classRank: training.classRank, subclassRank: training.subclassRank,
     mult: { hp: 1, atk: 1, def: 1 }

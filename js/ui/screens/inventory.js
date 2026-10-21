@@ -57,8 +57,9 @@ Object.assign(Screens, {
       const wornCount = copies.filter(u => eq.has(u)).length;
       const n = el('button', 'inventory-trinket-card');
       n.type = 'button';
+      const bestRank = Save.trinketBestRank(id);
       n.innerHTML = `<span class="inventory-item-art"><img src="${trinketIcon(id)}" alt="${t.name}">${wornCount ? `<em>${wornCount} WORN</em>` : '<em class="free">IN BAG</em>'}</span>
-        <span class="inventory-item-copy"><b>${t.name}${trinketPlaceholderBadge(id)}</b><small>${heroRole(t.owner ? (HEROES[t.owner] && HEROES[t.owner].role) : '') || 'Character Trinket'}</small><span>Best Rank ${Save.trinketBestRank(id)} · ${copies.length} cop${copies.length === 1 ? 'y' : 'ies'}</span></span>
+        <span class="inventory-item-copy"><b>${t.name}${trinketPlaceholderBadge(id)}</b><small>R${bestRank}/${TRINKET_MAX_RANK} · ${trinketRankLabel(bestRank)}</small><span class="inventory-best-bonus">${trinketStatText(t, bestRank)}</span><span>${copies.length} cop${copies.length === 1 ? 'y' : 'ies'}</span></span>
         <strong>›</strong><span class="inventory-item-foot"><i>${wornCount ? wornCount + ' equipped' : 'Nothing equipped'}</i>${copies.length > wornCount ? `<i class="free-copy">${copies.length - wornCount} free</i>` : ''}</span>`;
       n.onclick = () => this.openTrinketDetail(id);
       grid.appendChild(n);
@@ -129,11 +130,13 @@ Object.assign(Screens, {
       const free = atRank.filter(u => !eq.has(u));
       const wornBy = atRank.filter(u => eq.has(u)).map(u => HEROES[Save.whoWears(u)].name);
       const card = el('div', 'card');
-      card.style.marginBottom = '8px';
+      card.classList.add('trinket-rank-card');
       const mergeCost = trinketMergeCost(r);
-      card.innerHTML = `<div class="row tiny"><div class="grow b">Rank ${r} · ${trinketRankLabel(r)} · ${trinketStatText(t, r)}</div>
-        <div class="muted">x${atRank.length}</div></div>
-        <div class="mini muted" style="margin-top:2px">${free.length} free${wornBy.length ? ' · worn by ' + wornBy.join(', ') : ''}</div>`;
+      const nextRank = Math.min(TRINKET_MAX_RANK, r + 1);
+      card.innerHTML = `<div class="trinket-rank-card-head"><b class="trinket-rank-badge">R${r}<small>/${TRINKET_MAX_RANK}</small></b><div><strong>${trinketRankLabel(r)}</strong><span>${trinketStatText(t, r)}</span></div><em>×${atRank.length}</em></div>
+        <div class="trinket-rank-track"><i style="width:${r / TRINKET_MAX_RANK * 100}%"></i></div>
+        <div class="trinket-rank-card-gain"><span>⚡ +${trinketPowerScore(r)} Power</span><span>${r < TRINKET_MAX_RANK ? `NEXT R${nextRank}: ${trinketStatText(t, nextRank)} · +${trinketPowerScore(nextRank) - trinketPowerScore(r)} Power` : 'MAX RANK'}</span></div>
+        <div class="mini muted" style="margin-top:5px">${free.length} free${wornBy.length ? ' · worn by ' + wornBy.join(', ') : ''}</div>`;
       const row = el('div', 'row'); row.style.marginTop = '6px';
       if (free.length) {
         const eqBtn = el('button', 'btn tiny grow', 'Equip');
@@ -164,18 +167,25 @@ Object.assign(Screens, {
     const body = el('div');
     body.appendChild(el('div', 'trinket-equip-rule', 'ⓘ ' + trinketEquipRule(tid)));
     body.appendChild(el('div', 'mini trinket-signature-effect', '🧩 Fragment effect: ' + trinketSignatureEffect(tid)));
-    body.appendChild(el('div', 'mini muted', 'Rank ' + Save.data.trinketInv[uid].rank + ' · ' + trinketRankLabel(Save.data.trinketInv[uid].rank) + ' · ' + trinketStatText(t, Save.data.trinketInv[uid].rank) + ' · ' + t.effect));
+    const rank = Save.data.trinketInv[uid].rank;
+    body.appendChild(el('div', 'trinket-equip-preview', `<b>R${rank}/${TRINKET_MAX_RANK} · ${trinketRankLabel(rank)}</b><span>${trinketStatText(t, rank)}</span><small>⚡ +${trinketPowerScore(rank)} Power · ${t.effect}</small>`));
     body.appendChild(el('div', 'spacer'));
     const list = el('div');
     Save.ownedIds().filter(hid => !(HEROES[hid] && HEROES[hid].noTrinket)).sort((a, b) => Progress.power(b) - Progress.power(a)).forEach(hid => {
       const h = Save.hero(hid);
       const row = el('div', 'row card');
-      row.style.cssText = 'margin-bottom:6px;padding:8px;align-items:center';
+      row.style.cssText = 'margin-bottom:6px;padding:8px;align-items:center;flex-wrap:wrap';
       row.innerHTML = `<img src="${Art.icon(hid)}" style="width:34px;height:34px;object-fit:contain">
-        <div class="grow b">${HEROES[hid].name}</div>`;
+        <div class="grow b">${HEROES[hid].name}<div class="mini muted">⚡ ${fmt(Progress.power(hid))} Power</div></div>`;
       [0, 1].forEach(slot => {
         const wornSame = h.trinkets[slot] === uid;
-        const b = el('button', 'pill', wornSame ? '✓ Slot ' + (slot + 1) : 'Slot ' + (slot + 1));
+        const oldCopy = h.trinkets[slot] && Save.data.trinketInv[h.trinkets[slot]];
+        const oldScore = oldCopy ? trinketPowerScore(oldCopy.rank) : 0;
+        const gain = trinketPowerScore(rank) - oldScore;
+        const b = el('button', 'pill', wornSame ? '✓ Slot ' + (slot + 1) : `Slot ${slot + 1} · ${gain >= 0 ? '+' : ''}${gain} ⚡`);
+        b.title = wornSame ? 'Unequip this Trinket' : oldCopy && TRINKETS[oldCopy.id]
+          ? `Replace ${TRINKETS[oldCopy.id].name} R${oldCopy.rank} (${trinketStatText(TRINKETS[oldCopy.id], oldCopy.rank)})`
+          : 'Equip in empty slot';
         if (wornSame) { b.style.background = 'var(--gold)'; b.style.color = '#2a1a00'; }
         b.onclick = () => {
           if (wornSame) Progress.unequipTrinket(hid, slot);
@@ -277,7 +287,7 @@ Object.assign(Screens, {
     intro.innerHTML = `<div><small>WORKSHOP</small><h2>Craft Trinkets</h2><p>Turn spare equipment into a fresh Rank 1 copy for any build.</p></div><b>${fmt(Save.res('scrap'))}<small> SCRAP</small></b>`;
     wrap.appendChild(intro);
     const note = el('div', 'inventory-info craft-info');
-    note.innerHTML = `<i>⚙</i><span>Salvage free copies in Trinkets to earn Scrap. Ranks 1–2 merge from 2 copies; Ranks 3–4 need 3. Each craft costs <b>${CRAFT_COPY_COST} Scrap</b> and makes a Rank 1 copy.</span>`;
+    note.innerHTML = `<i>⚙</i><span>Salvage free copies in Trinkets to earn Scrap. Ranks 1–2 and 5–19 merge from 2 copies; Ranks 3–4 need 3. Rank ${TRINKET_MAX_RANK} is the cap. Each craft costs <b>${CRAFT_COPY_COST} Scrap</b> and makes a Rank 1 copy.</span>`;
     wrap.appendChild(note);
 
     const grid = el('div', 'inventory-grid inventory-craft-grid');
