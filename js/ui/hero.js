@@ -967,8 +967,14 @@ const HeroPage = {
     const phantasiaPreview = id === 'Phantasia' && PHANTASIA_SKILL_PREVIEWS[key];
     const rudiePreview = id === 'Rudie' && RUDIE_SKILL_PREVIEWS[key];
     const tishaPreview = id === 'Tisha' && TISHA_SKILL_PREVIEWS[key];
+    const dandyPreview = id === 'Dandy' && DANDY_SKILL_PREVIEWS[key];
+    const pebblePreview = id === 'Pebble' && PEBBLE_SKILL_PREVIEWS[key];
+    const scrapsPreview = id === 'Scraps' && SCRAPS_SKILL_PREVIEWS[key];
+    const flutterPreview = id === 'Flutter' && FLUTTER_SKILL_PREVIEWS[key];
+    const ribeccaPreview = id === 'Ribecca' && RIBECCA_SKILL_PREVIEWS[key];
+    const astroPreview = id === 'Astro' && ASTRO_SKILL_PREVIEWS[key];
     const collabPreview = COLLAB_SKILL_PREVIEWS[id] && COLLAB_SKILL_PREVIEWS[id][key];
-    const bespokePreview = gourdyPreview || toodlesPreview || rodgerPreview || shrimpoPreview || veePreview || flytePreview || sproutPreview || bassiePreview || waxwellPreview || phantasiaPreview || rudiePreview || tishaPreview || collabPreview;
+    const bespokePreview = gourdyPreview || toodlesPreview || rodgerPreview || shrimpoPreview || veePreview || flytePreview || sproutPreview || bassiePreview || waxwellPreview || phantasiaPreview || rudiePreview || tishaPreview || dandyPreview || pebblePreview || scrapsPreview || flutterPreview || ribeccaPreview || astroPreview || collabPreview;
     if (bespokePreview) Object.assign(cfg, bespokePreview);
     if (cfg.basic) {
       const hash = id.split('').reduce((n, c) => n + c.charCodeAt(0), 0);
@@ -1033,7 +1039,7 @@ const HeroPage = {
     // status sequence. Collaboration atlases and signature Heroes already
     // carry their own effects; the old role-based fallback was the source of
     // the conspicuous placeholder smoke/rings in this preview.
-    cfg.cinematicFx = (!!cfg.forceCinematicFx || !!HERO_CINEMATICS[id]) && !base.noSequence && !base.signature && !cfg.actorAtlases && !cfg.sproutMode && !cfg.bassieMode && !cfg.waxMode;
+    cfg.cinematicFx = (!!cfg.forceCinematicFx || !!HERO_CINEMATICS[id]) && !base.noSequence && !base.signature && !cfg.actorAtlases && !cfg.sproutMode && !cfg.bassieMode && !cfg.waxMode && !cfg.dandyMode && !cfg.pebbleMode && !cfg.scrapsMode && !cfg.flutterMode && !cfg.ribeccaMode && !cfg.astroMode && !cfg.milkMode && !cfg.vanillaMode && !cfg.khMode;
     const maps = ['rainbow-rooms','art-floor','library-floor','vee-floor','greenhouse'];
     const map = maps[Math.abs(id.split('').reduce((n, c) => n + c.charCodeAt(0), 0)) % maps.length];
     const targetId = cfg.ally ? (Save.ownedIds().find(x => x !== id) || id) : null;
@@ -1051,7 +1057,12 @@ const HeroPage = {
     if (cfg.shrimpoMode) cfg.propSrc = '';
     if (cfg.veeMode) cfg.propSrc = '';
     if (cfg.flyteMode) cfg.propSrc = '';
-    if (cfg.sproutMode || cfg.bassieMode || cfg.waxMode || cfg.rudieMode) { cfg.propSrc = ''; cfg.projectileSrc = ''; }
+    if (cfg.scrapsMode === 'whatever' && !cfg.projectileSrc) cfg.projectileSrc = Art.item('Trinkets/SCRAPS_Crayonset');
+    if (cfg.astroMode === 'stars' && !cfg.projectileSrc) cfg.projectileSrc = ASSET + 'VFX/particle/star_01.png';
+    if (cfg.sproutMode || cfg.bassieMode || cfg.waxMode || cfg.rudieMode || cfg.dandyMode || cfg.pebbleMode || cfg.scrapsMode || cfg.flutterMode || cfg.ribeccaMode || cfg.astroMode || cfg.milkMode || cfg.vanillaMode || cfg.khMode) {
+      if (!cfg.projectile) cfg.projectileSrc = '';
+      cfg.propSrc = '';
+    }
     const actorW = clamp(78 * (d.scale || 1), 78, 138);
     const targetDef = targetId ? HEROES[targetId] : null;
     cfg.actorW = actorW;
@@ -1138,6 +1149,49 @@ const HeroPage = {
       <img class="preview-rudie-hoof" src="${ASSET}assets/fx/rudie-hoof-barrage.png" alt="">
       <div class="preview-rudie-speed"><i></i><i></i><i></i><i></i><i></i></div>
       <div class="preview-rudie-callout"></div></div>` : '';
+    const dandySprites = cfg.dandyMode ? `<div class="preview-dandy-layer dandy-${cfg.dandyMode}">
+      <div class="preview-dandy-spotlight"></div>
+      <div class="preview-dandy-ribbon"></div>
+      <img class="preview-dandy-cash" src="${Art.item('Dandycurrency')}" alt="">
+      <div class="preview-dandy-callout"></div></div>` : '';
+    const pebbleSprites = cfg.pebbleMode ? `<div class="preview-pebble-layer pebble-${cfg.pebbleMode}">
+      <img class="preview-pebble-dust dust-0" src="${ASSET}VFX/particle/dirt_01.png" alt="">
+      <img class="preview-pebble-dust dust-1" src="${ASSET}VFX/particle/dirt_01.png" alt="">
+      <div class="preview-pebble-bite"><i></i><i></i></div>
+      <div class="preview-pebble-speed"><i></i><i></i><i></i><i></i></div>
+      <div class="preview-pebble-callout"></div></div>` : '';
+    const scrapsSprites = cfg.scrapsMode ? `<div class="preview-scraps-layer scraps-${cfg.scrapsMode}">
+      <div class="preview-scraps-scissors"><i></i><i></i></div>
+      <div class="preview-scraps-confetti">${Array.from({ length: 8 }, (_, i) => `<i style="--confetti-col:${['#ff4081','#ffd740','#69f0ae','#40c4ff'][i % 4]}"></i>`).join('')}</div>
+      <div class="preview-scraps-patch"></div>
+      <div class="preview-scraps-callout"></div></div>` : '';
+    const flutterSprites = cfg.flutterMode ? `<div class="preview-flutter-layer flutter-${cfg.flutterMode}">
+      <div class="preview-flutter-spores">${Array.from({ length: 7 }, () => '<i></i>').join('')}</div>
+      <div class="preview-flutter-gust"></div>
+      <div class="preview-flutter-callout"></div></div>` : '';
+    const ribeccaSprites = cfg.ribeccaMode ? `<div class="preview-ribecca-layer ribecca-${cfg.ribeccaMode}">
+      <div class="preview-ribecca-ring"></div>
+      <div class="preview-ribecca-notes"><i>♪</i><i>♫</i><i>♩</i><i>♬</i></div>
+      <div class="preview-ribecca-callout"></div></div>` : '';
+    const astroSprites = cfg.astroMode ? `<div class="preview-astro-layer astro-${cfg.astroMode}">
+      <div class="preview-astro-ring"></div>
+      <div class="preview-astro-stars">${Array.from({ length: 5 }, () => '<i></i>').join('')}</div>
+      <div class="preview-astro-callout"></div></div>` : '';
+    const milkSprites = cfg.milkMode ? `<div class="preview-milk-layer milk-${cfg.milkMode}">
+      <div class="preview-milk-strings">${Array.from({ length: 5 }, (_, i) => `<i style="left:${18 + i * 16}%"></i>`).join('')}</div>
+      <img class="preview-milk-eye" src="${ASSET}VFX/particle/magic_04.png" alt="">
+      <div class="preview-milk-cards"><i></i><i></i><i></i><i></i></div>
+      <div class="preview-milk-callout"></div></div>` : '';
+    const vanillaSprites = cfg.vanillaMode ? `<div class="preview-vanilla-layer vanilla-${cfg.vanillaMode}">
+      <div class="preview-vanilla-dome"></div>
+      <div class="preview-vanilla-pillar"></div>
+      <div class="preview-vanilla-petals">${Array.from({ length: 6 }, () => '<i></i>').join('')}</div>
+      <div class="preview-vanilla-callout"></div></div>` : '';
+    const khSprites = cfg.khMode ? `<div class="preview-kh-layer kh-${cfg.khMode}">
+      <img class="preview-kh-keyblade-trail" src="${ASSET}VFX/particle/slash_01.png" alt="">
+      <div class="preview-kh-sparks">${Array.from({ length: 3 }, () => `<img src="${ASSET}VFX/particle/spark_02.png" alt="">`).join('')}</div>
+      <img class="preview-kh-thunder" src="${ASSET}VFX/particle/spark_03.png" alt="">
+      <div class="preview-kh-callout"></div></div>` : '';
     const stage = el('div', 'skill-preview-stage live-preview' + (cfg.passive ? ' passive' : '') + (cfg.ultimate ? ' ultimate' : '')
       + (cfg.id === 'Brightney' ? ` brightney-preview brightney-preview-${String(cfg.previewKey).toLowerCase()}` : '')
       + (cfg.id === 'Blot' ? ` blot-preview blot-preview-${String(cfg.previewKey).toLowerCase()}` : '')
@@ -1146,6 +1200,15 @@ const HeroPage = {
       + (cfg.flyteMode ? ` flyte-preview-${cfg.flyteMode}` : '') + (cfg.sproutMode ? ` sprout-preview-${cfg.sproutMode}` : '')
       + (cfg.bassieMode ? ` bassie-preview-${cfg.bassieMode}` : '') + (cfg.waxMode ? ` wax-preview-${cfg.waxMode}` : '')
       + (cfg.rudieMode ? ` rudie-preview-${cfg.rudieMode}` : '')
+      + (cfg.dandyMode ? ` dandy-preview-${cfg.dandyMode}` : '')
+      + (cfg.pebbleMode ? ` pebble-preview-${cfg.pebbleMode}` : '')
+      + (cfg.scrapsMode ? ` scraps-preview-${cfg.scrapsMode}` : '')
+      + (cfg.flutterMode ? ` flutter-preview-${cfg.flutterMode}` : '')
+      + (cfg.ribeccaMode ? ` ribecca-preview-${cfg.ribeccaMode}` : '')
+      + (cfg.astroMode ? ` astro-preview-${cfg.astroMode}` : '')
+      + (cfg.milkMode ? ` milk-preview-${cfg.milkMode}` : '')
+      + (cfg.vanillaMode ? ` vanilla-preview-${cfg.vanillaMode}` : '')
+      + (cfg.khMode ? ` kh-preview-${cfg.khMode}` : '')
       + ` preview-kind-${cfg.visualKind}`);
     stage.style.cssText += `--preview-color:${cfg.col};background-image:linear-gradient(180deg,#07101359,#071013b8),url("${bgForMap(map)}")`;
     const previewType = cfg.previewType || (cfg.basic ? (cfg.attackKind === 'ranged' ? 'RANGED BASIC' : cfg.attackKind === 'melee' ? 'MELEE BASIC' : 'REACH BASIC')
@@ -1153,12 +1216,14 @@ const HeroPage = {
     stage.innerHTML = `<div class="skill-preview-label">
       <span><b>${cfg.skillName}</b><small>${previewType} · BATTLE REPLAY</small></span>
       <div class="skill-preview-btns">
-        <button type="button" class="preview-btn preview-speed" title="Toggle Speed (1× / 0.5×)">1×</button>
+        <button type="button" class="preview-btn preview-speed" title="Toggle Speed (1× / 0.5× / 2×)">1×</button>
         <button type="button" class="preview-btn preview-pause" title="Pause / Resume">⏸</button>
         <button type="button" class="preview-btn preview-replay" aria-label="Replay ${cfg.skillName} preview with sound" title="Replay (Space / R)">↻</button>
       </div>
     </div>
       <div class="preview-arena-floor"><i></i><i></i><i></i></div>
+      <div class="preview-vignette"></div>
+      <div class="preview-radial-burst"></div>
       ${fighter('actor', id, false, cfg.actorAtlases, cfg.actorW)}
       ${fighter('target', targetId, cfg.ally, cfg.targetAtlases, cfg.targetW)}
       ${cfg.id === 'Blot' && cfg.previewKey === 'W' ? `<img class="preview-blot-decoy" src="${ASSET}assets/fx/blot-decoy.png" alt="" aria-hidden="true">` : ''}
@@ -1168,7 +1233,9 @@ const HeroPage = {
       <div class="preview-live-projectile">${cfg.projectileSrc ? `<img src="${cfg.projectileSrc}" alt="">` : '<i></i>'}</div>
       ${cfg.propSrc ? `<img class="preview-live-prop" src="${cfg.propSrc}" alt="">` : '<i class="preview-live-prop energy"></i>'}
       <div class="preview-hit-burst"><i></i><i></i><i></i></div>
+      <div class="preview-hit-sparks"><i></i><i></i></div>
       <div class="preview-float-number"></div>
+      <div class="preview-popups-layer"></div>
       ${gourdySprites}
       ${toodlesSprites}
       ${rodgerSprites}
@@ -1179,6 +1246,15 @@ const HeroPage = {
       ${bassieSprites}
       ${waxSprites}
       ${rudieSprites}
+      ${dandySprites}
+      ${pebbleSprites}
+      ${scrapsSprites}
+      ${flutterSprites}
+      ${ribeccaSprites}
+      ${astroSprites}
+      ${milkSprites}
+      ${vanillaSprites}
+      ${khSprites}
       <div class="preview-screen-flash"></div>
       <div class="preview-playhead"><i></i></div>`;
     stage._preview = cfg;
@@ -1189,7 +1265,7 @@ const HeroPage = {
     const replayBtn = $('.preview-replay', stage);
     if (speedBtn) {
       speedBtn.onclick = () => {
-        stage._previewSpeed = stage._previewSpeed === 1 ? 0.5 : 1;
+        stage._previewSpeed = stage._previewSpeed === 1 ? 0.5 : stage._previewSpeed === 0.5 ? 2 : 1;
         speedBtn.textContent = `${stage._previewSpeed}×`;
         speedBtn.classList.toggle('active', stage._previewSpeed !== 1);
         Sound.play('ui_move');
@@ -1258,17 +1334,56 @@ const HeroPage = {
     const actor = $('.preview-actor-fighter', stage), target = $('.preview-target-fighter', stage);
     const actorBody = $('.preview-combat-body', actor), targetBody = $('.preview-combat-body', target);
     const actorImg = $('img', actorBody), targetHp = $('.preview-combat-hud i', target);
+    const targetShield = $('.preview-combat-hud u', target);
+    const actorShadow = $('.preview-combat-shadow', actor), targetShadow = $('.preview-combat-shadow', target);
     const castFx = $('.preview-cast-fx', stage), impactFx = $('.preview-impact-fx', stage);
     const authoredFx = $('.preview-authored-fx', stage);
     const projectile = $('.preview-live-projectile', stage), prop = $('.preview-live-prop', stage);
     const burst = $('.preview-hit-burst', stage), number = $('.preview-float-number', stage);
+    const hitSparks = $('.preview-hit-sparks', stage);
+    const vignette = $('.preview-vignette', stage);
+    const radialBurst = $('.preview-radial-burst', stage);
+    const popupsLayer = $('.preview-popups-layer', stage);
     const blotDecoy = $('.preview-blot-decoy', stage);
     const flash = $('.preview-screen-flash', stage), playhead = $('.preview-playhead i', stage);
     const easeOut = x => 1 - Math.pow(1 - clamp(x, 0, 1), 3);
     const easeInOut = x => x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
     const selectedSkill = cfg.basic ? HEROES[cfg.id].basic : HEROES[cfg.id].skills[this.skillKey];
     const displayNumber = Math.max(1, sim.displayValue || 0);
+
+    // Pre-create combat event popups in popupsLayer
+    if (popupsLayer) popupsLayer.innerHTML = '';
+    const simEvents = (sim.events || []).filter(e => e.kind === 'damage' || e.kind === 'heal' || e.kind === 'shield' || e.kind === 'status' || e.kind === 'miss');
+    const popupNodes = [];
+    if (popupsLayer && simEvents.length) {
+      simEvents.forEach((ev, idx) => {
+        const wrap = document.createElement('div');
+        wrap.className = 'preview-popup';
+        let innerHtml = '';
+        if (ev.kind === 'damage') {
+          if (ev.crit || ev.superCrit) {
+            innerHtml = `<div class="preview-damage-pop crit"><span class="crit-badge">CRIT!</span>-${fmt(Math.round(ev.amount))}</div>`;
+          } else {
+            innerHtml = `<div class="preview-damage-pop ${ev.type || 'physical'}">-${fmt(Math.round(ev.amount))}</div>`;
+          }
+        } else if (ev.kind === 'heal') {
+          innerHtml = `<div class="preview-heal-pop">+${fmt(Math.round(ev.amount))}</div>`;
+        } else if (ev.kind === 'shield') {
+          innerHtml = `<div class="preview-shield-pop"><i>🛡️</i>+${fmt(Math.round(ev.amount))}</div>`;
+        } else if (ev.kind === 'miss') {
+          innerHtml = `<div class="preview-miss-pop">MISS</div>`;
+        } else if (ev.kind === 'status') {
+          const pill = PREVIEW_STATUS_PILL_MAP[ev.id] || { icon: '✨', label: ev.id.toUpperCase(), col: '#8ee5ff' };
+          innerHtml = `<div class="preview-status-pill" style="--pill-col:${pill.col}"><i>${pill.icon}</i><span>${pill.label}</span></div>`;
+        }
+        wrap.innerHTML = innerHtml;
+        popupsLayer.appendChild(wrap);
+        popupNodes.push({ node: wrap, ev, idx, tP: clamp(ev.t / (sim.duration || duration / 1000), 0.1, 0.95) });
+      });
+    }
+
     let lastActorArt = '', lastNow = performance.now(), simElapsed = 0;
+    let shakeAmt = 0, hitstopRemaining = 0, hitstopTriggered = false;
     const setFlipbook = (node, folder, local, visible) => {
       if (!node) return;
       node.style.opacity = visible ? String(Math.min(1, local * 7, (1 - local) * 7)) : '0';
@@ -1281,9 +1396,23 @@ const HeroPage = {
       if (!stage.isConnected) { this.stopPreview(); return; }
       const delta = Math.min(100, Math.max(0, now - lastNow));
       lastNow = now;
-      if (!stage._previewPaused) {
-        simElapsed += delta * (stage._previewSpeed || 1);
+
+      // Hitstop micro-pause on crit or ultimate hit impact
+      if (sim.hasCrit || cfg.ultimate) {
+        const isImpactMoment = Math.abs(clamp(simElapsed / duration, 0, 1) - hitAt) < 0.025;
+        if (isImpactMoment && !hitstopTriggered) {
+          hitstopTriggered = true;
+          hitstopRemaining = 50;
+        }
       }
+      if (hitstopRemaining > 0) {
+        hitstopRemaining -= delta;
+      } else {
+        if (!stage._previewPaused) {
+          simElapsed += delta * (stage._previewSpeed || 1);
+        }
+      }
+
       const p = clamp(simElapsed / duration, 0, 1);
       const actionP = clamp((p - actionStart) / (actionEnd - actionStart), 0, .999);
       const actionT = actionP * actionTotal;
@@ -1324,7 +1453,7 @@ const HeroPage = {
         else if (p < holdUntil) advance = 1;
         else advance = 1 - easeInOut((p - holdUntil) / Math.max(.01, .94 - holdUntil));
       }
-        const travel = stage._previewW * (cfg.flyteMode === 'clear' ? .62 : cfg.flyteMode === 'rescue' ? .52
+      const travel = stage._previewW * (cfg.flyteMode === 'clear' ? .62 : cfg.flyteMode === 'rescue' ? .52
         : cfg.shrimpoMode && cfg.dashes ? .54 : cfg.basic && cfg.attackKind === 'reach' ? .20 : .31);
       let bob = Math.sin(now / 210) * 1.5, rot = 0, sx = 1, sy = 1;
       if (active && !cfg.actorAtlases) {
@@ -1468,6 +1597,44 @@ const HeroPage = {
       } else if (cfg.rudieMode === 'momentum') {
         const pulse = Math.sin(clamp((p - .08) / .66, 0, 1) * Math.PI);
         bob -= pulse * 5; rot += Math.sin(p * Math.PI * 4) * pulse * 3; sx += pulse * .05; sy += pulse * .05;
+      } else if (cfg.dandyMode === 'spotlight' || cfg.dandyMode === 'finale') {
+        const lift = Math.sin(clamp((p - .08) / .68, 0, 1) * Math.PI);
+        bob -= lift * 15; rot += Math.sin(p * Math.PI * 4) * lift * 4; sx += lift * .10; sy += lift * .08;
+      } else if (cfg.dandyMode === 'closing') {
+        const brace = Math.sin(clamp((p - .08) / .28, 0, 1) * Math.PI), slam = Math.sin(clamp((p - .32) / .30, 0, 1) * Math.PI);
+        rot += brace * 10 - slam * 24; bob += brace * 6 - slam * 6; sx += slam * .18; sy -= brace * .10;
+      } else if (cfg.pebbleMode === 'speak' || cfg.pebbleMode === 'tackle') {
+        const pounce = Math.sin(clamp((p - .08) / .34, 0, 1) * Math.PI);
+        bob -= pounce * 16; rot += pounce * 12; sx += pounce * .14; sy -= pounce * .08;
+      } else if (cfg.pebbleMode === 'goodboy') {
+        const roll = clamp((p - .10) / .70, 0, 1);
+        rot = roll * 360; bob -= Math.sin(roll * Math.PI) * 14; sx += .10;
+      } else if (cfg.scrapsMode === 'crafts' || cfg.scrapsMode === 'grapple') {
+        const spring = Math.sin(clamp((p - .10) / .45, 0, 1) * Math.PI);
+        bob -= spring * 14; rot -= spring * 18; sx += spring * .15;
+      } else if (cfg.flutterMode === 'dash' || cfg.flutterMode === 'sweep') {
+        const flutterLift = Math.sin(clamp((p - .06) / .68, 0, 1) * Math.PI);
+        bob -= flutterLift * 20 + Math.sin(p * Math.PI * 8) * flutterLift * 4;
+        rot += Math.sin(p * Math.PI * 6) * flutterLift * 10; sx += flutterLift * .09; sy += flutterLift * .09;
+      } else if (cfg.flutterMode === 'storm') {
+        const spinP = clamp((p - .12) / .72, 0, 1);
+        rot = spinP * 720; bob -= Math.sin(spinP * Math.PI) * 22;
+      } else if (cfg.ribeccaMode === 'undead' || cfg.ribeccaMode === 'bones') {
+        const rattle = Math.sin(p * Math.PI * 14) * Math.sin(clamp((p - .10) / .65, 0, 1) * Math.PI);
+        bob += rattle * 5; rot += rattle * 12; sx += Math.abs(rattle) * .12;
+      } else if (cfg.astroMode === 'pulse' || cfg.astroMode === 'night') {
+        const floatP = Math.sin(clamp((p - .08) / .72, 0, 1) * Math.PI);
+        bob -= floatP * 18; rot += Math.sin(p * Math.PI * 3) * floatP * 3; sx += floatP * .08; sy += floatP * .08;
+      } else if (cfg.milkMode === 'lies' || cfg.milkMode === 'show') {
+        const puppetHop = Math.sin(clamp((p - .08) / .70, 0, 1) * Math.PI);
+        bob -= puppetHop * 16 + Math.abs(Math.sin(p * Math.PI * 6)) * 4;
+        rot += Math.sin(p * Math.PI * 4) * 8 * puppetHop; sx += puppetHop * .09;
+      } else if (cfg.vanillaMode === 'peace' || cfg.vanillaMode === 'beacon') {
+        const ascend = Math.sin(clamp((p - .08) / .74, 0, 1) * Math.PI);
+        bob -= ascend * 16; sx += ascend * .06; sy += ascend * .08;
+      } else if (cfg.khMode === 'finisher' || cfg.khMode === 'limit' || cfg.khMode === 'break') {
+        const strikeHop = Math.sin(clamp((p - .08) / .30, 0, 1) * Math.PI);
+        bob -= strikeHop * 14; rot -= strikeHop * 20; sx += strikeHop * .16;
       }
       actor.style.transform = `translate3d(${advance * travel}px,${bob}px,0) rotate(${rot}deg) scale(${sx},${sy})`;
 
@@ -1481,15 +1648,91 @@ const HeroPage = {
       const hitPulse = Math.max(...(cfg.hitTimes || [hitAt]).map(at => clamp(1 - Math.abs(p - at) / .055, 0, 1)));
       const buffPulse = cfg.ally || cfg.passive ? clamp(1 - Math.abs(p - hitAt) / .18, 0, 1) : 0;
       const support = cfg.ally || cfg.passive, noDamage = !!cfg.previewNoDamage || !!sim.missed;
+
+      // Stage rumble / camera shake on heavy impacts
+      if (hitPulse > 0.35) {
+        shakeAmt = Math.max(shakeAmt, (sim.hasCrit ? 8 : cfg.ultimate ? 7 : 3.5) * hitPulse);
+      }
+      shakeAmt *= 0.88;
+      if (shakeAmt > 0.15) {
+        const shakeX = Math.sin(now * 0.18) * shakeAmt;
+        const shakeY = Math.cos(now * 0.22) * shakeAmt * 0.7;
+        stage.style.transform = `translate3d(${shakeX.toFixed(1)}px,${shakeY.toFixed(1)}px,0)`;
+      } else {
+        stage.style.transform = '';
+      }
+
+      // Target recoil, squash & stretch
+      const isHitFrame = (hitPulse > 0.05);
+      let targetSquashX = 1, targetSquashY = 1, targetRecoilX = 0;
+      if (!support && !noDamage && isHitFrame) {
+        targetSquashX = 1 + hitPulse * (sim.hasCrit ? 0.22 : 0.14);
+        targetSquashY = 1 - hitPulse * (sim.hasCrit ? 0.18 : 0.10);
+        targetRecoilX = Math.sin(hitPulse * Math.PI * 6) * hitPulse * (sim.hasCrit ? 12 : 7);
+      }
+
       target.style.transform = support
         ? `translateY(${-buffPulse * 8}px) scale(${1 + buffPulse * .07})`
         : noDamage ? `translateX(${Math.sin(hitPulse * Math.PI * 5) * hitPulse * 3}px) scale(${1 - hitPulse * .035})`
-          : `translateX(${Math.sin(hitPulse * Math.PI * 7) * hitPulse * 8}px) rotate(${hitPulse * 3}deg)`;
+          : `translateX(${targetRecoilX}px) scale(${targetSquashX}, ${targetSquashY}) rotate(${hitPulse * (sim.hasCrit ? 5 : 3)}deg)`;
       target.style.filter = support ? `brightness(${1 + buffPulse * .35}) drop-shadow(0 0 ${buffPulse * 13}px ${cfg.col})`
         : noDamage ? `brightness(${1 - hitPulse * .12}) saturate(${1 - hitPulse * .32}) drop-shadow(0 0 ${hitPulse * 10}px ${cfg.col})`
-          : `brightness(${1 + hitPulse * 1.45})`;
+          : `brightness(${1 + hitPulse * (sim.hasCrit ? 1.8 : 1.45)})`;
       if (targetHp) targetHp.style.width = (!cfg.ally && !cfg.passive && !noDamage && p >= hitAt
         ? `${Math.round((sim.targetHpPct == null ? .68 : sim.targetHpPct) * 100)}%` : '100%');
+      if (targetShield) {
+        const currentShieldEv = simEvents.slice().reverse().find(e => e.t / (sim.duration || duration / 1000) <= p && e.shieldTotal != null);
+        if (currentShieldEv && currentShieldEv.shieldTotal > 0) {
+          const maxHpBench = 1000;
+          targetShield.style.width = `${Math.min(100, Math.round((currentShieldEv.shieldTotal / maxHpBench) * 100))}%`;
+        } else if (!cfg.ally) {
+          targetShield.style.width = '0%';
+        }
+      }
+
+      // Dynamic floor shadow scaling
+      if (actorShadow) {
+        const shadowScale = Math.max(0.4, 1 + bob / 70);
+        actorShadow.style.transform = `scale(${shadowScale})`;
+        actorShadow.style.opacity = String(clamp(shadowScale, 0.3, 1));
+      }
+      if (targetShadow) {
+        const shadowScale = Math.max(0.4, targetSquashX);
+        targetShadow.style.transform = `scale(${shadowScale})`;
+      }
+
+      // Vignette, radial burst, hit sparks
+      if (vignette) {
+        const vigOpacity = cfg.ultimate ? 0.65 : sim.hasCrit ? 0.45 : active ? 0.25 : 0;
+        vignette.style.opacity = String(vigOpacity);
+      }
+      if (radialBurst) {
+        const showRadial = (cfg.ultimate || sim.hasCrit) && hitPulse > 0.2;
+        radialBurst.style.opacity = showRadial ? String(hitPulse * 0.75) : '0';
+        if (showRadial) radialBurst.style.transform = `rotate(${(now * 0.06) % 360}deg) scale(${0.7 + hitPulse * 0.4})`;
+      }
+      if (hitSparks) {
+        hitSparks.style.opacity = (!support && !noDamage && hitPulse > 0.15) ? String(hitPulse) : '0';
+        if (hitPulse > 0.15) hitSparks.style.transform = `rotate(${p * 140}deg) scale(${0.5 + hitPulse * 0.7})`;
+      }
+
+      // Live animated combat popups & status pills
+      popupNodes.forEach(item => {
+        const localP = (p - item.tP) / 0.42;
+        if (localP >= 0 && localP <= 1) {
+          const popScale = localP < 0.22 ? (localP / 0.22) * 1.25 : 1.25 - (localP - 0.22) * 0.35;
+          const popFade = localP > 0.65 ? (1 - localP) / 0.35 : 1;
+          const floatY = -localP * 36;
+          const offsetX = ((item.idx % 3) - 1) * 18;
+          const isActor = item.ev.target && item.ev.target.team === TEAM_P && !cfg.ally && item.ev.kind !== 'damage';
+          const baseX = stage._previewW * (isActor ? 0.24 : 0.78);
+          const baseY = stage._previewH * 0.48;
+          item.node.style.opacity = String(popFade);
+          item.node.style.transform = `translate3d(${baseX + offsetX}px,${baseY + floatY}px,0) scale(${popScale})`;
+        } else {
+          item.node.style.opacity = '0';
+        }
+      });
 
       const castLocal = clamp((p - .10) / .34, 0, 1);
       const impactLocal = clamp((p - (hitAt - .03)) / .28, 0, 1);
@@ -1524,16 +1767,30 @@ const HeroPage = {
       if (cfg.bassieMode) this.drawBassiePreview(stage, cfg, p, hitAt);
       if (cfg.waxMode) this.drawWaxwellPreview(stage, cfg, p, hitAt);
       if (cfg.rudieMode) this.drawRudiePreview(stage, cfg, p, hitAt);
+      if (cfg.dandyMode) this.drawDandyPreview(stage, cfg, p, hitAt);
+      if (cfg.pebbleMode) this.drawPebblePreview(stage, cfg, p, hitAt);
+      if (cfg.scrapsMode) this.drawScrapsPreview(stage, cfg, p, hitAt);
+      if (cfg.flutterMode) this.drawFlutterPreview(stage, cfg, p, hitAt);
+      if (cfg.ribeccaMode) this.drawRibeccaPreview(stage, cfg, p, hitAt);
+      if (cfg.astroMode) this.drawAstroPreview(stage, cfg, p, hitAt);
+      if (cfg.milkMode) this.drawMilkPreview(stage, cfg, p, hitAt);
+      if (cfg.vanillaMode) this.drawVanillaPreview(stage, cfg, p, hitAt);
+      if (cfg.khMode) this.drawKhPreview(stage, cfg, p, hitAt);
       this.drawAuthoredPreviewFx(stage, cfg, p, hitAt, authoredFx);
       playhead.style.width = `${p * 100}%`;
       if (p < 1) this._previewRaf = requestAnimationFrame(tick);
       else {
         this._previewRaf = null;
         stage.classList.remove('playing');
+        stage.style.transform = '';
         actor.style.transform = '';
         target.style.transform = ''; target.style.filter = '';
         if (targetHp) targetHp.style.width = '100%';
-        [castFx, impactFx, projectile, prop, burst, authoredFx, flash, blotDecoy].forEach(node => { if (node) node.style.opacity = '0'; });
+        if (targetShield) targetShield.style.width = '0%';
+        if (actorShadow) { actorShadow.style.transform = ''; actorShadow.style.opacity = ''; }
+        if (targetShadow) { targetShadow.style.transform = ''; }
+        [castFx, impactFx, projectile, prop, burst, hitSparks, vignette, radialBurst, authoredFx, flash, blotDecoy].forEach(node => { if (node) node.style.opacity = '0'; });
+        popupNodes.forEach(item => { item.node.style.opacity = '0'; });
         number.textContent = ''; number.style.opacity = '0'; playhead.style.width = '0%';
         this.drawPreviewAtlas(actorBody, cfg.actorAtlases, 'idle', now / 1000, null, cfg.actorW);
         if (actorImg) actorImg.src = cfg.originalArt;
@@ -1547,7 +1804,7 @@ const HeroPage = {
      combat calls, so a slash, area wave, projectile, and support cast no
      longer collapse into the same generic glow. */
   drawAuthoredPreviewFx(stage, cfg, p, hitAt, node) {
-    if (!node || cfg.gourdyMode || cfg.rodgerMode || cfg.shrimpoMode || cfg.veeMode || cfg.flyteMode || cfg.sproutMode || cfg.bassieMode || cfg.waxMode || cfg.rudieMode) return;
+    if (!node || cfg.gourdyMode || cfg.rodgerMode || cfg.shrimpoMode || cfg.veeMode || cfg.flyteMode || cfg.sproutMode || cfg.bassieMode || cfg.waxMode || cfg.rudieMode || cfg.dandyMode || cfg.pebbleMode || cfg.scrapsMode || cfg.flutterMode || cfg.ribeccaMode || cfg.astroMode || cfg.milkMode || cfg.vanillaMode || cfg.khMode) return;
     const w = stage._previewW || stage.clientWidth, h = stage._previewH || stage.clientHeight;
     const hitPulse = Math.max(...(cfg.hitTimes || [hitAt]).map(at => clamp(1 - Math.abs(p - at) / .065, 0, 1)));
     const castPulse = Math.sin(clamp((p - .10) / .32, 0, 1) * Math.PI);
@@ -2101,6 +2358,374 @@ const HeroPage = {
       callout.textContent = 'KNOCKBACK!'; callout.style.opacity = String(impact);
       callout.style.transform = `translate3d(${w * .67}px,${h * .17 - impact * 10}px,0) scale(${.68 + impact * .36})`;
     }
+  },
+
+  drawDandyPreview(stage, cfg, p, hitAt) {
+    const spotlight = $('.preview-dandy-spotlight', stage);
+    const ribbon = $('.preview-dandy-ribbon', stage);
+    const cash = $('.preview-dandy-cash', stage);
+    const callout = $('.preview-dandy-callout', stage);
+    if (!callout) return;
+    const w = stage._previewW || stage.clientWidth, h = stage._previewH || stage.clientHeight;
+    const actorX = w * .23, targetX = w * .80, targetY = h * .50;
+    const place = (node, x, y, rot, scale, opacity) => {
+      if (!node) return;
+      node.style.opacity = String(clamp(opacity, 0, 1));
+      node.style.transform = `translate3d(${x}px,${y}px,0) rotate(${rot}deg) scale(${scale})`;
+    };
+    if (spotlight) spotlight.style.opacity = '0';
+    if (ribbon) ribbon.style.opacity = '0';
+    if (cash) cash.style.opacity = '0';
+
+    const pulse = clamp(1 - Math.abs(p - hitAt) / .15, 0, 1);
+    if (cfg.dandyMode === 'spotlight' || cfg.dandyMode === 'finale') {
+      const q = clamp((p - .10) / .65, 0, 1);
+      if (spotlight) {
+        spotlight.style.opacity = String(Math.sin(q * Math.PI) * 0.85);
+      }
+      if (cfg.dandyMode === 'finale') {
+        const cashQ = clamp((p - hitAt) / .30, 0, 1);
+        const burst = Math.sin(cashQ * Math.PI);
+        place(cash, targetX + (cashQ - 0.5) * 35, targetY - cashQ * 45, cashQ * 360, 0.6 + burst * 0.5, burst);
+      }
+    } else if (cfg.dandyMode === 'closing') {
+      const q = clamp((p - .25) / Math.max(.08, hitAt - .25), 0, 1);
+      const whip = Math.sin(q * Math.PI);
+      place(ribbon, lerp(actorX + 25, targetX, q), h * .52 - whip * 32, -25 + q * 180, 0.5 + whip * 0.7, whip);
+    } else {
+      const q = Math.sin(clamp((p - .10) / .60, 0, 1) * Math.PI);
+      if (spotlight) spotlight.style.opacity = String(q * 0.4);
+    }
+
+    callout.textContent = cfg.floatLabel || (cfg.dandyMode === 'finale' ? 'CHA-CHING!' : 'SMILE!');
+    const labelPulse = (cfg.dandyMode === 'finale' || cfg.dandyMode === 'closing') ? pulse : Math.sin(clamp((p - .12) / .62, 0, 1) * Math.PI);
+    callout.style.opacity = String(labelPulse);
+    callout.style.transform = `translate3d(${w * .60}px,${h * .18 - labelPulse * 12}px) rotate(${(1 - labelPulse) * -6}deg) scale(${.68 + labelPulse * .36})`;
+  },
+
+  drawPebblePreview(stage, cfg, p, hitAt) {
+    const dust0 = $('.preview-pebble-dust.dust-0', stage), dust1 = $('.preview-pebble-dust.dust-1', stage);
+    const bite = $('.preview-pebble-bite', stage);
+    const speed = this.previewNodes(stage, '.preview-pebble-speed i');
+    const callout = $('.preview-pebble-callout', stage);
+    if (!callout) return;
+    const w = stage._previewW || stage.clientWidth, h = stage._previewH || stage.clientHeight;
+    const actorX = w * .23, targetX = w * .80, targetY = h * .50;
+    const place = (node, x, y, rot, scale, opacity) => {
+      if (!node) return;
+      node.style.opacity = String(clamp(opacity, 0, 1));
+      node.style.transform = `translate3d(${x}px,${y}px,0) rotate(${rot}deg) scale(${scale})`;
+    };
+    if (dust0) dust0.style.opacity = '0';
+    if (dust1) dust1.style.opacity = '0';
+    if (bite) bite.style.opacity = '0';
+    speed.forEach(n => { n.style.opacity = '0'; });
+
+    const pulse = clamp(1 - Math.abs(p - hitAt) / .15, 0, 1);
+    if (cfg.pebbleMode === 'speak' || cfg.pebbleMode === 'tackle') {
+      const q = clamp((p - .10) / .28, 0, 1);
+      place(dust0, actorX - 15 - q * 25, h * .55 + (q % 2) * 5, -q * 45, 0.4 + q * 0.5, (1 - q) * 0.7);
+      if (p >= hitAt - 0.05 && p <= hitAt + 0.22) {
+        const biteP = clamp((p - (hitAt - 0.05)) / 0.22, 0, 1);
+        const biteSnap = Math.sin(biteP * Math.PI);
+        bite.style.opacity = String(biteSnap);
+        bite.style.transform = `translate3d(${targetX - 44}px,${targetY - 44}px,0) scale(${1.2 - biteSnap * 0.4})`;
+      }
+    } else if (cfg.pebbleMode === 'goodboy') {
+      speed.forEach((n, i) => {
+        const streak = clamp((p - (0.15 + i * 0.04)) / 0.35, 0, 1);
+        place(n, actorX + streak * w * 0.35, h * (0.46 + (i - 1.5) * 0.04), 0, 0.6 + streak * 0.3, Math.sin(streak * Math.PI));
+      });
+      if (dust1) {
+        const dq = Math.sin(clamp((p - .20) / .45, 0, 1) * Math.PI);
+        place(dust1, actorX + w * 0.2, h * .56, p * 120, 0.5 + dq * 0.6, dq * 0.8);
+      }
+    } else if (cfg.pebbleMode === 'fetch') {
+      const fetchQ = Math.sin(clamp((p - .10) / .60, 0, 1) * Math.PI);
+      place(dust0, targetX - 30, h * .54, 0, 0.6 + fetchQ * 0.3, fetchQ * 0.6);
+    }
+
+    callout.textContent = cfg.floatLabel || (cfg.pebbleMode === 'goodboy' ? 'GOOD BOY!' : 'BITE!');
+    callout.style.opacity = String(pulse);
+    callout.style.transform = `translate3d(${w * .62}px,${h * .18 - pulse * 12}px) rotate(${(1 - pulse) * -5}deg) scale(${.68 + pulse * .36})`;
+  },
+
+  drawScrapsPreview(stage, cfg, p, hitAt) {
+    const scissors = $('.preview-scraps-scissors', stage);
+    const confetti = this.previewNodes(stage, '.preview-scraps-confetti i');
+    const patch = $('.preview-scraps-patch', stage);
+    const callout = $('.preview-scraps-callout', stage);
+    if (!callout) return;
+    const w = stage._previewW || stage.clientWidth, h = stage._previewH || stage.clientHeight;
+    const actorX = w * .23, targetX = w * (cfg.ally ? .78 : .80), targetY = h * .50;
+    const place = (node, x, y, rot, scale, opacity) => {
+      if (!node) return;
+      node.style.opacity = String(clamp(opacity, 0, 1));
+      node.style.transform = `translate3d(${x}px,${y}px,0) rotate(${rot}deg) scale(${scale})`;
+    };
+    if (scissors) scissors.style.opacity = '0';
+    if (patch) patch.style.opacity = '0';
+    confetti.forEach(n => { n.style.opacity = '0'; });
+
+    const pulse = clamp(1 - Math.abs(p - hitAt) / .15, 0, 1);
+    if (cfg.scrapsMode === 'crafts' || cfg.scrapsMode === 'grapple') {
+      if (p >= hitAt - 0.08 && p <= hitAt + 0.25) {
+        const snipP = clamp((p - (hitAt - 0.08)) / 0.25, 0, 1);
+        const snip = Math.sin(snipP * Math.PI);
+        scissors.style.opacity = String(snip);
+        scissors.style.transform = `translate3d(${targetX - 42}px,${targetY - 42}px,0) scale(${0.7 + snip * 0.5}) rotate(${-15 + snipP * 30}deg)`;
+      }
+      if (pulse > 0.1) {
+        confetti.forEach((n, i) => {
+          const a = (i / confetti.length) * Math.PI * 2;
+          const dist = pulse * 45;
+          place(n, targetX + Math.cos(a) * dist, targetY + Math.sin(a) * dist, (p * 500 + i * 45), 0.7 + pulse * 0.4, pulse);
+        });
+      }
+    } else if (cfg.scrapsMode === 'piece' || cfg.scrapsMode === 'sharp') {
+      const patchP = Math.sin(clamp((p - .10) / .65, 0, 1) * Math.PI);
+      if (patch) {
+        patch.style.opacity = String(patchP);
+        patch.style.transform = `translate3d(${targetX - 34}px,${targetY - 34}px,0) scale(${0.6 + patchP * 0.5}) rotate(${patchP * 12}deg)`;
+      }
+    }
+
+    callout.textContent = cfg.floatLabel || 'ARTS & CRAFTS!';
+    callout.style.opacity = String(pulse);
+    callout.style.transform = `translate3d(${w * .60}px,${h * .18 - pulse * 12}px) rotate(${(1 - pulse) * -5}deg) scale(${.68 + pulse * .36})`;
+  },
+
+  drawFlutterPreview(stage, cfg, p, hitAt) {
+    const spores = this.previewNodes(stage, '.preview-flutter-spores i');
+    const gust = $('.preview-flutter-gust', stage);
+    const callout = $('.preview-flutter-callout', stage);
+    if (!callout) return;
+    const w = stage._previewW || stage.clientWidth, h = stage._previewH || stage.clientHeight;
+    const actorX = w * .23, targetX = w * .80, targetY = h * .50;
+    const place = (node, x, y, rot, scale, opacity) => {
+      if (!node) return;
+      node.style.opacity = String(clamp(opacity, 0, 1));
+      node.style.transform = `translate3d(${x}px,${y}px,0) rotate(${rot}deg) scale(${scale})`;
+    };
+    if (gust) gust.style.opacity = '0';
+    spores.forEach(n => { n.style.opacity = '0'; });
+
+    const pulse = clamp(1 - Math.abs(p - hitAt) / .15, 0, 1);
+    const sporesQ = clamp((p - .08) / .72, 0, 1);
+    spores.forEach((n, i) => {
+      const q = clamp((sporesQ - i * 0.03), 0, 1);
+      const lane = ((i % 3) - 1) * 22;
+      place(n, lerp(actorX + 20, targetX + 40, q), h * .50 + lane - Math.sin(q * Math.PI * 2) * 16,
+        q * 180, 0.4 + Math.sin(q * Math.PI) * 0.45, Math.sin(q * Math.PI));
+    });
+
+    if (cfg.flutterMode === 'sweep' || cfg.flutterMode === 'storm') {
+      const gustP = Math.sin(clamp((p - (hitAt - 0.1)) / 0.35, 0, 1) * Math.PI);
+      if (gust) {
+        gust.style.opacity = String(gustP);
+        gust.style.transform = `translate3d(${targetX - 55}px,${targetY - 25}px,0) scale(${0.5 + gustP * 0.8}) rotate(${p * 220}deg)`;
+      }
+    }
+
+    callout.textContent = cfg.floatLabel || 'FLOATY DASH!';
+    callout.style.opacity = String(pulse);
+    callout.style.transform = `translate3d(${w * .62}px,${h * .18 - pulse * 12}px) rotate(${(1 - pulse) * -5}deg) scale(${.68 + pulse * .36})`;
+  },
+
+  drawRibeccaPreview(stage, cfg, p, hitAt) {
+    const ring = $('.preview-ribecca-ring', stage);
+    const notes = this.previewNodes(stage, '.preview-ribecca-notes i');
+    const callout = $('.preview-ribecca-callout', stage);
+    if (!callout) return;
+    const w = stage._previewW || stage.clientWidth, h = stage._previewH || stage.clientHeight;
+    const actorX = w * .23, targetX = w * .80, targetY = h * .50;
+    const place = (node, x, y, rot, scale, opacity) => {
+      if (!node) return;
+      node.style.opacity = String(clamp(opacity, 0, 1));
+      node.style.transform = `translate3d(${x}px,${y}px,0) rotate(${rot}deg) scale(${scale})`;
+    };
+    if (ring) ring.style.opacity = '0';
+    notes.forEach(n => { n.style.opacity = '0'; });
+
+    const pulse = clamp(1 - Math.abs(p - hitAt) / .15, 0, 1);
+    if (ring && pulse > 0.05) {
+      ring.style.opacity = String(pulse);
+      ring.style.transform = `translate3d(${targetX - 48}px,${targetY - 48}px,0) scale(${0.4 + pulse * 0.9})`;
+    }
+
+    const noteQ = clamp((p - .10) / .70, 0, 1);
+    notes.forEach((n, i) => {
+      const q = clamp((noteQ - i * 0.06) / 0.45, 0, 1);
+      const floatX = targetX - 30 + i * 20 + Math.sin(p * Math.PI * 4 + i) * 12;
+      const floatY = targetY - q * 55;
+      place(n, floatX, floatY, (i % 2 ? -1 : 1) * q * 25, 0.6 + Math.sin(q * Math.PI) * 0.45, Math.sin(q * Math.PI));
+    });
+
+    callout.textContent = cfg.floatLabel || 'THE UNDEAD';
+    callout.style.opacity = String(pulse);
+    callout.style.transform = `translate3d(${w * .60}px,${h * .18 - pulse * 12}px) rotate(${(1 - pulse) * -5}deg) scale(${.68 + pulse * .36})`;
+  },
+
+  drawAstroPreview(stage, cfg, p, hitAt) {
+    const ring = $('.preview-astro-ring', stage);
+    const stars = this.previewNodes(stage, '.preview-astro-stars i');
+    const callout = $('.preview-astro-callout', stage);
+    if (!callout) return;
+    const w = stage._previewW || stage.clientWidth, h = stage._previewH || stage.clientHeight;
+    const actorX = w * .23, targetX = w * (cfg.ally ? .78 : .80), targetY = h * .50;
+    const place = (node, x, y, rot, scale, opacity) => {
+      if (!node) return;
+      node.style.opacity = String(clamp(opacity, 0, 1));
+      node.style.transform = `translate3d(${x}px,${y}px,0) rotate(${rot}deg) scale(${scale})`;
+    };
+    if (ring) ring.style.opacity = '0';
+    stars.forEach(n => { n.style.opacity = '0'; });
+
+    const pulse = clamp(1 - Math.abs(p - hitAt) / .15, 0, 1);
+    if (ring) {
+      const ringP = Math.sin(clamp((p - .12) / .68, 0, 1) * Math.PI);
+      ring.style.opacity = String(ringP * 0.85);
+      ring.style.transform = `translate3d(${targetX - 58}px,${targetY - 58}px,0) rotate(${p * 90}deg) scale(${0.6 + ringP * 0.5})`;
+    }
+
+    stars.forEach((n, i) => {
+      const q = clamp((p - (.15 + i * 0.05)) / 0.35, 0, 1);
+      const starX = lerp(actorX + 30, targetX + 20, q);
+      const starY = h * (0.42 + (i - 2) * 0.04) - Math.sin(q * Math.PI) * 15;
+      place(n, starX, starY, -15, 0.5 + Math.sin(q * Math.PI) * 0.45, Math.sin(q * Math.PI));
+    });
+
+    callout.textContent = cfg.floatLabel || 'DREAM PULSE';
+    callout.style.opacity = String(pulse);
+    callout.style.transform = `translate3d(${w * .60}px,${h * .18 - pulse * 12}px) rotate(${(1 - pulse) * -5}deg) scale(${.68 + pulse * .36})`;
+  },
+
+  drawMilkPreview(stage, cfg, p, hitAt) {
+    const strings = this.previewNodes(stage, '.preview-milk-strings i');
+    const eye = $('.preview-milk-eye', stage);
+    const cards = this.previewNodes(stage, '.preview-milk-cards i');
+    const callout = $('.preview-milk-callout', stage);
+    if (!callout) return;
+    const w = stage._previewW || stage.clientWidth, h = stage._previewH || stage.clientHeight;
+    const actorX = w * .23, targetX = w * .80, targetY = h * .50;
+    const place = (node, x, y, rot, scale, opacity) => {
+      if (!node) return;
+      node.style.opacity = String(clamp(opacity, 0, 1));
+      node.style.transform = `translate3d(${x}px,${y}px,0) rotate(${rot}deg) scale(${scale})`;
+    };
+    if (eye) eye.style.opacity = '0';
+    strings.forEach(n => { n.style.opacity = '0'; });
+    cards.forEach(n => { n.style.opacity = '0'; });
+
+    const pulse = clamp(1 - Math.abs(p - hitAt) / .15, 0, 1);
+    const stringsQ = Math.sin(clamp((p - .08) / .68, 0, 1) * Math.PI);
+    strings.forEach((n, i) => {
+      n.style.opacity = String(stringsQ * 0.85);
+      n.style.height = `${45 + Math.sin(p * Math.PI * 3 + i) * 12}%`;
+    });
+
+    if (eye) {
+      const eyeP = Math.sin(clamp((p - .12) / .65, 0, 1) * Math.PI);
+      eye.style.opacity = String(eyeP);
+      eye.style.transform = `translate3d(0,${-eyeP * 12}px,0) scale(${0.7 + eyeP * 0.4})`;
+    }
+
+    cards.forEach((n, i) => {
+      const a = (i / cards.length) * Math.PI * 2 + p * Math.PI * 3;
+      const radius = 34 + Math.sin(p * Math.PI * 2) * 8;
+      const cardX = targetX + Math.cos(a) * radius - 11;
+      const cardY = targetY + Math.sin(a) * (radius * 0.5) - 16;
+      place(n, cardX, cardY, p * 360 + i * 45, 0.65, stringsQ);
+    });
+
+    callout.textContent = cfg.floatLabel || 'GREATEST SHOW';
+    callout.style.opacity = String(pulse);
+    callout.style.transform = `translate3d(${w * .58}px,${h * .18 - pulse * 12}px) rotate(${(1 - pulse) * -5}deg) scale(${.68 + pulse * .36})`;
+  },
+
+  drawVanillaPreview(stage, cfg, p, hitAt) {
+    const dome = $('.preview-vanilla-dome', stage);
+    const pillar = $('.preview-vanilla-pillar', stage);
+    const petals = this.previewNodes(stage, '.preview-vanilla-petals i');
+    const callout = $('.preview-vanilla-callout', stage);
+    if (!callout) return;
+    const w = stage._previewW || stage.clientWidth, h = stage._previewH || stage.clientHeight;
+    const actorX = w * .23, targetX = w * (cfg.ally ? .78 : .80), targetY = h * .50;
+    const place = (node, x, y, rot, scale, opacity) => {
+      if (!node) return;
+      node.style.opacity = String(clamp(opacity, 0, 1));
+      node.style.transform = `translate3d(${x}px,${y}px,0) rotate(${rot}deg) scale(${scale})`;
+    };
+    if (dome) dome.style.opacity = '0';
+    if (pillar) pillar.style.opacity = '0';
+    petals.forEach(n => { n.style.opacity = '0'; });
+
+    const pulse = clamp(1 - Math.abs(p - hitAt) / .15, 0, 1);
+    const domeP = Math.sin(clamp((p - .12) / .68, 0, 1) * Math.PI);
+    if (dome) {
+      dome.style.opacity = String(domeP * 0.9);
+      dome.style.transform = `translate3d(${targetX - 68}px,${targetY - 68}px,0) scale(${0.65 + domeP * 0.45})`;
+    }
+    if (pillar && pulse > 0.05) {
+      pillar.style.opacity = String(pulse * 0.85);
+      pillar.style.left = `${targetX}px`;
+    }
+
+    petals.forEach((n, i) => {
+      const q = clamp((p - (.10 + i * 0.05)) / 0.55, 0, 1);
+      const px = targetX - 35 + i * 14 + Math.sin(p * Math.PI * 3 + i) * 10;
+      const py = targetY - 60 + q * 75;
+      place(n, px, py, q * 180 + i * 30, 0.5 + Math.sin(q * Math.PI) * 0.4, Math.sin(q * Math.PI));
+    });
+
+    callout.textContent = cfg.floatLabel || 'LOVE & PEACE';
+    callout.style.opacity = String(pulse);
+    callout.style.transform = `translate3d(${w * .60}px,${h * .18 - pulse * 12}px) rotate(${(1 - pulse) * -5}deg) scale(${.68 + pulse * .36})`;
+  },
+
+  drawKhPreview(stage, cfg, p, hitAt) {
+    const trail = $('.preview-kh-keyblade-trail', stage);
+    const sparks = this.previewNodes(stage, '.preview-kh-sparks img');
+    const thunder = $('.preview-kh-thunder', stage);
+    const callout = $('.preview-kh-callout', stage);
+    if (!callout) return;
+    const w = stage._previewW || stage.clientWidth, h = stage._previewH || stage.clientHeight;
+    const actorX = w * .23, targetX = w * (cfg.ally ? .78 : .80), targetY = h * .50;
+    const place = (node, x, y, rot, scale, opacity) => {
+      if (!node) return;
+      node.style.opacity = String(clamp(opacity, 0, 1));
+      node.style.transform = `translate3d(${x}px,${y}px,0) rotate(${rot}deg) scale(${scale})`;
+    };
+    if (trail) trail.style.opacity = '0';
+    if (thunder) thunder.style.opacity = '0';
+    sparks.forEach(n => { n.style.opacity = '0'; });
+
+    const pulse = clamp(1 - Math.abs(p - hitAt) / .15, 0, 1);
+    if (cfg.khMode === 'thunder') {
+      if (pulse > 0.05) {
+        thunder.style.opacity = String(pulse);
+        thunder.style.left = `${targetX - 29}px`;
+      }
+    } else {
+      if (p >= hitAt - 0.08 && p <= hitAt + 0.22) {
+        const trailP = clamp((p - (hitAt - 0.08)) / 0.22, 0, 1);
+        const trailSnap = Math.sin(trailP * Math.PI);
+        trail.style.opacity = String(trailSnap);
+        trail.style.transform = `translate3d(${targetX - 50}px,${targetY - 50}px,0) rotate(${-35 + trailP * 70}deg) scale(${0.7 + trailSnap * 0.5})`;
+      }
+    }
+
+    if (pulse > 0.1) {
+      sparks.forEach((n, i) => {
+        const a = (i / sparks.length) * Math.PI * 2;
+        const dist = pulse * 28;
+        place(n, targetX - 17 + Math.cos(a) * dist, targetY - 17 + Math.sin(a) * dist, p * 360, 0.6 + pulse * 0.5, pulse);
+      });
+    }
+
+    callout.textContent = cfg.floatLabel || 'KEYBLADE STRIKE';
+    callout.style.opacity = String(pulse);
+    callout.style.transform = `translate3d(${w * .60}px,${h * .18 - pulse * 12}px) rotate(${(1 - pulse) * -5}deg) scale(${.68 + pulse * .36})`;
   },
 
   drawPreviewAtlas(body, atlases, clip, elapsed, phase, logicalW) {
