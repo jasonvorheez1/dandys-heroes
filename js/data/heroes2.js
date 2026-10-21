@@ -8,36 +8,44 @@ defHero({
   id: 'Bassie', name: 'Bassie', folder: 'Bassie', file: 'Bassie', icon: 'Bassie',
   role: 'Support', tier: 'A', element: 'Spring',
   blurb: 'Keeps her basket stocked because being prepared is the best way to help. Anything left over gets thrown.',
-  base: { hp: 3800, atk: 300, def: 228, mag: 262, mdef: 250, spd: 114, acc: 186, eva: 128 },
-  hidden: { range: 250, aspd: 1.0, ms: 74, aggro: .85, crit: .12, critDmg: 1.55, healPow: 1.25, shieldPow: 1.20, cdr: .10, ccRes: .16, kbRes: .3, armorPen: .10, magPen: 0 },
-  growth: { hp: .088, atk: .086, def: .080, mag: .080, mdef: .080 },
+  base: { hp: 4460, atk: 335, def: 270, mag: 285, mdef: 285, spd: 116, acc: 195, eva: 135 },
+  hidden: { range: 250, aspd: 1.02, ms: 76, aggro: .85, crit: .14, critDmg: 1.60, healPow: 1.30, shieldPow: 1.25, cdr: .10, ccRes: .20, kbRes: .35, armorPen: .12, magPen: 0 },
+  growth: { hp: .095, atk: .092, def: .085, mag: .085, mdef: .085 },
   move: { gait: 'hop', bob: 9, freq: 2.1, lean: 6, squash: .08, idle: 'bounce', step: 'bounce',
     particles: 'confetti', pcol: '#8fd9c4', trail: { on: false }, brake: .3 },
-  basic: { name: 'Basket Jab', type: 'physical', ratio: 1.02, range: 250, sfx: 'swing_light', hit: 'hit_light',
+  basic: { name: 'Basket Jab', type: 'physical', ratio: 1.08, range: 250, sfx: 'swing_light', hit: 'hit_light',
     wind: .16, note: 'She swings the basket. Things fall out. Both are useful.',
-    onHit: (u, t, B) => { if (chance(.18)) B.supply(u, 1); } },
+    onHit: (u, t, B) => { if (chance(.28)) B.supply(u, 1); } },
   skills: {
     W: {
       name: 'Springful Sharing', type: 'Physical Damage', energy: 100,
-      v: { ratio: .70, restore: .35 }, p: { max: 5, prep: 4, thr: .5, expose: 7 },
-      desc: (S, P) => `<span class="sk-pas">Bassie prepares a Supply every ${P.prep}s, storing up to ${P.max}. Any ally below ${pc(P.thr)} HP or Energy is automatically handed one, restoring <em>${pcn(S.restore * 100)}</em> of whichever is lower.</span>
-        Active: every remaining Supply is hurled at the biggest cluster for <em>${pcn(S.ratio * 100)}</em> Attack each, reducing Attack. Enemies struck by two or more become 🎯 Exposed for ${P.expose}s.`,
+      v: { ratio: .92, restore: .35, atkGain: .025 }, p: { max: 5, prep: 3.2, thr: .5, expose: 7, weaken: 6, overMult: 1.6 },
+      desc: (S, P) => `<span class="sk-pas">Bassie prepares a Supply every ${P.prep}s, storing up to ${P.max}. Any ally below ${pc(P.thr)} HP or Energy is automatically handed one, restoring <em>${pcn(S.restore * 100)}</em> of whichever is lower and granting Bassie <em>${pcn(S.atkGain * 100)}</em> Attack.</span>
+        Active: every remaining Supply is hurled at the biggest cluster for <em>${pcn(S.ratio * 100)}</em> Attack each, reducing Attack for ${P.weaken}s. Enemies struck by two or more become 🎯 Exposed for ${P.expose}s.`,
       passive: (u, B, S, P) => {
         u.supplies = P.max; u.supplyMax = P.max;
-        B.every(u, P.prep, () => B.supply(u, 1));
+        B.every(u, P.prep || 3.2, () => B.supply(u, 1));
+        B.on(u, 'waveStart', () => {
+          u.supplies = u.supplyBoth ? (u.supplyMax || 7) : Math.min(u.supplyMax || 5, (u.supplies || 0) + 2);
+          u.overflow = 0;
+          B.alliesOf(u).forEach(a => { a._supCd = -Infinity; });
+        });
         B.every(u, 1, () => {
           if ((u.supplies || 0) <= 0) return;
-          const needy = B.alliesOf(u).find(a =>
-            (a.hpPct < P.thr || a.energy < a.energyMax * P.thr) && !(a._supCd && B.t - a._supCd < 6));
-          if (!needy) return;
+          const candidates = B.alliesOf(u).filter(a =>
+            a.alive && (a.hpPct < P.thr || a.energy < a.energyMax * P.thr) && !(a._supCd && B.t - a._supCd < 3.8));
+          if (!candidates.length) return;
+          candidates.sort((a, b) => (a.hpPct - b.hpPct) || (a.energy / a.energyMax - b.energy / b.energyMax));
+          const needy = candidates[0];
           needy._supCd = B.t; u.supplies--;
           B.fxBassieSkill('supply', u, { target: needy, food: 'Apple' });
           B.fxArc(u, needy, { kind: 'food', img: 'Apple' }, () => {
             const healLow = needy.hpPct <= needy.energy / needy.energyMax;
             if (healLow || u.supplyBoth) B.heal(u, needy, needy.max.hp * S.restore, { tag: 'Supply' });
             if (!healLow || u.supplyBoth) B.energy(needy, needy.energyMax * S.restore);
+            if (B.t < (u._packedUntil || 0)) B.shield(u, needy, u.st.mag * (u._packedShield || .55), 6);
             Sound.play('get_item', { vol: .5 });
-            if (u.supplyAtk) { u.flat.atkP = (u.flat.atkP || 0) + .02; u.dirty = true; }
+            if (u.supplyAtk) { u.flat.atkPBassie = (u.flat.atkPBassie || 0) + S.atkGain; u.dirty = true; }
           });
         });
       },
@@ -54,8 +62,8 @@ defHero({
             Sound.play('hit_light', { vol: .5, throttle: 12 });
             const over = i >= n;
             if (over) { B.fxBassieImpact(t, { overflow: true }); Sound.play('bomb', { vol: .5 }); }
-            B.damage(u, t, u.st.atk * S.ratio * (over ? 1.6 : 1), { type: 'physical', tag: 'Springful Sharing' });
-            B.applyStatus(u, t, 'weaken', 6);
+            B.damage(u, t, u.st.atk * S.ratio * (over ? P.overMult : 1), { type: 'physical', tag: 'Springful Sharing' });
+            B.applyStatus(u, t, 'weaken', P.weaken);
             hits.set(t, (hits.get(t) || 0) + 1);
             if (hits.get(t) >= 2) B.applyStatus(u, t, 'exposed', P.expose, { stacks: 2 });
           });
@@ -63,9 +71,9 @@ defHero({
       }
     },
     G: {
-      name: 'Packed for Everyone', type: 'Buff', cd: 11,
-      v: { shield: .45 }, p: { dur: 8 },
-      desc: (S, P) => `Bassie opens the basket. Allies gain Attack Speed, cooldown recovery and Crit Chance for ${P.dur}s, and anyone who receives a Supply while it lasts also gains a <em>${pcn(S.shield * 100)}</em> Magic Shield.`,
+      name: 'Packed for Everyone', type: 'Buff', cd: 9.5,
+      v: { shield: .55 }, p: { dur: 8, shieldDur: 6 },
+      desc: (S, P) => `Bassie opens the basket. Allies gain Attack Speed, cooldown recovery and Crit Chance for ${P.dur}s, and anyone who receives a Supply while it lasts also gains a <em>${pcn(S.shield * 100)}</em> Magic Shield for ${P.shieldDur}s.`,
       ai: { prio: 55, cond: () => true },
       cast: (u, B, S, P) => {
         B.anim(u, 'cast', .4); B.fxBassieSkill('packed', u, { targets: B.alliesOf(u) }); Sound.play('get_item');
@@ -76,15 +84,12 @@ defHero({
           B.fxSparkle(a.x, a.y - 40, 8, '#8fd9c4');
         });
         u._packedUntil = B.t + P.dur;
-        B.on(u, 'statusApplied', ev => {
-          if (B.t < (u._packedUntil || 0) && ev.id === 'regen' && ev.src === u)
-            B.shield(u, ev.unit, u.st.mag * S.shield, 6);
-        });
+        u._packedShield = S.shield || .55;
       }
     },
     B: {
-      name: 'Basket Toss', type: 'Physical Damage', cd: 13,
-      v: { ratio: 1.05 }, p: { dur: 7 },
+      name: 'Basket Toss', type: 'Physical Damage', cd: 10.5,
+      v: { ratio: 1.30 }, p: { dur: 7.5 },
       desc: (S, P) => `The whole basket goes in and comes back. Enemies take <em>${pcn(S.ratio * 100)}</em> Attack and become 🌀 Disorganized for ${P.dur}s, losing Defense and Accuracy. Bassie prepares one fresh Supply per enemy hit.`,
       ai: { prio: 50, cond: (u, B) => B.enemiesOf(u).length >= 2 },
       cast: (u, B, S, P) => {
@@ -103,7 +108,7 @@ defHero({
     },
     P: {
       name: 'Always Prepared', type: 'Max HP / Attack',
-      v: { pen: .25 }, p: { extra: 2 },
+      v: { pen: .32 }, p: { extra: 2 },
       desc: (S, P) => `Supply storage grows by ${P.extra}. Every Supply an ally consumes permanently raises Bassie's Attack for the rest of the battle, and at maximum Supplies her next damaging skill ignores <em>${pcn(S.pen * 100)}</em> Defense.`,
       passive: (u, B, S, P) => {
         u.supplyMax = (u.supplyMax || 5) + P.extra;
@@ -116,13 +121,16 @@ defHero({
     },
     R: {
       name: 'Overflowing Basket', type: 'Max HP / Attack',
-      v: {}, p: {},
-      desc: () => `Bassie opens at maximum Supplies, and Supplies now restore both HP and Energy. Preparing one while already full creates an Overflow Supply, which detonates on impact during Springful Sharing and extends 🎯 Exposed. Her buffs cannot be stripped while the basket is full.`,
-      passive: (u, B) => {
+      v: { overflowDmg: .60, atk: .16 }, p: { ccDur: 1.5 },
+      desc: (S, P) => `Bassie opens at maximum Supplies, and Supplies now restore both HP and Energy. Preparing one while already full creates an Overflow Supply, which detonates on impact during Springful Sharing for <em>${pcn(S.overflowDmg * 100)}</em> extra damage and extends 🎯 Exposed. While the basket is full she gains <em>${pcn(S.atk * 100)}</em> Attack and cannot be controlled or have her buffs stripped.`,
+      passive: (u, B, S, P) => {
         u.supplyBoth = true;
         u.supplies = u.supplyMax || 7;
         B.every(u, 1, () => {
-          if ((u.supplies || 0) >= (u.supplyMax || 7)) B.applyStatus(u, u, 'ccimmune', 1.3);
+          const full = (u.supplies || 0) >= (u.supplyMax || 7);
+          u.flat.atkPBassieFull = full ? S.atk : 0;
+          u.dirty = true;
+          if (full) B.applyStatus(u, u, 'ccimmune', P.ccDur);
         });
       }
     }
@@ -323,23 +331,23 @@ defHero({
   id: 'Brusha', name: 'Brusha', folder: 'Brusha', file: 'Brusha', icon: 'Brusha',
   role: 'Damage', tier: 'S', element: 'Paint',
   blurb: 'Paints across the whole battlefield and expects everyone to stand where the colour is.',
-  base: { hp: 3500, atk: 245, def: 198, mag: 450, mdef: 242, spd: 120, acc: 198, eva: 136 },
-  hidden: { range: 290, aspd: 1.0, ms: 74, aggro: .85, crit: .22, critDmg: 1.75, healPow: 1, shieldPow: 1.15, cdr: .12, ccRes: .12, kbRes: .25, armorPen: 0, magPen: .24 },
-  growth: { hp: .078, atk: .07, def: .070, mag: .106, mdef: .074 },
+  base: { hp: 4250, atk: 265, def: 245, mag: 490, mdef: 275, spd: 120, acc: 205, eva: 140 },
+  hidden: { range: 290, aspd: 1.02, ms: 76, aggro: .85, crit: .24, critDmg: 1.80, healPow: 1, shieldPow: 1.20, cdr: .12, ccRes: .15, kbRes: .30, armorPen: 0, magPen: .25 },
+  growth: { hp: .085, atk: .072, def: .078, mag: .110, mdef: .080 },
   move: { gait: 'glide', bob: 7, freq: 2.2, lean: 15, squash: .07, idle: 'sway', step: 'step_soft',
     particles: 'paint', pcol: '#ff5fa8', trail: { on: true, col: '#ff5fa8', rate: .06 }, brake: .3, smear: true },
-  basic: { name: 'Quick Stroke', type: 'magic', ratio: 1.04, range: 290, proj: 'obj', pimg: 'paintbrush', pcol: '#ff5fa8',
+  basic: { name: 'Quick Stroke', type: 'magic', ratio: 1.12, range: 290, proj: 'obj', pimg: 'paintbrush', pcol: '#ff5fa8',
     sfx: 'paint_swipe', hit: 'paint_splash',
     wind: .14, note: 'One confident line, straight through you.',
     onHit: (u, t, B) => {
       const at = u._brushaColor = ((u._brushaColor || 0) + 1) % BRUSHA_COLORS.length;
       B.fxPaintMark(t.x, t.y - 55, [BRUSHA_COLORS[at], BRUSHA_COLORS[(at + 1) % BRUSHA_COLORS.length]], .72);
-      if (chance(.28)) B.applyStatus(u, t, 'defdown', 5);
+      if (chance(.35)) { B.applyStatus(u, t, 'magdown', 5); B.applyStatus(u, t, 'defdown', 5); }
     } },
   skills: {
     W: {
       name: 'Masterpiece Sweep', type: 'Magic Damage', energy: 100,
-      v: { ratio: 1.82, atkBuff: .40, shield: .18 }, p: { dur: 7 },
+      v: { ratio: 2.15, atkBuff: .40, shield: .25 }, p: { dur: 8 },
       desc: (S, P) => `<span class="sk-pas">Brusha's canvas stays on the ground after every sweep.</span>
         Active: one enormous stroke across the whole field for <em>${pcn(S.ratio * 100)}</em> Magic to every enemy, leaving vibrant canvas for ${P.dur}s. While it is active, allies gain <em>${pcn(S.atkBuff * 100)}</em> Attack, Magic Attack, and Attack Speed, while enemies lose Magic Defense and Evasion. At Red rarity the paint covers everything: allies also gain a <em>${pcn(S.shield * 100)}</em> Max HP Shield and enemies are slowed.`,
       passive: () => {},
@@ -354,23 +362,26 @@ defHero({
           B.enemiesOf(u).forEach((e, i) => B.after(i * .045, () => {
             if (!e.alive) return;
             B.damage(u, e, u.st.mag * S.ratio, { type: 'magic', tag: 'Masterpiece Sweep' });
-            B.applyStatus(u, e, 'magdown', P.dur, { stacks: 1 });
+            B.applyStatus(u, e, 'magdown', P.dur, { stacks: 2 });
             B.applyStatus(u, e, 'evadown', P.dur);
             B.fxPaintMark(e.x, e.y - 48, BRUSHA_COLORS, 1.05);
           }));
           B.alliesOf(u).forEach(a => {
             B.applyStatus(u, a, 'atkup', P.dur, { stacks: 2 });
             B.applyStatus(u, a, 'speedup', P.dur, { stacks: 2 });
-            B.applyStatus(u, a, 'magup', P.dur, { stacks: 1 });
-            if (full) B.shield(u, a, u.max.hp * S.shield, P.dur);
+            B.applyStatus(u, a, 'magup', P.dur, { stacks: 2 });
+            if (full) {
+              B.shield(u, a, u.max.hp * S.shield, P.dur);
+              B.applyStatus(u, a, 'fortify', P.dur, { stacks: 1 });
+            }
           });
-          if (full) B.enemiesOf(u).forEach(e => { B.applyStatus(u, e, 'slow', P.dur, { stacks: 2 }); });
+          if (full) B.enemiesOf(u).forEach(e => { B.applyStatus(u, e, 'slow', P.dur, { stacks: 3 }); });
         });
       }
     },
     G: {
-      name: 'Color Palette', type: 'Buff', cd: 8,
-      v: { en: 28 }, p: { dur: 10, count: 3 },
+      name: 'Color Palette', type: 'Buff', cd: 7.5,
+      v: { en: 34 }, p: { dur: 10, count: 3 },
       desc: (S, P) => `Custom pigment for the ${P.count} highest-damage allies: 🖍 Vibrant Pigment for ${P.dur}s, worth 20% Crit Chance, plus Magic Attack, Haste, and <em>${Math.round(S.en)}</em> Energy each.`,
       ai: { prio: 56, cond: () => true },
       cast: (u, B, S, P) => {
@@ -381,15 +392,18 @@ defHero({
             if (!a.alive) return;
             const colors = [BRUSHA_COLORS[i % BRUSHA_COLORS.length], BRUSHA_COLORS[(i + 1) % BRUSHA_COLORS.length], BRUSHA_COLORS[(i + 2) % BRUSHA_COLORS.length]];
             B.fxPaintRibbon(u, a, colors);
-            B.applyStatus(u, a, 'vibrant', P.dur); B.applyStatus(u, a, 'magup', P.dur); B.applyStatus(u, a, 'haste', P.dur);
+            B.applyStatus(u, a, 'vibrant', P.dur);
+            B.applyStatus(u, a, 'magup', P.dur);
+            B.applyStatus(u, a, 'atkup', P.dur);
+            B.applyStatus(u, a, 'haste', P.dur);
             B.energy(a, S.en);
             B.fxSparkle(a.x, a.y - 40, 7, colors[0]);
           }));
       }
     },
     B: {
-      name: 'Broad Stroke', type: 'Magic Damage', cd: 10,
-      v: { ratio: 1.28 }, p: { dur: 6.5 },
+      name: 'Broad Stroke', type: 'Magic Damage', cd: 8.5,
+      v: { ratio: 1.58 }, p: { dur: 7 },
       desc: (S, P) => `An ink-soaked brush sweeps forward for <em>${pcn(S.ratio * 100)}</em> Magic in a line, leaving enemies Smeared for ${P.dur}s with Defense and Magic Defense torn down.`,
       ai: { prio: 52, cond: () => true },
       cast: (u, B, S, P) => {
@@ -410,9 +424,10 @@ defHero({
     },
     P: {
       name: 'Creative Inspiration', type: 'Passive',
-      v: { per: .055 }, p: { max: 12 },
+      v: { per: .070 }, p: { max: 12 },
       desc: (S, P) => `Whenever Brusha or any ally lands a critical hit she gains 🖼 Inspiration (max ${P.max}), worth <em>${pcn(S.per * 100)}</em> Magic Attack each. Allies also add a portion of her Magic to their basic attacks.`,
       passive: (u, B, S, P) => {
+        B.on(u, 'waveStart', () => { B.removeStatus(u, 'inspiration'); });
         B.on(u, 'allyDamageDealt', ev => {
           if (!ev.crit) return;
           const before = u.getStatus('inspiration'); const old = before ? before.stacks : 0;
@@ -428,7 +443,7 @@ defHero({
           const a = ev && ev.unit, i = u.getStatus('inspiration');
           if (!i || !a || a === u) return;
           const t = ev.target; if (!t || !t.alive) return;
-          B.damage(u, t, u.st.mag * .055 * i.stacks, { type: 'magic', silent: true, tag: 'inspired paint' });
+          B.damage(u, t, u.st.mag * (S.per || .070) * i.stacks, { type: 'magic', silent: true, tag: 'inspired paint' });
           if (B.t - (u._inspiredPaintFx || -99) > .22) {
             u._inspiredPaintFx = B.t;
             const at = i.stacks % BRUSHA_COLORS.length;
@@ -441,7 +456,9 @@ defHero({
       name: 'Masterwork Finish', type: 'Ultimate Upgrade',
       v: {}, p: {},
       desc: () => `Masterpiece Sweep now covers the entire field. While the paint is down allies carry a Shield and enemies standing on it lose Move and Attack Speed.`,
-      passive: () => {}
+      passive: (u, B) => {
+        B.on(u, 'waveStart', () => { u._brushaCanvasActive = false; });
+      }
     }
   }
 });
@@ -641,7 +658,7 @@ defHero({
         B.on(u, 'defeatedEnemy', () => {
           const inf = u.getStatus('inflated');
           if (!inf || inf.stacks < P.max) return;
-          B.heal(u, u, u.max.hp * P.heal, { pure: true });
+          B.heal(u, u, u.max.hp * P.heal, { pure: true, noInflateLoss: true, tag: 'The Greatest Show' });
           inf.stacks = Math.max(0, inf.stacks - 3);
           if (inf.stacks <= 0) B.removeStatus(u, 'inflated');
           u.dirty = true;

@@ -56,12 +56,34 @@ function flutterOffBalance(u, B, target, dur) {
   B.fxFloatIcon(target.x, target.y - 88, '🥴', '#c9f6ff');
 }
 
-function flutterPathHit(u, B, target, ratio, push, dur, tag, returning) {
+function flutterPathHit(u, B, target, ratio, push, dur, tag, returning, offBonus) {
   if (!target || !target.alive) return;
-  B.damage(u, target, u.st.atk * ratio, { type: 'physical', area: true, tag: tag || 'Floaty Dash' });
+  const isOff = target.hasStatus('offbalance');
+  const mult = isOff ? (1 + (offBonus || 0.40)) : 1.0;
+  B.damage(u, target, u.st.atk * ratio * mult, {
+    type: 'physical',
+    area: true,
+    noDodge: true,
+    tag: tag || 'Floaty Dash',
+    forceCrit: isOff
+  });
   flutterOffBalance(u, B, target, dur);
-  flutterPushAway(u, B, target, u.x, push || 80);
-  if (returning && target.hasStatus('offbalance')) B.interrupt(target);
+  if (returning) {
+    const mid = (B.leftWall + B.rightWall) / 2;
+    B.pull(target, mid, 0.24);
+  } else {
+    flutterPushAway(u, B, target, u.x, push || 120);
+  }
+  if (isOff) {
+    B.applyStatus(u, target, 'defdown', dur || 6, { stacks: 1 });
+  }
+  if (returning && isOff) {
+    B.applyStatus(u, target, 'stun', 1.2);
+    B.interrupt(target);
+  } else if (returning) {
+    B.interrupt(target);
+  }
+  B.energy(u, 10);
   B.fxFlutterHit(target, returning);
   flutterAddLift(u, B, 1);
 }
@@ -70,18 +92,35 @@ function flutterPathPass(u, B, toX, opt) {
   opt = opt || {};
   const hits = new Set();
   const dir = toX >= u.x ? 1 : -1;
+  const minX = Math.min(u.x, toX) - 40;
+  const maxX = Math.max(u.x, toX) + 40;
+
+  const tryHit = (target, force) => {
+    if (!target || !target.alive || hits.has(target)) return;
+    const curX = Number.isFinite(target.x) ? target.x : target.homeX;
+    const hX = Number.isFinite(target.homeX) ? target.homeX : curX;
+    const inLaneX = (curX >= minX && curX <= maxX) || (hX >= minX && hX <= maxX);
+    const closeX = Math.abs(curX - u.x) <= (opt.radiusX || 135) || Math.abs(hX - u.x) <= (opt.radiusX || 135);
+    const closeDepth = Math.abs((target.depth || 0) - (u.depth || 0)) <= (opt.radiusDepth || 0.75);
+    const shouldHit = force ? inLaneX : ((closeX && closeDepth) || B.distance(target, u) <= (opt.radius || 180));
+    if (shouldHit) {
+      hits.add(target);
+      flutterPathHit(u, B, target, opt.ratio || 1, opt.push || 120, opt.offDur || 6.0,
+        opt.tag || 'Floaty Dash', !!opt.returning, opt.offBonus);
+    }
+  };
+
   B.dash(u, toX, opt.dur || .34, {
     arc: true, depth: opt.depth == null ? u.depth : opt.depth,
     onMove: () => {
       if (u._flutterHidden) flutterReveal(u);
-      flutterFoes(B, u).forEach(target => {
-        if (hits.has(target) || B.distance(target, u) > (opt.radius || 76)) return;
-        hits.add(target);
-        flutterPathHit(u, B, target, opt.ratio || 1, opt.push || 90, opt.offDur || 5.5,
-          opt.tag || 'Floaty Dash', !!opt.returning);
-      });
+      flutterFoes(B, u).forEach(target => tryHit(target, false));
     },
-    onEnd: opt.onEnd
+    onEnd: () => {
+      // Ensure all foes in lane that were passed got struck
+      flutterFoes(B, u).forEach(target => tryHit(target, true));
+      if (typeof opt.onEnd === 'function') opt.onEnd();
+    }
   });
   B.fxFlutterDash(u.x, u.y, toX, dir, opt.dur || .34, !!opt.returning);
 }
@@ -105,9 +144,26 @@ function flutterOpening(u, B, S, P) {
     B.anim(u, 'attack', .72, 'flutterEntry');
     Sound.play('flutter_white', { vol: .78, priority: true });
     B.fxFlutterEntry(startX, u.y, farX, dir, .52);
+
+    // Apply Slipstream Aero Barrier to all allies
+    const allies = B.alliesOf(u);
+    const shieldAmt = u.st.atk * (S.openingShield || 1.40);
+    allies.forEach(a => {
+      B.shield(u, a, shieldAmt, 8);
+      a.flat.msP_flutter = 0.20;
+      a.flat.cdr_flutter = 0.15;
+      a.recompute(false);
+      B.after(8, () => {
+        delete a.flat.msP_flutter;
+        delete a.flat.cdr_flutter;
+        a.recompute(false);
+      });
+    });
+
     flutterPathPass(u, B, farX, {
-      dur: .52, depth: .44, ratio: S.ratio, push: P.knockback, offDur: P.offBalance,
-      tag: 'Floaty Dash', onEnd: () => {
+      dur: .52, depth: .44, ratio: S.openingRatio || 2.0, push: P.openingPush || 135,
+      offDur: P.offBalance || 6.0, offBonus: S.offDmgBonus || .40,
+      tag: 'Floaty Dash Opening', onEnd: () => {
         B.after(.12, () => {
           if (!u.alive) return;
           const finish = () => {
@@ -115,18 +171,16 @@ function flutterOpening(u, B, S, P) {
               if (!u.alive) return;
               B.blink(u, homeX, homeDepth);
               flutterReveal(u);
-              flutterAddLift(u, B, 1);
+              flutterAddLift(u, B, 2);
               B.fxFlutterHit(u, true);
               u._flutterBusyUntil = B.t + .04;
             });
           };
-          // Storm of Wings makes the entrance itself a two-hit fly-by: the
-          // first pass scatters the formation, then Flutter circles back into
-          // midline with reduced damage and stronger knockback.
           if (doublePass) {
             flutterPathPass(u, B, homeX, {
-              dur: .42, depth: homeDepth, ratio: S.returnRatio, push: P.returnKnockback,
-              offDur: P.offBalance, tag: 'Floaty Dash return', returning: true, onEnd: finish
+              dur: .42, depth: homeDepth, ratio: S.returnRatio || 1.5, push: P.returnKnockback || 175,
+              offDur: P.offBalance || 6.0, offBonus: S.offDmgBonus || .40,
+              tag: 'Floaty Dash Opening return', returning: true, onEnd: finish
             });
           } else finish();
         });
@@ -137,24 +191,46 @@ function flutterOpening(u, B, S, P) {
 
 function flutterActiveDash(u, B, S, P) {
   const lift = u.getStatus('lift');
-  const maxed = !!lift && lift.stacks >= P.maxLift;
+  const stacks = lift ? lift.stacks : 0;
+  const canReturn = stacks >= 3;
   const dir = u.team === TEAM_P ? 1 : -1;
   const farX = dir > 0 ? B.rightWall - 26 : B.leftWall + 26;
   const homeX = u.homeX, homeDepth = u.depthHome;
-  u._flutterBusyUntil = B.t + (maxed ? 1.02 : .62);
-  B.applyStatus(u, u, 'untargetable', P.airTime);
+  u._flutterBusyUntil = B.t + (canReturn ? 1.05 : .62);
+  B.applyStatus(u, u, 'untargetable', P.airTime || .55);
   B.anim(u, 'attack', .58, 'flutterDash');
-  Sound.play('flutter_white', { vol: .62, throttle: 500 });
+  Sound.play('flutter_white', { vol: .78, throttle: 500 });
+
+  // Overdrive Cyclone Barrier teamwide shield
+  const allies = B.alliesOf(u);
+  const barrierAmt = u.st.atk * (S.shieldRatio || 1.75);
+  allies.forEach(a => {
+    B.shield(u, a, barrierAmt, 7);
+    a.flat.aspdP_flutter = 0.25;
+    a.flat.cdr_flutter = 0.20;
+    a.recompute(false);
+    B.after(7, () => {
+      delete a.flat.aspdP_flutter;
+      delete a.flat.cdr_flutter;
+      a.recompute(false);
+    });
+  });
+
   flutterPathPass(u, B, farX, {
-    dur: .36, depth: .42, ratio: S.ratio, push: P.knockback, offDur: P.offBalance,
+    dur: .36, depth: .42, ratio: S.ratio || 2.50, push: P.knockback || 145,
+    offDur: P.offBalance || 6.0, offBonus: S.offDmgBonus || .40,
     tag: 'Floaty Dash', onEnd: () => {
-      if (maxed && u.alive) {
+      flutterAddLift(u, B, 2);
+      if (canReturn && u.alive) {
         B.after(.08, () => flutterPathPass(u, B, homeX, {
-          dur: .36, depth: homeDepth, ratio: S.returnRatio, push: P.returnKnockback,
-          offDur: P.offBalance, tag: 'Floaty Dash return', returning: true,
+          dur: .36, depth: homeDepth, ratio: S.returnRatio || 1.50, push: P.returnKnockback || 175,
+          offDur: P.offBalance || 6.0, offBonus: S.offDmgBonus || .40,
+          tag: 'Floaty Dash return', returning: true,
           onEnd: () => B.after(.08, () => flutterFinishDash(u, B, homeX, homeDepth))
         }));
-      } else B.after(.08, () => flutterFinishDash(u, B, homeX, homeDepth));
+      } else {
+        B.after(.08, () => flutterFinishDash(u, B, homeX, homeDepth));
+      }
     }
   });
 }
@@ -276,23 +352,23 @@ function flutterSilentFlutter(u, B, S, P) {
 
 defHero({
   id: 'Flutter', name: 'Flutter', folder: null, file: null, icon: 'Flutter',
-  role: 'Control', tier: 'SS', position: 'Midline', element: 'Wind',
-  blurb: 'An aerial control unit who breaks formations from above, then turns every missed attack into more airspace.',
+  role: 'Damage', roleLabel: 'Aerial Burst / Control', tier: 'SS', position: 'Midline', element: 'Wind',
+  blurb: 'An aerial damage and control carry who shatters formations from above, wraps her team in supersonic barriers, and turns missed attacks into devastating airspace.',
   noIntro: true,
-  base: { hp: 3380, atk: 326, def: 176, mag: 218, mdef: 228, spd: 152, acc: 196, eva: 238 },
-  hidden: { range: 232, aspd: 1.08, ms: 148, aggro: .42, crit: .11, critDmg: 1.58, healPow: 1, shieldPow: 1,
-    cdr: .12, ccRes: .12, kbRes: .18, armorPen: .08, magPen: 0 },
+  base: { hp: 3450, atk: 376, def: 182, mag: 218, mdef: 232, spd: 156, acc: 196, eva: 242 },
+  hidden: { range: 232, aspd: 1.08, ms: 148, aggro: .42, crit: .14, critDmg: 1.65, healPow: 1, shieldPow: 1,
+    cdr: .12, ccRes: .12, kbRes: .18, armorPen: .12, magPen: 0 },
   growth: { hp: .078, atk: .098, def: .066, mag: .05, mdef: .07 },
   move: { gait: 'float', bob: 14, freq: 1.8, lean: 8, squash: .03, hover: 24, idle: 'drift', step: null,
     particles: 'sparkle', pcol: '#c9f6ff', trail: { on: true, col: '#8fe8ff', rate: .045 }, brake: .08, sway: 13 },
-  basic: { name: 'Fly-by Strike', type: 'physical', ratio: .78, range: 232, proj: 'orb', pcol: '#b9f5ff',
+  basic: { name: 'Fly-by Strike', type: 'physical', ratio: 1.15, range: 232, proj: 'orb', pcol: '#b9f5ff',
     sfx: 'whoosh', hit: 'hit_light', wind: .12, fastWind: true, note: 'A quick pass that leaves the enemy trying to find the sky.',
     onHit: (u, target, B) => {
       if (!u._flutterFlybyReady) return;
       u._flutterFlybyReady = false;
       B.enemiesOf(u).filter(e => e.alive && e !== target && Math.abs((e.depth || 0) - (u.depth || 0)) < .26
         && (e.x - u.x) * (u.face || 1) > 0 && Math.abs(e.x - u.x) < 300).forEach(e => {
-        B.damage(u, e, u.st.atk * .38, { type: 'physical', area: true, tag: 'Fly-by Strike' });
+        B.damage(u, e, u.st.atk * .55, { type: 'physical', area: true, noDodge: true, tag: 'Fly-by Strike' });
         flutterOffBalance(u, B, e, 3.5);
         B.applyStatus(u, e, 'flutterflyby', 2.8);
       });
@@ -302,16 +378,32 @@ defHero({
   },
   skills: {
     W: {
-      name: 'Floaty Dash', type: 'Physical Damage / Control', energy: 100,
-      v: { ratio: 1.18, returnRatio: .62 }, p: { offBalance: 5.5, knockback: 118, returnKnockback: 166, airTime: .48, maxLift: 5 },
-      desc: (S, P) => `<span class="sk-pas">Flutter begins each wave off-screen, then flies in from above and dashes through the enemy team for <em>${pcn(S.ratio * 100)}</em> Attack, scattering them and applying 🥴 Off Balance. Moving through an enemy refreshes Off Balance and grants 🪽 Lift, increasing Evasion and Skill Haste up to ${P.maxLift}.</span> Active: she becomes briefly untargetable and dives through the formation. At maximum Lift, she hits again on the return path and interrupts Off Balance enemies.`,
+      name: 'Floaty Dash', type: 'Physical Damage / Control / Shield', energy: 100,
+      v: {
+        ratio: 2.50,
+        returnRatio: 1.50,
+        openingRatio: 2.00,
+        shieldRatio: 1.75,
+        openingShield: 1.40,
+        offDmgBonus: .40
+      },
+      p: {
+        offBalance: 6.0,
+        openingPush: 135,
+        knockback: 145,
+        returnKnockback: 175,
+        airTime: .55,
+        maxLift: 5,
+        stunDur: 1.2
+      },
+      desc: (S, P) => `<span class="sk-pas">Wave Start: Flutter begins off-screen, then swoops down in a supersonic dive through the enemy team for <em>${pcn(S.openingRatio * 100)}</em> Attack, scattering their formation and applying 🥴 Off Balance for ${P.offBalance.toFixed(1)}s. Her slipstream shields all allies for <em>${pcn(S.openingShield * 100)}</em> Attack and grants +20% Move Speed and +15% Skill Haste for 8s. She lands with +2 🪽 Lift.</span> Active: she becomes untargetable and executes an overwhelming Floaty Dash through the entire enemy line for <em>${pcn(S.ratio * 100)}</em> Attack, knocking enemies back and interrupting casts. Enemies who are 🥴 Off Balance take <em>+${pcn(S.offDmgBonus * 100)}</em> bonus Damage and have their Armor shredded by 20%. Her cyclone shockwave deploys a teamwide Overdrive Barrier shielding all allies for <em>${pcn(S.shieldRatio * 100)}</em> Attack and boosting Attack Speed by 25% and Skill Haste by 20% for 7s. At 3+ 🪽 Lift, she loops around on a return sonic pass for <em>${pcn(S.returnRatio * 100)}</em> Attack, dragging enemies inward and Stunning Off Balance targets for ${P.stunDur.toFixed(1)}s.`,
       passive: (u, B, S, P) => {
         u._flutterLiftMax = P.maxLift; flutterHide(u); flutterOpening(u, B, S, P);
         u._flutterPassAt = {};
         B.every(u, .10, () => {
           if (!u.moving && !(u.dashUntil > B.t)) return;
           flutterFoes(B, u).forEach(e => {
-            if (B.distance(e, u) > 64 || B.t < (u._flutterPassAt[e.uid] || 0)) return;
+            if (B.distance(e, u) > 75 || B.t < (u._flutterPassAt[e.uid] || 0)) return;
             u._flutterPassAt[e.uid] = B.t + .55;
             flutterOffBalance(u, B, e, P.offBalance); flutterAddLift(u, B, 1);
           });
@@ -354,7 +446,7 @@ defHero({
     },
     R: {
       name: 'Storm of Wings', type: 'Physical Damage / Control / Skill Haste',
-      v: { duration: 7.5, radius: 320, dot: .24, intercept: 2.0 }, p: { maxLift: 5 },
+      v: { duration: 7.5, radius: 320, dot: .24, intercept: 2.0 }, p: { maxLift: 5, duration: 7.5 },
       desc: (S, P) => `At maximum 🪽 Lift, Flutter creates a Wingstorm over the enemy side for ${P.duration}s. Enemies inside take Physical Damage over time, become 🥴 Off Balance, lose Accuracy and Movement Speed, and are pushed out of formation. If one tries to dash, leap, rush, or teleport inside it, Flutter intercepts and interrupts the movement.`,
       passive: (u, B, S, P) => {
         u._flutterStormEnabled = true; u._flutterStormParams = S;

@@ -792,7 +792,10 @@ const SKILL_AREA_KEYS = new Set([
 ]);
 const SKILL_COUNT_KEYS = new Set([
   'hits', 'ticks', 'bounces', 'targets', 'swipes', 'cuts', 'count', 'stacks',
-  'max', 'maxStacks', 'cap', 'redCap', 'maxUses', 'maxBoosts'
+  'max', 'maxStacks', 'cap', 'redCap', 'maxUses', 'maxBoosts',
+  'gain', 'clues', 'tokens', 'shards', 'cards', 'ammo', 'points', 'orbs',
+  'charges', 'cleanse', 'dispel', 'strips', 'chain', 'chains', 'waves',
+  'stars', 'clue', 'allyEn'
 ]);
 const SKILL_POWER_KEYS = new Set([
   'heal', 'shield', 'damage', 'dmg', 'ratio', 'atk', 'def', 'mag', 'mdef', 'hp',
@@ -835,21 +838,232 @@ function skillGrowthParams(skill, lv) {
     // Authored combo gates and per-wave caps stay fixed when a skill levels up.
     if (skill.fixedP && skill.fixedP.includes(key)) return;
     if (SKILL_INTERVAL_KEYS.has(key)) {
-      out[key] = value * skillCooldownMult(lv);
+      out[key] = Math.round(value * skillCooldownMult(lv) * 100) / 100;
     } else if (SKILL_COUNT_KEYS.has(key)) {
       out[key] = Math.max(1, Math.round(value * count));
-    } else if (SKILL_DURATION_KEYS.has(key) || SKILL_AREA_KEYS.has(key) || SKILL_POWER_KEYS.has(key)) {
-      out[key] = value * utility;
+    } else if (SKILL_DURATION_KEYS.has(key)) {
+      out[key] = Math.round(value * utility * 10) / 10;
+    } else if (SKILL_AREA_KEYS.has(key) || SKILL_POWER_KEYS.has(key)) {
+      out[key] = Math.round(value * utility * 1000) / 1000;
     } else {
-      // Thresholds and bespoke passive knobs are effects too.  Previously
-      // they silently stayed at their level-one value.
-      out[key] = key === 'thr' || key === 'full' || key === 'crit'
+      // Thresholds and bespoke passive knobs are effects too.
+      const v = key === 'thr' || key === 'full' || key === 'crit'
         ? Math.min(.95, value * utility)
         : value * utility;
+      out[key] = Math.round(v * 1000) / 1000;
     }
   });
   return out;
 }
+
+/* ============================================================
+   SKILL DESCRIPTION ENGINE (Unified, Robust, Interactive)
+   ============================================================ */
+const SkillDesc = {
+  getMode() {
+    return (typeof Save !== 'undefined' && Save.data && Save.data.skillDescMode) || 'both';
+  },
+
+  setMode(mode) {
+    if (typeof Save !== 'undefined' && Save.data) {
+      Save.data.skillDescMode = mode;
+      if (typeof Save.write === 'function') Save.write();
+    }
+    if (typeof document !== 'undefined' && document.querySelectorAll) {
+      document.querySelectorAll('.sk-desc-root').forEach(el => {
+        el.classList.remove('sk-mode-both', 'sk-mode-calc', 'sk-mode-pct');
+        el.classList.add('sk-mode-' + mode);
+      });
+      document.querySelectorAll('.sk-mode-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.mode === mode);
+      });
+    }
+  },
+
+  modeToggleHtml() {
+    const cur = this.getMode();
+    return `<div class="sk-mode-bar" title="Change skill description display mode">
+      <button type="button" class="sk-mode-btn ${cur === 'pct' ? 'active' : ''}" data-mode="pct" onclick="SkillDesc.setMode('pct'); event.stopPropagation();">% Ratio</button>
+      <button type="button" class="sk-mode-btn ${cur === 'calc' ? 'active' : ''}" data-mode="calc" onclick="SkillDesc.setMode('calc'); event.stopPropagation();"># Hit</button>
+      <button type="button" class="sk-mode-btn ${cur === 'both' ? 'active' : ''}" data-mode="both" onclick="SkillDesc.setMode('both'); event.stopPropagation();">✦ Both</button>
+    </div>`;
+  },
+
+  getStats(heroId, spec) {
+    let st = null;
+    try {
+      const s = spec || (typeof playerSpec === 'function' ? playerSpec(heroId) : { id: heroId, level: 70, rarity: 5 });
+      st = new Unit(s, 0, 0, { auras: [] }).st;
+    } catch (e) {
+      const d = HEROES[heroId];
+      st = Object.assign({ hp: 4000, atk: 500, mag: 500, def: 200, mdef: 200 }, (d && d.base) || {});
+    }
+    return st;
+  },
+
+  safeParams(skill, lv) {
+    const mult = skillMult(lv);
+    const S = {};
+    for (const k in (skill.v || {})) S[k] = skill.v[k] * mult;
+    const P = skillGrowthParams(skill, lv);
+    const safeS = new Proxy(S, {
+      get: (t, p) => (p in t ? t[p] : (P && p in P ? P[p] : 1))
+    });
+    const safeP = new Proxy(P, {
+      get: (t, p) => (p in t ? t[p] : (S && p in S ? S[p] : 1))
+    });
+    return { S, P, safeS, safeP };
+  },
+
+  enhanceText(text, skill, st) {
+    if (!text) return '';
+    let out = formatSkillSeconds(text);
+
+    const escapeAttr = s => String(s || '').replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+
+    // Dynamic value chips for <em>
+    out = out.replace(/<em>([^<]+)<\/em>/g, (match, valStr, offset, fullStr) => {
+      const pctMatch = valStr.match(/^([\d.]+)%$/);
+      const following = fullStr.slice(offset + match.length, offset + match.length + 40).toLowerCase();
+      const preceding = fullStr.slice(Math.max(0, offset - 30), offset).toLowerCase();
+
+      // Check if this percentage is a utility stat or fixed debuff/buff rather than an Attack/Magic ratio:
+      const isUtilityPct = /\b(accuracy|evasion|speed|chance|resistance|crit|reduction|cdr|tenacity|aspd)\b/i.test(following)
+        || /\b(stripping|reduces|reduced|chance of|gain \+|gains \+|has \+)\b/i.test(preceding);
+
+      if (pctMatch && !isUtilityPct) {
+        const pct = parseFloat(pctMatch[1]);
+        let statKey = 'atk';
+        let statLabel = 'Attack';
+        const skillTypeLower = (skill && skill.type ? skill.type : '').toLowerCase();
+        if (following.includes('magic') || skillTypeLower.includes('magic')) {
+          statKey = 'mag'; statLabel = 'Magic Attack';
+        } else if (following.includes('max hp') || following.includes('hp')) {
+          statKey = 'hp'; statLabel = 'Max HP';
+        } else if (following.includes('defense') || following.includes('armor')) {
+          statKey = 'def'; statLabel = 'Defense';
+        } else if (skillTypeLower.includes('physical')) {
+          statKey = 'atk'; statLabel = 'Attack';
+        }
+        const statVal = (st && st[statKey]) || 500;
+        const calcVal = Math.round(statVal * (pct / 100));
+        const cleanFormula = `${pct}% × ${fmt(Math.round(statVal))} ${statLabel} = ${fmt(calcVal)}`;
+        const safeFormula = escapeAttr(cleanFormula);
+        return `<em class="sk-chip" data-pct="${pct}%" data-calc="${fmt(calcVal)}" data-formula="${safeFormula}" title="${safeFormula}" onclick="SkillDesc.inspect(this, event)"><span class="sk-chip-pct">${pct}%</span><span class="sk-chip-calc"> [${fmt(calcVal)}]</span></em>`;
+      }
+      return `<em class="sk-chip sk-chip-fixed"><span class="sk-chip-val">${valStr}</span></em>`;
+    });
+
+    // Helper: only replace text outside HTML tags so tag attributes (like data-formula or title) are NEVER corrupted
+    const replaceTextOnly = (html, regex, replacement) => {
+      return html.replace(/(<[^>]+>)|([^<]+)/g, (m, tag, textChunk) => {
+        if (tag) return tag;
+        return textChunk.replace(regex, replacement);
+      });
+    };
+
+    // Keywords
+    out = replaceTextOnly(out, /\b(Physical Damage|Physical Attack)\b/gi, '<span class="sk-kw sk-kw-phys">⚔️ $1</span>');
+    out = replaceTextOnly(out, /\b(Magic Damage|Magic Attack)\b/gi, '<span class="sk-kw sk-kw-mag">✨ $1</span>');
+    out = replaceTextOnly(out, /\b(True Damage)\b/gi, '<span class="sk-kw sk-kw-true">⚡ $1</span>');
+    out = replaceTextOnly(out, /\b(Healing Received)\b/gi, '<span class="sk-kw sk-kw-heal">💚 $1</span>');
+    out = replaceTextOnly(out, /\b(Energy Generation)\b/gi, '<span class="sk-kw sk-kw-energy">🔋 $1</span>');
+
+    return typeof tagifyStatuses === 'function' ? tagifyStatuses(out) : out;
+  },
+
+  format(heroId, key, skill, skillLv, spec) {
+    if (!skill) return '';
+    const st = this.getStats(heroId, spec);
+    let raw = '';
+    if (key === 'basic') {
+      const isMag = skill.type === 'magic';
+      const pct = Math.round(skill.ratio * 100);
+      raw = `${skill.note || ''} Deals <em>${pct}%</em> of ${isMag ? 'Magic Attack' : 'Attack'}.`;
+    } else {
+      const { safeS, safeP } = this.safeParams(skill, skillLv || 1);
+      try {
+        raw = skill.desc(safeS, safeP);
+      } catch (e) {
+        raw = skill.name || '';
+      }
+    }
+
+    // Extract passive vs active blocks
+    let passiveText = null;
+    let activeText = null;
+
+    const pasMatch = raw.match(/<span class="sk-pas">([\s\S]*?)<\/span>/i);
+    if (pasMatch) {
+      passiveText = pasMatch[1].trim();
+      activeText = raw.replace(/<span class="sk-pas">[\s\S]*?<\/span>/i, '').replace(/^\s*Active:\s*/i, '').trim();
+    } else if (key !== 'basic' && !skill.cast) {
+      passiveText = raw.trim();
+    } else {
+      activeText = raw.replace(/^\s*Active:\s*/i, '').trim();
+    }
+
+    let html = '';
+    if (passiveText) {
+      html += `<div class="sk-box sk-box-pas"><div class="sk-box-badge">✦ PASSIVE TRAIT</div><div class="sk-box-body">${this.enhanceText(passiveText, skill, st)}</div></div>`;
+    }
+    if (activeText) {
+      const badgeText = (key === 'W' || skill.energy) ? '★ ULTIMATE ABILITY' : '⚡ ACTIVE ABILITY';
+      html += `<div class="sk-box sk-box-act"><div class="sk-box-badge">${badgeText}</div><div class="sk-box-body">${this.enhanceText(activeText, skill, st)}</div></div>`;
+    }
+
+    return html || `<div class="sk-box sk-box-act"><div class="sk-box-body">${this.enhanceText(raw, skill, st)}</div></div>`;
+  },
+
+  rankPreview(skill, lv, st) {
+    if (!skill || lv >= 450) return '';
+    const next = lv + 1;
+    const { S: curS, P: curP } = this.safeParams(skill, lv);
+    const { S: nxtS, P: nxtP } = this.safeParams(skill, next);
+    const changes = [];
+
+    const formatDiff = (key, curVal, nxtVal) => {
+      const label = key.replace(/([A-Z])/g, ' $1').replace(/^./, c => c.toUpperCase());
+      const isPct = Math.abs(curVal) <= 1.5;
+      const curStr = isPct ? (curVal * 100).toFixed(1).replace(/\.0$/, '') + '%' : curVal.toFixed(1).replace(/\.0$/, '');
+      const nxtStr = isPct ? (nxtVal * 100).toFixed(1).replace(/\.0$/, '') + '%' : nxtVal.toFixed(1).replace(/\.0$/, '');
+      let extra = '';
+      if (isPct && st) {
+        const isMag = (skill.type || '').toLowerCase().includes('magic');
+        const stat = isMag ? (st.mag || 500) : (st.atk || 500);
+        const diffDmg = Math.round(stat * (nxtVal - curVal));
+        if (diffDmg > 0) extra = ` <small class="sk-next-delta">(+${diffDmg} ${isMag ? 'Mag' : 'Phys'})</small>`;
+      }
+      return `<div class="sk-next-item"><span class="sk-next-label">${label}</span> <b class="sk-next-diff">${curStr} → ${nxtStr}</b>${extra}</div>`;
+    };
+
+    Object.keys(curS).forEach(key => {
+      if (changes.length < 3 && Math.abs(nxtS[key] - curS[key]) > 0.00001) {
+        changes.push(formatDiff(key, curS[key], nxtS[key]));
+      }
+    });
+    Object.keys(curP).forEach(key => {
+      if (changes.length < 3 && Math.abs(nxtP[key] - curP[key]) > 0.00001) {
+        changes.push(formatDiff(key, curP[key], nxtP[key]));
+      }
+    });
+    if (skill.cd && changes.length < 3) {
+      const curCd = skillCooldown(skill, lv).toFixed(1);
+      const nxtCd = skillCooldown(skill, next).toFixed(1);
+      changes.push(`<div class="sk-next-item"><span class="sk-next-label">Cooldown</span> <b class="sk-next-diff">${curCd}s → ${nxtCd}s</b> <small class="sk-next-delta">(-${(curCd - nxtCd).toFixed(1)}s)</small></div>`);
+    }
+
+    return changes.join('');
+  },
+
+  inspect(chip, ev) {
+    if (ev && ev.stopPropagation) ev.stopPropagation();
+    const formula = chip.dataset.formula;
+    if (formula && typeof UI !== 'undefined' && UI.toast) {
+      UI.toast(formula, { icon: '📊', time: 3400 });
+    }
+  }
+};
 
 /* ---------------- classes ---------------- */
 /* Classes and subclasses are fifty-rank combat specializations. Rank 1 is

@@ -7,148 +7,322 @@
 'use strict';
 
 /* ============================================================ RODGER
-   Backline Control - C Tier. Never throws a punch; wins by knowing too much. */
+   Backline Control - B Tier. Never throws a punch; wins by knowing too much.
+   The master detective watches, discovers clues, and closes cases. */
 defHero({
   id: 'Rodger', name: 'Rodger', folder: 'Rodger', file: 'Rodger', icon: 'Rodger',
-  role: 'Control', tier: 'C', element: 'Clue',
-  blurb: 'Does not perform Basic Attacks. Watches, takes notes, and eventually knows exactly when to interrupt.',
-  base: { hp: 3150, atk: 95, def: 190, mag: 265, mdef: 232, spd: 96, acc: 205, eva: 128 },
-  hidden: { range: 300, aspd: .7, ms: 0, aggro: .30, crit: .05, critDmg: 1.4, healPow: 1, shieldPow: 1,
-    cdr: .10, ccRes: .15, kbRes: .2, armorPen: .08, magPen: .12 },
-  growth: { hp: .078, atk: .050, def: .078, mag: .090, mdef: .086 },
+  role: 'Control', tier: 'B', element: 'Clue',
+  blurb: 'Does not perform Basic Attacks. Constantly discovers Clues, designates Prime Suspects, and exploits solved cases for massive team advantages.',
+  base: { hp: 3650, atk: 110, def: 215, mag: 360, mdef: 260, spd: 98, acc: 210, eva: 135 },
+  hidden: { range: 520, aspd: .7, ms: 0, aggro: .30, crit: .05, critDmg: 1.4, healPow: 1, shieldPow: 1,
+    cdr: .15, ccRes: .20, kbRes: .25, armorPen: .08, magPen: .14 },
+  growth: { hp: .082, atk: .050, def: .080, mag: .095, mdef: .088 },
   move: { gait: 'swagger', bob: 4, freq: 1.3, lean: 4, squash: .03, idle: 'think', step: 'step',
     particles: 'none', pcol: '#8fb4ff', trail: { on: false }, brake: .4 },
   // Field Research says he doesn't attack at all - the basic here exists only
   // because the engine wants one; Rodger self-Disarms at battle start (see
   // W's passive) so it never actually fires.
-  basic: { name: 'Notebook Flick', type: 'magic', ratio: .3, range: 300, proj: 'orb', pcol: '#8fb4ff',
+  basic: { name: 'Notebook Flick', type: 'magic', ratio: .3, range: 520, proj: 'orb', pcol: '#8fb4ff',
     sfx: 'whoosh', hit: 'hit_magic', wind: .2, note: 'He never throws this - he is always Disarmed.' },
   skills: {
     W: {
-      name: 'Field Research', type: 'Control', energy: 100,
-      v: { caseDur: 2.4 }, p: { max: 5, every: 3, gain: 1 },
-      desc: (S, P) => `<span class="sk-pas">Rodger performs no Basic Attacks and never leaves the backline. Every ${P.every}s he observes the highest-Energy enemy, gaining 1 Research on them (up to ${P.max}). Research is not a debuff - it's just what he knows.</span>
-        Active: he rapidly studies the highest-Energy enemy, gaining ${P.gain + 1} Research at once, briefly interrupting them, and making them 🕵 Investigated for <em>${S.caseDur.toFixed(1)}s</em>.`,
+      name: 'Field Research: Grand Deduction', type: 'Control', energy: 100,
+      v: { dmg: 160, caseDur: 4.0, shield: 260 },
+      p: { gain: 2, allyEn: 20, max: 5 },
+      desc: (S, P) => `<span class="sk-pas">Rodger performs no Basic Attacks and stays planted in the backline. Every 1.8s he observes the highest-threat enemy, gathering 1 🔍 Clue (up to ${P.max}) and gaining 14 Energy. When allies hit researched foes or enemies cast, Rodger gains bonus Energy and Clues.</span>
+        Active: Rodger raises his magnifying glass, discovering <b>${P.gain} Clues</b> on ALL enemies and dealing <em>${Math.round(S.dmg)}</em> magic damage. Enemies are interrupted and become 🕵 Investigated for <em>${S.caseDur.toFixed(1)}s</em>. If any enemy has 5 Clues (Case Closed), Rodger executes a <b>Grand Deduction</b>: stuns them for 1.8s, dispels all their positive buffs, and grants all allies a <em>${Math.round(S.shield)}</em> Shield, ${P.allyEn} Energy, and +30% Attack Speed!`,
       passive: (u, B, S, P) => {
-        u.research = {}; // uid -> stacks, purely informational bookkeeping
+        u.research = {}; // uid -> stacks (0 to 5), also feeds end-of-battle shard multiplier
         B.applyStatus(u, u, 'planted', 999);
         B.applyStatus(u, u, 'disarm', 999);
-        u.immovable = true; // 'planted' stops him walking, but knockback() only checks this
-        B.every(u, P.every, () => {
+        u.immovable = true;
+
+        u.addClue = (target, count = 1) => {
+          if (!target || !target.alive) return;
+          u.research = u.research || {};
+          const old = u.research[target.uid] || 0;
+          const next = Math.min(P.max, old + count);
+          u.research[target.uid] = next;
+          if (next >= P.max && old < P.max && !target._rodgerClosed) {
+            target._rodgerClosed = true;
+            Sound.play('lock'); Sound.play('guardbreak', { vol: .35, throttle: 500 });
+            B.applyStatus(u, target, 'exposed', 999, { stacks: 3 });
+            B.applyStatus(u, target, 'investigated', 999);
+            B.applyStatus(u, target, 'buffsealed', 6, { stacks: 1 });
+            B.fxRing(target.x, target.y - 40, 110, '#8fb4ff');
+            B.fxStatusOn(target, 'WeakenEffect', { sizeMul: 1.05 });
+            B.fxFloatObject(target.x, target.y - 110, 'Book', '#8fb4ff');
+          }
+        };
+
+        // Note-taking / observation cycle: every 1.8s observe highest threat
+        B.every(u, 1.8, () => {
           const foes = B.enemiesOf(u);
-          // Research is tied to a specific combat unit. Clear records for
-          // defeated units so his active skills never select a ghost target.
           Object.keys(u.research).forEach(uid => {
             if (!foes.some(foe => String(foe.uid) === uid)) delete u.research[uid];
           });
-          const t = B.highestEnergy(foes); if (!t) return;
-          u.research[t.uid] = Math.min(P.max, (u.research[t.uid] || 0) + 1);
+          const t = B.highestEnergy(foes) || foes[0];
+          if (!t) return;
+          u.addClue(t, 1);
+          B.energy(u, 14);
           B.anim(u, 'cast', .76, 'rodgerResearch');
           Sound.play('ding', { vol: .22, throttle: 600 });
           B.fxRodgerResearch(u, t, u.research[t.uid], true);
         });
+
+        // Ally attacks against researched enemies grant Rodger bonus energy & chance of clue
+        B.on(u, 'hit', e => {
+          if (!e || !e.target || e.target.team === u.team) return;
+          const st = (u.research || {})[e.target.uid] || 0;
+          if (st > 0) {
+            B.energy(u, 3);
+            if (chance(.25)) u.addClue(e.target, 1);
+          }
+        });
+
         B.on(u, 'enemyDown', e => {
-          if (e && u.research && e.uid != null) e._rodgerResearchAtDefeat = Math.max(e._rodgerResearchAtDefeat || 0, u.research[e.uid] || 0);
+          if (e && u.research && e.uid != null) {
+            e._rodgerResearchAtDefeat = Math.max(e._rodgerResearchAtDefeat || 0, u.research[e.uid] || 0);
+          }
         });
       },
       cast: (u, B, S, P) => {
-        const t = B.highestEnergy(B.enemiesOf(u)); if (!t) return;
-        B.anim(u, 'cast', 1.14, 'rodgerResearch'); Sound.play('lock');
-        B.fxRodgerResearch(u, t, Math.min(P.max, (u.research[t.uid] || 0) + P.gain + 1), false);
-        B.after(.46, () => {
-          if (!t.alive) return;
-          u.research[t.uid] = Math.min(P.max, (u.research[t.uid] || 0) + P.gain + 1);
-          B.applyStatus(u, t, 'investigated', S.caseDur);
-          B.interrupt(t); Sound.play('guardbreak', { vol: .28, throttle: 300 }); B.fxRing(t.x, t.y - 40, 90, '#8fb4ff');
-          B.fxStatusOn(t, 'SilenceEffect', { sizeMul: .88 });
+        const foes = B.enemiesOf(u);
+        if (!foes.length) return;
+        B.anim(u, 'cast', 1.14, 'rodgerResearch');
+        Sound.play('lock');
+        Sound.play('beam_charge', { vol: .28, throttle: 260 });
+
+        const primary = B.mostResearched(u) || B.highestEnergy(foes) || foes[0];
+        if (primary) B.fxRodgerResearch(u, primary, Math.min(P.max, ((u.research || {})[primary.uid] || 0) + P.gain), false);
+
+        B.after(.35, () => {
+          if (!u.alive) return;
+          let anyCaseClosed = false;
+          foes.forEach(foe => {
+            if (!foe.alive) return;
+            if (u.addClue) u.addClue(foe, P.gain);
+            B.applyStatus(u, foe, 'investigated', S.caseDur);
+            B.interrupt(foe);
+            B.damage(u, foe, S.dmg + u.st.mag * 0.8, { type: 'magic' });
+            B.fxRing(foe.x, foe.y - 35, 75, '#8fb4ff');
+            if ((u.research || {})[foe.uid] >= P.max) anyCaseClosed = true;
+          });
+
+          if (anyCaseClosed) {
+            Sound.play('guardbreak', { vol: .38, throttle: 300 });
+            B.shake(4, .2);
+            foes.filter(f => f.alive && (u.research || {})[f.uid] >= P.max).forEach(f => {
+              B.applyStatus(u, f, 'stun', 1.8);
+              B.dispel(f, 99);
+              B.fxStatusOn(f, 'SilenceEffect', { sizeMul: 1.1 });
+            });
+            B.alliesOf(u).forEach(ally => {
+              B.shield(u, ally, S.shield + u.st.mag * 0.75, 5);
+              B.energy(ally, P.allyEn);
+              B.applyStatus(u, ally, 'haste', 5);
+              B.fxSparkle(ally.x, ally.y - 45, 8, '#8fb4ff');
+            });
+          }
         });
       }
     },
     G: {
-      name: 'Research Capsule', type: 'Control', cd: 9,
-      v: { base: .8, per: .35 }, p: { cdr: .18, dur: 5, seal: 4 },
-      desc: (S, P) => `Throws a Capsule at the enemy Rodger has the most Research on. Stuns them for <em>${S.base.toFixed(1)}s</em> plus <em>${S.per.toFixed(1)}s</em> per Research, and makes them 🕵 Investigated for ${P.dur}s. At max Research, it also strips up to two positive effects and 🛑 Buff Seals them for ${P.seal}s, stopping their next hostile buff.`,
-      ai: { prio: 55, cond: (u, B) => !!B.mostResearched(u) },
+      name: 'Research Capsule', type: 'Control', cd: 8.5,
+      v: { baseDmg: 130, perDmg: 50, baseStun: 1.0, perStun: 0.28 },
+      p: { dur: 5, seal: 4, cdr: .18 },
+      desc: (S, P) => `Throws a pressurized Research Capsule at the enemy with the most Research. Deals <em>${Math.round(S.baseDmg)}</em> (+<em>${Math.round(S.perDmg)}</em> per Clue) magic damage and stuns them for <em>${S.baseStun.toFixed(1)}s</em> (+<em>${S.perStun.toFixed(2)}s</em> per Clue), making them 🕵 Investigated for ${P.dur}s. The capsule splashes 1 Clue and Slows adjacent foes, grants the nearest ally a temporary shield, and at 5 Clues, dispels 2 buffs and 🛑 Buff Seals the primary target for ${P.seal}s.`,
+      ai: { prio: 55, cond: (u, B) => !!B.mostResearched(u) || B.enemiesOf(u).length > 0 },
       cast: (u, B, S, P) => {
-        const t = B.mostResearched(u); if (!t) return;
-        const st = u.research[t.uid] || 0;
-        B.anim(u, 'wind', .86, 'rodgerCapsule'); Sound.play('beam_charge', { vol: .20, throttle: 260 }); B.fxRodgerCapsuleReady(u, .72);
+        const t = B.mostResearched(u) || B.highestEnergy(B.enemiesOf(u));
+        if (!t) return;
+        const st = (u.research || {})[t.uid] || 0;
+        B.anim(u, 'wind', .86, 'rodgerCapsule');
+        Sound.play('beam_charge', { vol: .20, throttle: 260 });
+        B.fxRodgerCapsuleReady(u, .72);
+
         B.after(.20, () => {
           if (!u.alive || !t.alive) return;
-          B.anim(u, 'attack', .22, 'rodgerCapsuleRelease'); Sound.play('throwsomething', { vol: .55 });
+          B.anim(u, 'attack', .22, 'rodgerCapsuleRelease');
+          Sound.play('throwsomething', { vol: .55 });
           B.fxArc(u, t, { kind: 'obj', img: 'researchcapsule', size: 34 }, () => {
-            Sound.play('icebreak'); B.hitstop(70);
-            B.fxRodgerCapsuleImpact(t, st); B.fxStatusOn(t, 'StunEffect', { sizeMul: .92 });
-            B.applyStatus(u, t, 'stun', S.base + S.per * st);
+            Sound.play('icebreak');
+            B.hitstop(70);
+            B.fxRodgerCapsuleImpact(t, st);
+            B.fxStatusOn(t, 'StunEffect', { sizeMul: .92 });
+
+            const totalDmg = S.baseDmg + u.st.mag * 0.65 + (S.perDmg + u.st.mag * 0.22) * st;
+            B.damage(u, t, totalDmg, { type: 'magic' });
+            B.applyStatus(u, t, 'stun', S.baseStun + S.perStun * st);
             B.applyStatus(u, t, 'investigated', P.dur);
-            if (st >= 5) { B.dispel(t, 2); B.applyStatus(u, t, 'buffsealed', P.seal, { stacks: 1 }); B.fxStatusOn(t, 'WeakenEffect', { sizeMul: .9 }); }
+
+            // Splash clues & slow to nearby foes
+            B.enemiesOf(u).forEach(other => {
+              if (other !== t && other.alive && Math.hypot(other.x - t.x, other.y - t.y) < 160) {
+                if (u.addClue) u.addClue(other, 1);
+                B.applyStatus(u, other, 'slow', 3);
+                B.fxRing(other.x, other.y - 30, 50, '#8fb4ff');
+              }
+            });
+
+            // Nearest ally gains research shield
+            const nearestAlly = B.alliesOf(u).filter(a => a.alive).sort((a, b) => Math.hypot(a.x - t.x, a.y - t.y) - Math.hypot(b.x - t.x, b.y - t.y))[0];
+            if (nearestAlly) {
+              B.shield(u, nearestAlly, 180 + u.st.mag * 0.5, 4.5);
+              B.fxSparkle(nearestAlly.x, nearestAlly.y - 40, 6, '#8fb4ff');
+            }
+
+            if (st >= 5) {
+              B.dispel(t, 2);
+              B.applyStatus(u, t, 'buffsealed', P.seal, { stacks: 1 });
+              B.fxStatusOn(t, 'WeakenEffect', { sizeMul: .9 });
+            }
           });
         });
       }
     },
     B: {
-      name: 'Case File', type: 'Control', cd: 12,
-      v: { dur: 6, slow: 2.5 }, p: {},
-      desc: (S) => `Opens his case file on the enemy he's researched the most, making them 🕵 Investigated for <em>${S.dur.toFixed(1)}s</em> — reduced Energy Generation and Skill Haste. Whenever they cast a skill while Investigated, they're 🐢 Slowed for <em>${S.slow.toFixed(1)}s</em>.`,
-      ai: { prio: 48, cond: (u, B) => !!B.mostResearched(u) },
+      name: 'Prime Suspect Dossier', type: 'Control', cd: 10.5,
+      v: { dur: 6.5, slow: 3.0, backfireDmg: 180 },
+      p: { enReward: 30, atkRed: .30 },
+      desc: (S, P) => `Opens his dossier on the enemy with the most Research, declaring them the <b>Prime Suspect</b> for <em>${S.dur.toFixed(1)}s</em>. The Prime Suspect deals ${Math.round(P.atkRed * 100)}% reduced damage and is 🕵 Investigated. Whenever they cast a skill, Rodger objects and interrupts them, dealing <em>${Math.round(S.backfireDmg)}</em> deduction magic damage and 🐢 Slowing them for <em>${S.slow.toFixed(1)}s</em>. If the Prime Suspect is defeated while the file is open, Rodger declares <b>Case Solved</b>, granting ${P.enReward} Energy and +25% Speed to all allies!`,
+      ai: { prio: 48, cond: (u, B) => !!B.mostResearched(u) || B.enemiesOf(u).length > 0 },
       cast: (u, B, S, P) => {
-        const t = B.mostResearched(u); if (!t) return;
-        B.anim(u, 'cast', 1.12, 'rodgerCase'); Sound.play('lock'); Sound.play('ui_open', { vol: .26 });
+        const t = B.mostResearched(u) || B.highestEnergy(B.enemiesOf(u));
+        if (!t) return;
+        B.anim(u, 'cast', 1.12, 'rodgerCase');
+        Sound.play('lock');
+        Sound.play('ui_open', { vol: .26 });
         B.fxRodgerCaseFile(u, t);
+        if (u.addClue) u.addClue(t, 1);
+
         B.after(.48, () => {
           if (!t.alive) return;
           B.applyStatus(u, t, 'investigated', S.dur);
+          B.applyStatus(u, t, 'weaken', S.dur, { stacks: 2 });
           B.fxStatusOn(t, 'SilenceEffect', { sizeMul: .92 });
+          t._rodgerPrimeSuspect = true;
         });
-        const off = B.on(u, 'enemyCast', e => { if (e === t && t.hasStatus('investigated')) B.applyStatus(u, t, 'slow', S.slow); });
-        B.after(S.dur, off);
+
+        const offCast = B.on(u, 'enemyCast', e => {
+          if (e === t && t._rodgerPrimeSuspect && t.alive) {
+            B.interrupt(t);
+            Sound.play('guardbreak', { vol: .28, throttle: 300 });
+            B.damage(u, t, S.backfireDmg + u.st.mag * 0.85, { type: 'magic' });
+            B.applyStatus(u, t, 'slow', S.slow);
+            B.fxFloatObject(t.x, t.y - 100, 'Book', '#8fb4ff');
+          }
+        });
+
+        const offDown = B.on(u, 'enemyDown', e => {
+          if (e === t && t._rodgerPrimeSuspect) {
+            t._rodgerPrimeSuspect = false;
+            Sound.play('get_rare', { vol: .45, priority: true });
+            B.alliesOf(u).forEach(ally => {
+              B.energy(ally, P.enReward);
+              B.applyStatus(u, ally, 'haste', 5);
+              B.fxSparkle(ally.x, ally.y - 45, 8, '#c7ddff');
+            });
+            const next = B.highestEnergy(B.enemiesOf(u));
+            if (next && u.addClue) u.addClue(next, 3);
+          }
+        });
+
+        B.after(S.dur, () => {
+          if (t) t._rodgerPrimeSuspect = false;
+          offCast();
+          offDown();
+        });
       }
     },
     P: {
       name: 'Observant Detective', type: 'Passive',
-      v: { en: 6 }, p: { chance: .10, perStack: .12, cdrOnCC: .10 },
-      desc: (S, P) => `Whenever a Researched enemy begins a skill, Rodger gains ${S.en} Energy and has a chance to interrupt it - the chance grows with how much Research he has on them. Whenever an Investigated enemy is Crowd Controlled by an ally, Rodger gains Skill Haste.`,
+      v: { en: 12, bonusDmg: 95 },
+      p: { chance: .15, perStack: .12, haste: .15 },
+      desc: (S, P) => `<span class="sk-pas">Rodger gains +${Math.round(P.haste * 100)}% Skill Haste. Whenever a researched enemy begins casting, Rodger gains <em>${Math.round(S.en)}</em> Energy and has a ${Math.round(P.chance * 100)}% (+${Math.round(P.perStack * 100)}% per Clue) chance to interrupt and briefly 🔇 Silence them. Whenever an ally applies Crowd Control to an Investigated enemy, Rodger triggers an instant deduction, dealing <em>${Math.round(S.bonusDmg)}</em> magic damage and granting the ally +25% Critical Chance for 4s.</span>`,
       passive: (u, B, S, P) => {
+        u.flat.cdr = (u.flat.cdr || 0) + P.haste;
+        u.dirty = true;
+
         B.on(u, 'enemyCast', t => {
           const st = (u.research || {})[t.uid] || 0;
           if (!st) return;
           B.energy(u, S.en);
-          if (chance(P.chance + P.perStack * st)) { B.interrupt(t); B.fxStatusOn(t, 'SilenceEffect', { sizeMul: .8 }); B.fxFloatObject(t.x, t.y - 100, 'Magifyingglass', '#8fb4ff'); }
+          if (chance(P.chance + P.perStack * st)) {
+            B.interrupt(t);
+            B.applyStatus(u, t, 'silence', 1.0);
+            B.fxStatusOn(t, 'SilenceEffect', { sizeMul: .8 });
+            B.fxFloatObject(t.x, t.y - 100, 'Magifyingglass', '#8fb4ff');
+          }
         });
-        B.every(u, .4, () => {
-          if (B.enemiesOf(u).some(e => e.hasStatus('investigated') && e.statuses.some(s => STATUS[s.id].cc))) {
-            u.flat.cdr2 = P.cdrOnCC; u.dirty = true;
-          } else if (u.flat.cdr2) { u.flat.cdr2 = 0; u.dirty = true; }
+
+        // Ally CC synergy
+        B.on(u, 'statusApplied', e => {
+          if (!e) return;
+          const tgt = e.unit || e.target;
+          const src = e.src || e.source;
+          const stId = e.id || e.status;
+          if (!tgt || tgt.team === u.team) return;
+          const sDef = STATUS[stId];
+          if (sDef && sDef.cc && tgt.hasStatus('investigated')) {
+            B.damage(u, tgt, S.bonusDmg + u.st.mag * 0.45, { type: 'magic' });
+            B.fxSparkle(tgt.x, tgt.y - 40, 5, '#8fb4ff');
+            if (src && src.team === u.team) {
+              B.applyStatus(u, src, 'lucky', 4);
+            }
+          }
         });
       }
     },
     R: {
-      name: 'Complete Research', type: 'Control',
-      v: {}, p: { max: 5, icd: 5, en: 25 },
-      desc: (S, P) => `Whenever an enemy reaches maximum Research, Rodger immediately closes their case: they become 🎯 Exposed and lose Skill Haste and Crowd Control Resistance. For a while after, any skill they try to cast is instantly interrupted, briefly 🔇 Silenced, and drained of Energy (short cooldown per target). When an Exposed enemy falls, Rodger begins researching the enemy with the most Energy.`,
+      name: 'Incontrovertible Evidence', type: 'Control',
+      v: { deductionDmg: 110, penBonus: .25 },
+      p: { max: 5, icd: 4, teamDmg: .10, teamHaste: .08 },
+      desc: (S, P) => `<span class="sk-pas">Upon reaching ${P.max} Research (Case Closed), the target becomes permanently 🎯 Exposed (3 stacks) and all allies gain +${Math.round(S.penBonus * 100)}% Armor and Magic Penetration against them. Allied hits against this target trigger Rodger's <b>Deduction Strike</b> for <em>${Math.round(S.deductionDmg)}</em> bonus magic damage (0.35s ICD). When a Case Closed enemy falls, Rodger files their case in the <b>Master Archive</b>: all allies gain a permanent +${Math.round(P.teamDmg * 100)}% Damage and +${Math.round(P.teamHaste * 100)}% Skill Haste for the battle (stacks up to 3 times), and 3 Clues transfer to the highest-Energy survivor.</span>`,
       passive: (u, B, S, P) => {
-        B.every(u, .5, () => {
-          B.enemiesOf(u).forEach(t => {
-            if ((u.research || {})[t.uid] >= P.max && !t._rodgerClosed) {
-              t._rodgerClosed = true;
-              Sound.play('lock'); Sound.play('guardbreak', { vol: .35, throttle: 500 }); B.applyStatus(u, t, 'exposed', 999, { stacks: 3 });
-              B.applyStatus(u, t, 'investigated', 999);
-              B.fxRing(t.x, t.y - 46, 112, '#8fb4ff'); B.fxStatusOn(t, 'WeakenEffect', { sizeMul: 1.04 });
-              B.fxFloatObject(t.x, t.y - 110, 'Book', '#8fb4ff');
-            }
-          });
+        u._rodgerArchive = 0;
+
+        // Deduction strikes on hit
+        B.on(u, 'hit', e => {
+          if (!e || !e.target || e.target.team === u.team || !e.target.alive) return;
+          if ((u.research || {})[e.target.uid] >= P.max) {
+            const now = B.t;
+            if (e.target._rodgerDeductionIcd && now - e.target._rodgerDeductionIcd < 0.35) return;
+            e.target._rodgerDeductionIcd = now;
+            const dmg = S.deductionDmg + u.st.mag * 0.50;
+            B.damage(u, e.target, dmg, { type: 'magic' });
+            B.fxRing(e.target.x, e.target.y - 30, 45, '#8fb4ff', .2);
+          }
         });
+
+        // Enemy cast while at max research: objection interrupt
         B.on(u, 'enemyCast', t => {
-          if (!t._rodgerClosed) return;
-          if (t._rodgerIcd && B.t - t._rodgerIcd < P.icd) return;
-          t._rodgerIcd = B.t;
-          B.interrupt(t); B.applyStatus(u, t, 'silence', 1.15); Sound.play('guardbreak', { vol: .28, throttle: 300 }); t.energy = Math.max(0, t.energy - P.en);
-          B.fxStatusOn(t, 'SilenceEffect', { sizeMul: .88 }); B.fxFloatObject(t.x, t.y - 112, 'Magifyingglass', '#8fb4ff');
+          if ((u.research || {})[t.uid] < P.max) return;
+          if (t._rodgerR_icd && B.t - t._rodgerR_icd < P.icd) return;
+          t._rodgerR_icd = B.t;
+          B.interrupt(t);
+          B.applyStatus(u, t, 'silence', 1.2);
+          Sound.play('guardbreak', { vol: .28, throttle: 300 });
+          t.energy = Math.max(0, t.energy - 30);
+          B.fxStatusOn(t, 'SilenceEffect', { sizeMul: .88 });
+          B.fxFloatObject(t.x, t.y - 112, 'Magifyingglass', '#8fb4ff');
         });
+
+        // Case closed enemy defeat -> Master archive
         B.on(u, 'enemyDown', e => {
-          if (!e._rodgerClosed) return;
+          if (!e || (u.research || {})[e.uid] < P.max) return;
+          if (u._rodgerArchive < 3) {
+            u._rodgerArchive++;
+            Sound.play('get_rare', { vol: .35 });
+            B.alliesOf(u).forEach(a => {
+              a.mult.dmg = (a.mult.dmg || 1) * (1 + P.teamDmg);
+              a.flat.cdr = (a.flat.cdr || 0) + P.teamHaste;
+              a.dirty = true;
+              B.fxSparkle(a.x, a.y - 50, 10, '#c7ddff');
+            });
+          }
           const next = B.highestEnergy(B.enemiesOf(u));
-          if (next) u.research[next.uid] = Math.min(4, (u.research[next.uid] || 0) + 1);
+          if (next && u.addClue) u.addClue(next, 3);
         });
       }
     }
@@ -473,9 +647,9 @@ defHero({
   skills: {
     W: {
       name: 'Moonlit Hunt', type: 'Physical Damage', energy: 100,
-      v: { ratio: .64, dmgBonus: .34 }, p: { thr: .34, hits: 5, dur: 5 },
+      v: { ratio: .64, dmgBonus: .34, bleed: .06 }, p: { thr: .34, hits: 5, dur: 5, ramp: .08 },
       desc: (S, P) => `<span class="sk-pas">Eclipse deals <em>${pcn(S.dmgBonus * 100)}</em> more non-Damage-over-Time damage to enemies below ${pc(P.thr)} HP. Her Basic Attacks Mark and Focus prey below that threshold, making her ordinary attacks prioritize it. When Focused prey is KO'd, Focus immediately shifts to the enemy with the lowest HP.</span>
-        Active: Eclipse lunges to the lowest-HP enemy, striking ${P.hits} times for <em>${pcn(S.ratio * 100)}</em> Attack each. Each successive strike grows stronger, applies Rend, and can retarget a new low-HP enemy if the original prey falls. She then returns to her exact starting position, gains 3 stacks of Attack Speed and Move Speed plus Haste for ${P.dur}s, and enters 🌑 Blackout.
+        Active: Eclipse lunges to the lowest-HP enemy, striking ${P.hits} times for <em>${pcn(S.ratio * 100)}</em> Attack each. Each successive strike grows <em>${pcn(P.ramp * 100)}</em> stronger, applies Rend for <em>${pcn(S.bleed * 100)}</em> Attack, and can retarget a new low-HP enemy if the original prey falls. She then returns to her exact starting position, gains 3 stacks of Attack Speed and Move Speed plus Haste for ${P.dur}s, and enters 🌑 Blackout.
         <span class="sk-pas">Blackout: Basic Attacks deal additional Physical Damage, apply Rend, and every second claw strike creates an extra claw hit.</span>`,
       passive: (u, B, S, P) => {
         u._eclipseThr = P.thr;
@@ -500,8 +674,8 @@ defHero({
           if (!victim) return;
           u.face = victim.x >= u.x ? 1 : -1;
           Sound.play('hit_slash', { vol: .5, throttle: 10 }); B.fxEclipseSkill('rake', u, { target: victim, index: i });
-          B.damage(u, victim, u.st.atk * S.ratio * (1 + i * .08), { type: 'physical', tag: 'Moonlit Hunt' });
-          B.applyStatus(u, victim, 'bleed', 4.5, { stacks: 1, val: u.st.atk * .06 });
+          B.damage(u, victim, u.st.atk * S.ratio * (1 + i * P.ramp), { type: 'physical', tag: 'Moonlit Hunt' });
+          B.applyStatus(u, victim, 'bleed', 4.5, { stacks: 1, val: u.st.atk * S.bleed });
           if (victim.hpPct < P.thr) B.applyStatus(u, victim, 'marked', P.dur + 2);
         });
         B.after(P.hits * .1 + .05, () => {
@@ -514,8 +688,8 @@ defHero({
     },
     G: {
       name: 'Moon Rush', type: 'Physical Damage', cd: 9,
-      v: { ratio: .52, leap: .78, kb: 78 }, p: { dur: 4 },
-      desc: (S, P) => `Charges toward the lowest-HP enemy, hitting every enemy in her path for <em>${pcn(S.ratio * 100)}</em> Attack and applying Rend. She then leaps onto her target for <em>${pcn(S.leap * 100)}</em> more, Marks them, and Knocks them Back. Eclipse gains 2 stacks of Attack Speed and Move Speed plus Haste for ${P.dur}s. During 🌑 Blackout, the charge deals 45% more damage, applies extra Rend and Expose to enemies it catches, and the leap applies Defense Down.`,
+      v: { ratio: .52, leap: .78, kb: 78, darkBonus: .45, darkLeap: .35 }, p: { dur: 4, bleed: 4 },
+      desc: (S, P) => `Charges toward the lowest-HP enemy, hitting every enemy in her path for <em>${pcn(S.ratio * 100)}</em> Attack and applying Rend. She then leaps onto her target for <em>${pcn(S.leap * 100)}</em> more, Marks them, and Knocks them Back. Eclipse gains 2 stacks of Attack Speed and Move Speed plus Haste for ${P.dur}s. During 🌑 Blackout, the charge deals <em>${pcn(S.darkBonus * 100)}</em> more damage, applies extra Rend and Expose to enemies it catches, and the leap deals <em>${pcn(S.darkLeap * 100)}</em> more damage and applies Defense Down.`,
       ai: { prio: 54, cond: () => true },
       cast: (u, B, S, P) => {
         const t = B.lowestHp(B.enemiesOf(u)); if (!t) return;
@@ -526,14 +700,14 @@ defHero({
         B.dash(u, t.x - u.face * 40, .3, { depth: t.depth, onMove: () => B.enemiesOf(u).forEach(e => {
           if (hit.has(e) || B.distance(e, u) > 50) return; hit.add(e);
           Sound.play('hit_light', { vol: .5, throttle: 12 });
-          B.damage(u, e, u.st.atk * S.ratio * (dark ? 1.45 : 1), { type: 'physical', tag: 'Moon Rush' });
-          B.applyStatus(u, e, 'bleed', 4, { stacks: dark ? 2 : 1, val: u.st.atk * .05 });
+          B.damage(u, e, u.st.atk * S.ratio * (dark ? 1 + S.darkBonus : 1), { type: 'physical', tag: 'Moon Rush' });
+          B.applyStatus(u, e, 'bleed', P.bleed, { stacks: dark ? 2 : 1, val: u.st.atk * .05 });
           if (dark) B.applyStatus(u, e, 'exposed', 3.5);
         }) });
         B.after(.32, () => {
           if (!t.alive) return;
           Sound.play('hit_heavy'); B.fxEclipseSkill('pounce', u, { target: t });
-          B.damage(u, t, u.st.atk * S.leap * (dark ? 1.35 : 1), { type: 'physical', tag: 'Moon Rush' });
+          B.damage(u, t, u.st.atk * S.leap * (dark ? 1 + S.darkLeap : 1), { type: 'physical', tag: 'Moon Rush' });
           B.knockback(u, t, S.kb);
           B.applyStatus(u, t, 'marked', 5.5);
           if (dark) B.applyStatus(u, t, 'defdown', 4, { stacks: 2 });
@@ -543,10 +717,10 @@ defHero({
     },
     B: {
       name: 'Savage Swipe', type: 'Physical Damage', cd: 6,
-      v: { ratio: .46, finisher: .78 }, p: { bleed: 4.5 },
-      desc: (S) => `Rapidly slashes the closest enemy three times for <em>${pcn(S.ratio * 100)}</em> Attack each. Every hit applies Rend; the final strike deals <em>${pcn(S.finisher * 100)}</em> more and applies Defense Down. During 🌑 Blackout, the final strike also damages nearby enemies, Rends them, and Slows them.`,
+      v: { ratio: .46, finisher: .78, cleave: 1.12 }, p: { bleed: 4.5, bleedRatio: .055, slowDur: 1.8 },
+      desc: (S, P) => `Rapidly slashes the closest enemy three times for <em>${pcn(S.ratio * 100)}</em> Attack each. Every hit applies Rend; the final strike deals <em>${pcn(S.finisher * 100)}</em> more and applies Defense Down. During 🌑 Blackout, the final strike also damages nearby enemies for <em>${pcn(S.cleave * 100)}</em> cleave, Rends them, and Slows them for ${P.slowDur}s.`,
       ai: { prio: 50, cond: () => true },
-      cast: (u, B, S) => {
+      cast: (u, B, S, P) => {
         const t = B.nearest(u, B.enemiesOf(u)); if (!t) return;
         const dark = u.hasStatus('blackout');
         B.anim(u, 'cast', .42, 'eclipseSwipe'); Sound.play('sweep', { vol: .4 });
@@ -555,20 +729,20 @@ defHero({
           Sound.play('hit_slash', { vol: .45, throttle: 8 }); B.fxEclipseSkill('swipe', u, { target: t, index: i });
           const last = i === 2;
           B.damage(u, t, u.st.atk * S.ratio * (last ? 1 + S.finisher : 1), { type: 'physical', tag: 'Savage Swipe' });
-          B.applyStatus(u, t, 'bleed', P.bleed, { stacks: last ? 2 : 1, val: u.st.atk * .055 });
+          B.applyStatus(u, t, 'bleed', P.bleed, { stacks: last ? 2 : 1, val: u.st.atk * P.bleedRatio });
           if (last) B.applyStatus(u, t, 'defdown', 4.5, { stacks: 1 });
           if (last && dark) B.enemiesOf(u).forEach(e => { if (e !== t && B.distance(e, u) < 170) {
-            B.damage(u, e, u.st.atk * S.ratio * 1.12, { type: 'physical', tag: 'Savage Swipe' });
-            B.applyStatus(u, e, 'bleed', P.bleed, { stacks: 1, val: u.st.atk * .045 });
-            B.applyStatus(u, e, 'slow', 1.8);
+            B.damage(u, e, u.st.atk * S.ratio * S.cleave, { type: 'physical', tag: 'Savage Swipe' });
+            B.applyStatus(u, e, 'bleed', P.bleed, { stacks: 1, val: u.st.atk * (P.bleedRatio * .8) });
+            B.applyStatus(u, e, 'slow', P.slowDur);
           } });
         });
       }
     },
     P: {
       name: "Predator's Instinct", type: 'Passive',
-      v: { dmg: .24 }, p: { en: 35, dur: 5 },
-      desc: (S, P) => `Deals <em>${pcn(S.dmg * 100)}</em> more damage to enemies below the Moonlit Hunt threshold, Marks them, and keeps Eclipse Focused on them; her attacks cannot be evaded by her Focused prey. Every 5s per target, her Basic Attacks also crack 12% of an active Shield, strip one removable buff, and apply 🥺 Grief for 3.5s. When an enemy phases out and returns, Eclipse strikes them once. Whenever Eclipse personally KOs an enemy, she gains ${P.en} Energy, 2 stacks of Attack Speed, Haste, and partial cooldown recovery for her other skills.`,
+      v: { dmg: .24, returnRatio: .62, crackShield: .12 }, p: { en: 35, dur: 5, cdr: 1.8, griefDur: 3.5 },
+      desc: (S, P) => `Deals <em>${pcn(S.dmg * 100)}</em> more damage to enemies below the Moonlit Hunt threshold, Marks them, and keeps Eclipse Focused on them; her attacks cannot be evaded by her Focused prey. Every 5s per target, her Basic Attacks also crack <em>${pcn(S.crackShield * 100)}</em> of an active Shield, strip one removable buff, and apply 🥺 Grief for ${P.griefDur}s. When an enemy phases out and returns, Eclipse strikes them once for <em>${pcn(S.returnRatio * 100)}</em> Attack. Whenever Eclipse personally KOs an enemy, she gains ${Math.round(P.en)} Energy, 2 stacks of Attack Speed, Haste, and ${P.cdr}s cooldown recovery for her other skills.`,
       passive: (u, B, S, P) => {
         u.antiDodge = target => !!(target && target === u.eclipseFocusTarget);
         u._eclipsePhaseAt = u._eclipsePhaseAt || {};
@@ -576,8 +750,8 @@ defHero({
           const t = ev.unit;
           if (!t || t.team === u.team || !['untargetable', 'stealth'].includes(ev.id) || !t.alive || B.t < (u._eclipsePhaseAt[t.uid] || 0)) return;
           u._eclipsePhaseAt[t.uid] = B.t + 4;
-          B.damage(u, t, u.st.atk * .62, { type: 'physical', tag: 'Predator’s Return' });
-          B.applyStatus(u, t, 'grief', 3.5);
+          B.damage(u, t, u.st.atk * S.returnRatio, { type: 'physical', tag: 'Predator’s Return' });
+          B.applyStatus(u, t, 'grief', P.griefDur);
           B.fxEclipseSkill('rake', u, { target: t });
         });
         B.on(u, 'dealDamage', ev => {
@@ -589,14 +763,14 @@ defHero({
         B.on(u, 'enemyDown', e => {
           if (!e || e._lastHitBy !== u) return;
           B.energy(u, P.en); B.applyStatus(u, u, 'speedup', P.dur, { stacks: 2 });
-          B.applyStatus(u, u, 'haste', P.dur, { stacks: 1 }); B.reduceCd(u, 1.8);
+          B.applyStatus(u, u, 'haste', P.dur, { stacks: 1 }); B.reduceCd(u, P.cdr);
         });
       }
     },
     R: {
       name: 'Total Eclipse', type: 'Transformation',
       v: { atk: .30, aspd: .24, ms: .24, hp: .26, cleave: .55, crit: .12 }, p: { extend: 3, en: 25 },
-      desc: (S, P) => `At the start of 🌑 Blackout, Eclipse transforms into her werewolf form. She gains <em>${pcn(S.atk * 100)}</em> Attack, <em>${pcn(S.aspd * 100)}</em> Attack Speed, <em>${pcn(S.ms * 100)}</em> Movement Speed, <em>${pcn(S.hp * 100)}</em> Max HP, and <em>${pcn(S.crit * 100)}</em> Critical Chance. Her Basic Attacks gain <em>${pcn(S.cleave * 100)}</em> Physical damage, hit nearby enemies, and spread Rend. Eclipse cannot have her Movement Speed reduced during Blackout. Whenever she personally KOs an enemy during Blackout, she restores ${P.en} Energy, gains a burst of Speed, and extends the transformation by ${P.extend}s. When Blackout ends, she returns to normal form.`,
+      desc: (S, P) => `At the start of 🌑 Blackout, Eclipse transforms into her werewolf form. She gains <em>${pcn(S.atk * 100)}</em> Attack, <em>${pcn(S.aspd * 100)}</em> Attack Speed, <em>${pcn(S.ms * 100)}</em> Movement Speed, <em>${pcn(S.hp * 100)}</em> Max HP, and <em>${pcn(S.crit * 100)}</em> Critical Chance. Her Basic Attacks gain <em>${pcn(S.cleave * 100)}</em> Physical damage, hit nearby enemies, and spread Rend. Eclipse cannot have her Movement Speed reduced during Blackout. Whenever she personally KOs an enemy during Blackout, she restores ${Math.round(P.en)} Energy, gains a burst of Speed, and extends the transformation by ${P.extend}s. When Blackout ends, she returns to normal form.`,
       passive: (u, B, S, P) => {
         // statusApplied/statusExpired broadcast to every listener regardless of
         // whose status it is (see Battle.emitAll) - filter to Eclipse's own.

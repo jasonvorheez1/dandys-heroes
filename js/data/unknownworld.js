@@ -86,9 +86,12 @@ allRounder('GladHander', 'Glad Hander', 'image-38.png', 'march', {
     desc: (S, P) => `Every ${Math.round(P.hits)} basic attacks, lowers the closest enemy's Power gain and Attack Speed for ${P.dur}s.`,
     passive: (u, B, S, P) => { u._unknownHits = 0; B.on(u, 'basicHit', ev => { if (!ev.target) return; u._unknownHits++; if (u._unknownHits < P.hits) return; u._unknownHits = 0; Sound.play('cog_filibuster', { vol: .23, throttle: 900 }); B.applyStatus(u, ev.target, 'drain', P.dur); B.applyStatus(u, ev.target, 'armslow', P.dur); }); }
   }),
-  R: unknownSkill('Corporate Smile', 'Passive', { p: { dur: 4 },
-    desc: (S, P) => `Whenever Glad Hander applies a debuff to an enemy, he gains Fortify for ${P.dur}s. Fortify can stack up to 5 times.`,
-    passive: (u, B, S, P) => B.on(u, 'statusApplied', ev => { if (ev.src !== u || !ev.unit || ev.unit.team === u.team || !STATUS[ev.id] || STATUS[ev.id].kind !== 'debuff') return; B.applyStatus(u, u, 'fortify', P.dur); })
+  R: unknownSkill('Corporate Smile', 'Passive', { v: { shield: .12 }, p: { dur: 4.5 },
+    desc: (S, P) => `Whenever Glad Hander applies a debuff to an enemy, he gains 🧱 Fortify for ${P.dur}s (max 5). At 5 stacks, his basic attacks also grant all allies a Shield worth <em>${pcn(S.shield * 100)}</em> Max HP and +20% Energy Generation for ${P.dur}s.`,
+    passive: (u, B, S, P) => {
+      B.on(u, 'statusApplied', ev => { if (ev.src !== u || !ev.unit || ev.unit.team === u.team || !STATUS[ev.id] || STATUS[ev.id].kind !== 'debuff') return; B.applyStatus(u, u, 'fortify', P.dur); });
+      B.on(u, 'basicHit', () => { const f = u.getStatus('fortify'); if (f && f.stacks >= 5) { B.alliesOf(u).forEach(a => { B.shield(u, a, u.max.hp * S.shield, P.dur); B.applyStatus(u, a, 'overcharge', P.dur); }); } });
+    }
   })
 });
 
@@ -105,11 +108,16 @@ allRounder('LegalEagle', 'Legal Eagle', 'image-40.png', 'march', {
     desc: (S, P) => `Targets the highest-Magic-Attack enemy for <em>${pcn(S.ratio * 100)}</em> Magic Damage and Blinds them for ${P.dur}s. Legal Eagle immediately gains a Shield worth <em>8%</em> max HP.`,
     cast: (u, B, S, P) => { const t = hitTarget(u, B, B.enemiesOf(u), 'mag'); if (!t) return; B.anim(u, 'cast', .32); B.after(.2, () => { B.damage(u, t, u.st.mag * S.ratio, { type: 'magic', tag: 'Evil Eye' }); B.applyStatus(u, t, 'blind', P.dur); B.shield(u, u, u.max.hp * .08, 4); }); }
   }),
-  P: unknownSkill('Jargon', 'Passive', { p: { hits: 3, dur: 6 }, desc: (S, P) => `Every ${Math.round(P.hits)} basic attacks applies Confused Testimony for ${P.dur}s.`,
-    passive: (u, B, S, P) => { u._unknownHits = 0; B.on(u, 'basicHit', ev => { if (!ev.target) return; u._unknownHits++; if (u._unknownHits >= P.hits) { u._unknownHits = 0; Sound.play('cog_jargon', { vol: .20, throttle: 950 }); B.applyStatus(u, ev.target, 'confusedtestimony', P.dur); } }); }
+  P: unknownSkill('Jargon', 'Passive', { v: { ratio: .56 }, p: { hits: 3, dur: 6 },
+    desc: (S, P) => `Every ${Math.round(P.hits)} basic attacks delivers Confused Testimony for ${P.dur}s, cutting enemy Energy generation and Evasion while dealing <em>${pcn(S.ratio * 100)}</em> Magic Damage.`,
+    passive: (u, B, S, P) => { u._unknownHits = 0; B.on(u, 'basicHit', ev => { if (!ev.target) return; u._unknownHits++; if (u._unknownHits >= P.hits) { u._unknownHits = 0; Sound.play('cog_jargon', { vol: .20, throttle: 950 }); B.applyStatus(u, ev.target, 'confusedtestimony', P.dur); B.damage(u, ev.target, u.st.mag * S.ratio, { type: 'magic', tag: 'Jargon' }); } }); }
   }),
-  R: unknownSkill('Obey the Pecking Order', 'Passive', { p: { dur: 3.5 }, desc: (S, P) => `Every 2.1s, if any enemy is debuffed, Legal Eagle gains 2 Fortify stacks for ${P.dur}s.`,
-    passive: (u, B, S, P) => B.every(u, 2.1, () => { if (B.enemiesOf(u).some(e => e.statuses.some(s => STATUS[s.id] && STATUS[s.id].kind === 'debuff'))) B.applyStatus(u, u, 'fortify', P.dur, { stacks: 2 }); })
+  R: unknownSkill('Obey the Pecking Order', 'Passive', { v: { crit: .25 }, p: { dur: 3.5 },
+    desc: (S, P) => `Every 2.1s, if any enemy is debuffed, Legal Eagle gains 2 🧱 Fortify stacks for ${P.dur}s. While Fortified, his attacks against debuffed targets gain <em>+${pcn(S.crit * 100)}</em> Crit Chance.`,
+    passive: (u, B, S, P) => {
+      B.every(u, 2.1, () => { if (B.enemiesOf(u).some(e => e.statuses.some(s => STATUS[s.id] && STATUS[s.id].kind === 'debuff'))) B.applyStatus(u, u, 'fortify', P.dur, { stacks: 2 }); });
+      B.on(u, 'dealDamage', ev => { if (u.hasStatus('fortify') && ev.target && ev.target.statuses.some(s => STATUS[s.id] && STATUS[s.id].kind === 'debuff')) ev.crit = true; });
+    }
   })
 });
 
@@ -126,7 +134,19 @@ allRounder('RobberBaron', 'Robber Baron', 'image-39.png', 'march', {
   P: unknownSkill('Synergy', 'Passive', { p: { hits: 3, dur: 5 }, desc: (S, P) => `After every ${Math.round(P.hits)} basic attacks, Robber Baron deals <em>28%</em> Magic Damage to all enemies and lowers Magic Defense for ${P.dur}s.`,
     passive: (u, B, S, P) => { u._unknownHits = 0; B.on(u, 'basicHit', () => { u._unknownHits++; if (u._unknownHits < P.hits) return; u._unknownHits = 0; Sound.play('cog_power_trip', { vol: .21, throttle: 950 }); B.enemiesOf(u).forEach(e => { B.damage(u, e, u.st.mag * .28, { type: 'magic', area: true, tag: 'Synergy' }); B.applyStatus(u, e, 'magdown', P.dur); }); }); }
   }),
-  R: unknownSkill('Hostile Takeover', 'Passive', { p: { dur: 3 }, desc: (S, P) => `Whenever Robber Baron deals damage, he gains Fortify for ${P.dur}s.`, passive: (u, B, S, P) => B.on(u, 'dealDamage', ev => { if (ev.src !== u || !ev.target) return; B.applyStatus(u, u, 'fortify', P.dur); }) })
+  R: unknownSkill('Hostile Takeover', 'Passive', { v: { shield: .10 }, p: { dur: 4.5 },
+    desc: (S, P) => `Whenever Robber Baron deals damage, he gains 🧱 Fortify for ${P.dur}s (max 5). At maximum stacks, hitting debuffed enemies steals <em>12 Energy</em> and gives him a <em>${pcn(S.shield * 100)}</em> Max HP Shield.`,
+    passive: (u, B, S, P) => B.on(u, 'dealDamage', ev => {
+      if (ev.src !== u || !ev.target) return;
+      B.applyStatus(u, u, 'fortify', P.dur);
+      const f = u.getStatus('fortify');
+      if (f && f.stacks >= 5 && !ev.dot && (!u._hostileCd || B.t - u._hostileCd >= 3)) {
+        u._hostileCd = B.t;
+        B.energy(ev.target, -12); B.energy(u, 12);
+        B.shield(u, u, u.max.hp * S.shield, 4);
+      }
+    })
+  })
 });
 
 allRounder('PencilPusher', 'Pencil Pusher', 'pencilpusher.png', 'trudge', {
@@ -134,7 +154,13 @@ allRounder('PencilPusher', 'Pencil Pusher', 'pencilpusher.png', 'trudge', {
   G: unknownSkill('Rub Out', 'Magic Damage', { cd: 7, v: { ratio: .98 }, p: { dur: 6 }, desc: (S, P) => `Deals <em>${pcn(S.ratio * 100)}</em> Magic Damage to the closest enemy and lowers Attack for ${P.dur}s. If they were already debuffed, they also lose <em>24 Power</em>.`, cast: (u, B, S, P) => { const t = B.nearest(u, B.enemiesOf(u)); if (!t) return; const had = t.statuses.some(s => STATUS[s.id] && STATUS[s.id].kind === 'debuff'); B.anim(u, 'cast', .28); B.after(.18, () => { B.damage(u, t, u.st.mag * S.ratio, { type: 'magic', tag: 'Rub Out' }); B.applyStatus(u, t, 'attackdown', P.dur, { val: .2 }); if (had) B.energy(t, -24); }); } }),
   B: unknownSkill('Fountain Pen', 'Magic Damage', { cd: 9, v: { ratio: .92 }, p: { blind: 5 }, desc: (S, P) => `Sprays ink at the highest-Accuracy enemy for <em>${pcn(S.ratio * 100)}</em> Magic Damage and Blinds them for ${P.blind}s.`, cast: (u, B, S, P) => { const t = hitTarget(u, B, B.enemiesOf(u), 'acc'); if (!t) return; B.anim(u, 'cast', .3); B.after(.2, () => { B.damage(u, t, u.st.mag * S.ratio, { type: 'magic', tag: 'Fountain Pen' }); B.applyStatus(u, t, 'blind', P.blind); }); } }),
   P: unknownSkill('Finger Wag', 'Passive', { p: { hits: 3, dur: 4 }, desc: (S, P) => `Every ${Math.round(P.hits)} basic attacks scolds the target, reducing Attack Speed and Power gain for ${P.dur}s.`, passive: (u, B, S, P) => { u._unknownHits = 0; B.on(u, 'basicHit', ev => { if (!ev.target) return; u._unknownHits++; if (u._unknownHits >= P.hits) { u._unknownHits = 0; Sound.play('cog_guilt_trip', { vol: .20, throttle: 950 }); B.applyStatus(u, ev.target, 'armslow', P.dur); B.applyStatus(u, ev.target, 'drain', P.dur); } }); } }),
-  R: unknownSkill('Fill With Lead', 'Passive', { p: { dur: 5 }, desc: (S, P) => `Basic attacks apply Lead Mark for ${P.dur}s.`, passive: (u, B, S, P) => B.on(u, 'basicHit', ev => { if (ev.target) B.applyStatus(u, ev.target, 'leadmark', P.dur); }) })
+  R: unknownSkill('Fill With Lead', 'Passive', { v: { bonus: .35 }, p: { dur: 5.5, pen: .25 },
+    desc: (S, P) => `Basic attacks apply ✏ Lead Mark for ${P.dur}s. Attacks against Lead-Marked enemies ignore <em>${pcn(P.pen * 100)}</em> Armor and deal <em>${pcn(S.bonus * 100)}</em> bonus damage.`,
+    passive: (u, B, S, P) => {
+      B.on(u, 'basicHit', ev => { if (ev.target) B.applyStatus(u, ev.target, 'leadmark', P.dur); });
+      B.on(u, 'dealDamage', ev => { if (ev.target && ev.target.hasStatus('leadmark')) ev.amount *= (1 + S.bonus); });
+    }
+  })
 });
 
 allRounder('BigWig', 'Big Wig', 'Bigwig.png', 'trudge', {

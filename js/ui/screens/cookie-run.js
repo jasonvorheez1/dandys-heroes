@@ -119,7 +119,7 @@ Object.assign(Screens,{
   <div class="cookie-battle-reward"><span>Every clear</span><b>${cookieCutterIcon()} ${CookieRun.reward(stage)} Cookie Cutters</b></div><button class="cookie-fight">Choose team & battle <span>⚔ →</span></button><button class="cookie-sim">Use Raid Tickets</button>`;
   content.querySelectorAll('[data-stage]').forEach(b=>b.onclick=()=>{this._raidStages[ev.id]=Number(b.dataset.stage);this.render();});
   content.querySelector('.cookie-kit').onclick=()=>this.cookieKit('GingerBrave',loan);
-  content.querySelectorAll('[data-enemy]').forEach(b=>b.onclick=()=>{const h=HEROES[b.dataset.enemy];const body=el('div','cookie-enemy-info',`<img src="${Art.hero(h.id)}" alt="${h.name}"><p>${h.blurb}</p>${h.cookiePrey?`<p>Prioritizes ${h.cookiePrey}s. Poison ignores Defense and scales with the victim’s maximum HP.${h.id==='PomegranateSnake'?' Venomous Pursuit also inflicts 12% Max-HP Injury for eight seconds.':''}</p>`:''}${h.id==='BerryBishop'?'<p>Slams its staff to heal the ally with the lowest HP percentage. Occasionally summons smaller Healing Bots that heal less, but act faster. Neither can deal damage.</p>':''}${h.id==='DangerInTheBox'?'<p>Deals no damage. On defeat, applies one Status Corruption stack within medium range for 10 seconds and spawns a Paper Puppet Knight. Each stack reduces healing received and Skill Haste by 10%.</p>':''}<p>Encounter only · B-tier combat strength</p>`);UI.modal(h.name,body);});
+  content.querySelectorAll('[data-enemy]').forEach(b=>b.onclick=()=>{const h=HEROES[b.dataset.enemy];const body=el('div','cookie-enemy-info',`<img src="${Art.hero(h.id)}" alt="${h.name}"><p>${h.blurb}</p>${h.cookiePrey?`<p>Prioritizes ${h.cookiePrey}s. Poison ignores Defense and scales with the victim’s maximum HP.${h.id==='PomegranateSnake'?' Venomous Pursuit also inflicts 12% Max-HP Injury for eight seconds.':''}</p>`:''}${h.id==='BerryBishop'?'<p>Slams its staff to heal the ally with the lowest HP percentage. Occasionally summons smaller Healing Bots that heal less, but act faster. Neither can deal damage.</p>':''}${h.id==='DangerInTheBox'?'<p>Deals no damage. On defeat, applies two Status Corruption stacks within medium range for 10 seconds and spawns a Paper Puppet Knight. Each stack reduces healing received and Skill Haste by 10%.</p>':''}<p>Encounter only · B-tier combat strength</p>`);UI.modal(h.name,body);});
   const allowed=Raid.canEnter(ev.id,stage);content.querySelector('.cookie-fight').disabled=!allowed;content.querySelector('.cookie-sim').disabled=!allowed;
   content.querySelector('.cookie-fight').onclick=()=>this.raidFight(ev.id,stage);
   content.querySelector('.cookie-sim').onclick=()=>this.raidTicketSetup(ev,stage);
@@ -134,5 +134,21 @@ Object.assign(Screens,{
   go.onclick=()=>{if(!picker.valid){UI.toast('Choose at least one companion');return;}const ids=picker.team.filter(Boolean);if(owned)ids.unshift('GingerBrave');UI.closeModal({skipHook:true});onConfirm(ids);};body.appendChild(go);
   UI.modal('Cookie Run · Stage '+(stage+1),body,{className:'team-editor-modal'});
  },
- cookieKit(id,spec){const body=el('div','cookie-kit-body');SKILL_ORDER.forEach(key=>{const skill=HEROES[id].skills[key];if(!skill)return;body.appendChild(el('article','cookie-skill',`<small style="color:${RARITY_COLORS[SKILL_RARITY[key]]}">${RARITY_NAMES[SKILL_RARITY[key]].toUpperCase()} · ${skill.type}</small><h3>${skill.name}</h3><p>${skill.desc(skill.v,skill.p)}</p>`));});UI.modal(HEROES[id].name+' · Skills',body);}
+ cookieKit(id,spec){
+  const body = el('div', 'cookie-kit-body');
+  const lv = spec ? (spec.skillLv || spec.level || 30) : 30;
+  SKILL_ORDER.forEach(key => {
+    const skill = HEROES[id].skills[key];
+    if (!skill) return;
+    const descHtml = typeof SkillDesc !== 'undefined'
+      ? SkillDesc.format(id, key, skill, lv, spec)
+      : (typeof skill.desc === 'function' ? skill.desc(skill.v, skill.p) : skill.name);
+    body.appendChild(el('article', 'cookie-skill', `
+      <small style="color:${RARITY_COLORS[SKILL_RARITY[key]]}">${RARITY_NAMES[SKILL_RARITY[key]].toUpperCase()} · ${skill.type}</small>
+      <h3>${skill.name}</h3>
+      <div class="sk-desc-root sk-mode-both">${descHtml}</div>
+    `));
+  });
+  UI.modal(HEROES[id].name + ' · Skills', body);
+ }
 });

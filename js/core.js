@@ -511,14 +511,16 @@ const Preload = {
   battleBundle(cfg) {
     const out = [cfg.meta && cfg.meta.bg || bgForFloor(1, 0)];
     [...(cfg.team || []), ...(cfg.foes || [])].forEach(spec => {
-      out.push(spec.twisted ? Art.twisted(spec.id) : Art.hero(spec.id));
-      out.push(Art.icon(spec.id));
+      if (spec.twisted) {
+        out.push(Art.twisted(spec.id));
+        if (typeof HEROES !== 'undefined' && HEROES[spec.id]) out.push(Art.icon(spec.id));
+      } else {
+        out.push(...this.heroBundle(spec.id));
+      }
       (spec.trinkets || []).forEach(worn => {
         const copy = typeof worn === 'string' ? Save.data.trinketInv[worn] : worn;
         if (copy && TRINKETS[copy.id]) out.push(trinketIcon(copy.id));
       });
-      if (!spec.twisted) out.push(Art.battleHero(spec.id));
-      out.push(...this.heroBundle(spec.id));
     });
     if (cfg.meta && cfg.meta.collabEntrance) {
       out.push(ASSET + 'uploads/rikustandby.png', ASSET + 'uploads/sorawinortauntidk.png', ASSET + 'uploads/kairstandby.png');

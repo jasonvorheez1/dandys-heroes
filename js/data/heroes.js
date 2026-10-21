@@ -82,26 +82,26 @@ defHero({
   id: 'Astro', name: 'Astro', folder: 'Astro', file: 'Astro', icon: 'Astro',
   role: 'Support', tier: 'S', element: 'Dream',
   blurb: 'The quiet moon of the Depths. He does not win fights so much as refuse to let his friends lose them.',
-  base: { hp: 3350, atk: 150, def: 168, mag: 372, mdef: 305, spd: 104, acc: 175, eva: 118 },
-  hidden: { range: 300, aspd: 0.92, ms: 62, aggro: 0.55, crit: .05, critDmg: 1.5, healPow: 1.30, shieldPow: 1.15, cdr: 0, ccRes: .12, kbRes: .35, armorPen: 0, magPen: .05 },
-  growth: { hp: .085, atk: .07, def: .075, mag: .092, mdef: .088 },
+  base: { hp: 3480, atk: 150, def: 180, mag: 388, mdef: 315, spd: 108, acc: 178, eva: 122 },
+  hidden: { range: 300, aspd: 0.96, ms: 72, aggro: 0.55, crit: .05, critDmg: 1.5, healPow: 1.35, shieldPow: 1.20, cdr: .04, ccRes: .15, kbRes: .35, armorPen: 0, magPen: .06 },
+  growth: { hp: .088, atk: .07, def: .078, mag: .095, mdef: .090 },
   move: { gait: 'float', bob: 9, freq: 1.1, lean: 3, squash: .02, hover: 16, idle: 'pulse', step: null,
     particles: 'sparkle', pcol: '#b9a4ff', trail: { on: true, col: '#8f7fff', rate: .1 }, brake: .1 },
-  basic: { name: 'Lullaby Mote', type: 'magic', ratio: 1.02, range: 300, proj: 'orb', pcol: '#b9a4ff',
-    sfx: 'whoosh', hit: 'hit_magic', wind: .30, note: 'A drifting mote that slows whatever it settles on.',
-    onHit: (u, t, B) => { if (chance(.30)) B.applyStatus(u, t, 'drowsy', 3); } },
+  basic: { name: 'Lullaby Mote', type: 'magic', ratio: 1.08, range: 300, proj: 'orb', pcol: '#b9a4ff',
+    sfx: 'whoosh', hit: 'hit_magic', wind: .28, note: 'A drifting mote that slows whatever it settles on.',
+    onHit: (u, t, B) => { if (chance(.35) || t.hasStatus('drowsy')) B.applyStatus(u, t, 'drowsy', 3.5); } },
   skills: {
     W: {
       name: 'Dream Pulse', type: 'Magic Damage', energy: 100,
-      v: { ratio: 1.55, heal: 1.15 }, p: { drowsy: 6, en: 30, thr: .40 },
-      desc: (S, P) => `<span class="sk-pas">Allies near Astro recover Energy every second. When an ally drops below ${pc(P.thr)} HP he heals them for <em>${pcn(S.heal * 30)}</em> Magic and grants brief Damage Reduction.</span>
+      v: { ratio: 1.60, heal: 1.25 }, p: { drowsy: 6, en: 30, thr: .40 },
+      desc: (S, P) => `<span class="sk-pas">Allies near Astro recover Energy every second. When an ally drops below ${pc(P.thr)} HP he heals them for <em>${pcn(S.heal * 35)}</em> Magic and grants brief Damage Reduction.</span>
         Active: a wave of dream energy washes the field. Allies restore <em>${P.en}</em> Energy, heal <em>${pcn(S.heal * 100)}</em> Magic and lose up to three debuffs. Enemies take <em>${pcn(S.ratio * 100)}</em> Magic Damage and become 🌙 Drowsy for ${P.drowsy}s.`,
-      passive: (u, B) => {
+      passive: (u, B, S) => {
         B.every(u, 1.0, () => B.alliesOf(u).forEach(a => { if (B.distance(a, u) < 340) B.energy(a, 3); }));
         B.on(u, 'allyLow', a => {
           if (a._dreamGuard && B.t - a._dreamGuard < 8) return;
           a._dreamGuard = B.t;
-          B.heal(u, a, u.st.mag * 0.30, { tag: 'dream' });
+          B.heal(u, a, u.st.mag * S.heal * 0.35, { tag: 'dream' });
           B.applyStatus(u, a, 'ward', 3);
           B.fxRing(a.x, a.y - 40, 70, '#b9a4ff');
         });
@@ -123,29 +123,32 @@ defHero({
       }
     },
     G: {
-      name: 'Peaceful Slumber', type: 'Crowd Control', cd: 11,
-      v: { ratio: .35 }, p: { sleep: 5, drain: .25, groggy: 4 },
-      desc: (S, P) => `Astro sings the enemy holding the most Energy to sleep for ${P.sleep}s. Up to three positive effects are lulled away, they lose <em>${pc(P.drain)}</em> of their current Energy, and wake 😪 Groggy for ${P.groggy}s.`,
+      name: 'Peaceful Slumber', type: 'Crowd Control', cd: 10,
+      v: { ratio: .50 }, p: { sleep: 5, drain: .25, groggy: 4 },
+      desc: (S, P) => `Astro sings the enemy holding the most Energy to sleep for ${P.sleep}s, dealing <em>${pcn(S.ratio * 100)}</em> Magic Damage. Up to three positive effects are lulled away, they lose <em>${pc(P.drain)}</em> of their current Energy, and wake 😪 Groggy for ${P.groggy}s.`,
       ai: { prio: 60, cond: (u, B) => B.enemiesOf(u).some(e => !e.hasStatus('sleep')) },
       cast: (u, B, S, P) => {
-        const t = B.highestEnergy(B.enemiesOf(u).filter(e => !e.hasStatus('sleep'))); if (!t) return;
+        const t = B.highestEnergy(B.enemiesOf(u).filter(e => !e.hasStatus('sleep'))) || B.highestEnergy(B.enemiesOf(u));
+        if (!t) return;
         B.anim(u, 'cast', .4); Sound.play('dizzy');
         B.after(.28, () => {
+          if (!t.alive) return;
           B.fxRing(t.x, t.y - 50, 110, '#7f6bd6'); B.fxFloatIcon(t.x, t.y - 90, '💤'); B.dispel(t, 3);
           t.energy = Math.max(0, t.energy * (1 - P.drain));
           B.damage(u, t, u.st.mag * S.ratio, { type: 'magic', tag: 'Slumber' });
-          B.applyStatus(u, t, 'sleep', P.sleep);
+          B.applyStatus(u, t, 'sleep', P.sleep, { groggyDur: P.groggy });
+          if (!t.hasStatus('sleep')) B.applyStatus(u, t, 'drowsy', 5);
         });
       }
     },
     B: {
-      name: 'Falling Stars', type: 'Magic Damage', cd: 15,
-      v: { ratio: .46, heal: .22 }, p: { hits: 7, focusBonus: .55 },
-      desc: (S, P) => `${P.hits} stars fall on random enemies for <em>${pcn(S.ratio * 100)}</em> Magic each. Stars home in on 🌙 Drowsy or 💤 Sleeping targets and hit <em>${pc(P.focusBonus)}</em> harder. Every impact heals the weakest ally.`,
-      ai: { prio: 45, cond: () => true },
+      name: 'Falling Stars', type: 'Magic Damage', cd: 11,
+      v: { ratio: .52, heal: .26 }, p: { hits: 8, focusBonus: .60 },
+      desc: (S, P) => `${P.hits} stars fall on enemies for <em>${pcn(S.ratio * 100)}</em> Magic each. Stars home in on 🌙 Drowsy or 💤 Sleeping targets and hit <em>${pc(P.focusBonus)}</em> harder. Every impact heals the weakest ally.`,
+      ai: { prio: 48, cond: () => true },
       cast: (u, B, S, P) => {
         B.anim(u, 'cast', .5); Sound.play('magiccircle', { vol: .6 });
-        B.repeat(P.hits, .13, () => {
+        B.repeat(P.hits, .12, () => {
           const foes = B.enemiesOf(u); if (!foes.length) return;
           const marked = foes.filter(e => e.hasStatus('drowsy') || e.hasStatus('sleep'));
           const t = marked.length ? pick(marked) : pick(foes);
@@ -154,36 +157,52 @@ defHero({
             Sound.play('hit_magic', { vol: .5, rate: rnd(.9, 1.2) });
             B.damage(u, t, u.st.mag * S.ratio * bonus, { type: 'magic', tag: 'Falling Stars' });
             B.shake(2, .1);
-            const w = B.lowestHp(B.alliesOf(u)); if (w) B.heal(u, w, u.st.mag * S.heal, { silent: true });
+            const w = B.lowestHp(B.alliesOf(u)); if (w) B.heal(u, w, u.st.mag * S.heal, { silent: true, tag: 'Falling Stars Heal' });
           });
         });
       }
     },
     P: {
       name: 'Well Rested', type: 'Team Passive',
-      v: { heal: .18, en: .15, pen: .20 }, p: {},
-      desc: (S) => `Allies gain <em>${pcn(S.heal * 100)}</em> Healing Received and <em>${pcn(S.en * 100)}</em> Energy Generation. When an ally is topped to full HP their next skill ignores <em>${pcn(S.pen * 100)}</em> Magic Defense.`,
+      v: { heal: .20, en: .16, pen: .25 }, p: {},
+      desc: (S) => `Allies gain <em>${pcn(S.heal * 100)}</em> Healing Received and <em>${pcn(S.en * 100)}</em> Energy Generation. At battle start and whenever an ally is topped to full HP, their next skill ignores <em>${pcn(S.pen * 100)}</em> Magic Defense.`,
       passive: (u, B, S) => {
         B.teamAura(u, m => { m.healRecv += S.heal; m.energyGen += S.en; });
-        B.on(u, 'allyFull', a => { a.penBuff = S.pen; B.fxFloatIcon(a.x, a.y - 80, '✨'); });
+        const armRest = (a) => {
+          if (!a || !a.alive) return;
+          a._astroPenActive = true;
+          B.fxFloatIcon(a.x, a.y - 80, '✨', '#dcd0ff');
+          if (!a._astroPenListener) {
+            a._astroPenListener = true;
+            B.on(a, 'dealDamage', ev => {
+              if (!ev.basic && !ev.dot && a._astroPenActive) {
+                a._astroPenActive = false;
+                ev.armorPen = (ev.armorPen || 0) + S.pen;
+                B.fxFloatIcon(a.x, a.y - 92, '🌙 PEN', '#b9a4ff');
+              }
+            });
+          }
+        };
+        B.after(.3, () => B.alliesOf(u).forEach(armRest));
+        B.on(u, 'allyFull', a => armRest(a));
       }
     },
     R: {
       name: 'Endless Night', type: 'Battle Opener',
-      v: { shield: .55 }, p: { dur: 10, revive: .18 },
-      desc: (S, P) => `Battle opens under a peaceful night for ${P.dur}s: allies regenerate, enemies are 🌙 Drowsy. Whenever Astro casts, his weakest ally gains a <em>${pcn(S.shield * 100)}</em> Magic Shield and ⚓ CC immunity. Once per ally, a lethal blow instead leaves them at <em>${pc(P.revive)}</em> HP and briefly 👻 Ethereal.`,
+      v: { shield: .60 }, p: { dur: 10, revive: .22 },
+      desc: (S, P) => `Battle opens under a peaceful night for ${P.dur}s: allies regenerate, enemies are 🌙 Drowsy. Whenever Astro casts, his weakest ally gains a <em>${pcn(S.shield * 100)}</em> Magic Shield and ⚓ CC immunity. Once per ally, a lethal blow leaves them at <em>${pc(P.revive)}</em> HP and briefly 👻 Ethereal.`,
       passive: (u, B, S, P) => {
         B.tint('#2b2160', .28, 2.2);
         B.enemiesOf(u).forEach(e => B.applyStatus(u, e, 'drowsy', P.dur));
-        B.alliesOf(u).forEach(a => B.applyStatus(u, a, 'regen', P.dur, { val: u.st.mag * .12 }));
+        B.alliesOf(u).forEach(a => B.applyStatus(u, a, 'regen', P.dur, { val: u.st.mag * .14 }));
         B.on(u, 'cast', () => {
           const w = B.lowestHp(B.alliesOf(u)); if (!w) return;
-          B.shield(u, w, u.st.mag * S.shield, 6); B.applyStatus(u, w, 'ccimmune', 3);
+          B.shield(u, w, u.st.mag * S.shield, 6); B.applyStatus(u, w, 'ccimmune', 3.5);
         });
         B.on(u, 'allyLethal', ev => {
           if (ev.unit._nightSave) return; ev.unit._nightSave = 1;
           ev.prevented = true; ev.unit.hp = ev.unit.max.hp * P.revive;
-          B.energy(ev.unit, 50); B.applyStatus(u, ev.unit, 'untargetable', 1.6);
+          B.energy(ev.unit, 55); B.applyStatus(u, ev.unit, 'untargetable', 1.8);
           Sound.play('cleanse'); B.fxRing(ev.unit.x, ev.unit.y - 40, 160, '#fff');
           B.log('<b>Endless Night</b> catches ' + ev.unit.name + '.');
         });
@@ -454,20 +473,20 @@ defHero({
   id: 'Vee', name: 'Vee', folder: 'Vee', file: 'Vee', icon: 'Vee',
   role: 'Tank', tier: 'A', element: 'Broadcast',
   blurb: 'Gardenview\'s host. She does not tank because she is tough; she tanks because she decides where the camera points.',
-  base: { hp: 4900, atk: 232, def: 300, mag: 262, mdef: 305, spd: 100, acc: 195, eva: 100 },
-  hidden: { range: 200, aspd: 0.90, ms: 66, aggro: 1.5, crit: .07, critDmg: 1.5, healPow: 1.10, shieldPow: 1.20, cdr: .05, ccRes: .25, kbRes: .6, armorPen: 0, magPen: .05 },
-  growth: { hp: .098, atk: .075, def: .092, mag: .082, mdef: .092 },
+  base: { hp: 5250, atk: 245, def: 325, mag: 295, mdef: 330, spd: 102, acc: 195, eva: 105 },
+  hidden: { range: 200, aspd: 0.92, ms: 68, aggro: 1.5, crit: .07, critDmg: 1.5, healPow: 1.15, shieldPow: 1.25, cdr: .06, ccRes: .25, kbRes: .6, armorPen: 0, magPen: .06 },
+  growth: { hp: .102, atk: .075, def: .095, mag: .086, mdef: .095 },
   move: { gait: 'glide', bob: 3, freq: 1.6, lean: 4, squash: .03, idle: 'scan', step: 'step_metal',
     particles: 'static', pcol: '#7be0ff', trail: { on: true, col: '#7be0ff', rate: .14 }, brake: .2 },
-  basic: { name: 'Signal Jab', type: 'physical', ratio: 1.05, range: 210, sfx: 'swing_pole', hit: 'hit_blunt',
+  basic: { name: 'Signal Jab', type: 'physical', ratio: 1.08, range: 210, sfx: 'swing_pole', hit: 'hit_blunt',
     wind: .18, note: 'Sharp, professional, mildly threatening.',
-    onHit: (u, t, B) => { if (t.hasStatus('headline')) B.energy(u, 6); } },
+    onHit: (u, t, B) => { if (t.hasStatus('headline')) B.energy(u, 7); } },
   skills: {
     W: {
       name: 'Spotlight On', type: 'Magic Damage', energy: 100,
-      v: { ratio: 1.25 }, p: { blind: 4, drain: .30, acc: .18 },
-      desc: (S, P) => `<span class="sk-pas">Vee tags the enemy contributing the most damage as the 📺 Headline. Allies gain <em>${pc(P.acc)}</em> Accuracy against it and Energy whenever it casts.</span>
-        Active: studio lights flood the field for <em>${pcn(S.ratio * 100)}</em> Magic. The Headline is interrupted, 🌑 Blinded for ${P.blind}s and loses <em>${pc(P.drain)}</em> Energy. If it falls while marked, the team heals and a new one is named.`,
+      v: { ratio: 1.45, heal: .08 }, p: { blind: 5, drain: .40, acc: .20, energy: 6 },
+      desc: (S, P) => `<span class="sk-pas">Vee tags the enemy contributing the most damage as the 📺 Headline. Allies gain <em>${pcn(P.acc * 100)}</em> Accuracy against it and <em>${Math.round(P.energy)}</em> Energy whenever it casts.</span>
+        Active: studio lights flood the field for <em>${pcn(S.ratio * 100)}</em> Magic. The Headline is interrupted, 🌑 Blinded for ${P.blind}s and loses <em>${pcn(P.drain * 100)}</em> Energy. If it falls while marked, the team heals <em>${pcn(S.heal * 100)}</em> Max HP and a new one is named.`,
       passive: (u, B, S, P) => {
         B.every(u, 3, () => {
           const foes = B.enemiesOf(u); if (!foes.length) return;
@@ -478,9 +497,9 @@ defHero({
           B.fxFloatIcon(top.x, top.y - 100, '📺');
         });
         B.teamAura(u, m => { m.accP += P.acc; });
-        B.on(u, 'enemyCast', e => { if (e.hasStatus('headline')) B.alliesOf(u).forEach(a => B.energy(a, 5)); });
+        B.on(u, 'enemyCast', e => { if (e.hasStatus('headline')) B.alliesOf(u).forEach(a => B.energy(a, P.energy)); });
         B.on(u, 'enemyDown', e => { if (e.hasStatus('headline'))
-          B.alliesOf(u).forEach(a => B.heal(u, a, u.max.hp * .05, { tag: 'ratings' })); });
+          B.alliesOf(u).forEach(a => B.heal(u, a, u.max.hp * S.heal, { tag: 'ratings' })); });
       },
       cast: (u, B, S, P) => {
         B.anim(u, 'cast', .68, 'veeSpotlight'); Sound.play('flash');
@@ -499,8 +518,8 @@ defHero({
       }
     },
     G: {
-      name: 'Audience Support', type: 'Healing', cd: 12,
-      v: { heal: .09 }, p: { dur: 5, count: 3 },
+      name: 'Audience Support', type: 'Healing', cd: 11,
+      v: { heal: .14 }, p: { dur: 5, count: 3, fortify: 3 },
       desc: (S, P) => `The crowd cheers. The ${P.count} weakest allies heal <em>${pcn(S.heal * 100)}</em> of Vee's Max HP over ${P.dur}s while gaining Defense. Overheal becomes a 🛡 Shield; already-shielded allies get Energy Generation instead.`,
       ai: { prio: 58, cond: (u, B) => B.alliesOf(u).some(a => a.hpPct < .8) },
       cast: (u, B, S, P) => {
@@ -508,7 +527,7 @@ defHero({
         const chosen = B.alliesOf(u).sort((a, b) => a.hpPct - b.hpPct).slice(0, P.count);
         B.fxVeeAudience(u, chosen);
         chosen.forEach(a => {
-          B.applyStatus(u, a, 'fortify', P.dur, { stacks: 2 });
+          B.applyStatus(u, a, 'fortify', P.dur, { stacks: P.fortify });
           if (a.hasStatus('shield')) B.applyStatus(u, a, 'overcharge', P.dur);
           B.applyStatus(u, a, 'regen', P.dur, { val: u.max.hp * S.heal / P.dur, overheal: 'shield' });
           B.fxSparkle(a.x, a.y - 40, 10, '#7bd66a');
@@ -516,9 +535,9 @@ defHero({
       }
     },
     B: {
-      name: 'Commercial Break', type: 'Team Buff', cd: 20,
-      v: {}, p: { dur: 6 },
-      desc: (S, P) => `Vee cuts to ads for ${P.dur}s. Enemy cooldowns crawl, allies gain 💨 Haste, faster Energy and immunity to Energy drain. Ally skills cast during the break heal their caster.`,
+      name: 'Commercial Break', type: 'Team Buff', cd: 14,
+      v: { heal: .06 }, p: { dur: 6, hasteStacks: 2 },
+      desc: (S, P) => `Vee cuts to ads for ${P.dur}s. Enemy cooldowns crawl, allies gain 💨 Haste, faster Energy and immunity to Energy drain. Ally skills cast during the break heal their caster for <em>${pcn(S.heal * 100)}</em> of Vee's Max HP.`,
       ai: { prio: 42, cond: (u, B) => B.enemiesOf(u).length >= 2 },
       cast: (u, B, S, P) => {
         B.anim(u, 'cast', .78, 'veeCommercial'); Sound.play('ui_open'); B.tint('#1b2a55', .3, .5);
@@ -526,37 +545,46 @@ defHero({
         B.fxVeeCommercial(u, allies, enemies, P.dur);
         enemies.forEach(e => B.applyStatus(u, e, 'drowsy', P.dur));
         allies.forEach(a => {
-          B.applyStatus(u, a, 'haste', P.dur, { stacks: 2 });
+          B.applyStatus(u, a, 'haste', P.dur, { stacks: P.hasteStacks });
           B.applyStatus(u, a, 'overcharge', P.dur);
         });
         u._breakUntil = B.t + P.dur;
-        B.on(u, 'allyCast', a => { if (B.t < (u._breakUntil || 0)) B.heal(u, a, u.max.hp * .04, { silent: true }); });
+        B.on(u, 'allyCast', a => { if (B.t < (u._breakUntil || 0)) B.heal(u, a, u.max.hp * S.heal, { silent: true }); });
       }
     },
     P: {
       name: 'Studio Production', type: 'Defense / Magic Defense',
-      v: { def: .028 }, p: { maxStacks: 10, redirect: .22 },
-      desc: (S, P) => `Each time an ally damages the 📺 Headline, Vee gains Production Value (max ${P.maxStacks}), worth <em>${pcn(S.def * 100)}</em> Defense each. At max stacks she redirects <em>${pc(P.redirect)}</em> of nearby ally damage onto herself at reduced strength, granting them Energy. Stacks are only lost if Vee falls.`,
+      v: { def: .035, mdef: .025 }, p: { maxStacks: 10, redirect: .25, energy: 10, absorbP: .6 },
+      desc: (S, P) => `Each time an ally damages the 📺 Headline, Vee gains Production Value (max ${P.maxStacks}), worth <em>${pcn(S.def * 100)}</em> Defense and <em>${pcn((S.mdef || .025) * 100)}</em> Magic Defense each. She redirects up to <em>${pcn(P.redirect * 100)}</em> of nearby ally damage onto herself at reduced strength, granting them <em>${Math.round(P.energy)}</em> Energy. Stacks are only lost if Vee falls.`,
       passive: (u, B, S, P) => {
         u.prodMax = P.maxStacks; u.prodDef = S.def;
         B.on(u, 'allyDamageDealt', ev => {
-          if (ev.target.hasStatus('headline')) { u.prod = Math.min((u.prod || 0) + 1, P.maxStacks); u.dirty = true; }
+          if (ev.target && ev.target.hasStatus('headline')) {
+            u.prod = Math.min((u.prod || 0) + 1, P.maxStacks);
+            u.flat.defPProd = (u.prod || 0) * S.def;
+            u.flat.mdefPProd = (u.prod || 0) * (S.mdef || .025);
+            u.dirty = true;
+          }
         });
         B.on(u, 'allyDamaged', ev => {
-          if ((u.prod || 0) < P.maxStacks || ev.unit === u || !u.alive) return;
+          const prod = u.prod || 0;
+          if (prod < 4 || ev.unit === u || !u.alive) return;
           if (B.distance(ev.unit, u) > 280) return;
-          const moved = ev.amount * P.redirect; ev.amount -= moved;
-          B.damage(ev.src, u, moved * .6, { type: 'true', redirected: true, tag: 'redirect' });
-          if (u.alive) B.energy(ev.unit, 8);
+          const pct = prod >= P.maxStacks ? P.redirect : (P.redirect * (prod / P.maxStacks));
+          const moved = ev.amount * pct;
+          ev.amount -= moved;
+          B.damage(ev.src, u, moved * P.absorbP, { type: 'true', redirected: true, noDodge: true, tag: 'redirect' });
+          if (u.alive) B.energy(ev.unit, P.energy);
         });
       }
     },
     R: {
       name: 'Season Finale', type: 'Battle Opener',
-      v: { exposeDmg: .18 }, p: { needExposure: 6, liveDur: 12 },
-      desc: (S, P) => `Enemies build Exposure by acting. At ${P.needExposure} they become the 📺 Headline: less damage, no hiding, less healing, and <em>${pcn(S.exposeDmg * 100)}</em> more damage taken. Each Headline defeated refreshes ally shields and hardens Vee permanently. Once per battle, if Vee is last alive she goes Live for ${P.liveDur}s and every enemy is a Headline.`,
+      v: { exposeDmg: .18, def: .05, mag: .35 }, p: { needExposure: 6, liveDur: 12, energy: 22, cdr: 2.5 },
+      desc: (S, P) => `Enemies build Exposure by acting. At ${P.needExposure} they become the 📺 Headline: less damage, no hiding, less healing, and <em>${pcn(S.exposeDmg * 100)}</em> more damage taken. Each Headline defeated refreshes ally shields, restores <em>${Math.round(P.energy)}</em> Energy, and grants Vee <em>${pcn(S.def * 100)}</em> Defense permanently. Once per battle, if Vee is last alive she goes Live for ${P.liveDur}s with <em>${pcn(S.mag * 100)}</em> Magic Attack and every enemy is a Headline.`,
       passive: (u, B, S, P) => {
         u.antiDodge = target => !!(target && (target.hasStatus('headline') || B.t < (target._veeOnAirUntil || 0)));
+        B.on(u, 'waveStart', () => { u._live = false; });
         B.on(u, 'enemyAction', e => {
           e.exposure = (e.exposure || 0) + 1;
           if (e.exposure >= P.needExposure && !e.hasStatus('headline')) {
@@ -567,15 +595,18 @@ defHero({
         });
         B.on(u, 'enemyDown', e => {
           if (!e.hasStatus('headline')) return;
-          B.alliesOf(u).forEach(a => { B.energy(a, 20); B.refreshShields(a); B.reduceCd(a, 2); });
-          u.flat.defP2 = (u.flat.defP2 || 0) + .05; u.dirty = true;
+          B.alliesOf(u).forEach(a => { B.energy(a, P.energy); B.refreshShields(a); B.reduceCd(a, P.cdr); });
+          u.flat.defP2 = (u.flat.defP2 || 0) + S.def; u.dirty = true;
         });
         B.every(u, 1, () => {
           if (u._live || !u.alive) return;
-          if (B.alliesOf(u).filter(a => a !== u).length === 0) {
+          if (B.alliesOf(u).filter(a => a !== u && a.alive).length === 0) {
             u._live = true; B.log('<b>LIVE BROADCAST</b>'); Sound.play('suddendeath');
             B.tint('#ff2b6b', .3, 1.2); B.applyStatus(u, u, 'ccimmune', P.liveDur);
-            B.applyStatus(u, u, 'spotlight', P.liveDur); u.rangeBonus = 240;
+            B.applyStatus(u, u, 'spotlight', P.liveDur);
+            B.applyStatus(u, u, 'haste', P.liveDur, { stacks: 2 });
+            u.flat.magP2 = (u.flat.magP2 || 0) + S.mag;
+            u.rangeBonus = 240; u.dirty = true;
             B.enemiesOf(u).forEach(e => B.applyStatus(u, e, 'headline', P.liveDur));
           }
         });
@@ -644,26 +675,47 @@ defHero({
     },
     B: {
       name: 'Comforting Presence', type: 'Team Buff', cd: 16,
-      v: {}, p: { dur: 6 },
-      desc: (S, P) => `For ${P.dur}s the whole team takes 30% less damage and receives 35% more healing.`,
+      v: { shield: .14 }, p: { dur: 6.0 },
+      desc: (S, P) => `For ${P.dur}s the whole team takes 30% less damage and receives 35% more healing. While active, any ally who drops below 50% HP immediately receives a comforting Shield worth <em>${pcn(S.shield * 100)}</em> of Cosmo's Max HP.`,
       ai: { prio: 50, cond: (u, B) => B.alliesOf(u).filter(a => a.hpPct < .7).length >= 2 || B.t > 12 },
       cast: (u, B, S, P) => {
         B.anim(u, 'cast', .4); Sound.play('buff'); Sound.play('cheer', { vol: .28 }); B.tint('#ffbe7a', .18, .5);
-        B.alliesOf(u).forEach(a => { B.applyStatus(u, a, 'ward', P.dur); B.applyStatus(u, a, 'rally', P.dur);
-          B.fxRing(a.x, a.y - 40, 70, '#ffd7a0'); });
+        B.alliesOf(u).forEach(a => {
+          B.applyStatus(u, a, 'ward', P.dur);
+          B.applyStatus(u, a, 'rally', P.dur);
+          B.fxRing(a.x, a.y - 40, 70, '#ffd7a0');
+        });
+        u._comfortUntil = B.t + P.dur;
+        if (!u._comfortListener) {
+          u._comfortListener = true;
+          B.on(u, 'allyDamaged', ev => {
+            if (B.t > (u._comfortUntil || 0) || !ev.unit || !ev.unit.alive || ev.unit.hpPct >= .50) return;
+            if (ev.unit._comfortShielded && B.t - ev.unit._comfortShielded < P.dur) return;
+            ev.unit._comfortShielded = B.t;
+            B.shield(u, ev.unit, u.max.hp * S.shield, 4);
+            B.fxSparkle(ev.unit.x, ev.unit.y - 40, 10, '#ffd166');
+          });
+        }
       }
     },
     P: {
       name: 'A Recipe For Care', type: 'Healing Upgrade',
-      v: {}, p: { splash: .45 },
-      desc: (S,P) => 'Sharing is Caring splashes '+Math.round(P.splash*100)+'% of its healing onto allies near its target. Everyone it heals gains Speed Up.',
-      passive: (u,B,S,P) => { u._cosmoSplash=P.splash; }
+      v: { healPow: .18 }, p: { splash: .45 },
+      desc: (S, P) => `Sharing is Caring splashes ${Math.round(P.splash*100)}% of its healing onto allies near its target. Everyone it heals gains Speed Up. In addition, Cosmo gains <em>+${pcn(S.healPow * 100)}</em> Healing Power.`,
+      passive: (u, B, S, P) => {
+        u._cosmoSplash = P.splash;
+        u.flat.healPowP = (u.flat.healPowP || 0) + S.healPow;
+        u.dirty = true;
+      }
     },
     R: {
       name: 'The Sweetest Gift', type: 'Healing / Shield',
-      v: {}, p: { gift: .60 },
-      desc: (S,P) => 'Fresh Baked Treats leaves a second treat worth '+Math.round(P.gift*100)+'% Magic healing. Any overhealing Cosmo does becomes a Shield.',
-      passive: (u,B,S,P) => { u.overhealShield = true; u._cosmoGift=P.gift; }
+      v: { gift: .60 }, p: {},
+      desc: (S, P) => `Fresh Baked Treats leaves a second treat worth <em>${pcn(S.gift * 100)}</em> Magic healing. Any overhealing Cosmo does becomes a Shield.`,
+      passive: (u, B, S, P) => {
+        u.overhealShield = true;
+        u._cosmoGift = S.gift;
+      }
     }
   }
 });
@@ -678,24 +730,28 @@ defHero({
   // Cocoa is the more advanced support profile: a small edge over Bassie in
   // survivability, spell output, reach, and tempo without eclipsing dedicated
   // damage dealers. Her value still comes from delivery and team acceleration.
-  base: { hp: 4050, atk: 190, def: 236, mag: 325, mdef: 260, spd: 121, acc: 190, eva: 132 },
-  hidden: { range: 270, aspd: .98, ms: 80, aggro: .60, crit: .07, critDmg: 1.48, healPow: 1.25, shieldPow: 1.46, cdr: .18, ccRes: .20, kbRes: .35, armorPen: 0, magPen: .06 },
-  growth: { hp: .088, atk: .065, def: .078, mag: .09, mdef: .084 },
+  base: { hp: 4720, atk: 210, def: 285, mag: 365, mdef: 310, spd: 121, acc: 198, eva: 138 },
+  hidden: { range: 270, aspd: 1.0, ms: 80, aggro: .60, crit: .08, critDmg: 1.50, healPow: 1.30, shieldPow: 1.50, cdr: .18, ccRes: .22, kbRes: .35, armorPen: 0, magPen: .08 },
+  growth: { hp: .095, atk: .068, def: .085, mag: .102, mdef: .092 },
   move: { gait: 'hop', bob: 12, freq: 2.3, lean: 6, squash: .10, idle: 'bounce', step: 'bounce',
     particles: 'crumbs', pcol: '#c98a5a', trail: { on: false }, brake: .25 },
-  basic: { name: 'Candy Flick', type: 'magic', ratio: .90, range: 265, proj: 'orb', pcol: '#c98a5a',
+  basic: { name: 'Candy Flick', type: 'magic', ratio: 1.00, range: 265, proj: 'orb', pcol: '#c98a5a',
     sfx: 'whoosh', hit: 'hit_light', wind: .20, note: 'A flicked BonBon. Mostly a delivery system.',
-    onHit: (u, t, B) => { if (chance(.2)) B.bonbon(u, 1); } },
+    onHit: (u, t, B) => { if (chance(.28)) B.bonbon(u, 1); } },
   skills: {
     W: {
       name: 'BonBon Delivery', type: 'Team Buff', energy: 100, cd: 4.5,
-      v: { en: 26 }, p: { dur: 9, max: 5, prepEvery: 3.2 },
-      desc: (S, P) => `<span class="sk-pas">Cocoa prepares a BonBon every ${P.prepEvery}s, storing up to ${P.max}. Whenever an ally casts a skill she spends one to throw them a BonBon, once every 5s per ally. If they already have 🍬 Sugar Rush, the delivery restores <em>${Math.round(S.en)}</em> Energy and extends the buff instead.</span>
+      v: { en: 32 }, p: { dur: 9, max: 5, prepEvery: 3.2 },
+      desc: (S, P) => `<span class="sk-pas">Cocoa prepares a BonBon every ${P.prepEvery}s, storing up to ${P.max}. Whenever an ally casts a skill she spends one to throw them a BonBon, once every 3.8s per ally. If they already have 🍬 Sugar Rush, the delivery restores <em>${Math.round(S.en)}</em> Energy and extends the buff instead.</span>
         Active: Cocoa spends her stored BonBons to serve every ally. New recipients gain 🍬 Sugar Rush for ${P.dur}s (Attack Speed, Move Speed, Haste, and Energy generation); already-rushing allies gain Energy and an extended duration. Purple refunds some spent BonBons instead of refunding preparation ticks.`,
       ai: { cond: (u, B) => (u.bonbons || 0) > 0 && B.alliesOf(u).some(a => !a.hasStatus('sugarrush') || (a.getStatus('sugarrush').t || 0) < 4) },
       passive: (u, B, S, P) => {
         u.bonbons = P.max; u.bonbonMax = P.max;
         B.every(u, P.prepEvery, () => B.bonbon(u, 1));
+        B.on(u, 'waveStart', () => {
+          u.bonbons = u.sugarPlus ? (u.bonbonMax || 6) : Math.min(u.bonbonMax || 5, (u.bonbons || 0) + 2);
+          B.alliesOf(u).forEach(a => { a._bonCd = -Infinity; a._freeBon = -Infinity; });
+        });
         u._cocoaConsumeBonbon = () => {
           if ((u.bonbons || 0) <= 0) return false;
           u.bonbons--;
@@ -710,14 +766,12 @@ defHero({
           if (rush) { B.energy(a, S.en); rush.t += P.dur * .6; }
           else B.applyStatus(u, a, 'sugarrush', P.dur);
           // Keep BonBon delivery observable even when Sugar Rush is refreshed.
-          // Status-applied listeners only fire for the first application, but
-          // Cocoa's friendship badges should reward every BonBon someone eats.
           B.emitFor(u, 'bonbonDelivered', { target: a, repeated });
           return true;
         };
         u._cocoaDeliverBonbon = (a, respectCooldown) => {
           if (!a || !a.alive || (u.bonbons || 0) <= 0) return false;
-          if (respectCooldown && Number.isFinite(a._bonCd) && B.t - a._bonCd < 5) return false;
+          if (respectCooldown && Number.isFinite(a._bonCd) && B.t - a._bonCd < 3.8) return false;
           if (!u._cocoaConsumeBonbon()) return false;
           if (respectCooldown) a._bonCd = B.t;
           u._cocoaApplyRush(a);
@@ -732,9 +786,6 @@ defHero({
         });
       },
       cast: (u, B, S, P) => {
-        // Reserve the stock before any delayed FX or ally events can cause a
-        // second White-skill decision in the same frame. This is especially
-        // important in Lab fights with max Energy generation.
         const stock = u.bonbons || 0;
         if (!stock) return;
         u.bonbons = 0;
@@ -750,8 +801,8 @@ defHero({
       }
     },
     G: {
-      name: 'Sharing is Caring', type: 'Shield / Cleanse', cd: 9,
-      v: { shield: .21 }, p: { dur: 8, lowThr: .5 },
+      name: 'Sharing is Caring', type: 'Shield / Cleanse', cd: 8.5,
+      v: { shield: .26 }, p: { dur: 8, lowThr: .5 },
       desc: (S, P) => `Whenever an ally gains 🍬 Sugar Rush they also gain a Shield worth <em>${pcn(S.shield * 100)}</em> of Cocoa's Max HP. Already shielded allies heal over time instead. Allies below ${pc(P.lowThr)} HP get a stronger Shield. Casting this applies 🍫 BonBon Blessing, which cleanses up to two negative statuses and grants CC Resistance to each ally.`,
       ai: { prio: 54, cond: (u, B) => B.alliesOf(u).some(a => a.hpPct < .9) },
       passive: (u, B, S, P) => {
@@ -759,7 +810,7 @@ defHero({
           if (ev.id !== 'sugarrush' || ev.src !== u) return;
           const a = ev.unit;
           const amt = u.max.hp * S.shield * (a.hpPct < P.lowThr ? 1.6 : 1);
-          if (a.hasStatus('shield')) { B.applyStatus(u, a, 'regen', P.dur, { val: amt / P.dur }); B.energy(a, 3); }
+          if (a.hasStatus('shield')) { B.applyStatus(u, a, 'regen', P.dur, { val: amt / P.dur }); B.energy(a, 4); }
           else B.shield(u, a, amt, P.dur);
         });
       },
@@ -770,17 +821,15 @@ defHero({
           B.shield(u, a, u.max.hp * S.shield * (a.hpPct < P.lowThr ? 1.6 : 1), P.dur);
           const alreadyBlessed = a.hasStatus('bonbonblessing');
           B.applyStatus(u, a, 'bonbonblessing', P.dur);
-          // Refreshing an existing blessing does not fire onApply, so keep
-          // the cleanse promise true on every cast without double-cleansing.
           if (alreadyBlessed) B.cleanse(a, 2);
           B.fxSparkle(a.x, a.y - 44, 8, '#fff1c2');
         });
       }
     },
     B: {
-      name: 'Sweet Surprise', type: 'Physical Damage', cd: 13,
-      v: { ratio: 1.05 }, p: { dur: 7 },
-      desc: (S, P) => `A chocolate treat bursts over the biggest cluster for <em>${pcn(S.ratio * 100)}</em> Attack, coating them for ${P.dur}s. Coated enemies lose Attack Speed and cooldown speed, and the impact strips one removable buff. Allies who attack coated enemies restore Energy and briefly gain Speed Up.`,
+      name: 'Sweet Surprise', type: 'Magic Damage', cd: 10.5,
+      v: { ratio: 1.35 }, p: { dur: 7 },
+      desc: (S, P) => `A chocolate treat bursts over the biggest cluster for <em>${pcn(S.ratio * 100)}</em> Magic, coating them for ${P.dur}s. Coated enemies lose Attack Speed and cooldown speed, and the impact strips one removable buff. Allies who attack coated enemies restore Energy and briefly gain Speed Up.`,
       ai: { prio: 47, cond: () => true },
       cast: (u, B, S, P) => {
         B.anim(u, 'cast', .78, 'cocoaChocolateToss'); Sound.play('throwsomething', { vol: .35 }); Sound.play('bomb', { vol: .42, delay: 220 });
@@ -789,7 +838,7 @@ defHero({
           B.fxBoom(cx, B.ground - 60, 1.45, '#c98a5a'); B.shake(6, .22);
           B.enemiesOf(u).forEach(e => {
             if (Math.abs(e.x - cx) > 330) return;
-            B.damage(u, e, u.st.atk * S.ratio, { type: 'physical', tag: 'Sweet Surprise' });
+            B.damage(u, e, u.st.mag * S.ratio, { type: 'magic', tag: 'Sweet Surprise' });
             const buff = e.statuses.find(s => STATUS[s.id] && STATUS[s.id].kind === 'buff' && s.id !== 'shield' && !s.apexLocked);
             if (buff) B.removeStatus(e, buff.id);
             B.applyStatus(u, e, 'sticky', P.dur); B.applyStatus(u, e, 'drowsy', P.dur);
@@ -800,7 +849,7 @@ defHero({
             B.on(u, 'allyDamageDealt', ev => {
               if (B.t >= (u._chocoUntil || 0) || !ev.target || !ev.target.hasStatus('sticky') || !ev.src || ev.src.team !== u.team) return;
               if (Number.isFinite(ev.src._cocoaChocoAt) && B.t - ev.src._cocoaChocoAt < 1.2) return;
-              ev.src._cocoaChocoAt = B.t; B.energy(ev.src, 3); B.applyStatus(u, ev.src, 'speedup', 1.4);
+              ev.src._cocoaChocoAt = B.t; B.energy(ev.src, 4); B.applyStatus(u, ev.src, 'speedup', 1.4);
             });
           }
         });
@@ -808,27 +857,27 @@ defHero({
     },
     P: {
       name: 'Always Prepared', type: 'Energy',
-      v: { refund: .42 }, p: { extra: 2 },
+      v: { refund: .48 }, p: { extra: 2 },
       desc: (S, P) => `Cocoa's BonBon storage grows by ${P.extra}. Every BonBon consumed has a <em>${pcn(S.refund * 100)}</em> chance to be replaced instantly. When an ally under 🍬 Sugar Rush personally defeats an enemy, Cocoa restores Energy, reduces her cooldowns, and prepares another BonBon.`,
       passive: (u, B, S, P) => {
         u.bonbonMax = (u.bonbonMax || 4) + P.extra;
         u.bonbonRefund = S.refund;
         B.on(u, 'enemyDown', e => {
           const killer = e && e._lastHitBy;
-          if (killer && killer.team === u.team && killer.hasStatus('sugarrush')) { B.energy(u, 18); B.reduceCd(u, 1.5); B.bonbon(u, 1); }
+          if (killer && killer.team === u.team && killer.hasStatus('sugarrush')) { B.energy(u, 22); B.reduceCd(u, 2.0); B.bonbon(u, 1); }
         });
       }
     },
     R: {
       name: 'A Basket for Everyone', type: 'Max HP / Shield',
-      v: {}, p: { thr: .45 },
+      v: {}, p: { thr: .50 },
       desc: (S, P) => `Cocoa starts at maximum BonBons. 🍬 Sugar Rush now also grants Crit Chance and CC Resistance. Any ally dropping below ${pc(P.thr)} HP is handed a free BonBon without spending storage. While every living ally has Sugar Rush, the team gains extra Haste and Energy generation, their buffs cannot be stripped, and they receive a steady Energy pulse. BonBons prepared while storage is full overflow directly to the lowest-HP ally.`,
       passive: (u, B, S, P) => {
         u.bonbons = u.bonbonMax || 6;
         u.sugarPlus = true;
         u.cocoaOverflow = true; u.cocoaOverflowDur = 8;
         B.on(u, 'allyLow', a => {
-          if (a._freeBon && B.t - a._freeBon < 9) return;
+          if (a._freeBon && B.t - a._freeBon < 7) return;
           if (a.hpPct > P.thr) return;
           a._freeBon = B.t;
           B.applyStatus(u, a, 'sugarrush', 8);
@@ -844,11 +893,11 @@ defHero({
               B.applyStatus(u, a, 'lucky', 1.4);
               B.applyStatus(u, a, 'bonbonblessing', 1.4);
             }
-            a.flat.cdr7 = fullTeam ? .14 : 0;
-            a.flat.energyGen7 = fullTeam ? .18 : 0;
+            a.flat.cdr7 = fullTeam ? .15 : 0;
+            a.flat.energyGen7 = fullTeam ? .20 : 0;
             a._cocoaBuffGuardUntil = fullTeam ? B.t + 1.2 : 0;
             a.dirty = true;
-            if (fullTeam) B.energy(a, 4);
+            if (fullTeam) B.energy(a, 5);
           });
         });
       }
@@ -873,9 +922,9 @@ defHero({
   skills: {
     W: {
       name: 'Precious Packaging', type: 'Shield', energy: 100,
-      v: { shield: .24, heal: .28 }, p: { wrap: 3, slow: 4, kb: 130 },
-      desc: (S, P) => `<span class="sk-pas">Taking a heavy hit grants 📦 Packed Protection, raising Bobette's Defense. At max stacks her next Shield is far stronger.</span>
-        Active: she wraps herself in a gift box for ${P.wrap}s, unable to act but taking greatly reduced damage and immune to crowd control. When it opens she heals <em>${pcn(S.heal * 100)}</em> Max HP, shields nearby allies for <em>${pcn(S.shield * 100)}</em> Max HP, and shoves enemies away 🐢 Slowed.`,
+      v: { shield: .24, heal: .28 }, p: { wrap: 3, slow: 4, kb: 130, root: 1.35, boost: 1.8 },
+      desc: (S, P) => `<span class="sk-pas">Taking a heavy hit grants 📦 Packed Protection, raising Bobette's Defense. At max stacks her next Shield is boosted by <em>${pcn((P.boost - 1) * 100)}</em>.</span>
+        Active: she wraps herself in a gift box for ${P.wrap}s, unable to act but taking greatly reduced damage and immune to crowd control. When it opens she heals <em>${pcn(S.heal * 100)}</em> Max HP, shields nearby allies for <em>${pcn(S.shield * 100)}</em> Max HP, and shoves enemies away 🐢 Slowed for ${P.slow}s (Rooted for ${P.root}s if already Wrapped).`,
       passive: (u, B) => {
         B.on(u, 'damaged', ev => {
           if (ev.amount > u.max.hp * .06) {
@@ -897,7 +946,7 @@ defHero({
         const wrapDur = u.twisted ? Math.min(P.wrap, 2.15) : P.wrap;
         Sound.play('bobette_wrap', { vol: .58 }); B.anim(u, 'cast', .72, 'bobetteWrap'); B.fxBobetteSkill('wrap', u, { dur: wrapDur });
         const packed = u.getStatus('packed');
-        const boost = packed && packed.stacks >= 5 ? 1.8 : 1;
+        const boost = packed && packed.stacks >= 5 ? P.boost : 1;
         B.applyStatus(u, u, 'petrify', wrapDur);
         B.applyStatus(u, u, 'ccimmune', wrapDur);
         B.applyStatus(u, u, 'ward', wrapDur);
@@ -927,20 +976,20 @@ defHero({
             if (B.distance(e, u) > 300) return;
             const alreadyWrapped = e.hasStatus('wrapped');
             B.knockback(u, e, P.kb); B.applyStatus(u, e, 'slow', P.slow, { stacks: 2 });
-            if (alreadyWrapped) B.applyStatus(u, e, 'root', 1.35);
+            if (alreadyWrapped) B.applyStatus(u, e, 'root', P.root);
           });
         });
       }
     },
     G: {
       name: 'Holiday Spirit', type: 'Healing / Buff', cd: 11,
-      v: { shield: .10 }, p: { dur: 9 },
-      desc: (S, P) => `The team gains 🎄 Festive Cheer for ${P.dur}s: Move Speed, Energy Generation and Healing Received all rise. Any ally who fires their ultimate while cheered gains a <em>${pcn(S.shield * 100)}</em> Max HP Shield. The effect grows with each nearby ally.`,
+      v: { shield: .10, perAlly: .12 }, p: { dur: 9, shieldDur: 6 },
+      desc: (S, P) => `The team gains 🎄 Festive Cheer for ${P.dur}s: Move Speed, Energy Generation and Healing Received all rise. Any ally who fires their ultimate while cheered gains a <em>${pcn(S.shield * 100)}</em> Max HP Shield (+<em>${pcn(S.perAlly * 100)}</em> per nearby ally) for ${P.shieldDur}s. The effect grows with each nearby ally.`,
       ai: { prio: 56, cond: () => true },
       cast: (u, B, S, P) => {
         B.anim(u, 'cast', .64, 'bobetteCheer'); Sound.play('cheer'); B.fxBobetteSkill('cheer', u);
         const near = B.alliesOf(u).filter(a => B.distance(a, u) < 340).length;
-        const scale = 1 + near * .12;
+        const scale = 1 + near * S.perAlly;
         B.fxRing(u.x, u.y - 30, 340, '#e8536b', .5);
         B.alliesOf(u).forEach(a => {
           B.applyStatus(u, a, 'festivecheer', P.dur);
@@ -950,7 +999,7 @@ defHero({
         u._cheerUntil = B.t + P.dur;
         B.on(u, 'allyUltimate', a => {
           if (B.t < (u._cheerUntil || 0) && a.hasStatus('festivecheer'))
-            B.shield(u, a, u.max.hp * S.shield * scale, 6);
+            B.shield(u, a, u.max.hp * S.shield * scale, P.shieldDur);
         });
       }
     },
@@ -979,8 +1028,8 @@ defHero({
     },
     P: {
       name: 'Ornament Protection', type: 'Max HP / Defense',
-      v: {}, p: { max: 8 },
-      desc: (S, P) => `Whenever a nearby ally loses HP, Bobette gains 🔔 Festive Guard (max ${P.max}), raising Defense, Magic Defense and Shield Strength. At max stacks she shares it with nearby allies, and any Shield she receives also shields everyone carrying Festive Guard.`,
+      v: { shield: .05 }, p: { max: 8, dur: 6 },
+      desc: (S, P) => `Whenever a nearby ally loses HP, Bobette gains 🔔 Festive Guard (max ${P.max}), raising Defense, Magic Defense and Shield Strength. At max stacks she shares it with nearby allies, and any Shield she receives also shields everyone carrying Festive Guard for <em>${pcn(S.shield * 100)}</em> of Bobette's Max HP for ${P.dur}s.`,
       passive: (u, B, S, P) => {
         B.on(u, 'allyDamaged', ev => {
           if (ev.unit === u || !u.alive) return;
@@ -998,15 +1047,16 @@ defHero({
         });
         B.on(u, 'statusApplied', ev => {
           if (ev.id !== 'shield' || ev.unit !== u) return;
-          B.alliesOf(u).forEach(a => { if (a !== u && a.hasStatus('festiveguard')) B.shield(u, a, u.max.hp * .05, 6); });
+          B.alliesOf(u).forEach(a => { if (a !== u && a.hasStatus('festiveguard')) B.shield(u, a, u.max.hp * S.shield, P.dur); });
         });
       }
     },
     R: {
       name: 'The Perfect Present', type: 'Battle Opener',
-      v: { revive: .30 }, p: {},
-      desc: (S) => `Before battle the ally with the lowest Max HP receives 🎁 Holiday Favor: more Max HP, Damage Reduction and Healing Received. If they would be defeated the present opens instead and they survive at <em>${pc(S.revive)}</em> HP, protected for several seconds. Afterwards Bobette gains Defense, Shield Strength and Healing, but her own damage drops by a third.`,
-      passive: (u, B, S) => {
+      v: { revive: .30, def: .35, shieldPow: .40, healPow: .35 }, p: { wardDur: 5 },
+      desc: (S, P) => `Before battle the ally with the lowest Max HP receives 🎁 Holiday Favor: more Max HP, Damage Reduction and Healing Received. If they would be defeated the present opens instead and they survive at <em>${pcn(S.revive * 100)}</em> HP with ${P.wardDur}s protection. Afterwards Bobette gains <em>${pcn(S.def * 100)}</em> Defense, <em>${pcn(S.shieldPow * 100)}</em> Shield Strength and <em>${pcn(S.healPow * 100)}</em> Healing Power, but her own damage drops by a third.`,
+      passive: (u, B, S, P) => {
+        B.on(u, 'waveStart', () => { u._opened = false; });
         B.after(.4, () => {
           const t = B.alliesOf(u).filter(a => a !== u).sort((a, b) => a.max.hp - b.max.hp)[0] || u;
           u._favored = t;
@@ -1017,10 +1067,10 @@ defHero({
           if (u._opened || ev.unit !== u._favored) return;
           u._opened = true; ev.prevented = true;
           ev.unit.hp = ev.unit.max.hp * (u.twisted ? Math.min(S.revive, .22) : S.revive);
-          B.applyStatus(u, ev.unit, 'ward', 5); B.applyStatus(u, ev.unit, 'ccimmune', 5);
+          B.applyStatus(u, ev.unit, 'ward', P.wardDur); B.applyStatus(u, ev.unit, 'ccimmune', P.wardDur);
           Sound.play('bobette_present_pop', { vol: .7 }); B.fxBobetteSkill('open', ev.unit); B.fxConfetti(ev.unit.x, ev.unit.y - 50, 50);
           B.log('<b>The Perfect Present opens.</b>');
-          u.flat.defP2 = .35; u.flat.shieldPowP = .40; u.flat.healPowP = .35; u.flat.dmgDealt = -.33;
+          u.flat.defP2 = S.def; u.flat.shieldPowP = S.shieldPow; u.flat.healPowP = S.healPow; u.flat.dmgDealt = -.33;
           u.dirty = true;
         });
       }
@@ -1033,11 +1083,11 @@ defHero({
    Consistency becomes power: Tempo must be maintained or it decays. */
 defHero({
   id: 'Boxten', name: 'Boxten', folder: 'Boxten', file: 'Boxten', icon: 'Boxten',
-  role: 'Damage', tier: 'D', element: 'Music',
+  role: 'Damage', tier: 'B', element: 'Music',
   blurb: 'A quiet music box keeping a rhythm going. Once the beat is established, every note lands with purpose.',
-  base: { hp: 3500, atk: 372, def: 218, mag: 175, mdef: 200, spd: 112, acc: 186, eva: 118 },
-  hidden: { range: 195, aspd: 1.10, ms: 68, aggro: .65, crit: .14, critDmg: 1.60, healPow: 1, shieldPow: 1, cdr: .06, ccRes: .12, kbRes: .3, armorPen: .08, magPen: 0 },
-  growth: { hp: .080, atk: .092, def: .074, mag: .06, mdef: .07 },
+  base: { hp: 3650, atk: 395, def: 230, mag: 185, mdef: 215, spd: 116, acc: 195, eva: 125 },
+  hidden: { range: 195, aspd: 1.15, ms: 72, aggro: .65, crit: .16, critDmg: 1.65, healPow: 1, shieldPow: 1, cdr: .08, ccRes: .15, kbRes: .35, armorPen: .12, magPen: 0 },
+  growth: { hp: .086, atk: .098, def: .078, mag: .064, mdef: .074 },
   move: { gait: 'hop', bob: 10, freq: 2.0, lean: 5, squash: .09, idle: 'wind', step: 'bounce',
     particles: 'notes', pcol: '#ffd166', trail: { on: false }, brake: .25 },
   basic: { name: 'Wind-Up Jab', type: 'physical', ratio: .98, range: 195, sfx: 'swing_light', hit: 'hit_blunt',
@@ -1081,9 +1131,9 @@ defHero({
     },
     G: {
       name: 'Music Box Melody', type: 'Physical Damage', cd: 9,
-      v: { ratio: .98 }, p: { dur: 5, radius: 300 },
-      desc: (S, P) => `Sound waves ripple out for <em>${pcn(S.ratio * 100)}</em> Attack, cutting enemy Attack Speed for ${P.dur}s. Hitting two or more enemies grants extra 🎵 Tempo.`,
-      ai: { prio: 55, cond: (u, B) => B.enemiesOf(u).some(e => B.distance(e, u) < 300) },
+      v: { ratio: 1.15, bonus: .45 }, p: { dur: 5.5, radius: 320, en: 18 },
+      desc: (S, P) => `Sound waves ripple out for <em>${pcn(S.ratio * 100)}</em> Attack, cutting enemy Attack Speed for ${P.dur}s and interrupting their casts. Enemies already slowed or crowd controlled take <em>+${pcn(S.bonus * 100)}</em> bonus damage, and hitting two or more enemies grants Boxten 2 bonus 🎵 Tempo stacks and ${P.en} Energy.`,
+      ai: { prio: 55, cond: (u, B) => B.enemiesOf(u).some(e => B.distance(e, u) < 320) },
       cast: (u, B, S, P) => {
         B.anim(u, 'cast', .35); Sound.play('whoosh');
         B.fxRing(u.x, u.y - 40, P.radius * 2, '#ffd166', .5);
@@ -1091,10 +1141,16 @@ defHero({
         B.enemiesOf(u).forEach(e => {
           if (B.distance(e, u) > P.radius) return;
           hit++;
-          B.damage(u, e, u.st.atk * S.ratio, { type: 'physical', tag: 'Music Box Melody' });
+          const cc = e.hasStatus('slow') || e.hasStatus('stun') || e.hasStatus('freeze') || e.hasStatus('sleep') || e.hasStatus('root');
+          const dmg = u.st.atk * S.ratio * (cc ? (1 + S.bonus) : 1);
+          B.damage(u, e, dmg, { type: 'physical', tag: 'Music Box Melody' });
           B.applyStatus(u, e, 'slow', P.dur);
+          if (cc) B.fxFloatIcon(e.x, e.y - 95, '🎵 CRIT', '#ffd166');
         });
-        if (hit >= 2) B.applyStatus(u, u, 'tempo', 8, { stacks: 2 });
+        if (hit >= 2) {
+          B.applyStatus(u, u, 'tempo', 8, { stacks: 2 });
+          B.energy(u, P.en);
+        }
         u._lastBeat = B.t;
       }
     },
@@ -1121,13 +1177,23 @@ defHero({
     },
     P: {
       name: 'Always Wound Up', type: 'Max HP / Attack',
-      v: { per: .07 }, p: {},
-      desc: (S) => `For every living ally Boxten gains <em>${pcn(S.per * 100)}</em> Attack Speed, cooldown recovery and Energy Generation. The bonus shrinks as allies fall.`,
-      passive: (u, B, S) => {
+      v: { per: .075, leech: .18 }, p: { en: 12 },
+      desc: (S, P) => `Boxten's gears wind tighter with team momentum. For each living ally, he gains <em>${pcn(S.per * 100)}</em> Attack Speed, Skill Haste, and Energy Generation. Whenever an ally uses a Skill, Boxten gains 1 🎵 Tempo and ${P.en} Energy. At maximum (10) Tempo, Boxten heals for <em>${pcn(S.leech * 100)}</em> of all damage dealt.`,
+      passive: (u, B, S, P) => {
         B.every(u, .5, () => {
           const n = B.alliesOf(u).filter(a => a !== u).length;
           u.flat.aspdP = n * S.per; u.flat.cdr = n * S.per; u.flat.energyGen = n * S.per;
           u.dirty = true;
+        });
+        B.on(u, 'allyCast', () => {
+          B.applyStatus(u, u, 'tempo', 8, { stacks: 1 });
+          B.energy(u, P.en);
+        });
+        B.on(u, 'dealDamage', ev => {
+          const t = u.getStatus('tempo');
+          if (t && t.stacks >= 10 && !ev.dot && ev.amount > 0) {
+            B.heal(u, u, ev.amount * S.leech, { silent: true, tag: 'Wound Up Leech' });
+          }
         });
       }
     },
@@ -1194,7 +1260,15 @@ defHero({
           });
           if (u.rarity >= 5) {
             B.cleanseAll(u);
-            B.alliesOf(u).forEach(a => { B.applyStatus(u, a, 'overcharge', 4); B.applyStatus(u, a, 'speedup', 4); });
+            const shieldRatio = (u.skills && u.skills.R && u.skills.R.v && u.skills.R.v.shield) || 0.15;
+            const energyAmt = (u.skills && u.skills.R && u.skills.R.v && u.skills.R.v.en) || 25;
+            const dur = (u.skills && u.skills.R && u.skills.R.p && u.skills.R.p.dur) || 4.5;
+            B.alliesOf(u).forEach(a => {
+              B.shield(u, a, u.max.hp * shieldRatio, dur);
+              B.energy(a, energyAmt);
+              B.applyStatus(u, a, 'overcharge', dur);
+              B.applyStatus(u, a, 'speedup', dur);
+            });
             B.fxBrightneySkill('overcharge', u, { allies: B.alliesOf(u) });
           }
         });
@@ -1242,20 +1316,20 @@ defHero({
     },
     P: {
       name: 'Safety Light', type: 'Aura',
-      v: { dr: .15, regen: .012 }, p: { radius: 300 },
-      desc: (S, P) => `Allies within Brightney's light take <em>${pcn(S.dr * 100)}</em> less damage and regenerate <em>${pcn(S.regen * 100)}</em> Max HP per second.`,
+      v: { dr: .18, regen: .018, tenacity: .25 }, p: { radius: 320 },
+      desc: (S, P) => `Allies within Brightney's light take <em>${pcn(S.dr * 100)}</em> less damage, regenerate <em>${pcn(S.regen * 100)}</em> Max HP per second, and gain <em>${pcn(S.tenacity * 100)}</em> Crowd Control Resistance.`,
       passive: (u, B, S, P) => {
         B.every(u, 1, () => B.alliesOf(u).forEach(a => {
-          if (B.distance(a, u) > P.radius) { a.flat.dmgTaken2 = 0; a.dirty = true; return; }
+          if (B.distance(a, u) > P.radius) { a.flat.dmgTaken2 = 0; a.flat.ccRes2 = 0; a.dirty = true; return; }
           B.heal(u, a, a.max.hp * S.regen, { silent: true, tag: 'safety light' });
-          a.flat.dmgTaken2 = -S.dr; a.dirty = true;
+          a.flat.dmgTaken2 = -S.dr; a.flat.ccRes2 = S.tenacity; a.dirty = true;
         }));
       }
     },
     R: {
       name: 'Overcharged Bulb', type: 'Ultimate Upgrade',
-      v: {}, p: { dur: 4 },
-      desc: (S, P) => `Blinding Flash now cleanses every debuff from Brightney and grants the whole team bonus Energy Generation and Move Speed for ${P.dur}s.`,
+      v: { shield: .15, en: 25 }, p: { dur: 4.5 },
+      desc: (S, P) => `Blinding Flash cleanses every debuff from Brightney and empowers the entire team with an Overcharged Shield worth <em>${pcn(S.shield * 100)}</em> of her Max HP, ${Math.round(S.en)} Energy, Overcharge, and Speed Up for ${P.dur}s.`,
       passive: () => {}
     }
   }

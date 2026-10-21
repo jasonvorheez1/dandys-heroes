@@ -130,27 +130,27 @@ defHero({
     sfx: 'swing_heavy', hit: 'hit_blunt', wind: .28,
     onHit: (u, t, B) => {
       const maxed = u.hasStatus('distortion') || dandyStacks(u, t, 'neglect') >= (u.dandyMax || 5);
-      if (maxed) B.damage(u, t, t.max.hp * .035, { type: 'physical', melee: true, tag: 'Unforgettable' });
+      if (maxed) B.damage(u, t, t.max.hp * (u.dandyMaxDmg || .035), { type: 'physical', melee: true, tag: 'Unforgettable' });
       if (u.hasStatus('distortion')) B.enemiesOf(u).filter(e => e !== t && Math.abs(e.x - t.x) < 135)
-        .forEach(e => B.damage(u, e, u.st.atk * .45, { type: 'physical', melee: true, tag: 'Distorted Swing' }));
+        .forEach(e => B.damage(u, e, u.st.atk * (u.dandySplashRatio || .45), { type: 'physical', melee: true, tag: 'Distorted Swing' }));
     } },
   skills: {
     W: { name: 'Center of Attention', type: 'Physical Damage / Max HP', energy: 100,
-      v: { ratio: 2.30 }, p: { max: 5, loss: .07, heal: .085, stun: 1.1, kb: 118, hits: 4 },
-      desc: (S, P) => `<span class="sk-pas">Enemies that damage Dandy gain 👁 Attention; enemies that damage his allies gain ❗ Neglect instead. Attention reduces their damage to Dandy. Neglect makes Dandy hit them harder, and at ${P.max} stacks he hunts them.</span> Active: pushes nearby enemies away, then hits the most Neglect target ${P.hits} times, spending Neglect to restore missing HP. A maximum-Neglect target takes a heavy final strike and is Stunned.`,
+      v: { ratio: 2.30, restore: .05, heal: .085 }, p: { max: 5, loss: .07, stun: 1.1, kb: 118, hits: 4, energy: 25, finisher: 2.15 },
+      desc: (S, P) => `<span class="sk-pas">Enemies that damage Dandy gain 👁 Attention; enemies that damage his allies gain ❗ Neglect instead. Attention reduces their damage to Dandy. Neglect makes Dandy hit them harder, and at ${P.max} stacks he hunts them. Max Attention restores <em>${pcn(S.restore * 100)}</em> Max HP; max Neglect grants <em>${Math.round(P.energy)}</em> Energy.</span> Active: pushes nearby enemies away, then hits the most Neglect target ${P.hits} times for <em>${pcn(S.ratio * 100)}</em> Attack, spending Neglect to restore <em>${pcn(S.heal * 100)}</em> missing HP per stack. A maximum-Neglect target takes a heavy final strike for <em>${pcn(S.ratio / P.hits * P.finisher * 100)}</em> Attack and is Stunned for ${P.stun}s.`,
       passive: (u, B, S, P) => {
         u.dandyMax = P.max; u._dandyLastHp = 1; u._dandyRecovery = 0;
         B.on(u, 'damaged', ev => {
           if (!ev.src || ev.src.team === u.team) return;
           ev.src._dandyLastHit = B.t;
           const rec = dandyRecord(u, B, ev.src, 'attention', P.max);
-          if (rec.before < P.max && rec.stacks >= P.max) dandyRestore(u, B, u.max.hp * .05);
+          if (rec.before < P.max && rec.stacks >= P.max) dandyRestore(u, B, u.max.hp * S.restore);
         });
         B.on(u, 'allyDamaged', ev => {
           if (!ev.src || ev.unit === u || !u.alive || u.flags.untargetable) return;
           const rec = dandyRecord(u, B, ev.src, 'neglect', P.max);
           u._dandyLastAllyAttacker = ev.src;
-          if (rec.before < P.max && rec.stacks >= P.max) B.energy(u, 25);
+          if (rec.before < P.max && rec.stacks >= P.max) B.energy(u, P.energy);
         });
         B.every(u, .4, () => {
           const lost = u._dandyLastHp - u.hpPct;
@@ -170,31 +170,31 @@ defHero({
             if (!t.alive || !u.alive) return;
             const missing = u.max.hp - u.hp;
             B.fxSlash(u, t, { col: '#ffd166', ang: -35 + i * 22, big: i === P.hits - 1 });
-            B.damage(u, t, u.st.atk * S.ratio / P.hits * (wasMax && i === P.hits - 1 ? 2.15 : 1), { type: 'physical', melee: true, tag: 'Center of Attention' });
-            if (dandyStacks(u, t, 'neglect')) { dandySpendNeglect(u, t); dandyRestore(u, B, missing * P.heal); }
+            B.damage(u, t, u.st.atk * S.ratio / P.hits * (wasMax && i === P.hits - 1 ? P.finisher : 1), { type: 'physical', melee: true, tag: 'Center of Attention' });
+            if (dandyStacks(u, t, 'neglect')) { dandySpendNeglect(u, t); dandyRestore(u, B, missing * S.heal); }
             if (wasMax && i === P.hits - 1) B.applyStatus(u, t, 'stun', P.stun);
           });
         });
       } },
     G: { name: 'Closing Time', type: 'Physical Damage / Armor', cd: 9,
-      v: { ratio: 1.32 }, p: { range: 245, atk: .25, guard: .10, dur: 7, kb: 100, energy: 24, dr: 5 },
-      desc: (S, P) => `Clears nearby enemies with Physical Damage, Knockback, and reduced Attack. Dandy gains Armor and Magic Defense for each enemy hit. Attention is knocked farther; Neglect takes extra damage and loses Energy. Hitting 3 enemies grants Damage Reduction.`,
+      v: { ratio: 1.32, neglectBonus: .10 }, p: { range: 245, atk: .25, guard: .10, dur: 7, kb: 100, energy: 24, dr: 5, attentionKb: 20 },
+      desc: (S, P) => `Clears nearby enemies for <em>${pcn(S.ratio * 100)}</em> Attack, Knockback, and reduces their Attack for ${P.dur}s. Dandy gains Armor and Magic Defense for each enemy hit. Attention is knocked farther; Neglect takes <em>${pcn(S.neglectBonus * 100)}</em> extra damage per stack and drains <em>${Math.round(P.energy)}</em> Energy. Hitting 3 enemies grants Damage Reduction for ${P.dr}s.`,
       ai: { prio: 58, cond: (u, B) => B.enemiesOf(u).some(e => Math.abs(e.x - u.x) < 250) },
       cast: (u, B, S, P) => {
         const hits = B.enemiesOf(u).filter(e => Math.abs(e.x - u.x) < P.range); if (!hits.length) return;
         B.anim(u, 'cast', .35); Sound.play('swing_heavy'); B.fxRing(u.x, u.y - 45, P.range, '#ffd166', .32);
         hits.forEach(e => {
           const attention = dandyStacks(u, e, 'attention'), neglect = dandyStacks(u, e, 'neglect');
-          B.damage(u, e, u.st.atk * S.ratio * (neglect ? 1 + neglect * .10 : 1), { type: 'physical', melee: true, tag: 'Closing Time' });
-          B.knockback(u, e, P.kb + attention * 20); B.applyStatus(u, e, 'weaken', P.dur, { stacks: 2 });
+          B.damage(u, e, u.st.atk * S.ratio * (neglect ? 1 + neglect * S.neglectBonus : 1), { type: 'physical', melee: true, tag: 'Closing Time' });
+          B.knockback(u, e, P.kb + attention * P.attentionKb); B.applyStatus(u, e, 'weaken', P.dur, { stacks: 2 });
           if (neglect) B.energy(e, -P.energy);
         });
         B.applyStatus(u, u, 'fortify', P.dur, { stacks: Math.min(5, hits.length) });
         if (hits.length >= 3) B.applyStatus(u, u, 'composed', P.dr);
       } },
     B: { name: 'Keep Smiling', type: 'Physical Damage', cd: 10,
-      v: { ratio: 1.60 }, p: { slow: 6, per: .20, shield: .45 },
-      desc: (S, P) => `Strikes the enemy that most recently hurt an ally, reducing their Attack Speed. Dandy removes Attack and Attack Speed debuffs from himself. Neglect adds damage per stack and grants a Shield based on damage dealt.`,
+      v: { ratio: 1.60, shield: .45 }, p: { slow: 6, per: .20, shieldDur: 5 },
+      desc: (S, P) => `Strikes the enemy that most recently hurt an ally for <em>${pcn(S.ratio * 100)}</em> Attack, reducing their Attack Speed for ${P.slow}s. Dandy removes Attack and Attack Speed debuffs from himself. Neglect adds <em>${pcn(P.per * 100)}</em> damage per stack and grants a <em>${pcn(S.shield * 100)}</em> Shield based on damage dealt for ${P.shieldDur}s.`,
       ai: { prio: 54, cond: (u) => !!(u._dandyLastAllyAttacker && u._dandyLastAllyAttacker.alive) },
       cast: (u, B, S, P) => {
         const t = u._dandyLastAllyAttacker && u._dandyLastAllyAttacker.alive ? u._dandyLastAllyAttacker : B.bestTarget(u); if (!t) return;
@@ -203,33 +203,35 @@ defHero({
         const ev = B.damage(u, t, u.st.atk * S.ratio * (1 + neglect * P.per), { type: 'physical', melee: true, tag: 'Keep Smiling' });
         B.applyStatus(u, t, 'slow', P.slow, { stacks: 2 });
         ['weaken', 'slow', 'drowsy', 'groggy', 'disarm'].forEach(id => B.removeStatus(u, id));
-        if (neglect && ev) B.shield(u, u, ev.amount * P.shield, 5);
+        if (neglect && ev) B.shield(u, u, ev.amount * S.shield, P.shieldDur);
       } },
     P: { name: 'Everybody\'s Favorite', type: 'Attack / Defense',
       v: { atk: .065, def: .060 }, p: {},
-      desc: (S) => `Dandy gains Attack for each ❗ Neglect stack across the enemy team and Armor/Magic Defense for each 👁 Attention stack. Reaching maximum Attention heals him; reaching maximum Neglect grants Energy.`,
+      desc: (S) => `Dandy gains <em>${pcn(S.atk * 100)}</em> Attack for each ❗ Neglect stack across the enemy team and <em>${pcn(S.def * 100)}</em> Armor/Magic Defense for each 👁 Attention stack.`,
       passive: (u, B, S) => B.every(u, .25, () => {
         let attention = 0, neglect = 0;
         B.enemiesOf(u).forEach(e => { attention += dandyStacks(u, e, 'attention'); neglect += dandyStacks(u, e, 'neglect'); });
         u.flat.atkP2 = neglect * S.atk; u.flat.defP2 = attention * S.def; u.flat.mdefP2 = attention * S.def; u.dirty = true;
       }) },
     R: { name: 'You Didn\'t Forget Me, Did You?', type: 'Physical Damage / Max HP',
-      v: {}, p: { ignore: 3.0, thr: .40, heal: .24, dur: 7, max: 5, life: .035 },
-      desc: (S, P) => `Neglect grows on enemies that have not damaged Dandy recently. Maximum Neglect cuts Armor and rejects Move Speed. Once per wave below ${pc(P.thr)} HP with a maximum-Neglect enemy, Dandy distorts: he Cleanses, heals, gains Attack and Damage Reduction, ignores Stun/Knockback, and Basic Attacks splash nearby enemies. When it ends, all Neglect clears.`,
+      v: { heal: .24, life: .035, splashRatio: .45, maxDmg: .035 }, p: { ignore: 3.0, thr: .40, dur: 7, max: 5 },
+      desc: (S, P) => `Neglect grows on enemies that have not damaged Dandy recently. Maximum Neglect cuts Armor and rejects Move Speed. Once per wave below ${pc(P.thr)} HP with a maximum-Neglect enemy, Dandy distorts: he Cleanses, heals <em>${pcn(S.heal * 100)}</em> Max HP, gains Attack and Damage Reduction, ignores Stun/Knockback, and Basic Attacks restore <em>${pcn(S.life * 100)}</em> Max HP while splashing nearby enemies for <em>${pcn(S.splashRatio * 100)}</em> Attack. When it ends, all Neglect clears.`,
       passive: (u, B, S, P) => {
+        u.dandySplashRatio = S.splashRatio; u.dandyMaxDmg = S.maxDmg;
+        B.on(u, 'waveStart', () => { u._dandyDistorted = false; });
         B.every(u, P.ignore, () => B.enemiesOf(u).forEach(e => {
           // Neglect is meant to grow on anyone who keeps ignoring Dandy,
           // including an enemy that has not earned its first stack yet.
           if (B.t - (e._dandyLastHit || -999) > P.ignore) dandyRecord(u, B, e, 'neglect', P.max);
         }));
         B.on(u, 'basicHit', ev => {
-          if (u.hasStatus('distortion') || dandyStacks(u, ev.target, 'neglect') >= P.max) dandyRestore(u, B, u.max.hp * P.life);
+          if (u.hasStatus('distortion') || dandyStacks(u, ev.target, 'neglect') >= P.max) dandyRestore(u, B, u.max.hp * S.life);
         });
         B.every(u, .22, () => {
           const maxed = B.enemiesOf(u).some(e => dandyStacks(u, e, 'neglect') >= P.max);
           u.immovable = u.hasStatus('distortion');
           if (u._dandyDistorted || u.hpPct >= P.thr || !maxed) return;
-          u._dandyDistorted = true; B.cleanseAll(u); dandyRestore(u, B, u.max.hp * P.heal, { pure: true });
+          u._dandyDistorted = true; B.cleanseAll(u); dandyRestore(u, B, u.max.hp * S.heal, { pure: true });
           B.applyStatus(u, u, 'distortion', P.dur); B.fxStatusOn(u, 'CurseEffect', { sizeMul: 1.2 }); Sound.play('warn');
           B.after(P.dur, () => {
             if (!u.alive) return;
@@ -259,16 +261,16 @@ function pebbleFetch(u, B, S, P) {
   }
 
   const origin = u.x, ownEdge = u.team === TEAM_P ? B.leftWall + 12 : B.rightWall - 12;
-  B.anim(u, 'wind', .5); Sound.play('pebble_talk', { vol: .55 });
+  B.anim(u, 'wind', .4); Sound.play('pebble_talk', { vol: .55 });
   B.fxFloatItem(u.x, u.y - 94, 'Trinkets/PEBBLE_Bone');
-  B.dash(u, ownEdge, .28, { lean: 36 });
-  B.after(.31, () => {
+  B.dash(u, ownEdge, .20, { lean: 36 });
+  B.after(.23, () => {
     if (!u.alive) return;
     Sound.play('item_pickup', { vol: .46 });
     if (projectile.kind === 'obj') B.fxFloatObject(u.x, u.y - 86, item, '#d4b98a');
     else B.fxFloatItem(u.x, u.y - 86, item);
     const returnX = target === u ? origin : clamp(target.x - u.face * 54, B.leftWall, B.rightWall);
-    B.dash(u, returnX, .32, { lean: 34, onEnd: () => {
+    B.dash(u, returnX, .24, { lean: 34, onEnd: () => {
       if (!u.alive) return;
       const receiver = target.alive ? target : u;
       B.fxArc(u, receiver, projectile, () => {
@@ -298,20 +300,20 @@ defHero({
   id: 'Pebble', name: 'Pebble', folder: 'Pebble', file: 'Pebble', icon: 'Pebble',
   role: 'Tank', tier: 'A', element: 'Stone',
   blurb: 'A tiny hyperactive tank who survives by making the entire enemy team fail to catch him.',
-  base: { hp: 5450, atk: 325, def: 305, mag: 105, mdef: 265, spd: 142, acc: 182, eva: 190 },
-  hidden: { range: 145, aspd: 1.08, ms: 124, aggro: 1.30, crit: .12, critDmg: 1.65, healPow: 1,
-    shieldPow: 1.18, cdr: .08, ccRes: .22, kbRes: .42, armorPen: .10, magPen: 0 },
-  growth: { hp: .100, atk: .078, def: .092, mag: .05, mdef: .086 },
+  base: { hp: 5620, atk: 345, def: 320, mag: 105, mdef: 275, spd: 142, acc: 185, eva: 210 },
+  hidden: { range: 145, aspd: 1.10, ms: 126, aggro: 1.35, crit: .12, critDmg: 1.65, healPow: 1,
+    shieldPow: 1.20, cdr: .08, ccRes: .25, kbRes: .45, armorPen: .10, magPen: 0 },
+  growth: { hp: .102, atk: .080, def: .094, mag: .05, mdef: .088 },
   move: { gait: 'sprint', bob: 7, freq: 4.3, lean: 30, squash: .11, idle: 'pant', step: 'step',
     particles: 'dust', pcol: '#aeb4ba', trail: { on: true, col: '#d7dadd', rate: .045 }, brake: .96, dashy: true },
-  basic: { name: 'Rocky Nudge', type: 'physical', ratio: .82, range: 145, pcol: '#aeb4ba',
+  basic: { name: 'Rocky Nudge', type: 'physical', ratio: .88, range: 145, pcol: '#aeb4ba',
     sfx: 'pebble_talk', hit: 'hit_blunt', wind: .12,
-    onHit: (u, t, B) => { if (t.target === u) B.energy(u, 3); } },
+    onHit: (u, t, B) => { if (t.target === u) B.energy(u, 4); } },
   skills: {
     W: {
       name: 'Speak!', type: 'Physical Damage / Max HP', energy: 100,
-      v: { ratio: .72, move: .07, eva: .065, stackMove: .015, stackArmor: .018, hp: .07, tauntEva: .08, heal: .008 },
-      p: { max: 5, excitedDur: 6, stop: 2.6, enemySlow: .18, taunt: 4.5, drain: 14, kb: 72 },
+      v: { ratio: 1.10, move: .09, eva: .08, stackMove: .018, stackArmor: .022, hp: .09, tauntEva: .10, heal: .018 },
+      p: { max: 5, excitedDur: 6, stop: 2.6, enemySlow: .20, taunt: 4.5, drain: 16, kb: 75 },
       desc: (S, P) => `<span class="sk-pas">While moving, Pebble gains <em>${pcn(S.move * 100)}</em> Move Speed and <em>${pcn(S.eva * 100)}</em> Evasion. Every Dodge grants 🐾 Excited (max ${P.max}), adding Move Speed and Armor; stopping for ${P.stop}s clears it. Enemies targeting a moving Pebble lose ${pc(P.enemySlow)} Attack Speed.</span>
         Active: several barks Taunt every enemy for ${P.taunt}s and grant <em>${pcn(S.hp * 100)}</em> Max HP plus Evasion. Dodging during the Taunt drains ${P.drain} Energy from the attacker and heals Pebble. When it ends, he charges through the enemy team for <em>${pcn(S.ratio * 100)}</em> Attack, knocks them aside, then returns to where he started.`,
       passive: (u, B, S, P) => {
@@ -346,11 +348,11 @@ defHero({
         B.after(P.taunt, () => {
           if (!u.alive) return;
           const living = foes.filter(e => e.alive); if (!living.length) return;
-          if (u.pebbleGoodBoy) living.forEach(e => B.applyStatus(u, e, 'goodboyguard', u.pebbleGuardDur || 4));
+          if (u.pebbleGoodBoy) living.forEach(e => B.applyStatus(u, e, 'goodboyguard', u.pebbleGuardDur || 5));
           const end = u.team === TEAM_P ? B.rightWall - 22 : B.leftWall + 22;
           u.face = end > u.x ? 1 : -1;
           Sound.play('dash', { vol: .5 });
-          B.dash(u, end, .46, { lean: 42, onEnd: () => { if (u.alive) B.dash(u, origin, .38, { lean: 34 }); } });
+          B.dash(u, end, .44, { lean: 42, onEnd: () => { if (u.alive) B.dash(u, origin, .36, { lean: 34 }); } });
           living.forEach((e, i) => B.after(.16 + i * .045, () => {
             if (!u.alive || !e.alive) return;
             Sound.play('hit_blunt', { vol: .4, throttle: 75 });
@@ -362,15 +364,15 @@ defHero({
     },
     G: {
       name: 'Fetch!', type: 'Healing / Shield', cd: 9,
-      v: { heal: .07, redHeal: .10, shield: .065, redShield: .10 },
+      v: { heal: .08, redHeal: .12, shield: .08, redShield: .12 },
       p: { healThr: .58, armorThr: .68, itemDur: 8, fetchSpeed: 5 },
       desc: (S, P) => `Pebble sniffs out a real Item: a Bandage heals the lowest ally below ${pc(P.healThr)} HP; Cardboard Armor Shields Pebble below ${pc(P.armorThr)} HP; otherwise Speed Candy raises Pebble and the strongest ally's Attack and Movement Speed. Fetching always gives Pebble a short speed burst.`,
       ai: { prio: 60, cond: () => true },
       cast: (u, B, S, P) => pebbleFetch(u, B, S, P)
     },
     B: {
-      name: 'Rocky Tackle', type: 'Physical Damage', cd: 11,
-      v: { ratio: .50, shield: .045 }, p: { stun: 1.25, kb: 78, revenge: 1.38, grief: 3.5 },
+      name: 'Rocky Tackle', type: 'Physical Damage', cd: 9.5,
+      v: { ratio: .95, shield: .08 }, p: { stun: 1.35, kb: 78, revenge: 1.45, grief: 4 },
       desc: (S, P) => `Charges the enemy with the highest Attack twice for <em>${pcn(S.ratio * 100)}</em> total Attack, circling them between hits. The first hit Knocks Back and the second Stuns for ${P.stun}s, strips one removable buff, and applies 🥺 Grief for ${P.grief}s, reducing Healing Received. If they were attacking Pebble, the second hit deals ${pc(P.revenge - 1)} more damage and Pebble gains a Max HP Shield.`,
       ai: { prio: 57, cond: () => true },
       cast: (u, B, S, P) => {
@@ -378,19 +380,19 @@ defHero({
         const revenge = t.target === u;
         B.anim(u, 'wind', .36); Sound.play('pebble_talk', { vol: .48 });
         u.face = t.x > u.x ? 1 : -1;
-        B.dash(u, t.x - u.face * 42, .25, { lean: 40, depth: t.depth, onEnd: () => {
+        B.dash(u, t.x - u.face * 42, .24, { lean: 40, depth: t.depth, onEnd: () => {
           if (!u.alive || !t.alive) return;
           Sound.play('hit_blunt', { vol: .52 }); B.shake(4, .14); B.fxCrackAt(t.x, t.y);
-          B.damage(u, t, u.st.atk * S.ratio * .38, { type: 'physical', melee: true, tag: 'Rocky Tackle I' });
+          B.damage(u, t, u.st.atk * S.ratio * .35, { type: 'physical', melee: true, tag: 'Rocky Tackle I' });
           B.knockback(u, t, P.kb); B.fxRing(t.x, t.y - 32, 92, '#c6cbd0', .38);
           const circle = clamp(t.x + u.face * 115, B.leftWall, B.rightWall);
-          B.dash(u, circle, .34, { arc: true, onEnd: () => {
+          B.dash(u, circle, .30, { arc: true, onEnd: () => {
             if (!u.alive || !t.alive) return;
             u.face = t.x > u.x ? 1 : -1;
-            B.dash(u, t.x - u.face * 34, .22, { lean: 44, depth: t.depth, onEnd: () => {
+            B.dash(u, t.x - u.face * 34, .20, { lean: 44, depth: t.depth, onEnd: () => {
               if (!u.alive || !t.alive) return;
               Sound.play('hit_heavy', { vol: .58 }); B.hitstop(75); B.shake(5, .18);
-              B.damage(u, t, u.st.atk * S.ratio * .62 * (revenge ? P.revenge : 1), { type: 'physical', melee: true, tag: 'Rocky Tackle II' });
+              B.damage(u, t, u.st.atk * S.ratio * .65 * (revenge ? P.revenge : 1), { type: 'physical', melee: true, tag: 'Rocky Tackle II' });
               B.applyStatus(u, t, 'stun', P.stun); B.dispel(t, 1); B.applyStatus(u, t, 'grief', P.grief); B.fxCrackAt(t.x, t.y);
               if (revenge) B.shield(u, u, u.max.hp * S.shield, 6);
             } });
@@ -400,7 +402,7 @@ defHero({
     },
     P: {
       name: 'Small Target', type: 'Evasion / Armor',
-      v: { area: .07, energy: 3 }, p: { every: 4, accDur: 5 },
+      v: { area: .10, energy: 8 }, p: { every: 4, accDur: 5 },
       desc: (S, P) => `Area damage is reduced by <em>${pcn(S.area * 100)}</em>. After every ${P.every} Basic Attacks aimed at Pebble, he automatically Dodges the next direct Basic Attack or Skill. Every Dodge reduces the attacker's Accuracy for ${P.accDur}s; at maximum Excited stacks it also restores <em>${Math.round(S.energy)}</em> Energy. Guaranteed hits still bypass this.`,
       passive: (u, B, S, P) => {
         u._pebbleBasics = 0; u._pebbleAutoDodge = false; u._pebbleCountAt = -Infinity;
@@ -423,10 +425,11 @@ defHero({
     },
     R: {
       name: 'Good Boy!', type: 'Max HP / Armor / Physical Damage',
-      v: { dr: .055, per: .012 }, p: { guard: 4, thr: .42, cd: 8 },
-      desc: (S, P) => `Speak! grants <em>${pcn(S.dr * 100)}</em> Damage Reduction, and former Taunt targets deal 28% less damage to Pebble's allies for ${P.guard}s. Fetch! upgrades to Health Kits, stronger armor, or Box o' Chocolates for multiple allies. Below ${pc(P.thr)} HP, Pebble immediately reaches maximum Excited and cleanses movement penalties (every ${P.cd}s). He gains <em>${pcn(S.per * 100)}</em> Attack per enemy targeting him.`,
+      v: { dr: .10, per: .022 }, p: { guard: 5, thr: .45, cd: 8 },
+      desc: (S, P) => `Speak! grants <em>${pcn(S.dr * 100)}</em> Damage Reduction, and former Taunt targets deal 30% less damage to Pebble's allies for ${P.guard}s. Fetch! upgrades to Health Kits, stronger armor, or Box o' Chocolates for multiple allies. Below ${pc(P.thr)} HP, Pebble immediately reaches maximum Excited and cleanses movement penalties (every ${P.cd}s). He gains <em>${pcn(S.per * 100)}</em> Attack per enemy targeting him.`,
       passive: (u, B, S, P) => {
         u.pebbleGoodBoy = true; u.pebbleSpeakDR = S.dr; u.pebbleGuardDur = P.guard; u._goodBoyAt = -Infinity;
+        B.on(u, 'waveStart', () => { u._goodBoyAt = -Infinity; });
         B.every(u, .2, () => {
           const hunters = B.enemiesOf(u).filter(e => e.target === u).length;
           u.flat.atkP8 = hunters * S.per;

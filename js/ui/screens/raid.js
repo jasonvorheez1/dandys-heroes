@@ -619,7 +619,8 @@ Object.assign(Screens, {
       } else {
         ['W', 'G', 'B'].forEach(k => {
           const sk = d.skills[k]; if (!sk) return;
-          const raw = typeof sk.desc === 'function' ? sk.desc(sk.v || {}, sk.p || {}) : (sk.desc || '');
+          const params = typeof SkillDesc !== 'undefined' ? SkillDesc.safeParams(sk, 1) : { safeS: sk.v || {}, safeP: sk.p || {} };
+          const raw = typeof sk.desc === 'function' ? sk.desc(params.safeS, params.safeP) : (sk.desc || '');
           out.push({ name: `${HEROES[id].name} · ${sk.name}`, desc: String(raw).replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim() });
         });
       }

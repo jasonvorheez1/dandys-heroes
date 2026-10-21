@@ -1,20 +1,60 @@
-/* badges_ribecca.js - Cheer Bear Shelly's Friendship Badge. */
+/* badges_ribecca.js - Cheer Bear Shelly & Ribecca Friendship Badges (DHBM Standards). */
 'use strict';
 
 defBadge({
   id: 'cheerbear_shelly_ribecca', owner: 'CheerbearShelly', friend: 'Ribecca',
   name: "Ribecca's Pink Thread", icon: '🧵', color: '#ff8fc8',
   desc: 'A pink thread Ribecca left in the Cheer Bear costume as a quiet finishing touch.',
-  stat: lvl => `+${(lvl * 2.5).toFixed(1)}% Shield Power`,
-  effect: 'Cheer Bear Shelly gains Shield Power. When she Encourages an ally, that ally is cleansed and also gains a small burst of Energy.',
+  stat: lvl => `+${(12 + lvl * 6).toFixed(0)}% Shield Power · +${(10 + lvl * 5).toFixed(0)}% Healing Power`,
+  effect: "Ribecca's couture thread weaves a Harmonic Quilt of empathy! When Cheer Bear Shelly casts Encouragement or Cheer Beam, she wraps all allies in a Quilted Rainbow Shield (absorbing 18%+ Max HP for 8s), dispels 2 debuffs, reduces damage taken by 25% for 6s, and restores 30+ Energy. When an ally drops below 40% HP, a protective keytar echo stuns the attacker for 1.5s and grants the ally a Ward barrier and 20% heal.",
   apply(u, B, lvl) {
-    u.flat.shieldPowP = (u.flat.shieldPowP || 0) + lvl * .025;
+    u.flat.shieldPowP = (u.flat.shieldPowP || 0) + (0.12 + lvl * 0.06);
+    u.flat.healPowP = (u.flat.healPowP || 0) + (0.10 + lvl * 0.05);
     u.dirty = true;
+
+    // Harmonic Quilt on W / G
+    const triggerHarmonicQuilt = () => {
+      if (!u.alive) return;
+      Sound.play('cure_all', { vol: 0.5 });
+      Sound.play('get_rare', { vol: 0.4 });
+      B.fxRing(u.x, u.y - 35, 180, '#ff8fc8', 0.45);
+      B.alliesOf(u).forEach(a => {
+        B.shield(u, a, u.max.hp * (0.18 + lvl * 0.05), 8);
+        B.cleanse(a, 2);
+        B.applyStatus(u, a, 'ward', 6);
+        B.energy(a, 30 + lvl * 8);
+        B.fxSparkle(a.x, a.y - 45, 8, '#ff8fc8');
+      });
+      B.fxFloatIcon(u.x, u.y - 110, '🧵 HARMONIC QUILT', '#ff8fc8');
+    };
+
+    B.on(u, 'cast', ev => {
+      if (ev.key === 'W' || ev.key === 'G') triggerHarmonicQuilt();
+    });
+
     B.on(u, 'statusApplied', ev => {
-      if (ev.src !== u || ev.id !== 'cbencouraged' || !ev.unit || ev.unit.team !== u.team) return;
-      B.cleanse(ev.unit, 1);
-      B.energy(ev.unit, 3 + lvl * 2);
-      B.fxFloatIcon(ev.unit.x, ev.unit.y - 100, '🧵', '#ff8fc8');
+      if (ev.src === u && ev.id === 'cbencouraged' && ev.unit && ev.unit.team === u.team) {
+        B.cleanse(ev.unit, 2);
+        B.energy(ev.unit, 20 + lvl * 5);
+        B.fxFloatIcon(ev.unit.x, ev.unit.y - 100, '🧵', '#ff8fc8');
+      }
+    });
+
+    // Keytar Echo Emergency Rescue (<40% HP)
+    B.on(u, 'allyDamaged', ev => {
+      const a = ev.unit;
+      if (!a || !a.alive || a.team !== u.team || B.t < (u._keytarRescueAt || 0)) return;
+      if (a.hpPct <= 0.40) {
+        u._keytarRescueAt = B.t + 10;
+        Sound.play('cheer_big', { vol: 0.45 });
+        B.applyStatus(u, a, 'ward', 5);
+        B.heal(u, a, a.max.hp * (0.20 + lvl * 0.05), { tag: 'Keytar Echo' });
+        if (ev.src && ev.src.alive && ev.src.team !== u.team) {
+          B.applyStatus(u, ev.src, 'stun', 1.5);
+          B.fxFloatIcon(ev.src.x, ev.src.y - 95, '🎵 ECHO STUN', '#ff8fc8');
+        }
+        B.fxFloatIcon(a.x, a.y - 105, '🧵 QUILT RESCUE!', '#ff8fc8');
+      }
     });
   }
 });
@@ -23,20 +63,44 @@ defBadge({
   id: 'ribecca_scraps', owner: 'Ribecca', friend: 'Scraps',
   name: "Scraps' Patchwork Pattern", icon: '🧷', color: '#c7a0ff',
   desc: 'A mismatched little seam that turned two strong ideas into one costume.',
-  stat: lvl => `+${(lvl * 1.8).toFixed(1)}% Control Resistance`,
-  effect: 'When Ribecca puts an enemy Off Rhythm, she gains a brief patchwork shield, Energy, and Focus. The fitting has a short cooldown.',
+  stat: lvl => `+${(12 + lvl * 6).toFixed(0)}% Control Resistance · +${(10 + lvl * 5).toFixed(0)}% Skill Haste`,
+  effect: "Scraps' craft stitching turns Ribecca's ribbons into a Stage Armor barrier! When Ribecca applies Off Rhythm or casts Solo, she gains a Patchwork Barrier (20%+ Max HP for 6s), 3 stacks of Fortify, Focus, and reflects 30% of incoming damage for 5s. Enemies under Off Rhythm have Armor and Magic Defense shredded by 25%+ and take 50% extra True Damage from allied critical hits.",
   apply(u, B, lvl) {
-    u.flat.ccRes = (u.flat.ccRes || 0) + lvl * .018;
+    u.flat.ccRes = (u.flat.ccRes || 0) + (0.12 + lvl * 0.06);
+    u.flat.cdr = (u.flat.cdr || 0) + (0.10 + lvl * 0.05);
     u.dirty = true;
-    u._patchworkAt = -Infinity;
+
+    const triggerPatchworkArmor = () => {
+      if (!u.alive || B.t < (u._patchworkStageAt || 0)) return;
+      u._patchworkStageAt = B.t + 5;
+      Sound.play('guard', { vol: 0.45 });
+      B.shield(u, u, u.max.hp * (0.20 + lvl * 0.05), 6);
+      B.applyStatus(u, u, 'fortify', 6, { stacks: 3 });
+      B.applyStatus(u, u, 'focus', 5);
+      B.applyStatus(u, u, 'reflect', 5, { val: 0.30 });
+      B.energy(u, 25);
+      B.fxFloatIcon(u.x, u.y - 110, '🧷 STAGE BARRIER', '#c7a0ff');
+    };
+
     B.on(u, 'statusApplied', ev => {
       if (ev.src !== u || ev.id !== 'offrhythm' || !ev.unit || ev.unit.team === u.team) return;
-      if (B.t - u._patchworkAt < Math.max(2.8, 5.4 - lvl * .35)) return;
-      u._patchworkAt = B.t;
-      B.shield(u, u, u.max.hp * (.025 + lvl * .01), 4.5 + lvl * .3);
-      B.energy(u, 2 + lvl);
-      B.applyStatus(u, u, 'focus', 2.2 + lvl * .25);
-      B.fxFloatIcon(u.x, u.y - 105, '🧷', '#c7a0ff');
+      triggerPatchworkArmor();
+      B.applyStatus(u, ev.unit, 'defdown', 6, { val: 0.25 + lvl * 0.05 });
+      B.applyStatus(u, ev.unit, 'magdown', 6, { val: 0.25 + lvl * 0.05 });
+    });
+
+    B.on(u, 'cast', ev => {
+      if (ev.key === 'W' || ev.key === 'G') triggerPatchworkArmor();
+    });
+
+    // 50% True Damage on Off Rhythm Crits
+    B.on(u, 'allyDamageDealt', ev => {
+      if (!ev || !ev.crit || !ev.target || ev.target.team === u.team || !ev.target.alive) return;
+      if (ev.target.hasStatus('offrhythm')) {
+        B.damage(u, ev.target, ev.amount * 0.50, { type: 'true', tag: 'Patchwork Resonance' });
+        B.fxSparkle(ev.target.x, ev.target.y - 45, 6, '#c7a0ff');
+      }
     });
   }
 });
+

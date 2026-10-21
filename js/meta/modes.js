@@ -76,8 +76,11 @@ function enemyLoadoutText(spec) {
   return parts.length ? parts.join(' · ') : 'No Trinkets or Friendship Badge';
 }
 
-function enemyPreviewDescription(skill, key, skillLv) {
+function enemyPreviewDescription(skill, key, skillLv, spec) {
   if (!skill) return '';
+  if (typeof SkillDesc !== 'undefined') {
+    return SkillDesc.format(spec && spec.id, key, skill, skillLv, spec);
+  }
   if (key === 'basic') {
     const source = skill.type === 'magic' ? 'Magic Attack' : 'Attack';
     return formatSkillSeconds(`${skill.note || ''} Deals <em>${Math.round(skill.ratio * 100)}%</em> of ${source}.`);
@@ -118,7 +121,7 @@ function openEnemyPreview(spec) {
       : skill.cd ? `${skillCooldown(skill, skillLv).toFixed(1)}s CD`
         : skill.energy ? '100 ENERGY' : 'PASSIVE';
     row.innerHTML = `<div class="enemy-preview-move-top"><span>${label}</span><b>${skill.name}</b><i>${unlocked ? meta : 'LOCKED'}</i></div>
-      ${unlocked ? `<div class="enemy-preview-move-desc">${tagifyStatuses(enemyPreviewDescription(skill, key, skillLv))}</div>` : `<div class="enemy-preview-move-desc">Unlocks at ${RARITY_NAMES[SKILL_RARITY[key]]} rarity.</div>`}`;
+      ${unlocked ? `<div class="enemy-preview-move-desc sk-desc-root sk-mode-both">${enemyPreviewDescription(skill, key, skillLv, spec)}</div>` : `<div class="enemy-preview-move-desc">Unlocks at ${RARITY_NAMES[SKILL_RARITY[key]]} rarity.</div>`}`;
     moveList.appendChild(row);
   });
   moves.appendChild(moveList); body.appendChild(moves);

@@ -246,9 +246,9 @@ defHero({
     B: {
       name: 'House Advantage', type: 'Support', cd: 15,
       v: { mult: 1.5 }, p: { dur: 8 },
-      desc: (S, P) => `Gigi calls her shot: the next spin is guaranteed to land on a prize she has not hit in this battle. The whole team gains Lucky and Haste for ${P.dur}s; her next prize is boosted to <em>${pcn(S.mult * 100)}%</em> strength.`,
+      desc: (S, P) => `Gigi calls her shot: the next spin is guaranteed to land on a prize she has not hit in this battle. The whole team gains Lucky and Haste for ${P.dur}s; her next prize is boosted to <em>${pcn(S.mult * 100)}</em> strength.`,
       ai: { prio: 45, cond: () => true },
-      cast: (u, B, S) => {
+      cast: (u, B, S, P) => {
         u.gigiHouseCall = true; u.gigiBoostNext = S.mult;
         B.anim(u, 'cast', .82, 'gigiWheel'); Sound.play('gigi_ability', { vol: .38, priority: true });
         const allies = B.alliesOf(u); allies.forEach(a => { B.applyStatus(u, a, 'lucky', P.dur); B.applyStatus(u, a, 'haste', P.dur); });
@@ -258,7 +258,7 @@ defHero({
     P: {
       name: 'Hot Streak', type: 'Passive',
       v: { chance: .25 }, p: { max: 4 },
-      desc: (S, P) => `Wheel Tickets store up to ${P.max}. Basic Attacks have a <em>${pcn(S.chance * 100)}%</em> chance to find an extra tape. A repeated prize doubles its effect; Jackpot resets the pity counter and empowers the whole team.`,
+      desc: (S, P) => `Wheel Tickets store up to ${P.max}. Basic Attacks have a <em>${pcn(S.chance * 100)}</em> chance to find an extra tape. A repeated prize doubles its effect; Jackpot resets the pity counter and empowers the whole team.`,
       passive: (u, B, S, P) => {
         u.gigiMax = P.max; u.gigiBigChance = S.chance;
         u.gigiSeen = new Set(); u.gigiHouseCall = false; u.gigiBoostNext = 1;
@@ -267,14 +267,25 @@ defHero({
     },
     R: {
       name: 'The House Always Wins', type: 'Battle Opener',
-      v: { bonus: .12 }, p: { need: 3 },
-      desc: (S, P) => `Gigi starts with ${P.need} Wheel Tickets, and the wheel has a larger Jackpot slice. Every different prize she lands on adds a permanent Fortune stack for the wave. Jackpot grants a teamwide heal, Energy, and Attack boost.`,
+      v: { bonus: .12, shield: .12, en: 20 }, p: { need: 3 },
+      desc: (S, P) => `Gigi starts with ${P.need} Wheel Tickets, and the wheel has a larger Jackpot slice. Every unique prize adds a permanent Fortune stack. Jackpots grant all allies a Casino Shield worth <em>${pcn(S.shield * 100)}</em> Max HP, ${Math.round(S.en)} Energy, a teamwide heal, and Attack boost!`,
       passive: (u, B, S, P) => {
         u.gigiSeen = new Set(); u.gigiFortune = 0; u.gigiWheelBonus = S.bonus;
         B.after(.3, () => { for (let i = 0; i < P.need; i++) B.gigiTicket(u); });
         B.on(u, 'gigiPrize', prize => {
-          if (prize.id === 'jackpot') return;
-          if (!u.gigiSeen.has(prize.id)) { u.gigiSeen.add(prize.id); u.gigiFortune++; B.applyStatus(u, u, 'atkup', 999, { stacks: 1 }); }
+          if (prize.id === 'jackpot') {
+            B.alliesOf(u).forEach(a => {
+              B.shield(u, a, u.max.hp * S.shield, 6);
+              B.energy(a, S.en);
+            });
+            return;
+          }
+          if (!u.gigiSeen.has(prize.id)) {
+            u.gigiSeen.add(prize.id);
+            u.gigiFortune++;
+            B.applyStatus(u, u, 'atkup', 999, { stacks: 1 });
+            B.applyStatus(u, u, 'magup', 999, { stacks: 1 });
+          }
         });
       }
     }
@@ -422,36 +433,47 @@ function eggsonFindTarget(u, target, B, dur) {
 }
 
 /* ============================================================ EGGSON
-   Melee Damage - C Tier. A retired hard-boiled Egg Hunt toon who still has
-   one good swing, one good throw, and just enough old competition in him to
-   keep looking for the next target. */
+   Melee Damage - B Tier. A retired hard-boiled Egg Hunt toon who won Egg
+   Hunts with patience, a cane, and absolutely no need to hurry. */
 defHero({
   id: 'Eggson', name: 'Eggson', folder: 'Eggson', file: 'Eggson', icon: 'Eggson',
-  role: 'Damage', roleLabel: 'Old-School Damage', tier: 'C', element: 'Antique',
+  role: 'Damage', roleLabel: 'Old-School Damage', tier: 'B', element: 'Antique',
   blurb: 'An elderly hard-boiled egg toon who won Egg Hunts with patience, a cane, and absolutely no need to hurry.',
-  base: { hp: 3480, atk: 394, def: 214, mag: 132, mdef: 184, spd: 100, acc: 192, eva: 104 },
-  hidden: { range: 200, aspd: .96, ms: 66, aggro: .86, crit: .13, critDmg: 1.58, healPow: 1, shieldPow: 1,
-    cdr: .06, ccRes: .12, kbRes: .3, armorPen: .11, magPen: 0 },
-  growth: { hp: .080, atk: .096, def: .072, mag: .050, mdef: .066 },
+  base: { hp: 3880, atk: 440, def: 245, mag: 132, mdef: 210, spd: 104, acc: 205, eva: 110 },
+  hidden: { range: 200, aspd: 1.02, ms: 72, aggro: .86, crit: .16, critDmg: 1.65, healPow: 1, shieldPow: 1,
+    cdr: .08, ccRes: .15, kbRes: .35, armorPen: .14, magPen: 0 },
+  growth: { hp: .088, atk: .102, def: .078, mag: .050, mdef: .072 },
   move: { gait: 'trudge', bob: 3, freq: 1.2, lean: 4, squash: .04, idle: 'tap', step: 'step',
     particles: 'dust', pcol: '#c9a35a', trail: { on: false }, brake: .6, weight: 1.2 },
   basic: { name: 'Cane Tap', type: 'physical', ratio: 1.0, range: 200, sfx: 'swing_pole', hit: 'hit_blunt',
     wind: .18, note: 'A firm, well-practiced tap. He has been doing this longer than most toons have been alive.' },
   skills: {
     W: {
-      name: 'Back in My Day', type: 'Physical Damage', energy: 100,
-      v: { ratio: 1.28, repeat: .24 }, p: { dur: 8, kb: 32 },
-      desc: (S, P) => `Eggson tosses a hard-boiled egg the way he did during his champion years, hitting the nearest enemy for <em>${pcn(S.ratio * 100)}</em> Attack and marking them 🥚 Found for ${P.dur}s. If they were already Found, the egg bounces for another <em>${pcn(S.repeat * 100)}</em> Attack and knocks them back.`,
+      name: 'Back in My Day', type: 'Physical Damage / Control', energy: 100,
+      v: { ratio: 1.45, repeat: .75, shred: .25 }, p: { dur: 8, kb: 120, stun: 1.5, crack: .40 },
+      desc: (S, P) => `Eggson hurls a heavy championship golden Easter egg, striking the nearest or highest-HP enemy for <em>${pcn(S.ratio * 100)}</em> Physical Damage, Stunning them for ${P.stun.toFixed(1)}s, and marking them 🥚 Found for ${P.dur}s. If they were already Found, the egg shatters into razor-sharp Eggshell Shrapnel: cracks ${Math.round(P.crack * 100)}% of shields on all nearby foes, deals an extra <em>${pcn(S.repeat * 100)}</em> Physical Damage, knocks them back ${P.kb}px, and shreds their Armor by <em>${pcn(S.shred * 100)}</em> for 6s.`,
       cast: (u, B, S, P) => {
-        const t = B.nearest(u, B.enemiesOf(u)); if (!t) return;
+        const foes = B.enemiesOf(u); if (!foes.length) return;
+        const t = B.highestHp(foes) || B.nearest(u, foes); if (!t) return;
         const repeat = t.hasStatus('found');
         B.anim(u, 'wind', .58, 'eggsonCanePlant'); Sound.play('lock');
         B.fxProj(u, t, { kind: 'item', img: 'easteregg', col: '#f6d58a' }, () => {
           if (!t.alive) return;
+          Sound.play('hit_heavy', { vol: .52 });
           B.damage(u, t, u.st.atk * S.ratio, { type: 'physical', tag: 'Back in My Day' });
-          if (repeat && t.alive) {
-            B.damage(u, t, u.st.atk * S.repeat, { type: 'physical', tag: 'Back in My Day: Bounce' });
-            B.knockback(u, t, P.kb);
+          B.applyStatus(u, t, 'stun', P.stun);
+          if (repeat) {
+            Sound.play('glass_break', { vol: .55 });
+            B.shake(8, .25);
+            B.enemiesOf(u).forEach(foe => {
+              if (!foe.alive || Math.abs(foe.x - t.x) > 220) return;
+              if (foe.shield && foe.shield > 0) B.crackShield(foe, foe.shield * P.crack);
+              B.damage(u, foe, u.st.atk * S.repeat, { type: 'physical', area: true, tag: 'Eggshell Shrapnel' });
+              B.knockback(u, foe, P.kb);
+              B.applyStatus(u, foe, 'defdown', 6, { val: S.shred });
+              B.fxSparkle(foe.x, foe.y - 45, 8, '#f6d58a');
+            });
+            B.fxFloatIcon(t.x, t.y - 105, '🥚 SHRAPNEL!', '#f6d58a');
           }
           eggsonFindTarget(u, t, B, P.dur);
         });
@@ -459,39 +481,56 @@ defHero({
     },
     G: {
       name: 'Cane Sweep', type: 'Physical Damage / Control', cd: 10,
-      v: { ratio: .66 }, p: { radius: 220, kb: 42, dur: 5 },
-      desc: (S, P) => `Eggson sweeps his cane around himself, dealing <em>${pcn(S.ratio * 100)}</em> Attack to nearby enemies, knocking them back, and marking them 🥚 Found for ${P.dur}s.`,
-      ai: { prio: 58, cond: (u, B) => B.enemiesOf(u).some(e => B.distance(u, e) <= 235) },
+      v: { ratio: .95 }, p: { radius: 235, kb: 110, dur: 6, disarm: 3.5, stun: 1.6, energyPer: 15 },
+      desc: (S, P) => `Eggson sweeps his antique cane around himself with veteran precision, dealing <em>${pcn(S.ratio * 100)}</em> Physical Damage to nearby enemies, knocking them back ${P.kb}px, Disarming them for ${P.disarm.toFixed(1)}s, and marking them 🥚 Found for ${P.dur}s. Enemies who were already Found are tripped and Stunned for ${P.stun.toFixed(1)}s. Eggson restores ${P.energyPer} Energy per enemy struck.`,
+      ai: { prio: 58, cond: (u, B) => B.enemiesOf(u).some(e => B.distance(u, e) <= 245) },
       cast: (u, B, S, P) => {
         B.anim(u, 'cast', .62, 'eggsonStomp'); Sound.play('hit_blunt', { vol: .58 });
         B.fxCrackAt(u.x); B.fxRing(u.x, u.y - 34, P.radius * 1.35, '#c9a35a', .45);
+        let hits = 0;
         B.enemiesOf(u).filter(e => B.distance(u, e) <= P.radius).forEach(e => {
+          hits++;
+          const wasFound = e.hasStatus('found');
           B.damage(u, e, u.st.atk * S.ratio, { type: 'physical', area: true, tag: 'Cane Sweep' });
-          if (e.alive) { B.knockback(u, e, P.kb); eggsonFindTarget(u, e, B, P.dur); }
+          if (e.alive) {
+            B.knockback(u, e, P.kb);
+            B.applyStatus(u, e, 'disarm', P.disarm);
+            if (wasFound) {
+              B.applyStatus(u, e, 'stun', P.stun);
+              B.fxFloatIcon(e.x, e.y - 95, '💫 TRIPPED!', '#c9a35a');
+            }
+            eggsonFindTarget(u, e, B, P.dur);
+          }
         });
+        if (hits > 0) B.energy(u, hits * P.energyPer);
       }
     },
     B: {
-      name: 'Hard-Boiled', type: 'Physical Damage / Defense', cd: 13,
-      v: { ratio: 1.02 }, p: { dur: 5, stacks: 1, bonus: .22 },
-      desc: (S, P) => `Eggson bonks the highest-Attack enemy for <em>${pcn(S.ratio * 100)}</em> Attack. If the target is 🥚 Found, the hit deals another <em>${pcn(P.bonus * 100)}</em> Attack. Eggson gains ${P.stacks} stack of 🧱 Fortify for ${P.dur}s, because he has been hard-boiled for years.`,
+      name: 'Hard-Boiled', type: 'Physical Damage / Defense', cd: 12,
+      v: { ratio: 1.35, bonusTrue: .55, shield: .16 }, p: { dur: 6, stacks: 2 },
+      desc: (S, P) => `Eggson executes a punishing cane overhead bonk on the highest-Attack enemy for <em>${pcn(S.ratio * 100)}</em> Physical Damage. If the target is 🥚 Found, the blow bypasses their defenses for an additional <em>${pcn(S.bonusTrue * 100)}</em> True Damage. Eggson hardens his veteran shell, gaining ${P.stacks} stacks of 🧱 Fortify and an <em>${pcn(S.shield * 100)}</em> Max HP Shield for ${P.dur}s.`,
       ai: { prio: 52, cond: (u, B) => B.enemiesOf(u).length > 0 },
       cast: (u, B, S, P) => {
         const t = B.highestStat(B.enemiesOf(u), 'atk'); if (!t) return;
         B.anim(u, 'wind', .52, 'eggsonCanePlant'); Sound.play('guard', { vol: .46 });
         B.after(.18, () => {
           if (!t.alive) return;
-          const ratio = S.ratio + (t.hasStatus('found') ? P.bonus : 0);
-          B.damage(u, t, u.st.atk * ratio, { type: 'physical', tag: 'Hard-Boiled' });
+          Sound.play('hit_heavy', { vol: .55 });
+          B.damage(u, t, u.st.atk * S.ratio, { type: 'physical', tag: 'Hard-Boiled' });
+          if (t.hasStatus('found')) {
+            B.damage(u, t, u.st.atk * S.bonusTrue, { type: 'true', tag: 'Hard-Boiled True Crack' });
+            B.fxSparkle(t.x, t.y - 45, 10, '#f6d58a');
+          }
           B.applyStatus(u, u, 'fortify', P.dur, { stacks: P.stacks });
+          B.shield(u, u, u.max.hp * S.shield, P.dur);
           B.fxFloatIcon(u.x, u.y - 94, '🥚 HARD-BOILED', '#f6d58a');
         });
       }
     },
     P: {
       name: 'Old Egg Hunt Tricks', type: 'Passive / Physical Damage',
-      v: { ratio: .28 }, p: { hits: 4, dur: 7 },
-      desc: (S, P) => `Every ${P.hits}th Basic Attack becomes a 🥚 Lucky Find: it deals an extra <em>${pcn(S.ratio * 100)}</em> Attack and marks the target Found for ${P.dur}s. Eggson keeps a clear bead on Found targets, so his attacks cannot be Dodged while the mark lasts.`,
+      v: { ratio: .52, aspd: .30, lifesteal: .18 }, p: { hits: 3, dur: 8 },
+      desc: (S, P) => `Every ${P.hits}rd Basic Attack becomes a 🥚 Lucky Find: it strikes with 100% Critical Hit Chance, deals an extra <em>${pcn(S.ratio * 100)}</em> Physical Damage, and marks the target 🥚 Found for ${P.dur}s. While attacking Found targets, Eggson's attacks cannot be Dodged, ignore Tenacity, and he gains <em>${pcn(S.aspd * 100)}</em> Attack Speed and <em>${pcn(S.lifesteal * 100)}</em> Lifesteal.`,
       passive: (u, B, S, P) => {
         u.eggsonBasicCount = 0;
         u.antiDodge = target => !!(target && (target.hasStatus('found') || B.t < (target._eggsonFoundUntil || 0)));
@@ -499,16 +538,23 @@ defHero({
           if (!ev || !ev.target || !ev.target.alive) return;
           u.eggsonBasicCount = (u.eggsonBasicCount || 0) + 1;
           if (u.eggsonBasicCount % P.hits) return;
-          B.damage(u, ev.target, u.st.atk * S.ratio, { type: 'physical', tag: 'Lucky Find' });
+          Sound.play('get_rare', { vol: .38 });
+          B.damage(u, ev.target, u.st.atk * S.ratio, { type: 'physical', crit: true, tag: 'Lucky Find' });
           eggsonFindTarget(u, ev.target, B, P.dur);
           B.fxRing(ev.target.x, ev.target.y - 36, 82, '#f6d58a', .34);
+        });
+        B.on(u, 'dealDamage', ev => {
+          if (!ev || !ev.target || ev.target.team === u.team || !ev.target.hasStatus('found')) return;
+          if (ev.basic && S.lifesteal) {
+            B.heal(u, u, ev.amount * S.lifesteal, { tag: 'Hunt Lifesteal' });
+          }
         });
       }
     },
     R: {
       name: 'One Last Hunt', type: 'Passive / Physical Damage',
-      v: { bonus: .16 }, p: { dur: 8, energy: 10 },
-      desc: (S, P) => `Eggson deals <em>${pcn(S.bonus * 100)}</em> more damage to his 🥚 Found target. When a Found enemy falls, he gains ${P.energy} Energy and immediately picks a new target with the most HP for ${P.dur}s. The old champion refuses to leave the hunt empty-handed.`,
+      v: { bonus: .28, trophyShield: .20 }, p: { dur: 8, energy: 35 },
+      desc: (S, P) => `Eggson deals <em>${pcn(S.bonus * 100)}</em> more damage to 🥚 Found targets. When a Found enemy falls, Eggson's championship pride surges: restores ${P.energy} Energy, cleanses all debuffs, immediately resets the cooldown of Cane Sweep, grants Eggson and the lowest-HP ally a <em>${pcn(S.trophyShield * 100)}</em> Max HP Trophy Shield for 6s, and immediately tracks the highest-HP surviving enemy as the next 🥚 Found quarry for ${P.dur}s.`,
       passive: (u, B, S, P) => {
         B.on(u, 'dealDamage', ev => {
           if (!ev || ev.dot || !ev.target || ev.target.team === u.team || !ev.target.hasStatus('found')) return;
@@ -516,11 +562,17 @@ defHero({
         });
         B.on(u, 'enemyDown', e => {
           if (!e || !e.hasStatus('found')) return;
+          Sound.play('cheer_big', { vol: .5 });
           B.energy(u, P.energy);
+          B.cleanse(u, 99);
+          B.resetCd(u, 'G');
+          B.shield(u, u, u.max.hp * S.trophyShield, 6);
+          const lowest = B.lowestHp(B.alliesOf(u));
+          if (lowest && lowest !== u) B.shield(u, lowest, u.max.hp * S.trophyShield, 6);
           const next = B.highestHp(B.enemiesOf(u));
           if (!next) return;
           eggsonFindTarget(u, next, B, P.dur);
-          B.fxFloatIcon(next.x, next.y - 96, 'NEXT EGG', '#f6d58a');
+          B.fxFloatIcon(next.x, next.y - 96, '🥚 NEXT QUARRY', '#f6d58a');
         });
       }
     }
@@ -533,23 +585,23 @@ defHero({
   id: 'Flyte', name: 'Flyte', folder: 'Flyte', file: 'Flyte', icon: 'Flyte',
   role: 'Support', tier: 'S', element: 'Wind',
   blurb: 'Never stays in one place long enough to be a target, and makes sure his team does not either.',
-  base: { hp: 3480, atk: 162, def: 192, mag: 292, mdef: 258, spd: 138, acc: 182, eva: 165 },
-  hidden: { range: 245, aspd: .96, ms: 112, aggro: .5, crit: .05, critDmg: 1.4, healPow: 1.15, shieldPow: 1.25,
-    cdr: .14, ccRes: .12, kbRes: .2, armorPen: 0, magPen: .05 },
-  growth: { hp: .080, atk: .062, def: .074, mag: .096, mdef: .086 },
+  base: { hp: 3620, atk: 175, def: 205, mag: 310, mdef: 268, spd: 140, acc: 185, eva: 170 },
+  hidden: { range: 245, aspd: 1.02, ms: 115, aggro: .5, crit: .05, critDmg: 1.4, healPow: 1.15, shieldPow: 1.30,
+    cdr: .14, ccRes: .15, kbRes: .25, armorPen: 0, magPen: .06 },
+  growth: { hp: .084, atk: .065, def: .076, mag: .098, mdef: .088 },
   move: { gait: 'float', bob: 15, freq: 1.5, lean: 6, squash: .05, hover: 24, idle: 'drift', step: null,
     particles: 'sparkle', pcol: '#bfe0ff', trail: { on: true, col: '#bfe0ff', rate: .06 }, brake: .15, sway: 10 },
-  basic: { name: 'Wing Buffet', type: 'magic', ratio: .82, range: 245, proj: 'orb', pcol: '#bfe0ff',
+  basic: { name: 'Wing Buffet', type: 'magic', ratio: .88, range: 245, proj: 'orb', pcol: '#bfe0ff',
     sfx: 'whoosh', hit: 'hit_magic', wind: .18, note: 'A small gust with real force behind it.',
-    onHit: (u, t, B) => { B.knockback(u, t, 8); } },
+    onHit: (u, t, B) => { B.knockback(u, t, 16); } },
   skills: {
     W: {
       name: 'Guiding Gust', type: 'Buff', energy: 100,
-      v: { ms: .18 }, p: { dur: 5, radius: 220 },
+      v: { ms: .20 }, p: { dur: 5.5, radius: 240 },
       desc: (S, P) => `<span class="sk-pas">Moving leaves a breeze behind Flyte; allies who cross it gain <em>${pcn(S.ms * 100)}</em> Move Speed briefly.</span>
-        Active: creates a large Gust where the ally farthest from the team is standing. Allies inside gain Move Speed, Attack Speed and cooldown recovery for ${P.dur}s and cannot be Slowed while it lasts. Flyte gets the same.`,
+        Active: creates a large Gust where the team is fighting. Allies inside gain Move Speed, Attack Speed, Cooldown Recovery, and 15% Damage Reduction for ${P.dur}s, and cannot be Slowed while it lasts. Flyte receives the same benefits.`,
       passive: (u, B, S) => {
-        B.every(u, 1.2, () => { if (u.moving) B.alliesOf(u).forEach(a => { if (B.distance(a, u) < 90) B.applyStatus(u, a, 'speedup', 2); }); });
+        B.every(u, 1.0, () => { if (u.moving) B.alliesOf(u).forEach(a => { if (B.distance(a, u) < 100) B.applyStatus(u, a, 'speedup', 2.2); }); });
       },
       cast: (u, B, S, P) => {
         const allies = B.alliesOf(u); if (!allies.length) return;
@@ -557,71 +609,97 @@ defHero({
         const t = allies.reduce((a, b) => Math.abs(b.x - cx) > Math.abs(a.x - cx) ? b : a);
         B.anim(u, 'cast', .72, 'flyteGust'); Sound.play('tornado_s');
         B.fxFlyteGust(u, t, P.radius, P.dur);
+        B.applyStatus(u, u, 'speedup', P.dur); B.applyStatus(u, u, 'haste', P.dur);
+        if (u.hasStatus('slow')) B.removeStatus(u, 'slow');
         B.repeat(Math.round(P.dur * 2), .5, () => {
-          B.alliesOf(u).forEach(a => { if (B.distance(a, t) < P.radius) {
-            B.applyStatus(u, a, 'speedup', 1.6); B.applyStatus(u, a, 'haste', 1.6);
-          } });
+          B.alliesOf(u).forEach(a => {
+            if (B.distance(a, t) < P.radius || a === u) {
+              if (a.hasStatus('slow')) B.removeStatus(a, 'slow');
+              B.applyStatus(u, a, 'speedup', 1.8);
+              B.applyStatus(u, a, 'haste', 1.8);
+              B.applyStatus(u, a, 'ward', 1.0);
+            }
+          });
         });
       }
     },
     G: {
-      name: 'Stay Close', type: 'Shield', cd: 10,
-      v: { shield: .30 }, p: { dur: 6, push: 60 },
-      desc: (S, P) => `Rushes to the lowest-HP ally, granting a Shield worth <em>${pcn(S.shield * 100)}</em> of Flyte's Max HP and Move Speed. Nearby allies are pushed clear of enemies. If the Shield breaks, the protected ally gets another burst of speed.`,
-      ai: { prio: 58, cond: (u, B) => B.alliesOf(u).some(a => a.hpPct < .7) },
+      name: 'Stay Close', type: 'Shield', cd: 9,
+      v: { shield: .34 }, p: { dur: 6, push: 65 },
+      desc: (S, P) => `Rushes to the lowest-HP ally, granting a Shield worth <em>${pcn(S.shield * 100)}</em> of Flyte's Max HP plus Magic, and Move Speed. Nearby enemies are blown back clear of the ally. If the Shield breaks, the protected ally gains another burst of speed.`,
+      ai: { prio: 58, cond: (u, B) => B.alliesOf(u).some(a => a.hpPct < .75) },
       cast: (u, B, S, P) => {
         const t = B.lowestHp(B.alliesOf(u)); if (!t) return;
         B.anim(u, 'cast', .54, 'flyteRescue'); Sound.play('dash'); B.fxFlyteRescue(u, t);
-        B.blink(u, t.x - u.face * 40, t.depth);
-        B.shield(u, t, u.max.hp * S.shield, P.dur, { onBreak: () => B.applyStatus(u, t, 'speedup', 4) });
+        B.blink(u, clamp(t.x - u.face * 40, B.leftWall + 20, B.rightWall - 20), t.depth);
+        const shieldVal = u.max.hp * S.shield + u.st.mag * 0.4;
+        B.shield(u, t, shieldVal, P.dur, { onBreak: () => B.applyStatus(u, t, 'speedup', 4) });
         B.applyStatus(u, t, 'speedup', P.dur);
-        B.alliesOf(u).forEach(a => { if (B.distance(a, t) < 150) a.x += a.face === 1 ? -18 : 18; });
+        B.enemiesOf(u).forEach(e => {
+          if (B.distance(e, t) < 160) {
+            B.knockback(u, e, P.push);
+            Sound.play('hit_light', { vol: .4, throttle: 10 });
+          }
+        });
+        B.alliesOf(u).forEach(a => {
+          if (a !== u && B.distance(a, t) < 130) {
+            a.x = clamp(a.x + (u.face > 0 ? -18 : 18), B.leftWall + 20, B.rightWall - 20);
+          }
+        });
       }
     },
     B: {
-      name: 'Clear the Way', type: 'Physical Damage', cd: 14,
-      v: { ratio: .55 }, p: { kb: 70 },
-      desc: (S, P) => `Sweeps across the battlefield, damaging and pushing back every enemy in his path while passing straight through allies, giving them a burst of Move Speed and cooldown recovery.`,
-      ai: { prio: 46, cond: (u, B) => B.enemiesOf(u).length >= 2 },
+      name: 'Clear the Way', type: 'Magic Damage', cd: 11,
+      v: { ratio: .85 }, p: { kb: 80 },
+      desc: (S, P) => `Sweeps across the battlefield, dealing <em>${pcn(S.ratio * 100)}</em> Magic Damage and pushing back every enemy in his path while passing through allies, granting them Move Speed and Cooldown Recovery.`,
+      ai: { prio: 48, cond: (u, B) => B.enemiesOf(u).length >= 1 },
       cast: (u, B, S, P) => {
         B.anim(u, 'attack', .58, 'flyteClear'); Sound.play('dash');
-        const dest = u.face > 0 ? B.rightWall - 40 : B.leftWall + 40;
+        const targetDir = B.enemiesOf(u).length ? (B.avgX(B.enemiesOf(u)) >= u.x ? 1 : -1) : (u.face || 1);
+        u.face = targetDir;
+        const dest = targetDir > 0 ? B.rightWall - 40 : B.leftWall + 40;
         B.fxFlyteClearWay(u, dest, .38);
         const hitE = new Set(), hitA = new Set();
         B.dash(u, dest, .38, { onMove: () => {
-          B.enemiesOf(u).forEach(e => { if (hitE.has(e) || B.distance(e, u) > 50) return; hitE.add(e);
+          B.enemiesOf(u).forEach(e => {
+            if (hitE.has(e) || Math.abs(e.x - u.x) > 65 || Math.abs(B.depthDelta(e, u)) > 115) return;
+            hitE.add(e);
             Sound.play('hit_light', { vol: .5, throttle: 12 });
             B.damage(u, e, u.st.mag * S.ratio, { type: 'magic', tag: 'Clear the Way' }); B.knockback(u, e, P.kb);
-            B.fxFlytePass(e, false); });
-          B.alliesOf(u).forEach(a => { if (hitA.has(a) || a === u || B.distance(a, u) > 50) return; hitA.add(a);
-            B.applyStatus(u, a, 'speedup', 3); B.applyStatus(u, a, 'haste', 3); B.fxFlytePass(a, true); });
+            B.fxFlytePass(e, false);
+          });
+          B.alliesOf(u).forEach(a => {
+            if (hitA.has(a) || a === u || Math.abs(a.x - u.x) > 65 || Math.abs(B.depthDelta(a, u)) > 115) return;
+            hitA.add(a);
+            B.applyStatus(u, a, 'speedup', 3.5); B.applyStatus(u, a, 'haste', 3.5); B.fxFlytePass(a, true);
+          });
         } });
       }
     },
     P: {
       name: 'Watch Your Step', type: 'Passive',
-      v: { eva: .12 }, p: { en: 25 },
-      desc: (S, P) => `Allies currently under a Flyte buff gain <em>${pcn(S.eva * 100)}</em> Evasion and CC Resistance. If a removable debuff still reaches a buffed ally, Flyte clears one and refreshes their Move Speed; this can trigger every 5s per ally. Crowd Control that still lands also restores ${P.en} Energy to Flyte.`,
+      v: { eva: .15 }, p: { en: 28 },
+      desc: (S, P) => `Allies currently under a Flyte buff gain <em>${pcn(S.eva * 100)}</em> Evasion and CC Resistance. If a removable debuff reaches a buffed ally, Flyte clears it and refreshes their Move Speed (4s cooldown per ally). Crowd Control landing on allies also restores ${P.en} Energy to Flyte.`,
       passive: (u, B, S, P) => {
         B.every(u, .5, () => B.alliesOf(u).forEach(a => {
           const buffed = a.hasStatus('speedup') || a.hasStatus('haste') || a.hasStatus('flightpath');
           a.flat.evaP4 = buffed ? S.eva : 0; a.flat.ccRes2 = buffed ? S.eva : 0; a.dirty = true;
         }));
-      B.on(u, 'allyDamaged', ev => {
+        B.on(u, 'allyDamaged', ev => {
           const a = ev.unit;
-          if (!a.statuses.some(s => STATUS[s.id].cc)) return;
-          if (a._flyteSave && B.t - a._flyteSave < 8) return;
+          if (!a || !a.statuses.some(s => STATUS[s.id].cc)) return;
+          if (a._flyteSave && B.t - a._flyteSave < 6) return;
           const buffed = a.hasStatus('speedup') || a.hasStatus('haste') || a.hasStatus('flightpath');
           if (!buffed) return;
-          a._flyteSave = B.t; B.applyStatus(u, a, 'speedup', 2); B.energy(u, P.en);
+          a._flyteSave = B.t; B.applyStatus(u, a, 'speedup', 2.5); B.energy(u, P.en);
         });
         B.on(u, 'statusApplied', ev => {
           const a = ev && ev.unit;
           if (!a || a.team !== u.team || ev.src?.team === u.team || !STATUS[ev.id] || STATUS[ev.id].kind !== 'debuff') return;
           if (!(a.hasStatus('speedup') || a.hasStatus('haste') || a.hasStatus('flightpath')) || B.t < (a._flyteCleanseAt || 0)) return;
-          a._flyteCleanseAt = B.t + 5;
+          a._flyteCleanseAt = B.t + 4;
           B.cleanse(a, 1);
-          B.applyStatus(u, a, 'speedup', 2);
+          B.applyStatus(u, a, 'speedup', 2.5);
           B.energy(u, P.en);
           B.fxFloatIcon(a.x, a.y - 88, '🕊️ CLEAR AIR', '#bfe0ff');
         });
@@ -629,8 +707,8 @@ defHero({
     },
     R: {
       name: 'Looking Out for You', type: 'Battle Opener',
-      v: { shield: .20 }, p: { thr: .5 },
-      desc: (S, P) => `At the start of battle, Flyte places a Gust between the teams that grants the whole team 🕊 Flight Path. Whenever an ally under Flight Path drops below ${pc(P.thr)} HP, Flyte immediately creates a fresh, stronger Gust at their location and shields them for <em>${pcn(S.shield * 100)}</em> of his Max HP. Gusts refresh on overlap instead of wasting the extra.`,
+      v: { shield: .24 }, p: { thr: .5 },
+      desc: (S, P) => `At the start of battle, Flyte places a Gust between the teams that grants the whole team 🕊 Flight Path. Whenever an ally under Flight Path drops below ${pc(P.thr)} HP, Flyte creates a fresh Gust at their location, cleanses a debuff, and shields them for <em>${pcn(S.shield * 100)}</em> of his Max HP plus Magic.`,
       passive: (u, B, S, P) => {
         B.after(.4, () => {
           Sound.play('tornado_s'); B.fxRing(B.centerX(), u.y - 20, 260, '#bfe0ff', .6);
@@ -640,9 +718,19 @@ defHero({
           if (!a.hasStatus('flightpath')) return;
           if (a._lookingOut && B.t - a._lookingOut < 10) return;
           a._lookingOut = B.t;
-          Sound.play('cleanse'); B.fxRing(a.x, a.y - 30, 160, '#bfe0ff', .5);
-          B.applyStatus(u, a, 'flightpath', 8);
-          B.shield(u, a, u.max.hp * S.shield, 6);
+          Sound.play('cleanse'); Sound.play('tornado_s');
+          B.fxRing(a.x, a.y - 30, 180, '#bfe0ff', .5);
+          B.fxFlyteGust(u, a, 180, 5);
+          B.cleanse(a, 1);
+          B.repeat(5, .5, () => {
+            B.alliesOf(u).forEach(ally => {
+              if (B.distance(ally, a) < 180) {
+                B.applyStatus(u, ally, 'speedup', 2);
+                B.applyStatus(u, ally, 'haste', 2);
+              }
+            });
+          });
+          B.shield(u, a, u.max.hp * S.shield + u.st.mag * 0.35, 6);
         });
       }
     }

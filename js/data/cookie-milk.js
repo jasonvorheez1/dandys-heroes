@@ -4,7 +4,7 @@
 Object.assign(STATUS, {
  cookie_eye_truth:{icon:'👁',name:'Eye of Truth',kind:'special',desc:'Five debuffs trigger a team cleanse, a Shield, and bonus Magic Damage.'},
  cookie_eye_deceit:{icon:'👁',name:'Eye of Deceit',kind:'special',desc:'Attacks the most charged enemy and extends Taint.'},
- cookie_truth_power:{icon:'✦',name:'Truth Uncovered',kind:'buff',desc:'Magic Damage increased for eight seconds.',onDealDamage:(u,s,e)=>{if(e.type==='magic')e.amount*=1.18;}},
+ cookie_truth_power:{icon:'✦',name:'Truth Uncovered',kind:'buff',desc:'Magic Damage increased for eight seconds.',mods:m=>{m.magP+=.18;}},
  cookie_puppet_show:{icon:'🎭',name:'Puppet Show',kind:'debuff',cc:true,desc:'Shackled inside Shadow Milk Cookie’s show.',flags:{noAct:true,noMove:true}},
  cookie_taint:{icon:'🖤',name:'Taint',kind:'debuff',desc:'Magic Defense and healing received reduced.',mods:m=>{m.mdefP-=.25;m.healRecv-=.35;}},
  cookie_stage_guard:{icon:'🎭',name:'On Stage',kind:'buff',desc:'Damage reduced and interruptions prevented during Puppet Show.',flags:{ccImmune:true},mods:m=>{m.dmgTaken-=.30;}},
@@ -37,23 +37,29 @@ function milkRedirectBasic(attacker,intended,B){
 
 function milkSoulPhantom(u,B,show,fallen){
  if(show.phantom||!u.alive||B.t>=show.until)return;
- const phantom=B.summon(u,{protoId:'ShadowMilkCookie',name:'Soul Phantom',art:ASSET+'uploads/shadow_milk_effectmarionette.png',hp:Math.max(1,fallen.max.hp*.12),mag:0,atk:0,scale:.58,life:Math.max(.2,show.until-B.t),noSkills:true,noEnergy:true,tint:'#83dcff'});
+ const phantom=B.summon(u,{team:fallen.team,protoId:'ShadowMilkCookie',name:'Soul Phantom',art:ASSET+'uploads/shadow_milk_effectmarionette.png',hp:Math.max(1,fallen.max.hp*.50),mag:0,atk:0,scale:.58,life:Math.max(.2,show.until-B.t),noSkills:true,noEnergy:true,tint:'#83dcff',x:fallen.x,depth:fallen.depth});
  phantom.x=fallen.x;phantom.depth=fallen.depth;phantom.y=fallen.y;phantom.def=Object.assign({},phantom.def,{noDamage:true});phantom.inherit=true;phantom._cookieSoulPhantom=true;
  show.phantom=phantom;show.phantomDamage=0;
  B.on(phantom,'damaged',ev=>{show.phantomDamage=Math.min(fallen.max.hp*.25,show.phantomDamage+Math.max(0,ev.amount||0));});
+ B.on(phantom,'lethal',ev=>{ev.prevented=true;phantom.hp=1;});
  milkEffect(B,u,'SOUL PHANTOM');
 }
 function milkGrandFinale(u,B,show){
  if(!u.alive||show.done)return;show.done=true;
+ const primaryWasAlive=show.primary&&show.primary.alive;
  const foes=milkFoes(u,B);foes.forEach(e=>{
-  milkHit(u,B,e,show.finale||1.65,'Grand Finale',{area:true});
+  milkHit(u,B,e,show.finale||1.65,'Grand Finale',{area:true,noDodge:true});
   if(e.alive)B.applyStatus(u,e,'cookie_taint',show.taint||8);
  });
- if(show.primary.alive){
-  B.damage(u,show.primary,Math.min(show.primary.max.hp*.055,u.st.mag*(show.trueCap||3.2)),{type:'true',tag:'Grand Finale'});
+ const survivingFoes=milkFoes(u,B).sort((a,b)=>a.hp-b.hp);
+ if(show.primary&&show.primary.alive){
+  B.damage(u,show.primary,Math.min(show.primary.max.hp*.055,u.st.mag*(show.trueCap||3.2)),{type:'true',noDodge:true,tag:'Grand Finale'});
+ }else if(primaryWasAlive){
+  const target=survivingFoes[0];
+  if(target)B.damage(u,target,Math.min(show.primary.max.hp*.055,u.st.mag*(show.trueCap||3.2)),{type:'true',noDodge:true,tag:'Grand Finale'});
  }else if(show.phantomDamage>0){
-  const target=foes.sort((a,b)=>a.hp-b.hp)[0];
-  if(target)B.damage(u,target,Math.min(show.phantomDamage,u.st.mag*(show.trueCap||3.2)),{type:'true',tag:'Soul Phantom Finale'});
+  const target=survivingFoes[0];
+  if(target)B.damage(u,target,Math.min(show.phantomDamage,u.st.mag*(show.trueCap||3.2)),{type:'true',noDodge:true,tag:'Soul Phantom Finale'});
  }
  if(show.phantom&&show.phantom.alive)B.kill(show.phantom);
  B.removeStatus(u,'cookie_stage_guard');
@@ -66,19 +72,24 @@ function milkPuppetShow(u,B,target,ratio,show){
  if(!target||!target.alive)return;
  B.fxRing(target.x,target.y-42,145,'#80d8ef',.55);milkEffect(B,target,'PUPPET');
  const control=target.isBoss?1.5:show.duration;
- B.applyStatus(u,target,'cookie_puppet_show',control);
+ B.applyStatus(u,target,'cookie_puppet_show',control,{unresistable:true});
  B.applyStatus(u,target,'curse',control);
+ const isPrimary=(target===show.primary);
  for(let n=1;n<=Math.ceil(show.duration/.5);n++)B.after(n*.5,()=>{
-  if(!u.alive||show.done||!target.alive)return;
-  milkHit(u,B,target,.12*ratio,'Puppet Show',{dot:true,noDodge:true});
-  milkFoes(u,B).filter(e=>e!==target&&B.distance(e,target)<155).forEach(e=>milkHit(u,B,e,.055*ratio,'Puppet Show Splash',{area:true,dot:true}));
+  const active=(target&&target.alive)?target:(isPrimary&&show.phantom&&show.phantom.alive?show.phantom:null);
+  if(!u.alive||show.done||!active)return;
+  milkHit(u,B,active,.12*ratio,'Puppet Show',{dot:true,noDodge:true});
+  milkFoes(u,B).filter(e=>e!==active&&B.distance(e,active)<155).forEach(e=>milkHit(u,B,e,.055*ratio,'Puppet Show Splash',{area:true,dot:true}));
  });
 }
 function milkCurtainCall(u,B){
  u._cookieCurtainUsed=true;u._cookieCurtainActive=true;
  if(!B.offscreen){
-  const veil=el('div','cookie-curtain-veil');$('#fxFront').appendChild(veil);
-  B.after(4.2,()=>veil.remove());setTimeout(()=>veil.remove(),5000);
+  const host=typeof $==='function'?$('#fxFront'):null;
+  if(host){
+   const veil=el('div','cookie-curtain-veil');host.appendChild(veil);
+   B.after(4.2,()=>veil.remove());setTimeout(()=>veil.remove(),5000);
+  }
  }
  milkEffect(B,u,'CURTAIN CALL');
  B.fxRing(u.x,u.y-60,340,'#6550bb',.8);
@@ -94,7 +105,7 @@ function milkCurtainCall(u,B){
   u._cookieCurtainActive=false;if(!u.alive)return;
   const foes=milkFoes(u,B),weak=foes.slice().sort((a,b)=>a.hp-b.hp)[0];
   foes.forEach(e=>milkHit(u,B,e,1.45,'Curtain Call Finale',{area:true}));
-  if(weak&&weak.alive)B.damage(u,weak,Math.min(weak.max.hp*.045,u.st.mag*2.6),{type:'true',tag:'Curtain Call Finale'});
+  if(weak&&weak.alive)B.damage(u,weak,Math.min(weak.max.hp*.045,u.st.mag*2.6),{type:'true',noDodge:true,tag:'Curtain Call Finale'});
   B.energy(u,Math.min(35,foes.length*(u._cookieCurtainEnergy||6)));
   Sound.play('cookie_darkmagic_spread',{vol:.78});
  });
@@ -113,6 +124,9 @@ function milkIllusion(u,B,near){
 function milkShadowForm(u,B,P={}){
  if(u._cookieShadowUsed)return;u._cookieShadowUsed=true;u._cookieShadowForming=true;
  B.cleanseAll(u);u.hp=Math.max(1,u.max.hp*.08);
+ u.invuln=Math.max(u.invuln||0,B.t+4.1);
+ u.casting=null;u.pendingHit=null;u.moving=false;u.movingY=false;u._castId=(u._castId||0)+1;
+ u.animState='idle';u.animT=0;u.animDur=0;u.animStyle=null;
  B.applyStatus(u,u,'untargetable',4.1);
  const puppet=B.summon(u,{protoId:'ShadowMilkCookie',name:'Shadow Puppet',art:ASSET+'uploads/shadow_milk_effectmarionette2.png',hp:u.max.hp*.12,mag:0,atk:0,scale:.72,life:4,noSkills:true,noEnergy:true,taunt:420,tint:'#7664dc',onDeath:m=>milkShadowReturn(u,B,m._lastHitBy!=null)});
  puppet.x=u.x;puppet.depth=u.depth;puppet.y=u.y;puppet.def=Object.assign({},puppet.def,{noDamage:true});puppet.inherit=true;
@@ -125,6 +139,7 @@ function milkShadowForm(u,B,P={}){
 function milkShadowReturn(u,B,early){
  if(!u.alive||!u._cookieShadowForming)return;
  u._cookieShadowForming=false;B.removeStatus(u,'untargetable');
+ u.invuln=Math.max(u.invuln||0,B.t+0.35);
  if(early)u.hp=Math.min(u.hp,u.max.hp*.24);
  B.applyStatus(u,u,'cookie_shadow_power',999);
  if(u.rarity>=5)B.applyStatus(u,u,'cookie_return_haste',9,{val:u._cookieReturnHaste||.25});
@@ -137,7 +152,7 @@ HEROES.ShadowMilkCookie.skills={
   desc:(S,P)=>'Eye of Truth gains Truth from debuffs. At five Truth it cleanses allies, Shields Shadow Milk Cookie, and boosts Magic Damage. Deceived, Stringbound, and Tainted enemies have their evasive movement read, so his attacks cannot be Dodged. Puppet Show traps the lowest-Max-HP enemy for '+P.show.toFixed(1)+' seconds. Grand Finale hits all enemies for '+Math.round(P.finale*100)+'% Magic Damage, deals capped Max-HP True Damage, and applies Taint for '+P.taint.toFixed(1)+' seconds. An early defeat leaves a damage-storing Soul Phantom.',
   passive(u,B,S,P){
    u._cookieTruth=0;u._cookieFinales=0;u._cookieShadowUsed=false;u._cookieCurtainUsed=false;
-   u.antiDodge=target=>!!(target&&(target.hasStatus('cookie_deceived')||target.hasStatus('cookie_stringbound')||target.hasStatus('cookie_taint')||B.t<(target._milkReadUntil||0)));
+   u.antiDodge=target=>!!(target&&(target.hasStatus('cookie_deceived')||target.hasStatus('cookie_stringbound')||target.hasStatus('cookie_taint')||target.hasStatus('cookie_puppet_show')||B.t<(target._milkReadUntil||0)));
    B.applyStatus(u,u,'cookie_eye_truth',999);
    B.on(u,'statusApplied',ev=>{
     if(u._cookieEyeDeceit||!ev.unit||STATUS[ev.id]?.kind!=='debuff')return;
@@ -152,7 +167,7 @@ HEROES.ShadowMilkCookie.skills={
     start.unit._cookieInterruptNext=false;start.cancel=true;start.cooldown=2.5;
    });
    B.every(u,3.5,()=>{
-    if(!u._cookieEyeDeceit||u._cookieShadowForming)return;
+    if(!u.alive||!u._cookieEyeDeceit||u._cookieShadowForming)return;
     const target=milkFoes(u,B).sort((a,b)=>b.energy-a.energy)[0];if(!target)return;
     milkHit(u,B,target,.54+(u.rarity>=5?.16:0),'Eye of Deceit');
     const taint=target.getStatus('cookie_taint');if(taint){taint.t=Math.min(12,taint.t+1.5);target.statusVersion++;}
@@ -179,7 +194,10 @@ HEROES.ShadowMilkCookie.skills={
     t._cookieIllusions.push(milkIllusion(u,B,t));
     if(u.rarity>=5&&i===0)t._cookieIllusions.push(milkIllusion(u,B,t));
     t.basicRedirect=(intended,battle)=>milkRedirectBasic(t,intended,battle);
-    if(u.rarity>=5)B.on(t,'missed',()=>{if(t.hasStatus('cookie_deceived'))B.applyStatus(u,t,'cookie_misled',2.5);});
+    if(u.rarity>=5&&!t._cookieMissListener){
+     t._cookieMissListener=true;
+     B.on(t,'missed',()=>{if(t.hasStatus('cookie_deceived'))B.applyStatus(u,t,'cookie_misled',2.5);});
+    }
    });
    milkEffect(B,u,'DECEIVED');Sound.play('cookie_darkmagic_ability',{vol:.58});
   }},
@@ -203,7 +221,10 @@ HEROES.ShadowMilkCookie.skills={
   }},
  P:{name:'Shadow Form',type:'Survival / Magic Damage / Control',v:{},p:{shield:.35,recovery:.035},
   desc:(S,P)=>'Once per wave, a lethal hit sends Shadow Milk Cookie to another realm. A puppet takes his place with a Shield worth '+Math.round(P.shield*100)+'% of his Max HP while he recovers HP for up to four seconds. He returns with Power of Deceit and the attacking Eye of Deceit. Destroying the puppet early cuts short recovery.',
-  passive(u,B,S,P){B.on(u,'lethal',ev=>{if(u._cookieShadowUsed)return;ev.prevented=true;milkShadowForm(u,B,P);});}},
+  passive(u,B,S,P){
+   u._cookieShadowUsed=false;
+   B.on(u,'lethal',ev=>{if(u._cookieShadowUsed)return;ev.prevented=true;milkShadowForm(u,B,P);});
+  }},
  R:{name:'The Greatest Show on Earth',type:'Magic Damage / True Damage / Control',v:{mag:.16,hp:.12},p:{haste:.25,energy:6},
   desc:(S,P)=>'Puppet Show catches a second enemy. Illusions multiply; Master of Puppets catches two targets. After two Grand Finales, Curtain Call damages and weakens every enemy for four seconds, interrupts Stringbound Skills, then explodes and deals capped True Damage to the weakest survivor. Shadow Form grants '+Math.round(P.haste*100)+'% return Skill Haste; Curtain Call restores up to '+Math.round(P.energy)+' Energy per enemy hit.',
   passive(u,B,S,P){u.flat.magPcookie=S.mag;u.flat.hpPcookie=S.hp;u._cookieReturnHaste=P.haste;u._cookieCurtainEnergy=P.energy;u.dirty=true;

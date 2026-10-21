@@ -174,6 +174,22 @@ const FRIENDSHIP_GREETING_LINES = {
     { who: 'Scraps', text: 'Ginger! Perfect timing!' },
     { who: 'Ginger', text: 'Oh... what are you making?' },
     { who: 'Scraps', text: 'Something we can put on display.' }
+  ],
+  sprout_cosmo: [
+    { who: 'Narrator', text: 'Sprout catches Cosmo setting out a fresh baking tray with flour on his cheek.' },
+    { who: 'Cosmo', text: 'I was thinking about baking another batch.' },
+    { who: 'Sprout', text: 'You already did three this morning.' },
+    { who: 'Cosmo', text: 'Just one more tray. I promised Cocoa and Toodles.' },
+    { who: 'Sprout', text: 'Fine. But I’m watching you, and you take a break when your wrist starts hurting.' },
+    { who: 'Cosmo', text: 'I know. Thanks, Sprout.' }
+  ],
+  wishbeargigi_gourdy: [
+    { who: 'Gourdy', text: 'Miss Gigi! Miss Gigi! Look at my pumpkin bucket!' },
+    { who: 'WishBearGigi', text: 'Aww, did you decorate it with little stars?' },
+    { who: 'Gourdy', text: 'Nope! It made those stars by itself after I wished on your tummy!' },
+    { who: 'WishBearGigi', text: 'Wait... did you wish on my tummy star without telling me?!' },
+    { who: 'Gourdy', text: 'Maybe a little bit! But don’t worry, Cocoa and Shelly are here to help!' },
+    { who: 'WishBearGigi', text: 'Oh goodness. What did you wish for, Gourdy...?' }
   ]
 };
 
@@ -189,6 +205,10 @@ Object.assign(Screens, {
 
   /* ============================================================ FRIENDSHIP */
   friendship(s) {
+    if (this._friendshipChunkTimer) {
+      if (typeof cancelAnimationFrame === 'function') cancelAnimationFrame(this._friendshipChunkTimer);
+      this._friendshipChunkTimer = null;
+    }
     const campaigns = Campaign.list();
     const complete = campaigns.filter(c => Save.campaignDone(c.id)).length;
     const available = campaigns.filter(c => Campaign.unlocked(c) && !Save.campaignDone(c.id)).length;
@@ -227,9 +247,42 @@ Object.assign(Screens, {
     root.appendChild(sortBar);
 
     const grid = el('div', 'friendship-grid');
-    this.sortFriendshipCampaigns(campaigns, sort).forEach((c, index) => grid.appendChild(this.friendshipCard(c, index)));
+    const sorted = this.sortFriendshipCampaigns(campaigns, sort);
+    const BATCH_SIZE = 8;
+    const initialBatch = sorted.slice(0, BATCH_SIZE);
+    initialBatch.forEach((c, index) => grid.appendChild(this.friendshipCard(c, index)));
     root.appendChild(grid);
     s.appendChild(root);
+
+    if (sorted.length > BATCH_SIZE) {
+      let cursor = BATCH_SIZE;
+      const step = () => {
+        const isConnected = grid.isConnected !== undefined ? grid.isConnected : true;
+        if (!isConnected) {
+          this._friendshipChunkTimer = null;
+          return;
+        }
+        const nextBatch = sorted.slice(cursor, cursor + BATCH_SIZE);
+        const frag = typeof document !== 'undefined' && document.createDocumentFragment ? document.createDocumentFragment() : el('div');
+        nextBatch.forEach((c, i) => frag.appendChild(this.friendshipCard(c, cursor + i)));
+        grid.appendChild(frag);
+        cursor += BATCH_SIZE;
+        if (cursor < sorted.length) {
+          if (typeof requestAnimationFrame === 'function') {
+            this._friendshipChunkTimer = requestAnimationFrame(step);
+          } else {
+            step();
+          }
+        } else {
+          this._friendshipChunkTimer = null;
+        }
+      };
+      if (typeof requestAnimationFrame === 'function') {
+        this._friendshipChunkTimer = requestAnimationFrame(step);
+      } else {
+        step();
+      }
+    }
   },
 
   sortFriendshipCampaigns(campaigns, sort) {
@@ -262,14 +315,14 @@ Object.assign(Screens, {
     const unlocked = Campaign.unlocked(c);
     const introSeen = unlocked && Save.campaignIntroSeen(c.id);
     const finished = done >= total;
-    const badge = BADGES[c.badge];
+    const badge = BADGES[c.badge] || { color: '#ffb0dc', name: c.badge || 'Badge', stat: () => '', effect: '' };
     const badgeOwned = Save.ownsBadge(c.badge);
     const storyIds = Campaign.requiredIds(c);
     const missing = storyIds.filter(id => !Save.owns(id));
     const maps = ['shelly-floor', 'rainbow-rooms', 'warehouse', 'library-floor'];
     const card = el('article', `friendship-card${unlocked && !introSeen ? ' duo-ready' : ''}${finished ? ' complete' : ''}`);
-    card.style.setProperty('--pair-color', badge.color);
-    card.style.setProperty('--friend-delay', (index * .12) + 's');
+    card.style.setProperty('--pair-color', badge.color || '#ffb0dc');
+    card.style.setProperty('--friend-delay', Math.min(index * 0.04, 0.24) + 's');
 
     const scene = el('div', 'friendship-scene');
     scene.style.backgroundImage = `linear-gradient(180deg,#10121b1f,#11151ce8),url("${bgForMap(maps[index % maps.length])}")`;
@@ -278,11 +331,11 @@ Object.assign(Screens, {
     scene.innerHTML = `<div class="friendship-scene-glow"></div>
       <div class="friendship-status">${status}</div>
       <button class="friendship-toon toon-a${Save.owns(c.a) ? '' : ' missing'}" aria-label="View ${HEROES[c.a].name}">
-        <img src="${Art.hero(c.a)}" alt="${HEROES[c.a].name}"><span>${HEROES[c.a].name}</span>
+        <img src="${Art.hero(c.a)}" alt="${HEROES[c.a].name}" loading="lazy" decoding="async"><span>${HEROES[c.a].name}</span>
       </button>
       <div class="friendship-bond" aria-hidden="true">🤝<i></i><i></i></div>
       <button class="friendship-toon toon-b${Save.owns(c.b) ? '' : ' missing'}" aria-label="View ${HEROES[c.b].name}">
-        <img src="${Art.hero(c.b)}" alt="${HEROES[c.b].name}"><span>${HEROES[c.b].name}</span>
+        <img src="${Art.hero(c.b)}" alt="${HEROES[c.b].name}" loading="lazy" decoding="async"><span>${HEROES[c.b].name}</span>
       </button>
       <div class="friendship-scene-title"><small>${HEROES[c.a].name} + ${HEROES[c.b].name}</small><strong>${c.title}</strong></div>`;
     const openHero = id => Save.owns(id) ? HeroPage.open(id) : UI.unlockInfo(id);
@@ -383,9 +436,9 @@ Object.assign(Screens, {
     const format = value => esc(value).replace(/\*([^*]+)\*/g, '<em>$1</em>');
     body.innerHTML = `<div class="friendship-intro-scene">
       <div class="friendship-intro-glow"></div><div class="friendship-intro-stamp">${replay ? 'REVISITING' : 'DUO FOUND'}</div>
-      <div class="friendship-intro-toon intro-a"><img src="${Art.hero(c.a)}" alt="${esc(a.name)}"><span>${esc(a.name)}</span></div>
-      <div class="friendship-intro-bond">🤝</div>
-      <div class="friendship-intro-toon intro-b"><img src="${Art.hero(c.b)}" alt="${esc(b.name)}"><span>${esc(b.name)}</span></div>
+      <div class="friendship-intro-toon intro-a"><img src="${Art.hero(c.a)}" alt="${esc(a.name)}" loading="lazy" decoding="async"><span>${esc(a.name)}</span></div>
+      <div class="friendship-bond">🤝</div>
+      <div class="friendship-intro-toon intro-b"><img src="${Art.hero(c.b)}" alt="${esc(b.name)}" loading="lazy" decoding="async"><span>${esc(b.name)}</span></div>
     </div><div class="friendship-intro-dialogue"><small></small><p></p><b></b></div>`;
     const dialogue = $('.friendship-intro-dialogue', body);
     const next = el('button', 'friendship-intro-next', 'Continue');
@@ -464,11 +517,11 @@ Object.assign(Screens, {
     const seed = ownedStory.concat(Save.data.team.filter(id => id && !storyIds.includes(id))).slice(0, partySize);
     const p = UI.teamPicker({ team: seed, required: ownedStory, maxSize: partySize });
     const body = el('div', 'friendship-setup team-editor-body');
-    body.style.setProperty('--pair-color', BADGES[c.badge].color);
+    body.style.setProperty('--pair-color', BADGES[c.badge]?.color || '#ffb0dc');
     const scroll = el('div', 'team-editor-scroll');
     scroll.innerHTML = `<div class="friendship-setup-scene">
-      <img src="${Art.hero(setupCast[0])}" alt="${HEROES[setupCast[0]].name}"><div><small>${replay ? 'REPLAY' : `CHAPTER ${stageIdx + 1} OF ${c.stages.length}`}</small>
-      <b>${stage.name}</b><span>${HEROES[setupCast[0]].name} + ${HEROES[setupCast[1]].name}</span></div><img src="${Art.hero(setupCast[1])}" alt="${HEROES[setupCast[1]].name}"></div>
+      <img src="${Art.hero(setupCast[0])}" alt="${HEROES[setupCast[0]].name}" loading="lazy" decoding="async"><div><small>${replay ? 'REPLAY' : `CHAPTER ${stageIdx + 1} OF ${c.stages.length}`}</small>
+      <b>${stage.name}</b><span>${HEROES[setupCast[0]].name} + ${HEROES[setupCast[1]].name}</span></div><img src="${Art.hero(setupCast[1])}" alt="${HEROES[setupCast[1]].name}" loading="lazy" decoding="async"></div>
       <div class="friendship-setup-info"><span>★ Recommended Lv ${c.recLevel}</span><span>${friendshipObtainLabel(c.a, c.b)}</span><span>${RES.ichor.icon} ${300 + c.recLevel * 8}</span><span>${RES.exp.icon} ${250 + c.recLevel * 6}</span></div>
       <div class="friendship-required"><b>Story cast · ${partySize}/5 battle slots</b>${storyIds.map(id => `<span class="${Save.owns(id) ? 'owned' : 'guest'}">${Save.owns(id) ? '✓' : '○'} ${HEROES[id].name}</span>`).join('')}</div>`;
     scroll.appendChild(p.node);

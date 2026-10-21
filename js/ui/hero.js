@@ -425,8 +425,17 @@ const HeroPage = {
   _previewTimers: [],
   _heroOpenSoundPending: false,
 
-  open(id) {
-    this.id = id; this.tab = 'skills'; this.skillKey = 'W';
+  open(id, keepTab = false) {
+    this.id = id;
+    if (!keepTab) {
+      this.tab = 'skills';
+      this.skillKey = 'W';
+    } else if (this.tab === 'skills') {
+      const d = HEROES[id];
+      if (this.skillKey !== 'basic' && (!d.skills || !d.skills[this.skillKey])) {
+        this.skillKey = 'W';
+      }
+    }
     this._gearOpenPanel = null;
     this._heroOpenSoundPending = !$('#modalBox.hero-profile-box');
     const hash = id.split('').reduce((n, c) => n + c.charCodeAt(0), 0);
@@ -449,33 +458,142 @@ const HeroPage = {
     this._previewTimers = [];
   },
 
-  close() { this.stopPreview(); UI.closeModal(); },
+  close() {
+    this.stopPreview();
+    if (this._boundKeyHandler && typeof window !== 'undefined') {
+      window.removeEventListener('keydown', this._boundKeyHandler);
+      this._boundKeyHandler = null;
+    }
+    UI.closeModal();
+  },
 
   moveHero(dir) {
     const ids = Save.ownedIds().sort((a, b) => HEROES[a].name.localeCompare(HEROES[b].name));
     const at = ids.indexOf(this.id);
     const next = ids[(at + dir + ids.length) % ids.length];
     Sound.play('ui_move'); Sound.play('hero_file_switch', { vol: .48, throttle: 0 });
-    this.open(next);
+    this.open(next, true);
+  },
+
+  toggleQuickPicker(body) {
+    let picker = $('.hero-quick-picker', body);
+    if (picker) {
+      picker.remove();
+      return;
+    }
+    Sound.play('ui_move');
+    picker = el('div', 'hero-quick-picker');
+    const ids = Save.ownedIds().sort((a, b) => HEROES[a].name.localeCompare(HEROES[b].name));
+
+    const head = el('div', 'hero-quick-picker-head');
+    head.innerHTML = `
+      <div class="hero-quick-picker-search">
+        <i>🔍</i><input type="text" placeholder="Search ${ids.length} heroes..." aria-label="Filter heroes">
+      </div>
+      <button type="button" class="hero-quick-picker-close" aria-label="Close hero picker">×</button>
+    `;
+    picker.appendChild(head);
+
+    const grid = el('div', 'hero-quick-picker-grid');
+    const renderItems = filterText => {
+      grid.innerHTML = '';
+      const query = (filterText || '').trim().toLowerCase();
+      const filtered = query ? ids.filter(id => HEROES[id].name.toLowerCase().includes(query) || (HEROES[id].role || '').toLowerCase().includes(query)) : ids;
+      if (!filtered.length) {
+        grid.innerHTML = `<div class="hero-quick-picker-empty">No heroes match "${query}"</div>`;
+        return;
+      }
+      filtered.forEach(id => {
+        const d = HEROES[id], h = Save.hero(id);
+        const onTeam = Save.data.team.includes(id);
+        const card = el('button', 'hero-quick-card' + (id === this.id ? ' current' : '') + (onTeam ? ' on-team' : ''));
+        card.style.setProperty('--rarity-color', RARITY_COLORS[h.rarity]);
+        card.innerHTML = `
+          <div class="hero-quick-card-art">
+            <img src="${Art.icon(id)}" alt="${d.name}" loading="lazy" decoding="async">
+            ${onTeam ? '<span class="hero-quick-team-badge" title="On active team">✓</span>' : ''}
+          </div>
+          <div class="hero-quick-card-info">
+            <b>${d.name}</b>
+            <small>Lv ${h.level} · ${'★'.repeat(h.stars)}</small>
+          </div>
+        `;
+        card.onclick = () => {
+          picker.remove();
+          if (id !== this.id) {
+            Sound.play('ui_ok');
+            Sound.play('hero_file_switch', { vol: .48, throttle: 0 });
+            this.open(id, true);
+          }
+        };
+        grid.appendChild(card);
+      });
+    };
+    renderItems('');
+    picker.appendChild(grid);
+
+    const input = $('input', head);
+    if (input) {
+      input.oninput = () => renderItems(input.value);
+    }
+    const closeBtn = $('.hero-quick-picker-close', head);
+    if (closeBtn) closeBtn.onclick = () => picker.remove();
+
+    body.appendChild(picker);
+    setTimeout(() => { if (input && input.isConnected) input.focus(); }, 50);
   },
 
   draw() {
+    const prevContent = typeof document !== 'undefined' ? document.querySelector('.hero-profile-content') : null;
+    const prevShell = typeof document !== 'undefined' ? document.querySelector('.hero-profile-shell') : null;
+    const savedContentScroll = prevContent ? prevContent.scrollTop : 0;
+    const savedShellScroll = prevShell ? prevShell.scrollTop : 0;
+
     this.stopPreview();
     this._previewStage = null;
     const id = this.id, h = Save.hero(id), d = HEROES[id];
     const opening = this._heroOpenSoundPending;
     const body = el('div', 'hero-profile' + (opening ? ' hero-profile-enter' : ''));
     const o = obtainOf(id);
+    const ownedIds = Save.ownedIds().sort((a, b) => HEROES[a].name.localeCompare(HEROES[b].name));
+    const heroIndex = ownedIds.indexOf(id);
 
     const top = el('header', 'hero-profile-top');
-    top.innerHTML = `<button class="hero-round hero-prev" aria-label="Previous Hero">‹</button>
-      <div class="hero-top-name"><small>HERO FILE</small><b>${d.name}</b></div>
-      <div class="hero-top-res"><span>${RES.ichor.icon} ${fmt(Save.res('ichor'))}</span><span>📼 ${fmt(Save.res('tape'))}</span><span>✦ ${fmt(Save.res('notes'))}</span></div>
-      <button class="hero-round hero-next" aria-label="Next Hero">›</button>
-      <button class="hero-round hero-close" aria-label="Close">×</button>`;
+    top.innerHTML = `<button class="hero-round hero-prev" aria-label="Previous Hero" title="Previous Hero (Left Arrow)">‹</button>
+      <div class="hero-top-name" role="button" tabindex="0" title="Click to quickly switch Heroes" aria-label="Quick hero switcher">
+        <small>HERO FILE · ${heroIndex >= 0 ? heroIndex + 1 : 1} OF ${ownedIds.length}</small>
+        <b>${d.name} <span class="hero-top-caret">▾</span></b>
+      </div>
+      <div class="hero-top-res">
+        <span title="Ichor">${RES.ichor.icon} ${fmt(Save.res('ichor'))}</span>
+        <span title="Tape">📼 ${fmt(Save.res('tape'))}</span>
+        <span title="Notes">✦ ${fmt(Save.res('notes'))}</span>
+      </div>
+      <button class="hero-round hero-next" aria-label="Next Hero" title="Next Hero (Right Arrow)">›</button>
+      <button class="hero-round hero-close" aria-label="Close" title="Close Hero File (Esc)">×</button>`;
     $('.hero-prev', top).onclick = () => this.moveHero(-1);
     $('.hero-next', top).onclick = () => this.moveHero(1);
     $('.hero-close', top).onclick = () => this.close();
+    $('.hero-top-name', top).onclick = () => this.toggleQuickPicker(body);
+    $('.hero-top-name', top).onkeydown = e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); this.toggleQuickPicker(body); } };
+
+    let touchStartX = 0, touchStartY = 0;
+    top.ontouchstart = e => {
+      if (e.touches && e.touches[0]) {
+        touchStartX = e.touches[0].clientX;
+        touchStartY = e.touches[0].clientY;
+      }
+    };
+    top.ontouchend = e => {
+      if (e.changedTouches && e.changedTouches[0]) {
+        const dx = e.changedTouches[0].clientX - touchStartX;
+        const dy = e.changedTouches[0].clientY - touchStartY;
+        if (Math.abs(dx) > 45 && Math.abs(dx) > Math.abs(dy) * 1.5) {
+          if (dx > 0) this.moveHero(-1);
+          else this.moveHero(1);
+        }
+      }
+    };
     body.appendChild(top);
 
     const shell = el('div', 'hero-profile-shell');
@@ -485,7 +603,7 @@ const HeroPage = {
     identity.innerHTML = `<div class="hero-identity-copy"><small>LEVEL ${h.level}</small><h1>${d.name}</h1>
       <div class="hero-stars">${'★'.repeat(h.stars)}${'☆'.repeat(5 - h.stars)}</div>
       <p>${d.blurb}</p></div>
-      <div class="hero-art-stage"><i></i><img src="${Art.hero(id)}" alt="${d.name}"></div>
+      <div class="hero-art-stage"><i></i><img src="${Art.hero(id)}" alt="${d.name}" loading="lazy" decoding="async"></div>
       <div class="hero-power" title="Stats ${fmt(powerInfo.stats)} · Skills ${fmt(powerInfo.skills)} · Gear ${fmt(powerInfo.gear)} · Training ${fmt(powerInfo.training)} · ${powerInfo.unlocked} skills unlocked"><span>POWER</span><b>${fmt(powerInfo.total)}</b></div>`;
     const chips = el('div', 'hero-identity-chips');
     chips.appendChild(UI.roleTag(d.role, d.roleLabel));
@@ -528,8 +646,56 @@ const HeroPage = {
     const modalBox = UI.modal(null, body, {
       bare: true,
       className: 'hero-profile-box',
-      onClose: () => this.stopPreview()
+      onClose: () => {
+        this.stopPreview();
+        if (this._boundKeyHandler && typeof window !== 'undefined') {
+          window.removeEventListener('keydown', this._boundKeyHandler);
+          this._boundKeyHandler = null;
+        }
+      }
     });
+
+    if (!this._boundKeyHandler && typeof window !== 'undefined') {
+      this._boundKeyHandler = e => {
+        const modal = typeof document !== 'undefined' ? document.querySelector('#modalBox.hero-profile-box') : null;
+        if (!modal || modal.hidden) return;
+        const picker = modal.querySelector('.hero-quick-picker');
+        if (e.target && ['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) {
+          if (e.key === 'Escape' && picker) { e.preventDefault(); picker.remove(); }
+          return;
+        }
+        if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') {
+          e.preventDefault(); this.moveHero(-1);
+        } else if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') {
+          e.preventDefault(); this.moveHero(1);
+        } else if (e.key === 'Escape') {
+          e.preventDefault();
+          if (picker) picker.remove();
+          else this.close();
+        } else if (e.key === '1') {
+          e.preventDefault(); this.tab = 'skills'; Sound.play('hero_file_tab', { vol: .48, throttle: 0 }); this.draw();
+        } else if (e.key === '2') {
+          e.preventDefault(); this.tab = 'growth'; Sound.play('hero_file_tab', { vol: .48, throttle: 0 }); this.draw();
+        } else if (e.key === '3') {
+          e.preventDefault(); this.tab = 'stats'; Sound.play('hero_file_tab', { vol: .48, throttle: 0 }); this.draw();
+        } else if (e.key === '4') {
+          e.preventDefault(); this.tab = 'extras'; Sound.play('hero_file_tab', { vol: .48, throttle: 0 }); this.draw();
+        } else if ((e.key === ' ' || e.key === 'r' || e.key === 'R') && this.tab === 'skills' && this._previewStage) {
+          e.preventDefault(); Sound.play('hero_file_replay', { vol: .5, throttle: 0 }); this.playPreview(this._previewStage);
+        }
+      };
+      window.addEventListener('keydown', this._boundKeyHandler);
+    }
+
+    const restoreScroll = () => {
+      const nextContent = typeof document !== 'undefined' ? document.querySelector('.hero-profile-content') : null;
+      const nextShell = typeof document !== 'undefined' ? document.querySelector('.hero-profile-shell') : null;
+      if (nextContent && savedContentScroll) nextContent.scrollTop = savedContentScroll;
+      if (nextShell && savedShellScroll) nextShell.scrollTop = savedShellScroll;
+    };
+    if (typeof requestAnimationFrame === 'function') requestAnimationFrame(restoreScroll);
+    else setTimeout(restoreScroll, 0);
+
     if (opening) modalBox.classList.add('hero-profile-opening');
     if (this._heroOpenSoundPending) {
       this._heroOpenSoundPending = false;
@@ -553,7 +719,17 @@ const HeroPage = {
     entries.forEach(entry => {
       const n = el('button', 'hero-skill-pick' + (entry.key === selected.key ? ' selected' : '') + (entry.unlocked ? '' : ' locked'));
       n.style.setProperty('--skill-color', entry.color);
-      n.innerHTML = `<i>${entry.icon}</i><span>${entry.name}</span><small>${entry.key === 'basic' ? 'BASIC' : entry.unlocked ? 'LV ' + entry.level : '🔒 ' + RARITY_NAMES[SKILL_RARITY[entry.key]]}</small>`;
+      const sk = entry.key === 'basic' ? d.basic : d.skills[entry.key];
+      let subtag = 'BASIC';
+      if (entry.key === 'basic') {
+        subtag = sk.hits > 1 ? `${sk.hits} HITS` : `${Math.round(sk.ratio * 100)}%`;
+      } else if (entry.unlocked) {
+        subtag = `LV ${entry.level}` + (sk.cd ? ` · ${skillCooldown(sk, entry.level).toFixed(1)}s` : sk.energy ? ' · 100EN' : !sk.cast ? ' · PASSIVE' : '');
+      } else {
+        subtag = '🔒 ' + RARITY_NAMES[SKILL_RARITY[entry.key]];
+      }
+      n.title = `${entry.name} (${entry.key === 'basic' ? 'Basic Attack' : RARITY_NAMES[SKILL_RARITY[entry.key]] + ' Skill'})`;
+      n.innerHTML = `<i>${entry.icon}</i><span>${entry.name}</span><small>${subtag}</small>`;
       n.onclick = () => { this.skillKey = entry.key; Sound.play('hero_file_tab', { vol: .42, throttle: 0 }); this.draw(); };
       rail.appendChild(n);
     });
@@ -563,40 +739,39 @@ const HeroPage = {
     const key = selected.key;
     const skill = key === 'basic' ? d.basic : d.skills[key];
     const unlocked = key === 'basic' || h.rarity >= SKILL_RARITY[key];
-    let desc;
-    if (key === 'basic') desc = `${skill.note || ''} Deals <em>${Math.round(skill.ratio * 100)}%</em> of ${skill.type === 'magic' ? 'Magic Attack' : 'Attack'}.`;
-    else {
-      const S = {}, mult = skillMult(h.skills[key]);
-      let previewStats = null;
-      try { previewStats = new Unit(playerSpec(id), 0, 0, { auras: [] }).st; } catch (e) { /* detail can render before a preview unit is available */ }
-      for (const k in (skill.v || {})) S[k] = skill.v[k] * mult * (SKILL_STAT_SCALING_KEYS.has(k) ? skillStatPowerMultiplier(skill, previewStats, k) : 1);
-      try {
-        desc = formatSkillSeconds(skill.desc(S, skillGrowthParams(skill, h.skills[key])));
-      } catch (e) { desc = ''; }
-      if (!/<em(?:\s|>)/.test(desc)) desc += skillScalingLine(S, skillGrowthParams(skill, h.skills[key]), h.skills[key]);
-    }
+    const descHtml = SkillDesc.format(id, key, skill, key === 'basic' ? 1 : h.skills[key]);
     const preview = this.skillPreview(id, key, skill);
     work.appendChild(preview);
     const detail = el('section', 'hero-skill-detail');
     detail.style.setProperty('--skill-color', selected.color);
-    detail.innerHTML = `<div class="hero-skill-kicker">${key === 'basic' ? 'BASIC ATTACK' : RARITY_NAMES[SKILL_RARITY[key]].toUpperCase() + ' SKILL'} ${!unlocked ? '· LOCKED' : ''}</div>
-      <h2>${skill.name}</h2><div class="hero-skill-meta">
+    detail.innerHTML = `<div class="hero-skill-header-row">
+      <div class="hero-skill-kicker">${key === 'basic' ? 'BASIC ATTACK' : RARITY_NAMES[SKILL_RARITY[key]].toUpperCase() + ' SKILL'} ${!unlocked ? '· LOCKED' : ''}</div>
+      ${SkillDesc.modeToggleHtml()}
+    </div>
+    <h2>${skill.name}</h2><div class="hero-skill-meta">
       <span>${skill.type === 'magic' ? '✨ Magic' : skill.type || (skill.cast ? 'Active' : 'Passive')}</span>
-      ${skill.range ? `<span>Range ${skill.range}</span>` : ''}${skill.hits > 1 ? `<span>${skill.hits} hits</span>` : ''}
-      ${skill.cd ? `<span>${skillCooldown(skill, h.skills[key]).toFixed(1)}s cooldown</span>` : ''}${skill.energy ? '<span>100 Energy</span>' : ''}${key !== 'basic' && !skill.cast ? '<span>Passive</span>' : ''}</div>
-      <div class="hero-skill-description">${tagifyStatuses(desc)}</div>`;
+      ${skill.range ? `<span>🎯 Range ${skill.range}</span>` : ''}${skill.hits > 1 ? `<span>💥 ${skill.hits} hits</span>` : ''}
+      ${skill.cd ? `<span>⏱️ ${skillCooldown(skill, h.skills[key] || 1).toFixed(1)}s cooldown</span>` : ''}${skill.energy ? '<span>🔋 100 Energy</span>' : ''}${key !== 'basic' && !skill.cast ? '<span>📜 Passive</span>' : ''}</div>
+    <div class="hero-skill-description sk-desc-root sk-mode-${SkillDesc.getMode()}">${descHtml}</div>`;
     if (!unlocked) detail.appendChild(el('div', 'hero-skill-lock', `Raise rarity to ${RARITY_NAMES[SKILL_RARITY[key]]} to unlock.`));
     if (key !== 'basic' && unlocked) {
       const lv = h.skills[key], cost = skillCost(lv), actions = el('div', 'hero-skill-actions');
-      const preview = skillRankPreview(skill, lv);
-      if (preview) detail.appendChild(el('div', 'hero-skill-next', 'NEXT LEVEL · ' + preview));
+      const st = SkillDesc.getStats(id);
+      const preview = SkillDesc.rankPreview(skill, lv, st);
+      if (preview) {
+        const nextEl = el('div', 'hero-skill-next');
+        nextEl.innerHTML = `<div class="sk-next-head"><span>NEXT RANK PROJECTION</span><small>LV ${lv} → ${lv + 1}</small></div><div class="sk-next-grid">${preview}</div>`;
+        detail.appendChild(nextEl);
+      }
       actions.innerHTML = `<div><small>SKILL LEVEL</small><b>${lv} / ${Progress.skillCap(id)}</b></div>`;
       const one = el('button', null, `UPGRADE · 📼${cost.tape} · ✦${cost.notes} · ${RES.ichor.icon}${fmt(cost.ichor)}`);
+      const five = el('button', null, '+5');
       const max = el('button', null, 'MAX');
       one.onclick = () => { Progress.skillUp(id, key, 1); this.draw(); };
+      five.onclick = () => { Progress.skillUp(id, key, 5); this.draw(); };
       max.onclick = () => { Progress.skillUp(id, key, 999); this.draw(); };
-      if (lv >= Progress.skillCap(id)) one.disabled = max.disabled = true;
-      actions.appendChild(one); actions.appendChild(max); detail.appendChild(actions);
+      if (lv >= Progress.skillCap(id)) one.disabled = five.disabled = max.disabled = true;
+      actions.appendChild(one); actions.appendChild(five); actions.appendChild(max); detail.appendChild(actions);
     }
     work.appendChild(detail);
     wrap.appendChild(work);
@@ -817,7 +992,14 @@ const HeroPage = {
     stage.style.cssText += `--preview-color:${cfg.col};background-image:linear-gradient(180deg,#07101359,#071013b8),url("${bgForMap(map)}")`;
     const previewType = cfg.previewType || (cfg.basic ? (cfg.attackKind === 'ranged' ? 'RANGED BASIC' : cfg.attackKind === 'melee' ? 'MELEE BASIC' : 'REACH BASIC')
       : cfg.passive ? 'PASSIVE' : cfg.ultimate ? 'ULTIMATE' : 'SKILL');
-    stage.innerHTML = `<div class="skill-preview-label"><span><b>${cfg.skillName}</b><small>${previewType} · BATTLE REPLAY</small></span><button aria-label="Replay ${cfg.skillName} preview with sound">↻ REPLAY</button></div>
+    stage.innerHTML = `<div class="skill-preview-label">
+      <span><b>${cfg.skillName}</b><small>${previewType} · BATTLE REPLAY</small></span>
+      <div class="skill-preview-btns">
+        <button type="button" class="preview-btn preview-speed" title="Toggle Speed (1× / 0.5×)">1×</button>
+        <button type="button" class="preview-btn preview-pause" title="Pause / Resume">⏸</button>
+        <button type="button" class="preview-btn preview-replay" aria-label="Replay ${cfg.skillName} preview with sound" title="Replay (Space / R)">↻</button>
+      </div>
+    </div>
       <div class="preview-arena-floor"><i></i><i></i><i></i></div>
       ${fighter('actor', id, false, cfg.actorAtlases, cfg.actorW)}
       ${fighter('target', targetId, cfg.ally, cfg.targetAtlases, cfg.targetW)}
@@ -842,7 +1024,35 @@ const HeroPage = {
       <div class="preview-screen-flash"></div>
       <div class="preview-playhead"><i></i></div>`;
     stage._preview = cfg;
-    $('.skill-preview-label button', stage).onclick = () => { Sound.play('hero_file_replay', { vol: .5, throttle: 0 }); this.playPreview(stage); };
+    stage._previewSpeed = stage._previewSpeed || 1;
+    stage._previewPaused = false;
+    const speedBtn = $('.preview-speed', stage);
+    const pauseBtn = $('.preview-pause', stage);
+    const replayBtn = $('.preview-replay', stage);
+    if (speedBtn) {
+      speedBtn.onclick = () => {
+        stage._previewSpeed = stage._previewSpeed === 1 ? 0.5 : 1;
+        speedBtn.textContent = `${stage._previewSpeed}×`;
+        speedBtn.classList.toggle('active', stage._previewSpeed !== 1);
+        Sound.play('ui_move');
+      };
+    }
+    if (pauseBtn) {
+      pauseBtn.onclick = () => {
+        stage._previewPaused = !stage._previewPaused;
+        pauseBtn.textContent = stage._previewPaused ? '▶' : '⏸';
+        pauseBtn.classList.toggle('active', stage._previewPaused);
+        Sound.play('ui_move');
+      };
+    }
+    if (replayBtn) {
+      replayBtn.onclick = () => {
+        stage._previewPaused = false;
+        if (pauseBtn) { pauseBtn.textContent = '⏸'; pauseBtn.classList.remove('active'); }
+        Sound.play('hero_file_replay', { vol: .5, throttle: 0 });
+        this.playPreview(stage);
+      };
+    }
     this._previewStage = stage;
     return stage;
   },
@@ -859,12 +1069,13 @@ const HeroPage = {
     // force layout while the preview is already doing animation work.
     stage._previewW = stage.clientWidth;
     stage._previewH = stage.clientHeight;
+    stage._previewSpeed = stage._previewSpeed || 1;
     if (cfg.gourdyMode === 'toss') cfg.gourdyOutcome = pick(['STUN!', 'SILENCE!', 'SLOW!', 'MANA DRAIN!']);
     const soundAt = (cue, delay, vol) => {
       if (!cue) return;
       const t = setTimeout(() => {
-        if (stage.isConnected) Sound.play(cue, { vol, throttle: 0, tag: 'skill-preview' });
-      }, delay);
+        if (stage.isConnected && !stage._previewPaused) Sound.play(cue, { vol, throttle: 0, tag: 'skill-preview' });
+      }, delay / (stage._previewSpeed || 1));
       this._previewTimers.push(t);
     };
     const sim = cfg.simulation || {};
@@ -875,9 +1086,9 @@ const HeroPage = {
     const recordedVoices = Array.isArray(sim.audio) ? sim.audio.filter(e => e && e.kind === 'collab') : [];
     const voiceAt = (voice, delay) => {
       const t = setTimeout(() => {
-        if (stage.isConnected) Sound.collab({ id: voice.id }, voice.action,
+        if (stage.isConnected && !stage._previewPaused) Sound.collab({ id: voice.id }, voice.action,
           { vol: voice.vol == null ? .72 : Math.min(.78, voice.vol), throttle: 0, tag: 'skill-preview-voice', priority: true });
-      }, delay);
+      }, delay / (stage._previewSpeed || 1));
       this._previewTimers.push(t);
     };
     if (recordedVoices.length) {
@@ -899,7 +1110,7 @@ const HeroPage = {
     const easeInOut = x => x < .5 ? 4 * x * x * x : 1 - Math.pow(-2 * x + 2, 3) / 2;
     const selectedSkill = cfg.basic ? HEROES[cfg.id].basic : HEROES[cfg.id].skills[this.skillKey];
     const displayNumber = Math.max(1, sim.displayValue || 0);
-    let lastActorArt = '', started = performance.now();
+    let lastActorArt = '', lastNow = performance.now(), simElapsed = 0;
     const setFlipbook = (node, folder, local, visible) => {
       if (!node) return;
       node.style.opacity = visible ? String(Math.min(1, local * 7, (1 - local) * 7)) : '0';
@@ -910,7 +1121,12 @@ const HeroPage = {
     };
     const tick = now => {
       if (!stage.isConnected) { this.stopPreview(); return; }
-      const p = clamp((now - started) / duration, 0, 1);
+      const delta = Math.min(100, Math.max(0, now - lastNow));
+      lastNow = now;
+      if (!stage._previewPaused) {
+        simElapsed += delta * (stage._previewSpeed || 1);
+      }
+      const p = clamp(simElapsed / duration, 0, 1);
       const actionP = clamp((p - actionStart) / (actionEnd - actionStart), 0, .999);
       const actionT = actionP * actionTotal;
       let actionSlot = cfg.actions.length - 1, actionOffset = 0;
@@ -1781,7 +1997,7 @@ const HeroPage = {
     this.playPreview(stage);
     const replay = () => {
       if (!stage.isConnected) { this.stopPreview(); return; }
-      this.playPreview(stage);
+      if (!stage._previewPaused) this.playPreview(stage);
       const simDuration = Math.round(((stage._preview && stage._preview.simulation && stage._preview.simulation.duration) || 2) * 1000);
       this._previewLoop = setTimeout(replay, simDuration + 720);
     };
@@ -1799,10 +2015,12 @@ const HeroPage = {
     };
     const lv = make('LEVEL', `${h.level} / ${Progress.levelCap()}`, `${RES.ichor.icon} ${fmt(levelCost(h.level))} · ${RES.exp.icon} ${fmt(levelExp(h.level))}`,
       h.level / Math.max(1, Progress.levelCap()), 'linear-gradient(90deg,#7be0ff,#5aa9ff)');
-    const lvBtns = el('div', 'hero-growth-actions'), one = el('button', null, '+1'), max = el('button', null, 'MAX');
-    one.onclick = () => { Progress.levelUp(id, 1); this.draw(); }; max.onclick = () => { Progress.levelMax(id); this.draw(); };
-    if (h.level >= Progress.levelCap()) one.disabled = max.disabled = true;
-    lvBtns.appendChild(one); lvBtns.appendChild(max); lv.appendChild(lvBtns); wrap.appendChild(lv);
+    const lvBtns = el('div', 'hero-growth-actions'), one = el('button', null, '+1'), five = el('button', null, '+5'), max = el('button', null, 'MAX');
+    one.onclick = () => { Progress.levelUp(id, 1); this.draw(); };
+    five.onclick = () => { Progress.levelUp(id, 5); this.draw(); };
+    max.onclick = () => { Progress.levelMax(id); this.draw(); };
+    if (h.level >= Progress.levelCap()) one.disabled = five.disabled = max.disabled = true;
+    lvBtns.appendChild(one); lvBtns.appendChild(five); lvBtns.appendChild(max); lv.appendChild(lvBtns); wrap.appendChild(lv);
 
     const sc = Progress.starCost(id);
     const star = make('PROMOTION', '★'.repeat(h.stars) + '☆'.repeat(5 - h.stars), sc ? `◈ ${h.shards} / ${sc.shards} · ${RES.ichor.icon} ${fmt(sc.ichor)}` : 'Maximum promotion',
@@ -1851,20 +2069,27 @@ const HeroPage = {
       fake.dirty = true; fake.recompute(true);
     }
     const rows = [
-      ['❤ Max HP', Math.round(fake.max.hp)],
-      ['⚔ Attack', Math.round(fake.st.atk)],
-      ['✨ Magic Attack', Math.round(fake.st.mag)],
-      ['🛡 Defense', Math.round(fake.st.def)],
-      ['🔰 Magic Defense', Math.round(fake.st.mdef)],
-      ['🏃 Speed', Math.round(fake.st.spd)],
-      ['🎯 Accuracy', Math.round(fake.st.acc)],
-      ['💨 Evasion', Math.round(fake.st.eva)]
+      ['❤ Max HP', Math.round(fake.max.hp), 12000, 'Total health pool before fainting'],
+      ['⚔ Attack', Math.round(fake.st.atk), 1500, 'Primary scaling for physical attacks and skills'],
+      ['✨ Magic Attack', Math.round(fake.st.mag), 1500, 'Primary scaling for magic attacks and skills'],
+      ['🛡 Defense', Math.round(fake.st.def), 800, 'Reduces incoming physical damage'],
+      ['🔰 Magic Defense', Math.round(fake.st.mdef), 800, 'Reduces incoming magic damage'],
+      ['🏃 Speed', Math.round(fake.st.spd), 400, 'Determines turn readiness and battle pace'],
+      ['🎯 Accuracy', Math.round(fake.st.acc), 120, 'Chance to hit evasive targets'],
+      ['💨 Evasion', Math.round(fake.st.eva), 100, 'Chance to dodge incoming attacks']
     ];
-    const c = el('div', 'card');
-    rows.forEach(([k, v]) => {
-      const r = el('div', 'row tiny');
-      r.style.marginBottom = '3px';
-      r.innerHTML = `<div class="grow">${k}</div><b>${fmt(v)}</b>`;
+    const c = el('div', 'card hero-stats-card');
+    c.innerHTML = '<div class="mini muted b" style="letter-spacing:1.5px;margin-bottom:8px">ATTRIBUTES</div>';
+    rows.forEach(([k, v, maxBench, tip]) => {
+      const pct = Math.min(100, Math.max(8, Math.round((v / maxBench) * 100)));
+      const r = el('div', 'hero-stat-row');
+      r.title = `${k}: ${fmt(v)} — ${tip}`;
+      r.innerHTML = `
+        <div class="row tiny" style="margin-bottom:2px">
+          <div class="grow">${k}</div><b>${fmt(v)}</b>
+        </div>
+        <div class="hero-stat-bar"><i class="hero-stat-bar-fill" style="width:${pct}%"></i></div>
+      `;
       c.appendChild(r);
     });
     wrap.appendChild(c);
@@ -1874,7 +2099,7 @@ const HeroPage = {
     const paths = [
       h.cls && CLASSES[h.cls] ? { path: 'class', name: h.cls, rank: Progress.classRank(id, h.cls), def: CLASSES[h.cls] } : null,
       h.subcls && SUBCLASSES[h.subcls] ? { path: 'subclass', name: h.subcls, rank: Progress.subclassRank(id, h.subcls), def: SUBCLASSES[h.subcls] } : null
-    ];
+    ].filter(Boolean);
     if (Progress.rainbowClassUnlocked(id)) {
       if (h.cls2 && CLASSES[h.cls2]) paths.push({ path: 'class', name: h.cls2, rank: Progress.classRank(id, h.cls2), def: CLASSES[h.cls2], secondary: true });
       if (h.subcls2 && SUBCLASSES[h.subcls2]) paths.push({ path: 'subclass', name: h.subcls2, rank: Progress.subclassRank(id, h.subcls2), def: SUBCLASSES[h.subcls2], secondary: true });
@@ -1894,23 +2119,24 @@ const HeroPage = {
     const hid = el('div', 'card');
     hid.innerHTML = '<div class="mini muted b" style="letter-spacing:1.5px;margin-bottom:6px">COMBAT VALUES</div>';
     const hrows = [
-      ['Crit Chance', Math.round(fake.st.crit * 100) + '%'],
-      ['Crit Damage', Math.round(fake.st.critDmg * 100) + '%'],
-      ['Attack Range', Math.round(fake.st.range)],
-      ['Attack Speed', fake.st.aspd.toFixed(2)],
-      ['Move Speed', Math.round(fake.st.ms)],
-      ['Armor Pen', Math.round(fake.st.armorPen * 100) + '%'],
-      ['Magic Pen', Math.round(fake.st.magPen * 100) + '%'],
-      ['CC Resist', Math.round(fake.st.ccRes * 100) + '%'],
-      ['Knockback Resist', Math.round(fake.st.kbRes * 100) + '%'],
-      ['Healing Power', Math.round(fake.st.healPow * 100) + '%'],
-      ['Shield Strength', Math.round(fake.st.shieldPow * 100) + '%'],
-      ['Aggro', fake.st.aggro.toFixed(2)],
-      ['Cooldown Reduction', Math.round(fake.st.cdr * 100) + '%']
+      ['Crit Chance', Math.round(fake.st.crit * 100) + '%', 'Chance to land critical hit damage'],
+      ['Crit Damage', Math.round(fake.st.critDmg * 100) + '%', 'Damage multiplier applied on critical hit'],
+      ['Attack Range', Math.round(fake.st.range), 'Target acquisition and reach distance'],
+      ['Attack Speed', fake.st.aspd.toFixed(2), 'Frequency rate of basic attacks per second'],
+      ['Move Speed', Math.round(fake.st.ms), 'Battlefield positioning and gap-close speed'],
+      ['Armor Pen', Math.round(fake.st.armorPen * 100) + '%', 'Ignores a portion of target Physical Defense'],
+      ['Magic Pen', Math.round(fake.st.magPen * 100) + '%', 'Ignores a portion of target Magic Defense'],
+      ['CC Resist', Math.round(fake.st.ccRes * 100) + '%', 'Reduces duration of stuns, silences, and slows'],
+      ['Knockback Resist', Math.round(fake.st.kbRes * 100) + '%', 'Reduces distance pushed by displacement attacks'],
+      ['Healing Power', Math.round(fake.st.healPow * 100) + '%', 'Increases effectiveness of heals cast'],
+      ['Shield Strength', Math.round(fake.st.shieldPow * 100) + '%', 'Increases barrier capacity granted to allies or self'],
+      ['Aggro', fake.st.aggro.toFixed(2), 'Priority rating for attracting enemy focus and attacks'],
+      ['Cooldown Reduction', Math.round(fake.st.cdr * 100) + '%', 'Reduces skill cooldowns']
     ];
     const g = el('div', 'grid2');
-    hrows.forEach(([k, v]) => {
-      const r = el('div', 'mini');
+    hrows.forEach(([k, v, tip]) => {
+      const r = el('div', 'mini hero-combat-val');
+      r.title = `${k}: ${v} — ${tip}`;
       r.innerHTML = `<span class="muted">${k}</span> <b style="float:right">${v}</b>`;
       g.appendChild(r);
     });
@@ -2095,14 +2321,24 @@ const HeroPage = {
       for (let slot = 0; slot < 2; slot++) {
         const uid = (h.trinkets || [])[slot], copy = uid && Save.data.trinketInv[uid];
         const n = el('div', 'choice');
-        n.style.cssText = 'margin:0;padding:8px;text-align:center;cursor:pointer';
+        n.style.cssText = 'position:relative;margin:0;padding:8px;text-align:center;cursor:pointer';
         if (copy && TRINKETS[copy.id]) {
           const t = TRINKETS[copy.id];
-          n.innerHTML = `<img src="${trinketIcon(copy.id)}" style="width:40px;height:40px;object-fit:contain">
+          n.innerHTML = `<button type="button" class="trinket-quick-off" title="Unequip Trinket" aria-label="Unequip Trinket">×</button>
+            <img src="${trinketIcon(copy.id)}" style="width:40px;height:40px;object-fit:contain">
             <div class="mini b">${t.name}${trinketPlaceholderBadge(copy.id)}</div>
             <div class="mini muted">Rank ${copy.rank} · ${trinketRankLabel(copy.rank)} · ${trinketStatText(t, copy.rank)}</div>
             <div class="mini trinket-signature">${trinketSignatureText(copy.id)}</div>`;
           n.style.borderColor = 'var(--gold)';
+          const offBtn = n.querySelector('.trinket-quick-off');
+          if (offBtn) {
+            offBtn.onclick = (e) => {
+              e.stopPropagation();
+              Progress.unequipTrinket(id, slot);
+              Sound.play('ui_ok');
+              redrawGear();
+            };
+          }
         } else {
           n.innerHTML = `<div style="font-size:22px;opacity:.5">+</div><div class="mini muted">Empty Slot</div>`;
         }
@@ -2125,15 +2361,29 @@ const HeroPage = {
         row.style.cssText = 'margin:6px 0;padding:8px;cursor:pointer';
         if (owned) {
           const lvl = Save.badgeLvl(bid), worn = wornBadges.includes(bid);
+          const cookieBadge = COOKIE_HERO_IDS.includes(id);
+          const canUnequip = !worn || !cookieBadge;
           row.innerHTML = `<div class="row" style="align-items:center;gap:8px">
               ${badgeIconHtml(bid, lvl)}
               <div class="grow">
                 <div class="row tiny"><div class="grow b">${def.name}</div><div class="muted">Lv ${lvl}/${BADGE_MAX_LVL}</div></div>
                 <div class="mini muted">${def.stat(lvl)} · ${def.effect}</div>
-                <div class="mini" style="margin-top:4px">${worn ? '<b style="color:var(--gold)">Equipped · View details</b>' : 'View details · Apply from badge view'}</div>
+                <div class="mini" style="margin-top:4px">${worn ? '<b style="color:var(--gold)">Equipped · Tap to view</b>' : 'Tap to view details'}</div>
               </div>
+              <button type="button" class="badge-quick-toggle ${worn ? 'active' : ''}" ${canUnequip ? '' : 'disabled'} title="${worn ? (cookieBadge ? 'Cookie badge equipped' : 'Unequip badge') : 'Equip badge'}">${worn ? '✕' : '✓'}</button>
             </div>`;
           if (worn) row.style.borderColor = 'var(--gold)';
+          const toggleBtn = row.querySelector('.badge-quick-toggle');
+          if (toggleBtn && canUnequip) {
+            toggleBtn.onclick = (e) => {
+              e.stopPropagation();
+              const ok = worn ? Progress.unequipBadge(id, bid) : Progress.equipBadge(id, bid);
+              if (ok) {
+                Sound.play('ui_ok');
+                redrawGear();
+              }
+            };
+          }
           row.onclick = () => this.openBadgeViewer(id, bid);
         } else {
           const camp = Object.values(CAMPAIGNS).find(c => c.badge === bid);
@@ -2241,8 +2491,8 @@ const HeroPage = {
         </section>
         <section class="friendship-badge-side badge-side-right">
           <small>STARS <span class="friendship-badge-stars">${stars}</span></small>
-          <b class="friendship-badge-stat">${owned ? esc(def.stat(lvl)) : 'UNLOCK TO VIEW'}</b>
-          <div class="friendship-badge-effect"><strong>EFFECT</strong><p>${esc(def.effect || '')}</p></div>
+          <b class="friendship-badge-stat">${owned ? esc(def.stat(lvl)) + (lvl < BADGE_MAX_LVL ? ` <small class="friendship-badge-next" style="color:var(--gold,#ffd700);font-size:0.82em;font-weight:normal;">➜ ${esc(def.stat(lvl + 1))}</small>` : '') : 'UNLOCK TO VIEW'}</b>
+          <div class="friendship-badge-effect"><strong>EFFECT</strong><p>${typeof SkillDesc !== 'undefined' && SkillDesc.enhanceText ? SkillDesc.enhanceText(typeof def.effect === 'function' ? def.effect(lvl) : def.effect || '') : esc(def.effect || '')}</p></div>
           <div class="friendship-badge-progress"><span>${owned ? `LEVEL ${lvl} / ${BADGE_MAX_LVL}` : 'CAMPAIGN REWARD'}</span><i><b style="width:${pct}%"></b></i></div>
         </section>
       </main>

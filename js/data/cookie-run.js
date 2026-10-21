@@ -81,44 +81,88 @@ function cookieCommon(id,name,role,base,range){return {id,name,role,tier:'B',ele
  base,hidden:{range,aspd:1,ms:95,aggro:1,crit:.1,critDmg:1.6,healPow:1,shieldPow:1,cdr:.04,ccRes:.12,kbRes:.2,armorPen:0,magPen:0},growth:{hp:.085,atk:.085,def:.075,mag:.085,mdef:.075},
  move:{gait:'bounce',bob:5,freq:1.8,lean:7,squash:.04,idle:'bounce',trail:{on:false},brake:.2},
  basic:{name:'Cookie Strike',type:'physical',ratio:1,range,wind:.23,sfx:'swing_light',hit:'hit_blunt'},skills:{}};}
-const ginger=cookieCommon('GingerBrave','GingerBrave','Damage',{hp:4100,atk:430,def:255,mag:100,mdef:230,spd:145,acc:205,eva:170},85);
-ginger.tier='C';
+const ginger=cookieCommon('GingerBrave','GingerBrave','Damage',{hp:4450,atk:475,def:275,mag:100,mdef:245,spd:145,acc:215,eva:170},85);
+ginger.tier='B';
 ginger.blurb='He runs straight at trouble and makes room for the team with his candy cane.';
 ginger.basic.name='Candy Cane Attack';
 ginger.basic.onStart=u=>{if(u.rarity>=4){u._cookieBasics=(u._cookieBasics||0)+1;u._cookiePurpleThird=u._cookieBasics%3===0;}};
 ginger.skills={
- W:{name:'Never Back Down!',type:'Physical Damage / Control',energy:100,v:{ratio:1.8},p:{stun:1.2,kb:75,radius:220,victoryDur:6,victoryMove:.25,victoryAttackSpeed:.15},desc:(S,P)=>'At the start of each wave, GingerBrave dashes through enemies. Active: he runs through the enemy line, leaps, and lands a candy cane slam for '+Math.round(S.ratio*180)+'% Attack damage. The slam Stuns for '+P.stun.toFixed(1)+' seconds, knocks enemies back, and reaches '+Math.round(P.radius)+' range. A knockout grants +'+Math.round(P.victoryMove*100)+'% Movement Speed and +'+Math.round(P.victoryAttackSpeed*100)+'% Attack Speed for '+P.victoryDur.toFixed(1)+' seconds.',passive:(u,B,S,P)=>{
-  u._braveDashAt=-99;
-  u._cookieVictoryMove=P.victoryMove;u._cookieVictoryAttackSpeed=P.victoryAttackSpeed;
-  B.after(.7,()=>{if(u.alive)cookieDash(u,B,false,S.ratio*.5,P);});
-  B.on(u,'defeatedEnemy',()=>{B.applyStatus(u,u,'cookie_victory',P.victoryDur);cookieSay(u,B,"Let's keep going!");});
-  B.on(u,'basicHit',e=>{
-   if(B.t>(u._cookieDashFollowupUntil||0))return;
-   u._cookieDashFollowupUntil=0;
-   B.after(.14,()=>{if(u.alive&&e.target.alive)cookieHit(u,B,e.target,u._cookieDashFollowupRatio||.9,'Candy Cane Follow-Up',{basic:true,melee:true});});
-  });
- },cast:(u,B,S,P)=>cookieDash(u,B,true,S.ratio,P)},
- G:{name:'Brave Strike',type:'Physical Damage / Control',cd:9,v:{ratio:1.65},p:{radius:150,kb:70},desc:(S,P)=>'Slams the closest enemy with his candy cane, striking enemies within '+Math.round(P.radius)+' range and knocking them back. If GingerBrave dashed in the last 5 seconds, he swings twice.',cast:(u,B,S,P)=>{
-  const t=B.nearest(u,cookieFoes(u,B));if(!t)return;
-  const followup=B.t-u._braveDashAt<=5;B.anim(u,'attack',1.04);
-  B.fxRing(t.x,t.y-25,145,'#ffcf73',.3);Sound.play('cookie_cane_slam',{vol:.5});
-  B.repeat(followup?2:1,.18,()=>{
-   if(!u.alive)return;
-   cookieFoes(u,B).filter(e=>e===t||B.distance(e,t)<P.radius).forEach(e=>{
-    const hit=cookieHit(u,B,e,S.ratio*(e===t?1.4:.75),'Brave Strike');
-    if(hit&&e.alive)B.knockback(u,e,e===t?P.kb:P.kb*.65);
+ W:{
+  name:'Never Back Down!',type:'Physical Damage / Control',energy:100,
+  v:{ratio:2.1,shred:.25},p:{stun:1.5,kb:110,radius:240,victoryDur:6,victoryMove:.30,victoryAttackSpeed:.20},
+  desc:(S,P)=>`At the start of each wave, GingerBrave dashes through enemies, knocking them aside. Active: he charges through the enemy frontline, leaps, and lands an earth-shattering candy cane slam for <em>${pcn(S.ratio * 100)}</em> Physical Damage. The slam Stuns enemies for ${P.stun.toFixed(1)}s, knocks them back ${P.kb}px, and shreds their Armor by <em>${pcn(S.shred * 100)}</em> for 6s within ${P.radius}px. Scoring a knockout grants +${Math.round(P.victoryMove*100)}% Movement Speed and +${Math.round(P.victoryAttackSpeed*100)}% Attack Speed for ${P.victoryDur.toFixed(1)}s.`,
+  passive:(u,B,S,P)=>{
+   u._braveDashAt=-99;
+   u._cookieVictoryMove=P.victoryMove;u._cookieVictoryAttackSpeed=P.victoryAttackSpeed;
+   B.after(.7,()=>{if(u.alive)cookieDash(u,B,false,S.ratio*.5,P);});
+   B.on(u,'defeatedEnemy',()=>{B.applyStatus(u,u,'cookie_victory',P.victoryDur);cookieSay(u,B,"Let's keep going!");});
+   B.on(u,'basicHit',e=>{
+    if(B.t>(u._cookieDashFollowupUntil||0))return;
+    u._cookieDashFollowupUntil=0;
+    B.after(.14,()=>{if(u.alive&&e.target.alive)cookieHit(u,B,e.target,u._cookieDashFollowupRatio||.9,'Candy Cane Follow-Up',{basic:true,melee:true});});
    });
-  });
- }},
- B:{name:'Did Someone Say "Run?"',type:'Physical Damage / Movement',cd:12,v:{ratio:1.5},p:{kb:75,follow:5},desc:(S,P)=>'Dashes through the enemy line with a candy cane hit and '+Math.round(P.kb)+' knockback. His next Basic Attack within '+P.follow.toFixed(1)+' seconds lands an extra hit.',cast:(u,B,S,P)=>cookieDash(u,B,false,S.ratio,P)},
- P:{name:'OvenBreaker',type:'Physical Damage / Critical Chance',v:{},p:{crit:.15,extra:.65,willCrit:.30,willDur:10},desc:(S,P)=>'Gains '+Math.round(P.crit*100)+'% Critical Hit chance. Every third Basic Attack adds a cane hit for '+Math.round(P.extra*100)+'% Attack. After Never Back Down!, gains +'+Math.round(P.willCrit*100)+'% Critical Hit chance for '+P.willDur.toFixed(1)+' seconds.',passive:(u,B,S,P)=>{
-  u.flat.crit71=P.crit;u._cookieWillCrit=P.willCrit;u._cookieWillDur=P.willDur;u.dirty=true;
-  B.on(u,'basicHit',e=>{if(u._cookiePurpleThird&&e.target.alive)B.after(.12,()=>{if(u.alive&&e.target.alive)cookieHit(u,B,e.target,P.extra,'OvenBreaker',{basic:true,melee:true});});});
- }},
- R:{name:'Overflowing Courage',type:'Physical Damage / Movement',v:{},p:{atk:.15,highHp:.25,speed:.25,basic:.25,dur:8},desc:(S,P)=>'Gains '+Math.round(P.atk*100)+'% Attack and deals '+Math.round(P.highHp*100)+'% more damage to enemies above half HP. After Never Back Down!, gains +'+Math.round(P.speed*100)+'% Movement Speed and +'+Math.round(P.basic*100)+'% Basic Attack damage for '+P.dur.toFixed(1)+' seconds.',passive:(u,B,S,P)=>{
-  u.flat.atkP71=P.atk;u._cookieOverflowSpeed=P.speed;u._cookieOverflowBasic=P.basic;u._cookieOverflowDur=P.dur;u.dirty=true;
-  B.on(u,'dealDamage',e=>{if(e.target.hpPct>.5)e.amount*=1+P.highHp;});
- }}
+  },
+  cast:(u,B,S,P)=>{
+   cookieDash(u,B,true,S.ratio,P);
+   B.after(0.95, () => {
+    if (!u.alive) return;
+    cookieFoes(u, B).filter(t => B.distance(u, t) < P.radius).forEach(t => {
+     B.applyStatus(u, t, 'defdown', 6, { val: S.shred });
+    });
+   });
+  }
+ },
+ G:{
+  name:'Brave Strike',type:'Physical Damage / Control',cd:9,
+  v:{ratio:1.75},p:{radius:165,kb:90},
+  desc:(S,P)=>`Slams the closest enemy with his candy cane, striking all enemies within ${P.radius}px for <em>${pcn(S.ratio * 100)}</em> Physical Damage and knocking them back. If GingerBrave dashed in the last 5 seconds, he swings twice.`,
+  cast:(u,B,S,P)=>{
+   const t=B.nearest(u,cookieFoes(u,B));if(!t)return;
+   const followup=B.t-u._braveDashAt<=5;B.anim(u,'attack',1.04);
+   B.fxRing(t.x,t.y-25,145,'#ffcf73',.3);Sound.play('cookie_cane_slam',{vol:.5});
+   B.repeat(followup?2:1,.18,()=>{
+    if(!u.alive)return;
+    cookieFoes(u,B).filter(e=>e===t||B.distance(e,t)<P.radius).forEach(e=>{
+     const hit=cookieHit(u,B,e,S.ratio*(e===t?1.4:.75),'Brave Strike');
+     if(hit&&e.alive)B.knockback(u,e,e===t?P.kb:P.kb*.65);
+    });
+   });
+  }
+ },
+ B:{
+  name:'Did Someone Say "Run?"',type:'Physical Damage / Movement',cd:11,
+  v:{ratio:1.60},p:{kb:95,follow:5},
+  desc:(S,P)=>`Dashes through the enemy line, striking all targets in his path for <em>${pcn(S.ratio * 100)}</em> Physical Damage and knocking them back ${P.kb}px. His next Basic Attack within ${P.follow.toFixed(1)}s lands an extra follow-up strike.`,
+  cast:(u,B,S,P)=>cookieDash(u,B,false,S.ratio,P)
+ },
+ P:{
+  name:'OvenBreaker',type:'Physical Damage / Critical Chance',
+  v:{crit:.18,extra:.85,willCrit:.35},p:{willDur:10,hits:3},
+  desc:(S,P)=>`GingerBrave's indomitable courage sharpens his strikes, granting <em>${pcn(S.crit * 100)}</em> Critical Hit chance. Every ${P.hits}rd Basic Attack lands an extra devastating cane blow for <em>${pcn(S.extra * 100)}</em> Physical Damage that bypasses shields. After casting Never Back Down!, GingerBrave gains <em>${pcn(S.willCrit * 100)}</em> Critical Hit chance and +20% Critical Damage for ${P.willDur.toFixed(1)}s.`,
+  passive:(u,B,S,P)=>{
+   u.flat.crit71=S.crit;u._cookieWillCrit=S.willCrit;u._cookieWillDur=P.willDur;u.dirty=true;
+   B.on(u,'basicHit',e=>{
+    if(u._cookiePurpleThird&&e.target.alive)B.after(.12,()=>{
+     if(u.alive&&e.target.alive)cookieHit(u,B,e.target,S.extra,'OvenBreaker',{basic:true,melee:true,bypassShield:true});
+    });
+   });
+  }
+ },
+ R:{
+  name:'Overflowing Courage',type:'Physical Damage / Movement',
+  v:{atk:.20,highHp:.35,speed:.30,basic:.35},p:{dur:8,shield:.15},
+  desc:(S,P)=>`GingerBrave gains <em>${pcn(S.atk * 100)}</em> Attack and deals <em>${pcn(S.highHp * 100)}</em> more damage to enemies above half HP. Whenever GingerBrave dashes through enemies or casts Never Back Down!, he gains <em>${pcn(S.speed * 100)}</em> Movement Speed, <em>${pcn(S.basic * 100)}</em> Basic Attack damage, and a Pack Bravery Shield absorbing <em>${pcn(S.shield * 100)}</em> Max HP for ${P.dur.toFixed(1)}s.`,
+  passive:(u,B,S,P)=>{
+   u.flat.atkP71=S.atk;u._cookieOverflowSpeed=S.speed;u._cookieOverflowBasic=S.basic;u._cookieOverflowDur=P.dur;u.dirty=true;
+   B.on(u,'dealDamage',e=>{if(e.target&&e.target.hpPct>.5)e.amount*=1+S.highHp;});
+   B.on(u,'cast',ev=>{
+    if(ev.key==='W'||ev.key==='B'){
+     B.shield(u,u,u.max.hp*S.shield,P.dur);
+     B.fxFloatIcon(u.x,u.y-105,'🛡️ COURAGE SHIELD','#ffce77');
+    }
+   });
+  }
+ }
 };
 defHero(ginger);
 const bright=cookieCommon('GingerBright','GingerBright','Damage',{hp:3650,atk:475,def:215,mag:100,mdef:235,spd:155,acc:235,eva:190},115);
@@ -156,7 +200,7 @@ COOKIE_ENEMY_IDS.forEach(id=>{
  h.blurb=bishop?'Heals the ally with the lowest percentage of HP. Cannot deal damage.':box?'On defeat, corrupts nearby enemies and releases a Paper Puppet Knight. Cannot deal damage.':'A Cookie Run weakling with the strength of a B-tier Toon.';
  if(bishop||box){h.noDamage=true;h.basic.utility=true;h.basic.ratio=0;h.basic.perform=(u,B)=>{if(bishop)cookieHeal(u,B,id==='BerryHealingBot');};h.hidden.aspd=id==='BerryHealingBot'?1.5:.55;}
  if(id==='BerryBishop')h.skills.G={name:'Healing Helpers',type:'Summon / Healing',cd:15,v:{hp:.3},p:{},desc:()=>`Summons a smaller, faster Healing Bot.`,cast:(u,B)=>{if(B.alliesOf(u).filter(a=>a.id==='BerryHealingBot').length>=2)return;const m=B.summon(u,{protoId:'BerryHealingBot',name:'Healing Bot',art:ASSET+COOKIE_ART.BerryHealingBot,hp:u.max.hp*.3,atk:0,mag:u.st.mag*.65,scale:.45,life:900,noSkills:true,noEnergy:true});m.inherit=true;}};
- if(box){h.cookieObstacle=true;h.skills.W={name:'A Parting Surprise',type:'Status Corruption / Summon',energy:100,v:{radius:220},p:{},desc:()=>`On defeat, applies one stack of Status Corruption in medium range and spawns one Paper Puppet Knight.`,passive:(u,B)=>B.on(u,'death',()=>{cookieFoes(u,B).filter(t=>B.distance(u,t)<=220).forEach(t=>B.applyStatus(u,t,'status_corruption',10,{stacks:1}));const m=B.summon(u,{protoId:'PaperPuppetKnight',name:'Paper Puppet Knight',art:ASSET+COOKIE_ART.PaperPuppetKnight,hp:u.max.hp*.8,atk:u.baseStats.mag*1.8,scale:.85,life:900});m.inherit=true;m.minion=false;m.owner=null;B._liveDirty=true;})};}
+ if(box){h.cookieObstacle=true;h.skills.W={name:'A Parting Surprise',type:'Status Corruption / Summon',energy:100,v:{radius:240},p:{},desc:()=>`On defeat, applies two stacks of Status Corruption in medium range and spawns one Paper Puppet Knight.`,passive:(u,B)=>B.on(u,'death',()=>{cookieFoes(u,B).filter(t=>B.distance(u,t)<=240).forEach(t=>B.applyStatus(u,t,'status_corruption',10,{stacks:2}));const m=B.summon(u,{protoId:'PaperPuppetKnight',name:'Paper Puppet Knight',art:ASSET+COOKIE_ART.PaperPuppetKnight,hp:u.max.hp*1.0,atk:u.baseStats.mag*2.0,scale:.85,life:900});m.inherit=true;m.minion=false;m.owner=null;B._liveDirty=true;})};}
  if(id==='PomegranateSnake'||id==='CookieScorpion'){
   h.cookiePrey=id==='PomegranateSnake'?'Tank':'Support';h.hidden.ms=id==='CookieScorpion'?150:125;
   h.basic.onHit=(u,t,B)=>B.applyStatus(u,t,'poison',6,{val:t.max.hp*(id==='PomegranateSnake'?.012:.008)});

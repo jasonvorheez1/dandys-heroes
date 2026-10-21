@@ -160,9 +160,14 @@ const MOD_KEYS = ['hpP', 'atkP', 'defP', 'magP', 'mdefP', 'aspdP', 'msP', 'accP'
   'energyGen', 'healRecv', 'healPowP', 'shieldPowP', 'aggro', 'kbRes', 'spdP'];
 
 function newMods() { const m = {}; MOD_KEYS.forEach(k => m[k] = 0); m.dmgTaken = 0; return m; }
-// Suffixes namespace passive bonuses: trailing digits ("defP98") or a
-// Queens of Mischief tag ("magPqom", "mdefPqomFeedback").
-function baseKey(k) { return k.replace(/qom[A-Za-z]*$|\d+$/, ''); }
+// Suffixes namespace passive bonuses: trailing digits ("defP98"), Queens of
+// Mischief ("magPqom"), Cookie Run hero tags ("critCream"), or collab passives ("cdrCombo", "hpPRoad").
+function baseKey(k) {
+  for (const bk of MOD_KEYS) {
+    if (k === bk || (k.startsWith(bk) && /^[A-Z0-9_]/.test(k.slice(bk.length)))) return bk;
+  }
+  return k.replace(/(?:qom|cookie|cream|tiger|bright|milk)[a-z]*$|\d+$/i, '');
+}
 
 /* ---------- combat math ----------
    Keep every visible number on the sheet and every number in Battle on one
@@ -1777,6 +1782,8 @@ class Battle {
       if (u.dashOpt && u.dashOpt.arc) u.yOff = -Math.sin(p * Math.PI) * 120;
       return;
     } else if (u.dashTo != null) {
+      u.x = u.dashTo;
+      if (u.dashToDepth != null) u.depth = u.dashToDepth;
       // Clear the completed dash before firing its callback. A callback may
       // immediately begin another dash (Pebble circles, then tackles again);
       // clearing after the callback used to erase that new dash's own onEnd.
@@ -2405,7 +2412,7 @@ class Battle {
     if (src && src.noSelfHeal && src === tgt && !opt.pure) return 0;
     let amt = amount * (src ? src.st.healPow : 1);
     if (!opt.pure) amt *= tgt.st.healRecv;
-    const ev = { src, target: tgt, amount: amt };
+    const ev = Object.assign({ src, target: tgt, amount: amt }, opt);
     tgt.statuses.slice().forEach(s => { const d = STATUS[s.id]; if (d.onHealed) d.onHealed(tgt, s, ev, this); });
     amt = Math.max(0, ev.amount);
     const missing = tgt.max.hp - tgt.hp;
@@ -2756,10 +2763,11 @@ class Battle {
   summon(u, def) {
     const spec = { id: def.protoId || u.id, level: u.level, stars: u.stars, rarity: 1, skillLv: u.skillLv,
       twisted: def.twisted != null ? def.twisted : u.twisted, name: def.name };
-    if (u.team === TEAM_E && typeof ensureEnemyTraining === 'function') {
+    const targetTeam = def.team != null ? def.team : u.team;
+    if (targetTeam === TEAM_E && typeof ensureEnemyTraining === 'function') {
       ensureEnemyTraining(spec, `summon-${u.id}-${this.units.length}`);
     }
-    const m = new Unit(spec, u.team, 90 + this.units.length, this);
+    const m = new Unit(spec, targetTeam, 90 + this.units.length, this);
     m.uid = this.nextId++;
     m.minion = true; m.owner = u; m.mScale = def.scale || .6;
     m.artSrc = def.art;

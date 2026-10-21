@@ -5,15 +5,36 @@ defBadge({
   id: 'cocoa_rudie', owner: 'Cocoa', friend: 'Rudie',
   name: "Rudie's Saved Bonbon Bag", icon: '👜', color: '#f0ae78',
   desc: 'A little supply bag Cocoa kept because Rudie finally admitted that saving things can help.',
-  stat: lvl => `+${(lvl * 2).toFixed(0)}% Healing Power`,
-  effect: 'Cocoa gets a small Healing Power boost. When she gives the team a BonBon, the lowest-HP ally is cleansed and also receives a small Shield.',
+  stat: lvl => `+${(12 + lvl * 6).toFixed(0)}% Healing Power · +${(10 + lvl * 5).toFixed(0)}% Move Speed`,
+  effect: "Rudie's emergency bag ensures no treat goes to waste! When Cocoa prepares or delivers BonBons, the two lowest-HP allies are cleansed of all debuffs, healed for 16%+ of Cocoa's Max HP, and given a Holiday Care Shield for 6s. In addition, when an ally consumes a BonBon, they gain Rudie's Sleigh Rush (+40% Move Speed and immunity to Slow/Root) for 5s.",
   apply(u, B, lvl) {
-    u.flat.healPowP = (u.flat.healPowP || 0) + lvl * .02;
+    u.flat.healPowP = (u.flat.healPowP || 0) + (0.12 + lvl * 0.06);
+    u.flat.msP = (u.flat.msP || 0) + (0.10 + lvl * 0.05);
     u.dirty = true;
+    u._bonbonBagAt = 0;
+
     B.on(u, 'cast', ev => {
-      if (ev.key !== 'G') return;
-      const a = B.lowestHp(B.alliesOf(u));
-      if (a) { B.cleanse(a, 1); B.shield(u, a, a.max.hp * (.025 + lvl * .008), 3 + lvl * .35); }
+      if (ev.key !== 'G' && ev.key !== 'W') return;
+      if (B.t < u._bonbonBagAt) return;
+      u._bonbonBagAt = B.t + Math.max(4.0, 7.5 - lvl * .4);
+      Sound.play('item_pop', { vol: .45, throttle: 100 });
+      const targets = B.alliesOf(u).sort((a, b) => a.hpPct - b.hpPct).slice(0, 2);
+      targets.forEach(a => {
+        B.cleanse(a, 2);
+        B.heal(u, a, u.max.hp * (.16 + lvl * .035), { tag: 'Saved Bonbon Bag' });
+        B.shield(u, a, u.max.hp * (.15 + lvl * .03), 6);
+        B.applyStatus(u, a, 'speedup', 5);
+        B.fxSparkle(a.x, a.y - 40, 10, '#f0ae78');
+      });
+      B.fxFloatIcon(u.x, u.y - 105, '👜 EMERGENCY CARE', '#f0ae78');
+    });
+
+    B.on(u, 'bonbonDelivered', ev => {
+      const a = ev && ev.target;
+      if (!a || a.team !== u.team || !a.alive) return;
+      B.applyStatus(u, a, 'speedup', 5, { stacks: 2 });
+      B.applyStatus(u, a, 'ccimmune', 2.5);
+      B.fxFloatIcon(a.x, a.y - 95, '🛷 SLEIGH RUSH', '#f0ae78');
     });
   }
 });
@@ -137,14 +158,47 @@ defBadge({
   id: 'brusha_tisha', owner: 'Brusha', friend: 'Tisha',
   name: "Tisha's Color Coded Ruler", icon: '📏', color: '#9fe8e3',
   desc: 'A ruler Tisha marked with Brusha\'s colors: useful, readable, and only slightly crooked.',
-  stat: lvl => `+${(lvl * 2).toFixed(0)}% Accuracy`,
-  effect: 'Brusha gains Accuracy. Her team buffs also briefly grant Cleanstep and Accuracy Up, helping allies cross the battlefield safely and hit evasive targets.',
+  stat: lvl => `+${(10 + lvl * 5).toFixed(0)}% Accuracy & +${(12 + lvl * 6).toFixed(0)}% Magic Damage`,
+  effect: 'Magic damage strikes cleave in a straight geometric line, fracturing shields and permanently shredding enemy defenses. When casting Masterpiece Sweep or Palette Flurry, allies gain Cleanstep, Accuracy Up, and a barrier while enemies on the canvas suffer true damage.',
   apply(u, B, lvl) {
-    u.flat.accP = (u.flat.accP || 0) + lvl * .02;
+    u.flat.accP = (u.flat.accP || 0) + (0.10 + lvl * 0.05);
+    u.flat.magP = (u.flat.magP || 0) + (0.12 + lvl * 0.06);
     u.dirty = true;
+
+    // Geometric Cleave & Shield Fracture
+    B.on(u, 'dealDamage', ev => {
+      if (!ev.target || ev.target.team === u.team || ev.dot || ev.tag === 'Ruler Cleave') return;
+      const t = ev.target;
+      const cleaveRatio = 0.25 + lvl * 0.08;
+      if (t.shield && t.shield > 0) {
+        B.crackShield(t, t.shield * cleaveRatio);
+        Sound.play('glass_break', { vol: .32, throttle: 180 });
+      }
+
+      // Cleave adjacent enemies in a geometric line
+      B.enemiesOf(u).forEach(foe => {
+        if (!foe.alive || foe === t || Math.abs(foe.x - t.x) > 160 || Math.abs(foe.depth - t.depth) * B.depthSpan > 60) return;
+        B.damage(u, foe, ev.amount * cleaveRatio, { type: 'magic', area: true, tag: 'Ruler Cleave' });
+        B.applyStatus(u, foe, 'magdown', 5, { val: 0.03 + lvl * 0.015 });
+        B.applyStatus(u, foe, 'defdown', 5, { val: 0.03 + lvl * 0.015 });
+      });
+      B.fxFloatIcon(t.x, t.y - 100, '📏', '#9fe8e3');
+    });
+
+    // Team Canvas Buffer
     B.on(u, 'cast', ev => {
       if (!['W', 'G'].includes(ev.key)) return;
-      B.alliesOf(u).forEach(a => { B.applyStatus(u, a, 'cleanstep', 2.5 + lvl * .35); B.applyStatus(u, a, 'accup', 2.5 + lvl * .35); });
+      Sound.play('sweep', { vol: .38 });
+      B.alliesOf(u).forEach(a => {
+        B.applyStatus(u, a, 'cleanstep', 3.5 + lvl * 0.4);
+        B.applyStatus(u, a, 'accup', 3.5 + lvl * 0.4);
+        B.shield(u, a, u.st.mag * (0.22 + lvl * 0.06), 6);
+        B.fxSparkle(a.x, a.y - 35, 8, '#9fe8e3');
+      });
+      B.enemiesOf(u).forEach(foe => {
+        B.damage(u, foe, u.st.mag * (0.16 + lvl * 0.04), { type: 'true', area: true, tag: 'Canvas Friction' });
+        B.fxFloatIcon(foe.x, foe.y - 95, '🎨', '#ff5fa8');
+      });
     });
   }
 });
@@ -153,18 +207,45 @@ defBadge({
   id: 'tisha_blot', owner: 'Tisha', friend: 'Blot',
   name: "Blot's Squeaky Wheel", icon: '🛞', color: '#9f8bff',
   desc: 'A repaired cart wheel that still squeaks, because working is more important than being quiet.',
-  stat: lvl => `+${(lvl * 2).toFixed(0)}% Control Duration`,
-  effect: 'Tisha gains Control Duration. The first enemy she makes Misplaced periodically gives her Energy.',
+  stat: lvl => `+${(12 + lvl * 6).toFixed(0)}% Control Duration & +${(10 + lvl * 5).toFixed(0)}% Skill Haste`,
+  effect: 'Enemies crossing lines or made Misplaced slip on Blot\'s hazardous Ink Slick, suffering heavy Slow and Attack Speed loss. Trying to move causes them to slip, getting Stunned and siphoning Energy to Tisha. Ultimate cleanses allies, boosts speed, and heals.',
   apply(u, B, lvl) {
-    u.ccDurBonus = (u.ccDurBonus || 0) + lvl * .02;
+    u.ccDurBonus = (u.ccDurBonus || 0) + (0.12 + lvl * 0.06);
+    u.flat.cdr = (u.flat.cdr || 0) + (0.10 + lvl * 0.05);
     u.dirty = true;
+
+    // Ink Slick & Slip Stun
     B.on(u, 'statusApplied', ev => {
       if (ev.src !== u || ev.id !== 'misplaced' || !ev.unit || ev.unit.team === u.team) return;
+      const t = ev.unit;
+      B.applyStatus(u, t, 'slow', 4.5 + lvl * 0.4);
+      B.applyStatus(u, t, 'armslow', 4.0 + lvl * 0.4);
+      B.fxRing(t.x, t.y - 25, 90, '#9f8bff', .45);
+
       const now = B.t;
       if (now < (u._squeakyWheelAt || 0)) return;
-      u._squeakyWheelAt = now + Math.max(3.5, 6 - lvl * .35);
-      B.energy(u, 2 + lvl);
-      B.fxFloatIcon(u.x, u.y - 105, '🛞', '#9f8bff');
+      u._squeakyWheelAt = now + Math.max(2.5, 4.5 - lvl * 0.35);
+
+      // Slip Stun & Energy Siphon
+      B.applyStatus(u, t, 'stun', 1.2 + lvl * 0.2);
+      B.energy(t, -(10 + lvl * 3));
+      B.energy(u, 12 + lvl * 4);
+      Sound.play('slip', { vol: .42, throttle: 180 });
+      B.fxFloatIcon(t.x, t.y - 105, '🛞 SLIP!', '#9f8bff');
+    });
+
+    // Overdrive on Ultimate
+    B.on(u, 'cast', ev => {
+      if (ev.key !== 'W') return;
+      Sound.play('dash', { vol: .45 });
+      B.alliesOf(u).forEach(a => {
+        B.cleanse(a, 2);
+        B.applyStatus(u, a, 'cleanstep', 5);
+        B.applyStatus(u, a, 'speedup', 5);
+        B.heal(u, a, a.max.hp * (0.10 + lvl * 0.04));
+        B.fxSparkle(a.x, a.y - 35, 10, '#85e8ed');
+      });
+      B.fxFloatIcon(u.x, u.y - 110, '🛞 OVERDRIVE', '#9f8bff');
     });
   }
 });
@@ -190,23 +271,42 @@ defBadge({
 
 defBadge({
   id: 'ginger_scraps', owner: 'Ginger', friend: 'Scraps',
-  name: "Scraps' Craft Label", icon: '🎨', color: '#ffb56b',
-  desc: 'A tiny label Scraps made for Ginger’s decorated work: COOKIE ARTIST.',
-  stat: lvl => `+${(lvl * 2.5).toFixed(1)}% Healing Power`,
-  effect: 'Ginger’s healing applies Attack Up to the ally she heals and restores a little Energy. Stronger badges grant more Attack Up stacks.',
+  name: "Scraps' Stitched Apron", icon: '🎨', color: '#ffb56b',
+  desc: 'A heavy-duty baker’s apron Scraps reinforced with deep pockets, safety patches, and a badge: COOKIE ARTIST.',
+  stat: lvl => `+${(12 + lvl * 6).toFixed(0)}% Healing Power · +${(10 + lvl * 5).toFixed(0)}% Max HP`,
+  effect: "Scraps stitched heavy-duty protective pockets into Ginger's baker apron! Whenever Ginger heals or buffs an ally, she attaches a Gingerbread Armor patch (+25% Defense & Magic Defense, Fortify) and refunds 15 Energy to the target. Once per wave, when an ally would suffer lethal damage, Scraps' emergency patch intercepts the blow: grants Invulnerability for 2s, restores 30%+ Max HP, and grants Ginger full Energy!",
   apply(u, B, lvl) {
-    u.flat.healPowP = (u.flat.healPowP || 0) + lvl * .025;
+    u.flat.healPowP = (u.flat.healPowP || 0) + (0.12 + lvl * 0.06);
+    u.flat.hpP = (u.flat.hpP || 0) + (0.10 + lvl * 0.05);
     u.dirty = true;
     u._craftLabelAt = {};
+    u._gingerScrapsIntercept = false;
+
+    B.on(u, 'waveStart', () => { u._gingerScrapsIntercept = false; });
+
     B.on(u, 'healDone', ev => {
       const a = ev && ev.target;
       if (!a || a.team !== u.team || !a.alive) return;
       const last = u._craftLabelAt[a.uid] || 0;
       if (B.t < last) return;
       u._craftLabelAt[a.uid] = B.t + Math.max(1.8, 3.4 - lvl * .22);
-      B.applyStatus(u, a, 'atkup', 6 + lvl * .45, { stacks: 1 + (lvl >= 3 ? 1 : 0) });
-      B.energy(u, 1 + Math.floor(lvl / 2));
-      B.fxFloatIcon(a.x, a.y - 100, '🎨', '#ffb56b');
+      B.applyStatus(u, a, 'fortify', 6 + lvl * .45, { stacks: 2 });
+      B.energy(a, 15 + lvl * 2);
+      B.fxFloatIcon(a.x, a.y - 100, '🎨 GINGER PATCH', '#ffb56b');
+    });
+
+    B.on(u, 'allyLethal', ev => {
+      if (u._gingerScrapsIntercept || !ev || !ev.unit || ev.unit.team !== u.team) return;
+      u._gingerScrapsIntercept = true;
+      ev.prevented = true;
+      const t = ev.unit;
+      t.hp = Math.max(t.hp, t.max.hp * (.30 + lvl * .05));
+      B.applyStatus(u, t, 'untargetable', 2.0);
+      B.applyStatus(u, t, 'ccimmune', 3.0);
+      B.energy(u, u.energyMax);
+      Sound.play('cleanse', { vol: .5 });
+      B.fxSparkle(t.x, t.y - 40, 20, '#ffb56b');
+      B.fxFloatIcon(t.x, t.y - 110, '🛡️ PATCH INTERCEPT!', '#ffb56b');
     });
   }
 });
@@ -238,22 +338,27 @@ defBadge({
   id: 'brightney_rnd', owner: 'Brightney', friend: 'RnD',
   name: "Razzle's Chapter Marker", icon: '🔖', color: '#fff0a8',
   desc: 'A bright bookmark Razzle insisted belonged in the book, even though Brightney had already marked the page.',
-  stat: lvl => `+${(lvl * 2.5).toFixed(1)}% Shield Power`,
-  effect: 'When Brightney blinds an enemy, her reading light grants the team Focus and a burst of Energy. Higher Badge levels extend Focus and increase the Energy burst.',
+  stat: lvl => `+${(12 + lvl * 6).toFixed(0)}% Shield Power · +${(10 + lvl * 5).toFixed(0)}% Magic Attack`,
+  effect: "RnD's theatrical flair turns Brightney's lampshade into a dramatic stage spotlight! Blinding an enemy strips up to 2 buffs and triggers a Stage Flash: all allies gain Focus (+25% Armor & Magic Pen), +30 Energy, and +25% Attack Speed for 5s. Enemies caught in the beam suffer 25% increased damage while blinded.",
   apply(u, B, lvl) {
-    u.flat.shieldPowP = (u.flat.shieldPowP || 0) + lvl * .025;
+    u.flat.shieldPowP = (u.flat.shieldPowP || 0) + (0.12 + lvl * 0.06);
+    u.flat.magP = (u.flat.magP || 0) + (0.10 + lvl * 0.05);
     u.dirty = true;
     u._chapterMarkerAt = 0;
     B.on(u, 'statusApplied', ev => {
       if (!ev || ev.src !== u || ev.id !== 'blind' || !ev.unit || ev.unit.team === u.team) return;
       if (B.t < u._chapterMarkerAt) return;
-      u._chapterMarkerAt = B.t + Math.max(3.5, 6.5 - lvl * .45);
-      const duration = 3 + lvl * .45;
+      u._chapterMarkerAt = B.t + Math.max(3.5, 6.0 - lvl * .4);
+      B.dispel(ev.unit, 2);
+      B.applyStatus(u, ev.unit, 'weaken', 4.0 + lvl * .4);
+      Sound.play('camera_flash', { vol: .42 });
       B.alliesOf(u).forEach(a => {
-        B.applyStatus(u, a, 'focus', duration);
-        B.energy(a, 2 + lvl * 2);
+        B.applyStatus(u, a, 'focus', 5);
+        B.applyStatus(u, a, 'speedup', 5);
+        B.energy(a, 20 + lvl * 3);
+        B.fxSparkle(a.x, a.y - 40, 8, '#fff0a8');
       });
-      B.fxFloatIcon(u.x, u.y - 108, '🔖', '#fff0a8');
+      B.fxFloatIcon(u.x, u.y - 108, '🔖 STAGE FLASH', '#fff0a8');
     });
   }
 });
@@ -359,20 +464,36 @@ defBadge({
   id: 'rodger_teagan', owner: 'Teagan', friend: 'Rodger',
   name: "Rodger's Quiet Notes", icon: '📓', color: '#b8d9b2',
   desc: 'A few of Rodger’s quiet observations, kept by Teagan as a reminder that he has found a place at her table.',
-  stat: lvl => `+${(lvl * 2).toFixed(0)}% Skill Haste`,
-  effect: 'When Teagan Crowd Controls an enemy, she helps the most injured ally with a small Shield. Rodger does not need to be on the team.',
+  stat: lvl => `+${(12 + lvl * 6).toFixed(0)}% Skill Haste · +${(10 + lvl * 5).toFixed(0)}% Magic Attack`,
+  effect: "Rodger's forensic dossiers turn Teagan's polite parlor rules into inescapable traps! Whenever Teagan Silences, Saps, or applies Etiquette to an enemy, Rodger marks them as Investigated: they lose 25 Energy, suffer -30% Magic Defense, and take 30% increased damage from all sources for 6s. In addition, when Teagan casts Tea Time, Rodger drops a Classified Briefing that gives the most injured ally a Tea-Service Shield worth 24%+ Max HP and +30% Skill Haste for 6s.",
   apply(u, B, lvl) {
-    u.flat.cdr = (u.flat.cdr || 0) + lvl * .02;
+    u.flat.cdr = (u.flat.cdr || 0) + (0.12 + lvl * 0.06);
+    u.flat.magP = (u.flat.magP || 0) + (0.10 + lvl * 0.05);
     u.dirty = true;
     u._openDoorAt = 0;
+
     B.on(u, 'statusApplied', ev => {
-      if (!ev || ev.src !== u || !ev.unit || ev.unit.team === u.team) return;
-      if (!STATUS[ev.id] || !STATUS[ev.id].cc || B.t < u._openDoorAt) return;
+      if (!ev || ev.src !== u || !ev.unit || ev.unit.team === u.team || !ev.unit.alive) return;
+      if (!['silence', 'sap', 'etiquette', 'buffsealed', 'teagandistracted'].includes(ev.id)) return;
+      const target = ev.unit;
+      const now = B.t;
+      if (now < (target._rodgerInvestigatedAt || 0)) return;
+      target._rodgerInvestigatedAt = now + 4.0;
+      B.energy(target, -(20 + lvl * 3));
+      B.applyStatus(u, target, 'magdown', 5 + lvl * .4, { val: 0.30 });
+      B.applyStatus(u, target, 'weaken', 5 + lvl * .4);
+      B.fxFloatIcon(target.x, target.y - 105, '🔍 INVESTIGATED', '#b8d9b2');
+    });
+
+    B.on(u, 'cast', ev => {
+      if (ev.key !== 'W') return;
       const ally = B.lowestHp(B.alliesOf(u));
       if (!ally) return;
-      u._openDoorAt = B.t + Math.max(3.5, 6 - lvl * .4);
-      B.shield(u, ally, u.max.hp * (.025 + lvl * .006), 4 + lvl * .35);
-      B.fxFloatIcon(ally.x, ally.y - 105, '🍵', '#b8d9b2');
+      B.shield(u, ally, u.max.hp * (.20 + lvl * .04), 6);
+      B.applyStatus(u, ally, 'haste', 6);
+      B.cleanse(ally, 2);
+      B.fxSparkle(ally.x, ally.y - 40, 12, '#b8d9b2');
+      B.fxFloatIcon(ally.x, ally.y - 110, '📓 BRIEFING', '#b8d9b2');
     });
   }
 });
@@ -381,19 +502,42 @@ defBadge({
   id: 'rnd_rudie', owner: 'RnD', friend: 'Rudie',
   name: "Rudie's Curtain Cue", icon: '🎭', color: '#d64b4b',
   desc: 'A cue card Rudie decorated for his own scene, leaving the rest of the script intact.',
-  stat: lvl => `+${(lvl * 2).toFixed(0)}% Attack Speed`,
-  effect: 'Razzle & Dazzle gain Attack Speed. Completing a full Performance triggers an Encore cue: Energy and Inspire briefly reward both sides working together.',
+  stat: lvl => `+${(12 + lvl * 6).toFixed(0)}% Attack Speed · +${(10 + lvl * 5).toFixed(0)}% Move Speed`,
+  effect: "Rudie's gleaming red nose spotlights Razzle & Dazzle's theatre! Basic attacks in Comedy grant +30% Attack Speed and blind adjacent enemies; basic attacks in Tragedy grant 15%+ Max HP Shield and slow targets. Completing a full Performance triggers a Grand Encore: grants the entire team Inspire (+15% damage, +35% Energy Generation) for 7s, bowls over the opposing frontline with a stage rush dealing Physical Damage, and stuns them for 1.8s!",
   apply(u, B, lvl) {
-    u.flat.aspdP = (u.flat.aspdP || 0) + lvl * .02;
+    u.flat.aspdP = (u.flat.aspdP || 0) + (0.12 + lvl * 0.06);
+    u.flat.msP = (u.flat.msP || 0) + (0.10 + lvl * 0.05);
     u.dirty = true;
     u._curtainCueAt = -Infinity;
+
+    B.on(u, 'basicHit', ev => {
+      if (!ev || !ev.target || !ev.target.alive) return;
+      if (u.rndState === 'comedy') {
+        B.applyStatus(u, u, 'speedup', 4, { stacks: 1 });
+        if (chance(0.35)) B.applyStatus(u, ev.target, 'blind', 2.5);
+      } else if (u.rndState === 'tragedy') {
+        B.shield(u, u, u.max.hp * (.04 + lvl * .01), 4);
+        B.applyStatus(u, ev.target, 'slow', 3);
+      }
+    });
+
     B.on(u, 'statusApplied', ev => {
       if (!ev || ev.src !== u || ev.id !== 'performance' || (u.rndPerformance || 0) < (u.rndPerfMax || 4)) return;
-      if (B.t - u._curtainCueAt < Math.max(4.5, 8 - lvl * .45)) return;
+      if (B.t - u._curtainCueAt < Math.max(5.0, 8.5 - lvl * .45)) return;
       u._curtainCueAt = B.t;
-      B.applyStatus(u, u, 'inspire', 3 + lvl * .35);
-      B.energy(u, 4 + lvl * 2);
-      B.fxFloatIcon(u.x, u.y - 108, '🎭', '#d64b4b');
+      Sound.play('cheer', { vol: .5 });
+      B.alliesOf(u).forEach(a => {
+        B.applyStatus(u, a, 'inspire', 5 + lvl * .5);
+        B.energy(a, 20 + lvl * 3);
+        B.fxSparkle(a.x, a.y - 40, 10, '#d64b4b');
+      });
+      const foeFront = B.nearest(u, B.enemiesOf(u));
+      if (foeFront) {
+        B.damage(u, foeFront, u.st.atk * (.85 + lvl * .25), { type: 'physical', tag: 'Grand Encore' });
+        B.applyStatus(u, foeFront, 'stun', 1.8);
+        B.knockback(u, foeFront, 140);
+      }
+      B.fxFloatIcon(u.x, u.y - 110, '🎭 ENCORE!', '#d64b4b');
     });
   }
 });
@@ -402,19 +546,36 @@ defBadge({
   id: 'gigi_connie', owner: 'Gigi', friend: 'Connie',
   name: "Connie's Chaos Charm", icon: '👻', color: '#ff9bd2',
   desc: 'A ghostly charm Connie slipped into Gigi’s collection, ready to help whenever a prank goes just a little too far.',
-  stat: lvl => `+${(lvl * 2).toFixed(0)}% Skill Haste`,
-  effect: 'If two spins in a row award the same prize, the badge gives Gigi’s most injured ally a temporary shield. This can trigger again after a short cooldown; Connie does not need to be on the team.',
+  stat: lvl => `+${(12 + lvl * 6).toFixed(0)}% Skill Haste · +${(10 + lvl * 5).toFixed(0)}% Evasion`,
+  effect: "Connie's ghostly mischief rigs Gigi's prize wheel with spectral luck! Gigi begins battle with 1 extra Wheel Ticket and +25% Evasion. Whenever Gigi spins the Wish Wheel, Connie haunts the board so Jackpots hit twice as often. Landing on a Jackpot causes Connie to unleash a Poltergeist Wail that Fears all enemies for 2.0s+, cuts their Attack Speed by 35%, and grants Gigi and her most injured ally a Spectral Shield with +30% Evasion and CC immunity for 5s.",
   apply(u, B, lvl) {
-    u.flat.cdr = (u.flat.cdr || 0) + lvl * .02;
+    u.flat.cdr = (u.flat.cdr || 0) + (0.12 + lvl * 0.06);
+    u.flat.evaP = (u.flat.evaP || 0) + (0.10 + lvl * 0.05);
     u.dirty = true;
     u._chaosCharmAt = 0;
+
+    B.after(.15, () => { if (u.alive && typeof B.gigiTicket === 'function') B.gigiTicket(u); });
+
     B.on(u, 'gigiPrize', prize => {
-      if (!prize || prize.combo < 2 || B.t < u._chaosCharmAt) return;
-      const ally = B.lowestHp(B.alliesOf(u));
-      if (!ally) return;
-      u._chaosCharmAt = B.t + Math.max(3, 5.5 - lvl * .4);
-      B.shield(u, ally, ally.max.hp * (.025 + lvl * .012), 4 + lvl * .35);
-      B.fxFloatIcon(ally.x, ally.y - 105, '👻', '#ff9bd2');
+      if (!prize) return;
+      if (prize.id === 'jackpot' || prize.combo >= 2) {
+        if (B.t < u._chaosCharmAt) return;
+        u._chaosCharmAt = B.t + Math.max(4.0, 7.0 - lvl * .4);
+        Sound.play('ghost_wail', { vol: .48, throttle: 200 });
+        B.enemiesOf(u).forEach(e => {
+          B.applyStatus(u, e, 'fear', 2.0 + lvl * .3);
+          B.applyStatus(u, e, 'slow', 4.0 + lvl * .4);
+          B.fxFloatIcon(e.x, e.y - 95, '👻 FEAR', '#ff9bd2');
+        });
+        const ally = B.lowestHp(B.alliesOf(u)) || u;
+        [u, ally].forEach(target => {
+          B.shield(u, target, u.max.hp * (.18 + lvl * .04), 5);
+          B.applyStatus(u, target, 'untargetable', 1.5);
+          B.applyStatus(u, target, 'ccimmune', 4);
+        });
+        B.fxRing(u.x, u.y - 40, 260, '#ff9bd2', .5);
+        B.fxFloatIcon(u.x, u.y - 110, '👻 POLTERGEIST', '#ff9bd2');
+      }
     });
   }
 });

@@ -81,8 +81,15 @@ console.log('All game scripts loaded successfully.');
 
 vm.runInContext(`
 (() => {
-  const B = new Battle({ mode: 'test' });
-  B.offscreen = true;
+  Save.data = Save.fresh();
+  Save.write = () => {};
+  UI.queueHeroUnlock = () => {};
+  UI.toast = () => {};
+  Achievements.record = () => {};
+  Object.keys(FX).forEach(k => { if (typeof FX[k] === 'function') FX[k] = () => {}; });
+  Object.keys(Sound).forEach(k => { if (typeof Sound[k] === 'function') Sound[k] = () => false; });
+
+  const spec = (id, lv = 70, rarity = 5) => ({ id, level: lv, rarity, rarityPlus: 0, stars: 3, skillLv: lv });
 
   // Test 1: Looey definition exists with all 5 skills
   const heroDef = HEROES.Looey;
@@ -95,30 +102,30 @@ vm.runInContext(`
   console.log('Test 1 Passed: Looey skills defined');
 
   // Test 2: Unit creation and passives initialization
-  const looey = B.addUnit({ id: 'Looey', level: 60, rarity: 5, stars: 5, skillLv: 10 }, TEAM_P, 0);
-  const ally = B.addUnit({ id: 'Poppy', level: 60, rarity: 5, stars: 5, skillLv: 10 }, TEAM_P, 1);
-  const foe1 = B.addUnit({ id: 'Boxten', level: 60, rarity: 5, stars: 5, skillLv: 10 }, TEAM_F, 0);
-  const foe2 = B.addUnit({ id: 'Shrimpo', level: 60, rarity: 5, stars: 5, skillLv: 10 }, TEAM_F, 1);
-  B.initPassives(looey);
-  B.initPassives(ally);
-  B.initPassives(foe1);
-  B.initPassives(foe2);
+  const B = new Battle({ offscreen: true });
+  B.start([spec('Looey'), spec('Poppy')], [spec('Boxten'), spec('Shrimpo')], { timeLimit: 45 });
+  const looey = B.units.find(u => u.id === 'Looey');
+  const poppy = B.units.find(u => u.id === 'Poppy');
+  const boxten = B.units.find(u => u.id === 'Boxten');
+  const shrimpo = B.units.find(u => u.id === 'Shrimpo');
 
   assert(looey.alive, 'Looey is alive');
   assert.strictEqual(looey._looeyPopSave, false, 'Pop save initialized to false');
-  console.log('Test 2 Passed: Looey created and initialized');
+  console.log('Test 2 Passed: Looey created and battle started');
 
   // Test 3: Helium Hustle (W) passive - taking direct damage grants inflated
-  B.damage(foe1, looey, 200, { type: 'physical' });
+  const dmgRes = B.damage(boxten, looey, 200, { type: 'physical', noDodge: true });
   let inf = looey.getStatus('inflated');
   assert(inf && inf.stacks >= 1, 'Looey gained 1 inflated stack from direct damage');
   console.log('Test 3 Passed: Helium Hustle damaged listener grants inflated');
 
   // Test 4: Lethal save mechanics
   looey.hp = 100;
-  B.applyStatus(foe1, looey, 'poison', 5);
+  looey.shields = [];
+  B.applyStatus(boxten, looey, 'poison', 5);
   assert(looey.hasStatus('poison'), 'Looey poisoned before lethal');
-  B.damage(foe1, looey, 50000, { type: 'physical' });
+  const lethalRes = B.damage(boxten, looey, 500000, { type: 'true', noDodge: true });
+  console.log('lethalRes:', lethalRes && lethalRes.amount, 'looey hp:', looey.hp, '_looeyPopSave:', looey._looeyPopSave);
   assert(looey.alive, 'Looey survived lethal hit with pop save');
   assert.strictEqual(looey._looeyPopSave, true, 'Pop save flagged as used');
   assert(looey.hp >= Math.floor(looey.max.hp * 0.17), 'Looey restored to 18% max HP');
@@ -138,7 +145,7 @@ vm.runInContext(`
   }
   assert.strictEqual(looey.flat.dmgTaken4, 0.12, 'Looey has +12% damage taken during show');
   assert(looey.hasStatus('speedup'), 'Looey gained speedup');
-  assert(ally.hasStatus('speedup'), 'Ally gained speedup');
+  assert(poppy.hasStatus('speedup'), 'Ally gained speedup');
 
   // Advance through remaining show duration (8s)
   while (B.timers.length) {
@@ -155,7 +162,7 @@ vm.runInContext(`
   looey.hp = Math.floor(looey.max.hp * 0.2); // 80% missing HP
   looey.recompute();
   // Trigger interval callback
-  const pInterval = looey.intervals.find(it => it.fn && it.every === 0.4);
+  const pInterval = B.intervals.find(it => it.owner === looey && it.every === 0.4);
   assert(pInterval, 'P interval registered');
   pInterval.fn();
 
@@ -182,7 +189,7 @@ vm.runInContext(`
 
   // Test 8: The Greatest Show (R) Maximum Inflation, pierce, slow immunity, and takedown heal
   B.applyStatus(looey, looey, 'inflated', 999, { stacks: 8 });
-  const rInterval = looey.intervals.find(it => it.fn && it.every === 0.5);
+  const rInterval = B.intervals.find(it => it.owner === looey && it.every === 0.5);
   assert(rInterval, 'R interval registered');
   rInterval.fn();
 
@@ -190,20 +197,20 @@ vm.runInContext(`
   assert.strictEqual(looey.flat.cdr4, 0.3, 'Maximum Inflation grants 30% CDR');
 
   // Test Slow Immunity
-  B.applyStatus(foe1, looey, 'slow', 3);
+  B.applyStatus(boxten, looey, 'slow', 3);
   assert(!looey.hasStatus('slow'), 'Looey is completely immune to Slow during Maximum Inflation');
 
   // Test other debuffs trigger ccimmune window
-  B.applyStatus(foe1, looey, 'silence', 3);
+  B.applyStatus(boxten, looey, 'silence', 3);
   assert(looey.hasStatus('ccimmune'), 'First incoming debuff starts ccimmune window');
 
   // Test takedown: enemy killed by ally should NOT consume Looey stacks
   const currentStacks = looey.getStatus('inflated').stacks;
-  B.emitFoe(foe1.team, 'enemyDown', foe1);
+  B.emitFoe(boxten.team, 'enemyDown', boxten);
   assert.strictEqual(looey.getStatus('inflated').stacks, currentStacks, 'Random enemy death does NOT spend Looey stacks');
 
   // Test takedown: enemy killed by Looey DOES heal and consume 3 stacks
-  B.emitFor(looey, 'defeatedEnemy', foe2);
+  B.emitFor(looey, 'defeatedEnemy', shrimpo);
   assert.strictEqual(looey.getStatus('inflated').stacks, currentStacks - 3, 'Looey takedown consumes 3 stacks and heals');
 
   // Test full heal ends Maximum Inflation

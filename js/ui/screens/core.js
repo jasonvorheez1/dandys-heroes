@@ -177,6 +177,10 @@ const Screens = {
   render() {
     clearInterval(this._liveClock);
     this._liveClock = null;
+    if (this._friendshipChunkTimer) {
+      if (typeof cancelAnimationFrame === 'function') cancelAnimationFrame(this._friendshipChunkTimer);
+      this._friendshipChunkTimer = null;
+    }
     const s = clear($('#screen'));
     UI.refreshBar();
     this.refreshModeLocks();
@@ -227,6 +231,10 @@ const Screens = {
      screen replaces it, so the party feels like it actually headed out. */
   leaveHome(next, opt) {
     if (this._homeLeaving) return;
+    if (this._homeKeyHandler) {
+      window.removeEventListener('keydown', this._homeKeyHandler);
+      this._homeKeyHandler = null;
+    }
     const hub = $('.home-hub');
     if (!hub) { this.go(next, Object.assign({}, opt, { skipHomeExit: true })); return; }
     this._homeLeaving = true;
@@ -249,10 +257,13 @@ const Screens = {
     const stageTeam = team.length ? team : [leader];
     const teamPower = team.length ? fmt(Progress.teamPower(team)) : '0';
     const nextRoom = layout.nodes[run.node] || 'battle';
-    const nextRoomName = typeof NODE !== 'undefined' && NODE[nextRoom] ? NODE[nextRoom].name || NODE[nextRoom].label || nextRoom : String(nextRoom).replace(/^./, x => x.toUpperCase());
+    const nextRoomDef = typeof NODE !== 'undefined' && NODE[nextRoom] ? NODE[nextRoom] : null;
+    const nextRoomName = nextRoomDef ? nextRoomDef.name || nextRoomDef.label || nextRoom : String(nextRoom).replace(/^./, x => x.toUpperCase());
+    const nextRoomIcon = nextRoomDef ? nextRoomDef.icon || '⚔' : '⚔';
     const hub = el('main', 'home-hub home-hub-enter');
     const stage = el('button', 'home-stage');
-    stage.innerHTML = `<span class="home-stage-sky"></span><span class="home-stage-floor"></span><span class="home-stage-rays"></span><i class="home-spark a"></i><i class="home-spark b"></i><i class="home-spark c"></i>
+    stage.setAttribute('aria-label', `Home Base: ${stageTeam.length} of 5 Toons ready, led by ${HEROES[leader].name}. Tap to edit formation.`);
+    stage.innerHTML = `<span class="home-stage-sky"></span><span class="home-stage-cloud a" aria-hidden="true"></span><span class="home-stage-cloud b" aria-hidden="true"></span><span class="home-stage-floor"></span><span class="home-stage-rays"></span><i class="home-spark a"></i><i class="home-spark b"></i><i class="home-spark c"></i>
       <span class="home-stage-sign"><b>HOME BASE</b><small>TEAM HUDDLE</small></span>
       <span class="home-map-labels" aria-hidden="true">
         <span class="home-map-label home-map-run"><i>▶</i><b>RUN</b><small>ENDLESS</small></span>
@@ -261,24 +272,40 @@ const Screens = {
         <span class="home-map-label home-map-crates"><i>▣</i><b>CRATES</b><small>REWARDS</small></span>
         <span class="home-map-label home-map-heroes"><i>✦</i><b>ROSTER</b><small>TOONS</small></span>
       </span>
-      <span class="home-stage-copy"><small>ACTIVE SQUAD</small><b>${stageTeam.length}/5 TOONS READY</b><span>${HEROES[leader].name} leads the way</span></span>
-      <span class="home-stage-party">${stageTeam.map((id, i) => `<span class="home-stage-toon${id === leader ? ' lead' : ''}" style="--home-i:${i};--home-left:${stageTeam.length < 2 ? 35 : 4 + i * 70 / (stageTeam.length - 1)}%;--home-in:${.06 + i * .1}s;--home-idle:${-i * .32}s;--home-out:${i * .035}s;"><img src="${Art.hero(id)}" alt="${HEROES[id].name}"><b>${HEROES[id].name}</b></span>`).join('')}</span>
-      <span class="home-stage-dashboard"><span><small>TEAM POWER</small><b>${teamPower}</b></span><span><small>LEAD</small><b>Lv ${Save.hero(leader).level}</b></span></span>
-      <span class="home-stage-next"><small>NEXT UP</small><b>${nextRoomName}</b><em>Floor ${run.floor} · Room ${run.node + 1}/${layout.nodes.length}</em></span>
-      <em class="home-stage-edit">EDIT FORMATION <b>›</b></em>`;
-    stage.onclick = () => { Sound.play('choose', { vol: .42, priority: true }); Screens.openTeamEditor(); }; hub.appendChild(stage);
+      <span class="home-stage-copy"><small>ACTIVE SQUAD</small><b>${stageTeam.length}/5 TOONS READY</b><span><i class="home-lead-star" aria-hidden="true">★</i> ${HEROES[leader].name} leads the way</span></span>
+      <span class="home-stage-party">${stageTeam.map((id, i) => {
+        const h = HEROES[id];
+        const isLead = id === leader;
+        const role = h.role || 'Attacker';
+        const roleIcon = role === 'Tank' ? '🛡️' : role === 'Support' ? '💚' : '⚔️';
+        const heroLvl = Save.hero(id).level;
+        return `<span class="home-stage-toon${isLead ? ' lead' : ''}" data-hero="${id}" title="${h.name} · Lv ${heroLvl} · ${heroRole(role)}" style="--home-i:${i};--home-left:${stageTeam.length < 2 ? 35 : 4 + i * 70 / (stageTeam.length - 1)}%;--home-in:${.06 + i * .1}s;--home-idle:${-i * .32}s;--home-out:${i * .035}s;"><span class="home-toon-badges">${isLead ? '<i class="home-toon-crown" title="Leader">👑</i>' : ''}<span class="home-toon-role ${role.toLowerCase()}">${roleIcon}</span></span><img src="${Art.hero(id)}" alt="${h.name}"><span class="home-toon-pill"><b>${h.name}</b><small>Lv ${heroLvl}</small></span></span>`;
+      }).join('')}</span>
+      <span class="home-stage-dashboard"><span><small>TEAM POWER</small><b>⚡ ${teamPower}</b></span><span><small>LEAD</small><b>Lv ${Save.hero(leader).level}</b></span></span>
+      <span class="home-stage-next"><small>NEXT UP</small><b><i class="home-next-icon">${nextRoomIcon}</i> ${nextRoomName}</b><em>Floor ${run.floor} · Room ${run.node + 1}/${layout.nodes.length}</em></span>
+      <em class="home-stage-edit"><span>EDIT SQUAD</span> <b>›</b></em>`;
+
+    stage.querySelectorAll('.home-stage-toon').forEach(toonEl => {
+      toonEl.addEventListener('pointerdown', () => {
+        toonEl.classList.add('cheer');
+        Sound.play('pop', { vol: .35, priority: false });
+        setTimeout(() => toonEl.classList.remove('cheer'), 420);
+      });
+    });
+    stage.onclick = () => { Sound.play('choose', { vol: .42, priority: true }); Screens.openTeamEditor(); };
+    hub.appendChild(stage);
 
     const buds = d.buds || { state: 'available' };
     if (buds.state !== 'completed') {
       const bud = el('button', 'home-buds' + (buds.state === 'active' ? ' active' : ''));
       const claim = ['chooseHero', 'chooseTrinket', 'chooseSupplies'].includes(buds.state);
-      const stage = Math.max(1, Math.min(3, Number(buds.stage) || 1));
+      const stageNum = Math.max(1, Math.min(3, Number(buds.stage) || 1));
       const stageNames = { 1: 'LEARN THE ROOMS', 2: 'RECRUIT A BUDDY', 3: 'CHOOSE YOUR GIFT' };
       const rewardName = buds.state === 'chooseHero' ? 'Your buddy crate is ready!' : buds.state === 'chooseTrinket' ? 'Your first Trinket is ready!' : 'Your graduation gift is ready!';
-      const headline = claim ? rewardName : ['active', 'paused'].includes(buds.state) ? `Floor ${stage} · ${stageNames[stage]}` : 'A friendly first adventure';
+      const headline = claim ? rewardName : ['active', 'paused'].includes(buds.state) ? `Floor ${stageNum} · ${stageNames[stageNum]}` : 'A friendly first adventure';
       const subline = claim ? 'Pick the reward that fits your team.' : buds.state === 'paused' ? 'Lesson saved. Resume whenever you like.' : buds.state === 'active' ? 'Dandy is waiting at the next room.' : 'Three guided floors, useful rewards, no guesswork.';
       const action = claim ? 'OPEN GIFT' : ['active', 'paused'].includes(buds.state) ? 'RESUME' : 'START';
-      const progress = claim ? stage : ['active', 'paused'].includes(buds.state) ? stage - 1 : 0;
+      const progress = claim ? stageNum : ['active', 'paused'].includes(buds.state) ? stageNum - 1 : 0;
       bud.setAttribute('aria-label', `${headline}. ${action}`);
       bud.innerHTML = `<span class="home-buds-mark"><img src="uploads/dandysbudicon.png" alt=""><img class="home-buds-dandy" src="uploads/dandyhimself.png" alt=""></span>
         <span class="home-buds-copy grow"><small>DANDY'S BUDS · ${claim ? 'REWARD READY' : `${progress}/3 FLOORS COMPLETE`}</small><b>${headline}</b><span>${subline}</span>
@@ -295,7 +322,8 @@ const Screens = {
 
     if (!['active', 'chooseHero', 'chooseTrinket', 'chooseSupplies'].includes(buds.state)) {
       const cont = el('button', 'home-continue');
-      cont.innerHTML = `<i>▶</i><span class="grow"><small>CONTINUE RUN</small><b>ENDLESS · FLOOR ${run.floor}</b><em>Room ${run.node + 1} of ${layout.nodes.length}</em></span><strong>›</strong>`;
+      cont.setAttribute('aria-label', `Continue Endless Run: Floor ${run.floor}, Room ${run.node + 1} of ${layout.nodes.length}, ${nextRoomName}`);
+      cont.innerHTML = `<span class="home-continue-icon"><i>▶</i></span><span class="grow"><small>CONTINUE RUN</small><b>ENDLESS · FLOOR ${run.floor}</b><em>Room ${run.node + 1} of ${layout.nodes.length} · <i class="home-next-pill">${nextRoomIcon} ${nextRoomName}</i></em></span><span class="home-continue-end"><kbd class="home-kbd-hint" aria-hidden="true">SPACE</kbd><strong>›</strong></span>`;
       cont.onclick = () => Screens.go('depths'); hub.appendChild(cont);
     }
 
@@ -309,7 +337,7 @@ const Screens = {
       n.onclick = locked ? () => this.showModeGate(mode) : fn; return n;
     };
     playGrid.appendChild(playCard('🏆', 'Arena', `Rank #${fmt(ar.rank)}`, 'arena', 'arena', () => Screens.go('arena')));
-    playGrid.appendChild(playCard('👑', 'Event', 'Weekly encounters', 'event', 'raid', () => Screens.go('raid')));
+    playGrid.appendChild(playCard('👑', 'Event', feat?.name ? `Weekly · ${feat.name}` : 'Weekly encounters', 'event', 'raid', () => Screens.go('raid')));
     const trialBeginner = Save.data.mastery < MODE_UNLOCKS.trials.mastery;
     playGrid.appendChild(playCard('⚗', 'Trials', trialBeginner ? `Training grind · divisions at Mastery ${MODE_UNLOCKS.trials.mastery}` : Save.data.mastery >= 600 ? 'Weekly divisions · Apex 600 / 700 / 800' : 'Weekly divisions', 'trials', 'trials', () => Screens.go('trials')));
     play.appendChild(playGrid);
@@ -320,43 +348,79 @@ const Screens = {
     const passInfo = Pass.level(), passReady = Pass.claimable().length;
     const collect = section('COLLECT', 'Ready now', 'collect');
     const collectGrid = el('div', 'home-collect-grid');
-    const collectCard = (icon, name, sub, ready, fn, mode) => {
+    const collectCard = (icon, name, sub, ready, fn, mode, badge) => {
       const gate = this.modeGate(mode), locked = gate && !this.modeUnlocked(mode);
       const n = el('button', 'home-collect-card' + (ready && !locked ? ' ready' : '') + (locked ? ' locked' : ''));
-      n.innerHTML = `<i>${locked ? '🔒' : icon}</i><b>${name}</b><small>${locked ? `Mastery ${gate.mastery}` : sub}</small>${ready && !locked ? '<em>!</em>' : ''}`;
+      n.innerHTML = `<i>${locked ? '🔒' : icon}</i><b>${name}</b><small>${locked ? `Mastery ${gate.mastery}` : sub}</small>${ready && !locked ? `<em class="home-collect-badge">${badge || '!'}</em>` : ''}`;
       n.onclick = locked ? () => this.showModeGate(mode) : fn; return n;
     };
-    collectGrid.appendChild(collectCard('📅', 'Daily', passiveReady ? 'Free cache ready' : ordersReady ? 'Order ready' : Daily.available() ? 'Delivery ready' : `${orders.wins} wins`, passiveReady || ordersReady || Daily.available(), () => Screens.go('events')));
-    collectGrid.appendChild(collectCard('🎟', 'Scratch', `${Save.res('tape')} tapes`, Save.res('tape') > 0, () => { Screens.go('events'); setTimeout(() => Screens.openScratch(), 60); }));
+    collectGrid.appendChild(collectCard('📅', 'Daily', passiveReady ? 'Free cache ready' : ordersReady ? 'Order ready' : Daily.available() ? 'Delivery ready' : `${orders.wins} wins`, passiveReady || ordersReady || Daily.available(), () => Screens.go('events'), null, '!'));
+    const tapeCount = Save.res('tape');
+    collectGrid.appendChild(collectCard('🎟', 'Scratch', tapeCount > 0 ? `${tapeCount} tape${tapeCount === 1 ? '' : 's'}` : '0 tapes', tapeCount > 0, () => { Screens.go('events'); setTimeout(() => Screens.openScratch(), 60); }, null, tapeCount > 0 ? tapeCount : null));
     const crateCount = Save.res('gold') + Save.res('diamond') + Save.res('main');
-    collectGrid.appendChild(collectCard('📦', 'Crates', `${crateCount} held`, crateCount > 0, () => Screens.go('crates'), 'crates'));
-    collectGrid.appendChild(collectCard('📜', 'Pass', passReady ? `${passReady} reward${passReady === 1 ? '' : 's'}` : passInfo.complete ? 'Complete' : `Lv ${passInfo.lv}/${passInfo.max}`, passReady > 0, () => Screens.openPass('home'), 'pass'));
+    collectGrid.appendChild(collectCard('📦', 'Crates', crateCount > 0 ? `${crateCount} held` : '0 held', crateCount > 0, () => Screens.go('crates'), 'crates', crateCount > 0 ? crateCount : null));
+    collectGrid.appendChild(collectCard('📜', 'Pass', passReady ? `${passReady} reward${passReady === 1 ? '' : 's'}` : passInfo.complete ? 'Complete' : `Lv ${passInfo.lv}/${passInfo.max}`, passReady > 0, () => Screens.openPass('home'), 'pass', passReady > 0 ? passReady : null));
     collect.appendChild(collectGrid);
 
     const grow = section('GROW', 'Your collection', 'grow');
     const growGrid = el('div', 'home-grow-grid');
-    const growCard = (icon, name, sub, fn, mode) => {
+    const growCard = (icon, name, sub, fn, mode, pill) => {
       const gate = this.modeGate(mode), locked = gate && !this.modeUnlocked(mode);
       const n = el('button', 'home-grow-card' + (locked ? ' locked' : ''));
-      n.innerHTML = `<i>${locked ? '🔒' : icon}</i><span><b>${name}</b><small>${locked ? `Mastery ${gate.mastery}` : sub}</small></span><em>${locked ? '🔒' : '›'}</em>`;
+      n.innerHTML = `<i>${locked ? '🔒' : icon}</i><span><b>${name}</b><small>${locked ? `Mastery ${gate.mastery}` : sub}</small></span>${pill ? `<em class="home-grow-pill">${pill}</em>` : `<em>${locked ? '🔒' : '›'}</em>`}`;
       n.onclick = locked ? () => this.showModeGate(mode) : fn; return n;
     };
     const shopLevel = (d.shop && d.shop.level) || 0;
-    growGrid.appendChild(growCard('🎭', 'Heroes', `${Save.ownedIds().length} / ${PLAYABLE_IDS.length} recruited`, () => Screens.go('roster')));
+    const ownedCount = Save.ownedIds().length, totalHeroes = PLAYABLE_IDS.length;
+    growGrid.appendChild(growCard('🎭', 'Heroes', `${ownedCount} / ${totalHeroes} recruited`, () => Screens.go('roster'), null, `${Math.round(ownedCount / totalHeroes * 100)}%`));
     growGrid.appendChild(growCard('🛍️', 'Shop', `Counter Lv ${shopLevel} / 100`, () => Screens.go('shop'), 'shop'));
     growGrid.appendChild(growCard('🎒', 'Inventory', 'Trinkets & materials', () => Screens.go('inventory'), 'inventory'));
-    growGrid.appendChild(growCard('🤝', 'Friendship', `${Object.keys(d.badges).length} badges`, () => Screens.go('friendship'), 'friendship'));
-    growGrid.appendChild(growCard('📖', 'Journal', `${Achievements.completed().length} / ${Achievements.list.length} achievements`, () => Screens.go('journal')));
+    const badgeCount = Object.keys(d.badges).length;
+    growGrid.appendChild(growCard('🤝', 'Friendship', `${badgeCount} badge${badgeCount === 1 ? '' : 's'} linked`, () => Screens.go('friendship'), 'friendship'));
+    const achDone = Achievements.completed().length, achTotal = Achievements.list.length;
+    growGrid.appendChild(growCard('📖', 'Journal', `${achDone} / ${achTotal} achievements`, () => Screens.go('journal'), null, `${Math.round(achDone / achTotal * 100)}%`));
     grow.appendChild(growGrid);
 
     const cap = globalCap(), next = Math.min(cap, d.mastery + 1), reward = d.mastery < cap ? Save.masteryReward(next) : null;
     const mastery = el('section', 'home-mastery');
-    mastery.innerHTML = `<header><i>🏅</i><span class="grow"><small>ACCOUNT PROGRESS</small><b>MASTERY ${d.mastery}</b></span><em>CAP ${cap}</em></header>`;
-    mastery.appendChild(UI.bar(d.masteryXp / Save.masteryNeed(d.mastery), 'linear-gradient(90deg,#ff5b7f,#ffc94d)'));
-    mastery.appendChild(el('div', 'home-mastery-copy', d.mastery < cap ? `${fmt(d.masteryXp)} / ${fmt(Save.masteryNeed(d.mastery))} XP · Next: ${Object.keys(reward).filter(k => RES[k]).map(k => RES[k].icon + fmt(reward[k])).join(' ')}` : 'Recruit more Heroes to raise the account cap.'));
+    const masteryNeed = Save.masteryNeed(d.mastery);
+    const masteryPct = Math.min(100, Math.round((d.masteryXp / masteryNeed) * 100));
+    mastery.innerHTML = `<header><i>🏅</i><span class="grow"><small>ACCOUNT PROGRESS</small><b>MASTERY ${d.mastery}</b></span><span class="home-mastery-meta"><em>${masteryPct}%</em><small>CAP ${cap}</small></span></header>`;
+    mastery.appendChild(UI.bar(d.masteryXp / masteryNeed, 'linear-gradient(90deg,#ff5b7f,#ffc94d)'));
+    mastery.appendChild(el('div', 'home-mastery-copy', d.mastery < cap ? `${fmt(d.masteryXp)} / ${fmt(masteryNeed)} XP · Next: ${Object.keys(reward).filter(k => RES[k]).map(k => RES[k].icon + fmt(reward[k])).join(' ')}` : 'Recruit more Heroes to raise the account cap.'));
     hub.appendChild(mastery);
     const settings = el('button', 'home-settings', '⚙ Settings & Save Data'); settings.onclick = () => this.openSettings(); hub.appendChild(settings);
     s.appendChild(hub);
+
+    // Keyboard shortcuts while Home Hub is active
+    if (this._homeKeyHandler) {
+      window.removeEventListener('keydown', this._homeKeyHandler);
+      this._homeKeyHandler = null;
+    }
+    this._homeKeyHandler = (e) => {
+      if (this.cur !== 'home') return;
+      const modal = $('#modal');
+      if (modal && !modal.hidden) return;
+      if (['INPUT', 'TEXTAREA'].includes(document.activeElement?.tagName)) return;
+      if (e.altKey || e.ctrlKey || e.metaKey) return;
+
+      if (e.code === 'Space' || e.key === 'Enter') {
+        const cont = $('.home-continue', hub) || $('.home-buds', hub);
+        if (cont) { e.preventDefault(); cont.click(); }
+      } else if (e.code === 'KeyE') {
+        e.preventDefault();
+        Sound.play('choose', { vol: .42, priority: true });
+        Screens.openTeamEditor();
+      } else if (e.code === 'KeyR') {
+        e.preventDefault();
+        Screens.go('roster');
+      } else if (e.code === 'KeyA') {
+        e.preventDefault();
+        Screens.go('arena');
+      }
+    };
+    window.addEventListener('keydown', this._homeKeyHandler);
+
     requestAnimationFrame(() => hub.classList.add('home-hub-ready'));
     if (this._homeEntrancePending) {
       this._homeEntrancePending = false;

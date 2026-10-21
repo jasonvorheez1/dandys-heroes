@@ -31,23 +31,23 @@ function ribeccaRattleNearby(u, B, dur) {
 
 defHero({
   id: 'Ribecca', name: 'Ribecca', folder: null, file: null, icon: 'Ribecca',
-  role: 'Control', roleLabel: 'Anti-Debuff Control', tier: 'C', position: 'Midline', element: 'Bone',
+  role: 'Control', roleLabel: 'Anti-Debuff Control', tier: 'A', position: 'Midline', element: 'Bone',
   blurb: 'A calm control unit who refuses enemy debuffs and turns failed pressure into small openings.',
-  base: { hp: 3820, atk: 268, def: 214, mag: 176, mdef: 226, spd: 110, acc: 184, eva: 156 },
-  hidden: { range: 245, aspd: .94, ms: 70, aggro: .86, crit: .08, critDmg: 1.52, healPow: 1, shieldPow: 1.08, cdr: .04, ccRes: .16, kbRes: .28, armorPen: .08, magPen: 0 },
-  growth: { hp: .084, atk: .077, def: .078, mag: .058, mdef: .082 },
+  base: { hp: 4680, atk: 320, def: 280, mag: 185, mdef: 295, spd: 112, acc: 195, eva: 165 },
+  hidden: { range: 245, aspd: .96, ms: 72, aggro: .90, crit: .08, critDmg: 1.55, healPow: 1, shieldPow: 1.12, cdr: .06, ccRes: .20, kbRes: .32, armorPen: .08, magPen: 0 },
+  growth: { hp: .092, atk: .082, def: .088, mag: .060, mdef: .090 },
   move: { gait: 'walk', bob: 3, freq: 1.05, lean: 2, squash: .03, idle: 'settle', step: 'step_soft', particles: 'dust', pcol: '#b8a7ff', trail: { on: false }, brake: .45 },
-  basic: { name: 'Bone Tap', type: 'physical', ratio: .90, range: 245, sfx: 'hit_light', hit: 'hit_blunt', wind: .20,
+  basic: { name: 'Bone Tap', type: 'physical', ratio: .95, range: 245, sfx: 'hit_light', hit: 'hit_blunt', wind: .20,
     note: 'A quiet tap of bone that keeps the enemy just slightly out of step.' },
   skills: {
     W: {
-      name: 'The Undead', type: 'Control / Anti-Debuff', energy: 100,
-      v: { ratio: .72 }, p: { dur: 5.5, energy: 4, attackDown: .22, disarm: 1.15 },
-      desc: (S, P) => `<span class="sk-pas">Ribecca is immune to applied debuffs. At the start of each wave, her team becomes immune to applied debuffs for 2s. Whenever an enemy's debuff fails against her, that enemy becomes 🎵 Off Rhythm, losing Accuracy and Skill Haste.</span> Active: for ${P.dur}s, enemies targeting Ribecca lose <em>${pcn(P.attackDown * 100)}</em> Attack Speed. When it ends, nearby Off Rhythm enemies lose their next Basic Attack.`,
+      name: 'The Undead', type: 'Control / Anti-Debuff / Physical Damage', energy: 100,
+      v: { ratio: .95 }, p: { dur: 5.5, energy: 6, attackDown: .25, disarm: 1.25 },
+      desc: (S, P) => `<span class="sk-pas">Ribecca is immune to applied debuffs. At the start of each wave, her team becomes immune to applied debuffs for 2s. Whenever an enemy's debuff fails against her, that enemy becomes 🎵 Off Rhythm, losing Accuracy and Skill Haste.</span> Active: for ${P.dur}s, enemies targeting Ribecca lose <em>${pcn(P.attackDown * 100)}</em> Attack Speed. When it ends, a rattle shockwave deals <em>${pcn(S.ratio * 100)}</em> Attack to nearby enemies and disarms Off Rhythm targets for ${P.disarm}s.`,
       passive: (u, B, S) => {
         u.guards = u.guards || [];
-        u.guards.push((id, d) => d.kind === 'debuff');
-        B.after(.24, () => {
+        u.guards.push((id, d) => !!(d && d.kind === 'debuff'));
+        const applyWaveDebuffImmunity = () => {
           if (!u.alive) return;
           B.alliesOf(u).forEach(a => {
             B.applyStatus(u, a, 'ccimmune', 2);
@@ -66,14 +66,19 @@ defHero({
             a.guards.push(openingImmunity);
           });
           B.fxRing(u.x, u.y - 42, 300, '#b8a7ff', .48);
+        };
+        B.after(.24, applyWaveDebuffImmunity);
+        B.on(u, 'waveStart', () => {
+          u.ribeccaFailedDebuffWave = false;
+          applyWaveDebuffImmunity();
         });
         B.on(u, 'debuffBlocked', ev => {
           if (ev.unit !== u || !ev.src || ev.src.team === u.team) return;
           u.ribeccaFailedDebuffs = (u.ribeccaFailedDebuffs || 0) + 1;
           u.ribeccaFailedDebuffWave = true;
-          B.energy(u, S.energy || 4);
+          B.energy(u, S.energy || 6);
           ribeccaOffRhythm(u, ev.src, B, 6);
-          if (u.ribeccaUndeadUntil > B.t) ribeccaOffRhythm(u, ev.src, B, 7);
+          if (u.ribeccaUndeadUntil > B.t) ribeccaOffRhythm(u, ev.src, B, 8);
         });
       },
       cast: (u, B, S, P) => {
@@ -88,14 +93,19 @@ defHero({
         });
         B.after(P.dur, () => {
           if (!u.alive) return;
-          ribeccaRattleNearby(u, B, 6);
-          B.fxRing(u.x, u.y - 42, 230, '#b8a7ff', .7);
+          B.enemiesOf(u).filter(e => e.alive && B.distance(u, e) <= 320).forEach(e => {
+            B.damage(u, e, u.st.atk * S.ratio, { type: 'physical', area: true, tag: 'The Undead Rattle' });
+            ribeccaOffRhythm(u, e, B, 6);
+            if (e.hasStatus('offrhythm')) B.applyStatus(u, e, 'disarm', P.disarm);
+          });
+          B.fxRing(u.x, u.y - 42, 260, '#b8a7ff', .75);
+          Sound.play('bone', { vol: .6 });
         });
       }
     },
     G: {
       name: 'Loose Bones', type: 'Physical Damage / Control', cd: 9,
-      v: { ratio: .68 }, p: { dur: 6, root: 1.25, bossDur: 8 },
+      v: { ratio: 1.15 }, p: { dur: 6, root: 1.4, bossDur: 8 },
       desc: (S, P) => `Sends loose bones through the enemy formation for <em>${pcn(S.ratio * 100)}</em> Attack. Enemies become 🎵 Off Rhythm; already affected targets are Rooted for ${P.root}s, while bosses receive heavier Skill Haste reduction instead.`,
       ai: { prio: 58, cond: (u, B) => B.enemiesOf(u).length > 0 },
       cast: (u, B, S, P) => {
@@ -107,13 +117,13 @@ defHero({
           const already = e.hasStatus('offrhythm');
           ribeccaOffRhythm(u, e, B, e.isBoss ? P.bossDur : P.dur);
           if (already && !e.isBoss) B.applyStatus(u, e, 'root', P.root);
-          if (already && e.isBoss) ribeccaDelaySkill(e, 1.2);
+          if (already && e.isBoss) ribeccaDelaySkill(e, 1.4);
         }));
       }
     },
     B: {
-      name: 'Rattle Step', type: 'Control / Physical Damage', cd: 12,
-      v: { ratio: .54 }, p: { slow: 5, delay: 1.5, energy: 12, eva: .18, evaDur: 4.5 },
+      name: 'Rattle Step', type: 'Control / Physical Damage', cd: 9.5,
+      v: { ratio: 1.10 }, p: { slow: 5, delay: 1.6, energy: 14, eva: .22, evaDur: 5 },
       desc: (S, P) => `Moves in an uneven rhythm and rattles the highest-Energy enemy for <em>${pcn(S.ratio * 100)}</em> Attack. Their next Skill is delayed, their Movement Speed falls for ${P.slow}s, and Ribecca gains <em>${pcn(P.eva * 100)}</em> Evasion for ${P.evaDur}s.`,
       ai: { prio: 54, cond: (u, B) => B.enemiesOf(u).length > 0 },
       cast: (u, B, S, P) => {
@@ -129,7 +139,7 @@ defHero({
     },
     P: {
       name: 'Unbothered', type: 'Armor / Magic Defense / Control',
-      v: { def: .035, mdef: .035, energy: 3 }, p: { ccRes: .22 },
+      v: { def: .035, mdef: .035, energy: 5 }, p: { ccRes: .25 },
       desc: (S, P) => `Whenever an enemy becomes 🎵 Off Rhythm, Ribecca gains <em>${pcn(S.def * 100)}</em> Armor and Magic Defense. Ignored debuffs restore ${S.energy} Energy, and Crowd Control duration against her is reduced.`,
       passive: (u, B, S, P) => {
         u.flat.ccResRibecca = P.ccRes;
@@ -138,13 +148,13 @@ defHero({
           B.applyStatus(u, u, 'ribecca_unbothered', 999, { stacks: 1 });
         });
         B.on(u, 'debuffBlocked', ev => {
-          if (ev.unit === u && ev.src && ev.src.team !== u.team) B.energy(u, S.energy || 3);
+          if (ev.unit === u && ev.src && ev.src.team !== u.team) B.energy(u, S.energy || 5);
         });
       }
     },
     R: {
       name: 'Still Standing', type: 'Control / Max HP',
-      v: { hp: .08, shield: .22 }, p: { trigger: .32, reform: 5, extend: 1.6, disjoint: 4.5 },
+      v: { hp: .14, shield: .28 }, p: { trigger: .35, reform: 5, extend: 2, disjoint: 5 },
       desc: (S, P) => `Off Rhythm can stack to its limit; maximum stacks make enemies 🦴 Disjointed, delaying their next Skill and weakening their next attack. Once per wave below ${pc(P.trigger)}, Ribecca reforms with a Shield and applies Off Rhythm nearby.`,
       passive: (u, B, S, P) => {
         u.flat.hpP15 = S.hp;
@@ -155,12 +165,13 @@ defHero({
             if (rhythm) rhythm.t += P.extend;
           });
         });
+        B.on(u, 'waveStart', () => { u._ribeccaReformed = false; });
         B.every(u, .18, () => {
           if (u._ribeccaReformed || u.hpPct > P.trigger || !u.alive) return;
           u._ribeccaReformed = true;
           B.cleanseAll(u); B.shield(u, u, u.max.hp * S.shield, P.reform);
-          B.enemiesOf(u).filter(e => B.distance(u, e) <= 300).forEach(e => ribeccaOffRhythm(u, e, B, P.disjoint));
-          B.fxRing(u.x, u.y - 42, 250, '#e5d6ff', .85); B.fxFloatIcon(u.x, u.y - 105, '🦴', '#e5d6ff');
+          B.enemiesOf(u).filter(e => B.distance(u, e) <= 320).forEach(e => ribeccaOffRhythm(u, e, B, P.disjoint));
+          B.fxRing(u.x, u.y - 42, 270, '#e5d6ff', .85); B.fxFloatIcon(u.x, u.y - 105, '🦴', '#e5d6ff');
         });
       }
     }

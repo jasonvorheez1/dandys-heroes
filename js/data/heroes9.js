@@ -147,14 +147,18 @@ function finnUpdate(u, B) {
           const wasCasting = !!e.casting; B.interrupt(e);
           B.fxFloatIcon(e.x, e.y - 96, '💦', '#75dcff'); B.applyStatus(u, e, 'slow', 2, { stacks: 2 });
           const hook = e.getStatus('hooked');
-          if (u.finnCoordination && hook && hook.src === u) B.energy(u, 5);
+          if (u.finnCoordination && hook && hook.src === u) B.energy(u, 6);
           if (wasCasting) finnCoordination(u, B, true);
         }
       });
+      const hook = e.getStatus('hooked');
+      if (hook && hook.src === u) {
+        finnTryBigCatch(u, e, B);
+      }
     }
     const hook = e.getStatus('hooked');
     if (hook && hook.src === u && (e.moving || e.dashUntil > B.t || Math.abs(e.x - state.lastX) > 7) && B.t - state.hookAt >= .7) {
-      state.hookAt = B.t; finnLoseEnergy(u, e, B, u.finnHookDrain || 7);
+      state.hookAt = B.t; finnLoseEnergy(u, e, B, u.finnHookDrain || 9);
     }
     state.lastX = e.x;
   });
@@ -164,18 +168,21 @@ defHero({
   id: 'Finn', name: 'Finn', folder: 'Finn', file: 'Finn', icon: 'Finn',
   role: 'Control', roleLabel: 'Disruption Control', tier: 'B', position: 'Middle', element: 'Water',
   blurb: 'A fishbowl angler with one line, one slippery plan, and one untargetable companion who never splashes where expected.',
-  base: { hp: 4020, atk: 292, def: 238, mag: 188, mdef: 250, spd: 108, acc: 184, eva: 120 },
-  hidden: { range: 245, aspd: .98, ms: 70, aggro: .76, crit: .10, critDmg: 1.55, healPow: 1,
-    shieldPow: 1, cdr: .04, ccRes: .20, kbRes: .34, armorPen: .11, magPen: .02 },
-  growth: { hp: .087, atk: .084, def: .079, mag: .067, mdef: .081 },
+  base: { hp: 4220, atk: 315, def: 252, mag: 188, mdef: 255, spd: 112, acc: 188, eva: 124 },
+  hidden: { range: 245, aspd: 1.04, ms: 78, aggro: .76, crit: .10, critDmg: 1.55, healPow: 1,
+    shieldPow: 1, cdr: .06, ccRes: .22, kbRes: .35, armorPen: .12, magPen: .02 },
+  growth: { hp: .089, atk: .086, def: .080, mag: .067, mdef: .082 },
   move: { gait: 'waddle', bob: 6, freq: 1.25, lean: 5, squash: .07, idle: 'sway', step: 'step_soft',
     particles: 'none', pcol: '#75dcff', trail: { on: true, col: '#63c8ee', rate: .16 }, brake: .42 },
-  basic: { name: 'Bowl Bump', type: 'physical', ratio: .92, range: 245, sfx: 'swing_light', hit: 'hit_water', animStyle:'finnBowlBump',
-    wind: .25, onHit: (u, t, B) => { if (t.hasStatus('slipperyfloor')) B.applyStatus(u, t, 'slow', 2); } },
+  basic: { name: 'Bowl Bump', type: 'physical', ratio: 1.02, range: 245, sfx: 'swing_light', hit: 'hit_water', animStyle:'finnBowlBump',
+    wind: .24, onHit: (u, t, B) => {
+      if (t.hasStatus('slipperyfloor')) B.applyStatus(u, t, 'slow', 2);
+      if (t.hasStatus('hooked') || t.hasStatus('barnabysplash')) B.energy(u, 4);
+    } },
   skills: {
     W: {
       name: 'Reel In', type: 'Control / Physical Damage', energy: 100,
-      v: { ratio: 1.18 }, p: { splashEvery: 5.5, hook: 7, drain: 7, pool: 7 },
+      v: { ratio: 1.38 }, p: { splashEvery: 5.0, hook: 7.5, drain: 9, pool: 7.5 },
       desc: (S, P) => `<span class="sk-pas">Barnaby swims beside Finn, untargetable. Every ${P.splashEvery}s he splashes the highest-Energy enemy, reducing Movement, Attack Speed, and Accuracy. Finn's Slows, Hooks, and interrupts make Barnaby 🐟 Barnaby Excited; at four stacks his next splash leaps and Stuns.</span> Active: hooks the highest-Energy enemy for ${P.hook}s, dealing <em>${pcn(S.ratio * 100)}</em> Attack. Moving or repositioning drains Energy. Barnaby immediately jumps in and creates 💧 Slippery Floor.`,
       ai: { cond: (u, B) => B.enemiesOf(u).length > 0 },
       passive: (u, B, S, P) => {
@@ -192,19 +199,23 @@ defHero({
         B.after(.24, () => {
           if (!t.alive) return;
           B.damage(u, t, u.st.atk * S.ratio, { type: 'physical', tag: 'Reel In' }); finnHook(u, t, B, P.hook);
-          finnSplash(u, t, B, { dur: 5 }); finnAddPool(u, B, t.x, 105, P.pool); finnTryBigCatch(u, t, B);
+          finnSplash(u, t, B, { dur: 5 }); finnAddPool(u, B, t.x, 110, P.pool); finnTryBigCatch(u, t, B);
         });
       }
     },
     G: {
-      name: 'Barnaby, Go!', type: 'Control', cd: 10,
-      v: {}, p: { targets: 3, dur: 6, pull: 72 },
-      desc: (S, P) => `Barnaby arcs through up to ${P.targets} enemies, reducing Attack Speed and Accuracy for ${P.dur}s. He distracts the highest-Attack target, weakening and slowing their next Basic Attack. If that target is Hooked, Barnaby bites the line, drags them out of formation, and interrupts them.`,
+      name: 'Barnaby, Go!', type: 'Control / Physical Damage', cd: 10,
+      v: { ratio: .72 }, p: { targets: 3, dur: 6, pull: 85 },
+      desc: (S, P) => `Barnaby arcs through up to ${P.targets} enemies, dealing <em>${pcn(S.ratio * 100)}</em> Attack and reducing Attack Speed and Accuracy for ${P.dur}s. He distracts the highest-Attack target, weakening and slowing their next Basic Attack. If that target is Hooked, Barnaby bites the line, drags them out of formation, and interrupts them.`,
       ai: { prio: 58, cond: (u, B) => B.enemiesOf(u).length > 0 },
       cast: (u, B, S, P) => {
         const enemies = B.enemiesOf(u); const targets = enemies.slice().sort((a, b) => b.energy - a.energy).slice(0, P.targets);
         B.anim(u, 'cast', .54, 'finnSendBarnaby'); Sound.play('whoosh', { vol: .45 });
-        targets.forEach((t, i) => B.after(i * .16, () => finnSplash(u, t, B, { dur: P.dur })));
+        targets.forEach((t, i) => B.after(i * .16, () => {
+          if (!t.alive) return;
+          B.damage(u, t, u.st.atk * S.ratio, { type: 'physical', tag: 'Barnaby, Go!' });
+          finnSplash(u, t, B, { dur: P.dur });
+        }));
         const strong = B.highestStat(enemies, 'atk'); if (!strong) return;
         B.applyStatus(u, strong, 'barnabydistracted', P.dur);
         const hook = strong.getStatus('hooked');
@@ -219,15 +230,18 @@ defHero({
       }
     },
     B: {
-      name: 'Slippery Floor', type: 'Control', cd: 13,
-      v: {}, p: { dur: 9, radius: 235 },
-      desc: (S, P) => `Spills water across the enemy side for ${P.dur}s. Enemies standing there lose Movement Speed and Skill Haste; their first movement attempt makes them slip and interrupt themselves. Barnaby travels faster through the water, and splashing a soaked enemy spreads water and a second splash to the nearest foe.`,
-      ai: { prio: 52, cond: (u, B) => B.enemiesOf(u).length >= 2 },
+      name: 'Slippery Floor', type: 'Control / Physical Damage', cd: 11,
+      v: { ratio: .60 }, p: { dur: 9, radius: 245 },
+      desc: (S, P) => `Spills water across the enemy side for ${P.dur}s, dealing <em>${pcn(S.ratio * 100)}</em> Attack on impact. Enemies standing there lose Movement Speed and Skill Haste; their first movement attempt makes them slip and interrupt themselves. Barnaby travels faster through the water, and splashing a soaked enemy spreads water and a second splash to the nearest foe.`,
+      ai: { prio: 52, cond: (u, B) => B.enemiesOf(u).length >= 1 },
       cast: (u, B, S, P) => {
         const enemies = B.enemiesOf(u); if (!enemies.length) return;
         const x = sum(enemies.map(e => e.x)) / enemies.length;
         B.anim(u, 'cast', .56, 'finnSpill'); Sound.play('hit_water', { vol: .48 }); finnAddPool(u, B, x, P.radius, P.dur);
         B.fxSplash(x, B.ground - 15, '#63c8ee', 1.4);
+        enemies.filter(e => Math.abs(e.x - x) <= P.radius).forEach(e => {
+          B.damage(u, e, u.st.atk * S.ratio, { type: 'physical', tag: 'Slippery Spill' });
+        });
       }
     },
     P: {
@@ -237,14 +251,15 @@ defHero({
       passive: (u, B) => {
         u.finnCoordination = true;
         B.on(u, 'statusApplied', ev => {
-          if (ev.unit !== u || !ev.src || ev.src.team === u.team || !STATUS[ev.id].cc) return;
+          if (ev.unit !== u || !ev.src || ev.src.team === u.team || !STATUS[ev.id] || !STATUS[ev.id].cc) return;
           finnSplash(u, ev.src, B, { dur: 6 });
+          finnExcite(u, B);
         });
       }
     },
     R: {
       name: 'Big Catch', type: 'Control / Physical Damage / Skill Haste',
-      v: { ratio: 1.42 }, p: { cooldown: 7 },
+      v: { ratio: 1.62 }, p: { cooldown: 6 },
       desc: (S, P) => `Barnaby circles Hooked enemies and splashes again whenever they lose Energy. Hooking an enemy on Slippery Floor triggers Big Catch once every ${P.cooldown}s: Finn pulls them toward center while Barnaby strikes for <em>${pcn(S.ratio * 100)}</em> Attack, interrupts them, and spreads the water. When Barnaby helps interrupt an enemy Skill, Finn gains stronger Skill Haste.`,
       passive: (u, B, S, P) => {
         u.finnBigCatch = true; u.finnBigCatchRatio = S.ratio; u.finnBigCatchCd = P.cooldown; u.finnBigCatchAt = 0;

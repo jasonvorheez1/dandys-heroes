@@ -248,7 +248,8 @@ const STATUS = {
   sleep: { icon: '💤', name: 'Sleep', kind: 'debuff', cc: true, desc: 'Cannot act. Heavy damage wakes the target, leaving it Groggy.',
     flags: { noAct: true, noMove: true },
     onDamaged: (u, s, ev, B) => { if (ev.amount > u.max.hp * .07 && !ev.dot) {
-      B.removeStatus(u, 'sleep'); B.applyStatus(s.src, u, 'groggy', 4); } } },
+      B.removeStatus(u, 'sleep'); B.applyStatus(s.src, u, 'groggy', s.groggyDur || 4); } },
+    onExpire: (u, s, B) => { if (s.src) B.applyStatus(s.src, u, 'groggy', s.groggyDur || 4); } },
   petrify: { icon: '🪨', name: 'Petrify', kind: 'debuff', cc: true, desc: 'Cannot act, but takes 45% less damage.',
     flags: { noAct: true, noMove: true }, mods: m => { m.dmgTaken -= .45; } },
   root: { icon: '⛓', name: 'Root', kind: 'debuff', cc: true, desc: 'Cannot move. Can still attack.',
@@ -486,7 +487,7 @@ const STATUS = {
   inflated: { icon: '🎈', name: 'Inflated', kind: 'buff', max: 8,
     desc: 'Move and Attack Speed +6%, Max HP +3%, and Damage Taken -2% per stack. Healing removes stacks.',
     mods: (m, s) => { m.msP += .06 * s.stacks; m.aspdP += .06 * s.stacks; m.hpP += .03 * s.stacks; m.dmgTaken -= .02 * s.stacks; },
-    onHealed: (u, s, ev, B) => { s.stacks = Math.max(0, s.stacks - 2); u.dirty = true;
+    onHealed: (u, s, ev, B) => { if (ev.noInflateLoss) return; s.stacks = Math.max(0, s.stacks - 2); u.dirty = true;
       if (s.stacks <= 0) B.removeStatus(u, 'inflated'); } },
   celebration: { icon: '🎉', name: 'Celebration', kind: 'buff', max: 5,
     desc: 'Attack Speed +7% and Crit Chance +4% per stack.',
@@ -744,7 +745,7 @@ function stName(id) { return STATUS[id] ? STATUS[id].name : id; }
 /* Wraps named effects in skill descriptions with tappable pills so players
    can read the status, buff, or debuff without leaving the hero page. */
 function tagifyStatuses(html) {
-  if (!html || typeof document === 'undefined') return html;
+  if (!html || typeof document === 'undefined' || !document.createElement || typeof NodeFilter === 'undefined') return html;
   const entries = Object.entries(STATUS).filter(([, status]) => status.icon && status.name);
   if (!entries.length) return html;
 

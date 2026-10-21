@@ -37,15 +37,44 @@ const CookieRun={
  team(specs,stage){const brave=Save.owns('GingerBrave')?playerSpec('GingerBrave'):this.loan(stage);return [brave,...specs.filter(s=>s.id!=='GingerBrave').slice(0,4)];},
  ensureWave(specs,stage){return specs.some(s=>s.id==='GingerBrave')?specs:[Save.owns('GingerBrave')?playerSpec('GingerBrave'):this.loan(stage),...specs.slice(0,4)];},
  wave(wave,level){
-  const ids=wave===1?['SkelecakeCook','PomegranateSnake','BerryBishop','DangerInTheBox']:wave===2?['CookieScorpion','PomegranateSnake','BerryBishop','DangerInTheBox','SkelecakeCook']:['PaperPuppetKnight','BerryBishop','CookieScorpion','DangerInTheBox'];
-  const foes=ids.map((id,i)=>({id,level,rarity:3,rarityPlus:1,stars:3,skillLv:level,twisted:false,encounterOnly:true,artSrc:Art.hero(id),formationLine:id==='BerryBishop'?2:i%2,mult:{hp:1+wave*.12,atk:.9+wave*.08,mag:1,def:1,mdef:1}}));
-  if(wave===3)foes.unshift({id:'ShadowMilkCookie',level,rarity:5,rarityPlus:1,stars:5,skillLv:level,kind:'boss',twisted:false,encounterOnly:true,artSrc:Art.hero('ShadowMilkCookie'),formationLine:2,mult:{hp:2.4,atk:1.1,mag:1.35,def:1.15,mdef:1.15}});
+  const stage=Math.max(0,COOKIE_EVENT.stageLevels.indexOf(level));
+  const ids=wave===1
+   ?['SkelecakeCook','PomegranateSnake','BerryBishop','DangerInTheBox','CookieScorpion']
+   :wave===2
+   ?['CookieScorpion','PomegranateSnake','BerryBishop','DangerInTheBox','SkelecakeCook','PaperPuppetKnight']
+   :['PaperPuppetKnight','BerryBishop','CookieScorpion','DangerInTheBox','PomegranateSnake'];
+  const foes=ids.map((id,i)=>({
+   id,level,
+   rarity:stage>=5?5:stage>=3?4:3,
+   rarityPlus:Math.min(14,1+stage*2),
+   stars:wave===3?5:(stage>=5?5:4),
+   skillLv:level,twisted:false,encounterOnly:true,artSrc:Art.hero(id),
+   formationLine:id==='BerryBishop'?2:i%2,
+   mult:{
+    hp:1.16+wave*.12+stage*.025,
+    atk:.95+wave*.05+stage*.015,
+    mag:1.00+wave*.05+stage*.015,
+    def:1.04+wave*.035+stage*.012,
+    mdef:1.04+wave*.035+stage*.012
+   }
+  }));
+  if(wave===3)foes.unshift({
+   id:'ShadowMilkCookie',level,rarity:5,rarityPlus:Math.min(18,2+stage*2),stars:5,skillLv:level,
+   kind:'boss',twisted:false,encounterOnly:true,artSrc:Art.hero('ShadowMilkCookie'),formationLine:2,
+   mult:{
+    hp:2.85+stage*.06,
+    atk:1.08+stage*.012,
+    mag:1.22+stage*.015,
+    def:1.14+stage*.012,
+    mdef:1.14+stage*.012
+   }
+  });
   return foes;
  },
  plan(){return [
- {wave:1,desc:'Oven Outskirts · Berry Bishops heal the lowest-HP ally. Break through the frontline.',mods:[]},
- {wave:2,desc:'Sugar Mirage · Snakes hunt Tanks, while Scorpions rush Supports. Watch the Poison stacks.',mods:[]},
- {wave:3,desc:'Puppet Moon · Shadow Milk Cookie leads the final wave. Boxes spread Corruption and release Paper Puppet Knights.',mods:[]}
+ {wave:1,desc:'Oven Outskirts · Berry Bishops heal the lowest-HP ally. Opening Momentum helps your team break through.',mods:['event_momentum']},
+ {wave:2,desc:'Sugar Mirage · Snakes hunt Tanks, while Scorpions rush Supports. Event Attrition reduces healing.',mods:['event_attrition']},
+ {wave:3,desc:'Puppet Moon · Shadow Milk Cookie commands the stage under Boss Pressure. Boxes spread Corruption and release Paper Puppet Knights.',mods:['event_attrition','event_boss_pressure']}
  ];},
  reward(stage){return 2+Math.floor(stage/2);},
  bake(count){

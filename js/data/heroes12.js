@@ -43,10 +43,10 @@ function tishaCrossLine(u, unit, B, line) {
     if (u.tishaSpotless) B.shield(u, unit, u.st.atk * u.tishaLineShield, 4);
   } else {
     tishaMisplace(u, unit, B, 6);
-    B.energy(u, 5);
+    B.energy(u, 7);
     if (u.tishaSpotless) {
-      B.energy(unit, -9);
-      Object.keys(unit.cds).forEach(k => { unit.cds[k] += .55; });
+      B.energy(unit, -12);
+      Object.keys(unit.cds).forEach(k => { unit.cds[k] += .75; });
     }
   }
   B.fxRing(line, B.ground - 28, 54, unit.team === u.team ? '#d9fff0' : '#85e8ed', .24);
@@ -132,23 +132,31 @@ defHero({
   scale: 1.04,
   role: 'Control', roleLabel: 'Formation Control', tier: 'S', position: 'Midline', element: 'Clean',
   blurb: 'A tireless organizer who turns battlefield spacing into a weapon, sweeping mobile enemies back into their proper rows.',
-  base: { hp: 4240, atk: 288, def: 248, mag: 188, mdef: 252, spd: 124, acc: 202, eva: 154 },
-  hidden: { range: 238, aspd: 1.06, ms: 84, aggro: .78, crit: .10, critDmg: 1.58, healPow: 1,
-    shieldPow: 1.08, cdr: .08, ccRes: .24, kbRes: .36, armorPen: .12, magPen: .03 },
-  growth: { hp: .089, atk: .086, def: .083, mag: .067, mdef: .084 },
+  base: { hp: 4820, atk: 335, def: 285, mag: 195, mdef: 290, spd: 124, acc: 205, eva: 155 },
+  hidden: { range: 238, aspd: 1.06, ms: 84, aggro: .78, crit: .12, critDmg: 1.60, healPow: 1,
+    shieldPow: 1.15, cdr: .10, ccRes: .25, kbRes: .38, armorPen: .14, magPen: .03 },
+  growth: { hp: .095, atk: .092, def: .088, mag: .067, mdef: .088 },
   move: { gait: 'sprint', bob: 5, freq: 2.5, lean: 14, squash: .06, idle: 'sweep', step: 'step_soft',
     particles: 'dust', pcol: '#9deceb', trail: { on: true, col: '#8fe8ed', rate: .09 }, brake: .48 },
-  basic: { name: 'Duster Snap', type: 'physical', ratio: .94, range: 238, sfx: 'swing_pole', hit: 'hit_light', wind: .18,
+  basic: { name: 'Duster Snap', type: 'physical', ratio: 1.06, range: 238, sfx: 'swing_pole', hit: 'hit_light', wind: .18,
     note: 'A precise feather-duster snap that keeps the nearest threat at arm’s length.',
-    onHit: (u, t, B) => { if (t.hasStatus('misplaced')) B.energy(u, 2); } },
+    onHit: (u, t, B) => { if (t.hasStatus('misplaced')) B.energy(u, 5); } },
   skills: {
     W: {
       name: 'Tidy Up!', type: 'Control / Physical Damage', energy: 100,
-      v: { ratio: .76 }, p: { misplaced: 7, extra: 58 },
+      v: { ratio: 1.15 }, p: { misplaced: 7, extra: 75 },
       desc: (S, P) => `<span class="sk-pas">Tisha draws invisible Clean Lines across the field. Allies crossing one gain Move Speed and shed one movement penalty; enemies crossing one become 🧹 Misplaced, reducing Accuracy and Skill Haste.</span> Active: a cleaning pulse speeds allies and sweeps every enemy toward the nearest Clean Line for <em>${pcn(S.ratio * 100)}</em> Attack. Already Misplaced enemies are pushed farther and interrupted.`,
       passive: (u, B) => {
         const lines = tishaLines(u, B); u._tishaLastX = {};
         B.after(.25, () => { if (u.alive) B.fxTishaLines(lines, u.tishaSpotless ? 2.3 : 1.2, !!u.tishaSpotless); });
+        B.on(u, 'waveStart', () => {
+          u._tishaSorted = null;
+          u._tishaAllMisplaced = false;
+          u._tishaDustRefreshAt = -Infinity;
+          u._tishaLines = null;
+          u._tishaLastX = {};
+          B.after(.25, () => { if (u.alive) B.fxTishaLines(tishaLines(u, B), u.tishaSpotless ? 2.3 : 1.2, !!u.tishaSpotless); });
+        });
         B.every(u, .12, () => {
           tishaHookDustMisses(u, B);
           B.units.filter(x => x.alive && !x.minion).forEach(x => {
@@ -162,7 +170,7 @@ defHero({
               const anchor = u._tishaSorted.get(e.uid);
               if (anchor == null || Math.abs(e.x - anchor) <= 82 || B.t < (e._tishaSweepAt || 0)) return;
               e._tishaSweepAt = B.t + .9; B.interrupt(e); B.dash(e, anchor, .18, { depth: e.depth });
-              B.damage(u, e, u.st.atk * u.tishaRowDamage, { type: 'physical', tag: 'Spotless Formation' });
+              B.damage(u, e, u.st.atk * (u.tishaRowDamage || .65), { type: 'physical', tag: 'Spotless Formation' });
               tishaMisplace(u, e, B, 6); B.fxTishaSweep(u, e, false);
             });
           }
@@ -182,23 +190,23 @@ defHero({
           const already = e.hasStatus('misplaced');
           const line = lines.slice().sort((a, b) => Math.abs(a - e.x) - Math.abs(b - e.x))[0];
           const dir = Math.sign(line - e.x) || u.face;
-          const dest = line + (already ? dir * P.extra : 0);
+          const dest = line + (already ? dir * (P.extra || 75) : 0);
           B.damage(u, e, u.st.atk * S.ratio, { type: 'physical', area: true, tag: 'Tidy Up!' });
-          B.dash(e, dest, .26, { depth: e.depth }); tishaMisplace(u, e, B, P.misplaced);
+          B.dash(e, dest, .26, { depth: e.depth }); tishaMisplace(u, e, B, P.misplaced || 7);
           if (already) B.interrupt(e);
         }));
       }
     },
     G: {
-      name: 'Everything In Its Place', type: 'Control', cd: 10,
-      v: {}, p: { frontPush: 76, backPush: 72, slow: 6, bumpRange: 62, bumpStun: 1.05, sorted: 6 },
+      name: 'Everything In Its Place', type: 'Control', cd: 9.0,
+      v: {}, p: { frontPush: 82, backPush: 78, slow: 7, bumpRange: 75, bumpStun: 1.35, sorted: 6 },
       desc: (S, P) => `Sweeps every enemy toward a proper row: frontliners forward, backliners backward, and middle enemies toward center. All become 🧹 Misplaced and lose Attack Speed. Enemies compressed within ${P.bumpRange} range collide, becoming Stunned and Blinded.${P.sorted ? ' At Red rarity, their assigned rows are temporarily locked.' : ''}`,
       ai: { prio: 72, cond: (u, B) => B.enemiesOf(u).length > 0 },
       cast: (u, B, S, P) => { B.anim(u, 'cast', .72); tishaSortFormation(u, B, S, P); }
     },
     B: {
-      name: 'Dust Cloud', type: 'Control / Physical Damage', cd: 12,
-      v: { impact: .46, dot: .14 }, p: { dur: 7 },
+      name: 'Dust Cloud', type: 'Control / Physical Damage', cd: 9.5,
+      v: { impact: .85, dot: .22 }, p: { dur: 7.5 },
       desc: (S, P) => `Kicks up a Dust Cloud for ${P.dur}s. Enemies take <em>${pcn(S.impact * 100)}</em> Attack immediately, then Physical Damage over time with heavily reduced Accuracy. A miss lets Tisha interrupt their next Basic Attack and extend 🧹 Misplaced. Allies gain Accuracy against the cloud.`,
       ai: { prio: 64, cond: (u, B) => B.enemiesOf(u).length > 0 },
       cast: (u, B, S, P) => {
@@ -210,12 +218,12 @@ defHero({
     P: {
       name: 'Neat Freak', type: 'Skill Haste / Control',
       v: {}, p: {},
-      desc: () => `Whenever an enemy first becomes 🧹 Misplaced, Tisha gains Haste. Pushing an enemy across a Clean Line restores Energy. When every living enemy is Misplaced at once, Tisha immediately refreshes Dust Cloud at reduced strength, no more than once every 7s.`,
+      desc: () => `Whenever an enemy first becomes 🧹 Misplaced, Tisha gains Haste. Pushing an enemy across a Clean Line restores Energy. When every living enemy is Misplaced at once, Tisha immediately refreshes Dust Cloud at reduced strength, no more than once every 5.5s.`,
       passive: (u) => { u.tishaNeatFreak = true; }
     },
     R: {
       name: 'Spotless Formation', type: 'Control / Skill Haste / Physical Damage',
-      v: { lineShield: .22, rowDamage: .42 }, p: {},
+      v: { lineShield: .32, rowDamage: .65 }, p: {},
       desc: (S) => `Clean Lines now drain enemy Energy and delay their Skill cooldowns, while allies crossing gain a <em>${pcn(S.lineShield * 100)}</em> Attack Shield. Everything In Its Place creates Sorted Formation: enemies are assigned to a row, and attempts to leave are swept back, interrupted, and struck for <em>${pcn(S.rowDamage * 100)}</em> Attack.`,
       passive: (u, B, S) => {
         u.tishaSpotless = true; u.tishaLineShield = S.lineShield; u.tishaRowDamage = S.rowDamage;

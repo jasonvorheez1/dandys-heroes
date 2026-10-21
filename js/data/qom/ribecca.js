@@ -31,23 +31,26 @@ function qomRibeccaReassemble(u, B) {
 QOM_RIBECCA.skills = {
   W: {
     name: 'Skeleton Symphony', type: 'Magic / Shield / Control', energy: 100,
-    v: { ratio: 1.15 }, p: { dur: 8 },
-    desc: () => 'Starts with a Sound Barrier worth 30% Max HP. While it holds, Ribecca redirects and softens allied damage. Absorbed hits build Resonance for a knockback wave. Active: team Shields and damage reduction for eight seconds, retaliatory sound pulses, then a bass note powered by absorbed damage.',
+    v: { ratio: 1.35 }, p: { dur: 8 },
+    desc: () => 'Starts with a Sound Barrier worth 30% Max HP. While it holds, Ribecca redirects and softens allied damage. Absorbed hits build Resonance for a knockback wave. Active: refreshes personal Sound Barrier, grants team Shields and damage reduction for eight seconds, retaliatory sound pulses, then a bass note powered by absorbed damage.',
     passive(u, B) {
       B.shield(u, u, u.max.hp * .30, 15);
+      B.on(u, 'waveStart', () => {
+        if (!qomHasShieldFrom(u, u)) B.shield(u, u, u.max.hp * .30, 15);
+      });
       B.on(u, 'allyDamaged', ev => {
         if (!ev.unit || !ev.src || ev.src.team === u.team || ev.redirected) return;
         const ally = ev.unit;
         if (ally !== u && qomHasShieldFrom(u, u) && !ally.hasStatus('qom_backstage_protected')) {
-          const moved = ev.amount * .25;
+          const moved = ev.amount * .28;
           ev.amount -= moved;
-          B.damage(ev.src, u, moved * .70, { type: 'true', redirected: true, tag: 'Sound Barrier Redirect' });
+          B.damage(ev.src, u, moved * .68, { type: 'true', redirected: true, noDodge: true, tag: 'Sound Barrier Redirect' });
         }
         if (B.t < (u._qomSymphonyUntil || 0) && qomHasShieldFrom(ally, u)) {
           u._qomSymphonyAbsorbed += Math.min(ally.shieldTotal, Math.max(0, ev.amount));
           if (B.t >= (ally._qomSoundPulseAt || 0)) {
             ally._qomSoundPulseAt = B.t + .6;
-            B.damage(u, ev.src, u.st.mag * .35, { type: 'magic', reflected: true, tag: 'Keytar Pulse' });
+            B.damage(u, ev.src, u.st.mag * .40, { type: 'magic', reflected: true, tag: 'Keytar Pulse' });
             B.applyStatus(u, ev.src, 'armslow', 4);
             qomShow(B, 'barrier', u, ally);
           }
@@ -66,12 +69,13 @@ QOM_RIBECCA.skills = {
       qomShow(B, 'barrier', u);
       Sound.play('qom_guard', { vol: .7, priority: true });
       qomAllies(B, u).forEach(a => {
-        B.shield(u, a, u.max.hp * .20, P.dur);
+        B.shield(u, a, u.max.hp * .22, P.dur);
         B.applyStatus(u, a, 'qom_sound_field', P.dur);
       });
+      B.shield(u, u, u.max.hp * .30, P.dur + 4);
       B.after(P.dur, () => {
         if (!u.alive) return;
-        const note = Math.min(u.st.mag * 2.4, u.st.mag * S.ratio + u._qomSymphonyAbsorbed * .16);
+        const note = Math.min(u.st.mag * 3.2, u.st.mag * (S.ratio || 1.35) + (u._qomSymphonyAbsorbed || 0) * .20);
         qomFoes(B, u).forEach(e => B.damage(u, e, note, { type: 'magic', area: true, tag: 'Symphony Bass Note' }));
         qomShow(B, 'barrier', u);
         Sound.play('qom_guard', { vol: .58 });
@@ -79,7 +83,7 @@ QOM_RIBECCA.skills = {
     }
   },
   G: {
-    name: 'Bone Rattler', type: 'Physical / Control', cd: 9, v: { ratio: 1.35 }, p: { dur: 6 },
+    name: 'Bone Rattler', type: 'Physical / Control', cd: 8.5, v: { ratio: 1.45 }, p: { dur: 6 },
     desc: () => 'Ribecca sends her detached arm at the strongest foe, Stunning them, then it bounces to two others and leaves them Offbeat. Reattaching grants Armor. An already Offbeat first target is Stunned longer and heals her.',
     cast(u, B, S, P) {
       const foes = qomFoes(B, u);
@@ -89,27 +93,32 @@ QOM_RIBECCA.skills = {
         if (!u.alive || !e.alive) return;
         B.damage(u, e, u.st.atk * S.ratio * (i ? .65 : 1), { type: 'physical', tag: 'Bone Rattler' });
         B.applyStatus(u, e, 'qom_offbeat', P.dur);
-        if (!i) B.applyStatus(u, e, 'stun', offbeat ? 1.75 : 1.1);
+        if (!i) B.applyStatus(u, e, 'stun', offbeat ? 1.9 : 1.25);
         qomShow(B, 'bone', u, e);
         if (i) Sound.play('qom_bone', { vol: .4, rate: 1 + i * .12, throttle: 90 });
       }));
       B.after(.5, () => { if (u.alive) B.applyStatus(u, u, 'qom_keytar_fortify', 8); });
-      if (offbeat) B.heal(u, u, (u.max.hp - u.hp) * .10);
+      if (offbeat) B.heal(u, u, (u.max.hp - u.hp) * .12);
       Sound.play('qom_bone', { vol: .62 });
     }
   },
   B: {
-    name: 'Backstage Protection', type: 'Shield / Support / Control', cd: 11,
-    v: { shield: .25 }, p: { dur: 8 },
+    name: 'Backstage Protection', type: 'Shield / Support / Control', cd: 10,
+    v: { shield: .28 }, p: { dur: 8 },
     desc: () => 'Keytar chords Shield the two most wounded allies. While protected, 40% of damage is redirected to Ribecca and softened; attackers lose Attack. A broken Shield heals Ribecca and leaves the ally with damage reduction.',
     cast(u, B, S, P) {
       qomAllies(B, u).sort((a, b) => a.hpPct - b.hpPct).slice(0, 2).forEach(a => {
         B.applyStatus(u, a, 'qom_backstage_protected', P.dur);
-        B.shield(u, a, u.max.hp * S.shield, P.dur, { onBreak: () => {
-          if (u.alive) B.heal(u, u, u.max.hp * .07);
-          if (a.alive) B.applyStatus(u, a, 'qom_sound_field', 4);
-          qomShow(B, 'backstage', u, a);
-        } });
+        B.shield(u, a, u.max.hp * S.shield, P.dur, {
+          onBreak: () => {
+            if (u.alive) B.heal(u, u, u.max.hp * .08);
+            if (a.alive) B.applyStatus(u, a, 'qom_sound_field', 4);
+            qomShow(B, 'backstage', u, a);
+          },
+          onExpire: () => {
+            if (u.alive) { B.heal(u, u, u.max.hp * .04); B.energy(u, 6); }
+          }
+        });
         qomShow(B, 'backstage', u, a);
       });
       Sound.play('qom_guard', { vol: .5 });
@@ -124,10 +133,11 @@ QOM_RIBECCA.skills = {
         if (def.kind !== 'debuff') return false;
         B.applyStatus(u, u, 'qom_resilience', 10);
         u._qomResists = (u._qomResists || 0) + 1;
-        if (u._qomResists % 3 === 0) B.heal(u, u, u.max.hp * .05);
+        if (u._qomResists % 3 === 0) B.heal(u, u, u.max.hp * .06);
         qomShow(B, 'reassemble', u);
         return true;
       });
+      B.on(u, 'waveStart', () => { u._qomReassembled = false; });
       B.on(u, 'allyLow', ally => { if (ally === u && u.hpPct < .4) qomRibeccaReassemble(u, B); });
       B.on(u, 'lethal', ev => {
         if (u._qomReassembled) return;
@@ -137,13 +147,14 @@ QOM_RIBECCA.skills = {
     }
   },
   R: {
-    name: 'Unbreakable Performance', type: 'Shield / Control / Magic Damage', v: { hp: .15 }, p: {},
-    desc: () => 'Every 15 seconds, Ribecca Shields and reinforces the whole team. Five Resonance also drains enemy Energy and applies Offbeat. Once per wave, Standing Ovation prevents an ally’s KO, Taunts every foe, and ends in a healing shockwave.',
+    name: 'Unbreakable Performance', type: 'Shield / Control / Magic Damage', v: { hp: .16 }, p: {},
+    desc: () => 'Every 14 seconds, Ribecca Shields and reinforces the whole team. Five Resonance also drains enemy Energy and applies Offbeat. Once per wave, Standing Ovation prevents an ally’s KO, Taunts every foe, and ends in a healing shockwave.',
     passive(u, B, S) {
-      u.flat.hpPqomR = S.hp; u.flat.defPqomR = .16; u.flat.mdefPqomR = .16; u.dirty = true;
-      B.every(u, 15, () => {
+      u.flat.hpPqomR = S.hp; u.flat.defPqomR = .18; u.flat.mdefPqomR = .18; u.dirty = true;
+      B.on(u, 'waveStart', () => { u._qomStandingOvation = false; });
+      B.every(u, 14, () => {
         qomAllies(B, u).forEach(a => {
-          B.shield(u, a, u.max.hp * .12, 8);
+          B.shield(u, a, u.max.hp * .14, 8);
           B.applyStatus(u, a, 'qom_keytar_fortify', 8);
         });
         qomShow(B, 'barrier', u);
@@ -153,8 +164,8 @@ QOM_RIBECCA.skills = {
         u._qomStandingOvation = true;
         ev.prevented = true;
         const ally = ev.unit;
-        ally.hp = Math.max(1, ally.max.hp * .15);
-        B.shield(u, ally, u.max.hp * .30, 8);
+        ally.hp = Math.max(1, ally.max.hp * .18);
+        B.shield(u, ally, u.max.hp * .32, 8);
         B.applyStatus(u, u, 'qom_standing_guard', 5);
         B.applyStatus(u, u, 'qom_energy_lock', 5);
         qomFoes(B, u).forEach(e => B.applyStatus(u, e, 'taunt', 5));
@@ -163,8 +174,8 @@ QOM_RIBECCA.skills = {
         Sound.play('qom_guard', { vol: .72 });
         B.after(5, () => {
           if (!u.alive) return;
-          qomWave(B, u, .75, 'magic', 'Standing Ovation', e => B.knockback(u, e, 80));
-          B.heal(u, u, u.max.hp * .10);
+          qomWave(B, u, .80, 'magic', 'Standing Ovation', e => B.knockback(u, e, 80));
+          B.heal(u, u, u.max.hp * .12);
           qomShow(B, 'ovation', u);
         });
       });
@@ -179,7 +190,7 @@ QOM_RIBECCA.skills.W.passive = (u, B, S, P) => {
     if (!ev.unit || ev.unit === u || !ev.src || ev.redirected || !ev.unit.hasStatus('qom_backstage_protected') || !qomHasShieldFrom(ev.unit, u)) return;
     const moved = ev.amount * .40;
     ev.amount -= moved;
-    B.damage(ev.src, u, moved * .65, { type: 'true', redirected: true, tag: 'Backstage Redirect' });
+    B.damage(ev.src, u, moved * .65, { type: 'true', redirected: true, noDodge: true, tag: 'Backstage Redirect' });
     B.applyStatus(u, ev.src, 'attackdown', 6, { val: .10, stacks: 1 });
     qomShow(B, 'backstage', u, ev.unit);
   });

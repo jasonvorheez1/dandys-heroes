@@ -2225,3 +2225,145 @@ defCampaign({
     ]}
   ]
 });
+
+defCampaign({
+  id: 'sprout_cosmo', badge: 'sprout_cosmo', a: 'Sprout', b: 'Cosmo', recLevel: friendshipRecLevel('Sprout', 'Cosmo'),
+  title: 'One Each',
+  guests: ['Ginger', 'Cocoa', 'Toodles'],
+  stages: [
+    { name: 'Measuring Wrong', cast: ['Cosmo', 'Sprout'], guests: [], lines: [
+      { who: 'Cosmo', text: "*stirring carefully* Sprout, can you grab the flour? I think I measured wrong again." },
+      { who: 'Sprout', text: "*hands it over without looking up* You always measure wrong. Just use less this time." },
+      { who: 'Cosmo', text: "I know, I know…" },
+      { who: 'Sprout', text: "And don’t spill it. I’m not cleaning another mess." }
+    ]},
+    { name: 'Your Kitchen', cast: ['Ginger', 'Cocoa', 'Toodles', 'Sprout', 'Cosmo'], guests: ['Ginger', 'Cocoa', 'Toodles'], lines: [
+      { who: 'Ginger', text: "*standing in the doorway* Um… do you need help? I can decorate if that’s okay." },
+      { who: 'Cocoa', text: "*hopping in* I brought extra Bonbons! Just in case anyone wants some while we work!" },
+      { who: 'Toodles', text: "*bouncing* Me too! I can stir really good!" },
+      { who: 'Sprout', text: "*glances at Cosmo* Your kitchen." },
+      { who: 'Cosmo', text: "*small smile* Yeah, okay. Just… be careful with the bowls." }
+    ]},
+    { name: 'Helping Out', cast: ['Ginger', 'Cosmo', 'Cocoa', 'Toodles', 'Sprout'], guests: ['Ginger', 'Cocoa', 'Toodles'], lines: [
+      { who: 'Ginger', text: "*quietly piping icing* Does this look alright?" },
+      { who: 'Cosmo', text: "It looks fine, Ginger. Better than mine usually do." },
+      { who: 'Cocoa', text: "*placing Bonbons* These’ll make everything better! Trust me!" },
+      { who: 'Toodles', text: "*stirring a bit too hard* See? I’m helping!" },
+      { who: 'Sprout', text: "*watching her* Slow down before you fling batter everywhere." },
+      { who: 'Toodles', text: "Sorry!" }
+    ]},
+    { name: 'Sit Down', cast: ['Sprout', 'Cosmo', 'Ginger'], guests: ['Ginger'], lines: [
+      { who: 'Sprout', text: "*notices Cosmo rubbing his wrist* You’ve been at this too long. Sit down." },
+      { who: 'Cosmo', text: "I’m almost done." },
+      { who: 'Sprout', text: "Sit. I’ll finish the tray." },
+      { who: 'Cosmo', text: "*hesitates, then sits* …Fine. Just for a minute." },
+      { who: 'Ginger', text: "*softly* He really doesn’t let you overdo it, huh?" },
+      { who: 'Cosmo', text: "Yeah. He never does." }
+    ]},
+    { name: 'Kind of Strict', cast: ['Cocoa', 'Sprout', 'Toodles', 'Cosmo'], guests: ['Cocoa', 'Toodles'], lines: [
+      { who: 'Cocoa', text: "*cheerfully* Anyone else need help? I can wash dishes or—" },
+      { who: 'Sprout', text: "We’re good." },
+      { who: 'Cocoa', text: "Are you sure? I don’t mind!" },
+      { who: 'Sprout', text: "Positive." },
+      { who: 'Toodles', text: "*whispering to Cosmo* He’s kind of strict." },
+      { who: 'Cosmo', text: "*quietly* He’s just like that. It’s fine." }
+    ]},
+    { name: 'Checking In', cast: ['Cosmo', 'Sprout'], guests: [], lines: [
+      { who: 'Cosmo', text: "*after a moment* You don’t have to keep checking on me every five seconds." },
+      { who: 'Sprout', text: "I wasn’t." },
+      { who: 'Cosmo', text: "You were." },
+      { who: 'Sprout', text: "…Whatever. Just don’t push yourself." },
+      { who: 'Cosmo', text: "I won’t. Thanks." },
+      { who: 'Sprout', text: "Mm." }
+    ]},
+    { name: 'One Each', cast: ['Ginger', 'Cocoa', 'Toodles', 'Sprout', 'Cosmo'], guests: ['Ginger', 'Cocoa', 'Toodles'], lines: [
+      { who: 'Ginger', text: "*stepping back* I think we’re done." },
+      { who: 'Cocoa', text: "They look so good! Can we try one?" },
+      { who: 'Toodles', text: "Please?" },
+      { who: 'Sprout', text: "*looks at Cosmo*" },
+      { who: 'Cosmo', text: "*nods* One each. Then we clean up." }
+    ]}
+  ]
+});
+
+defCampaign({
+  id: 'wishbeargigi_gourdy', badge: 'wishbeargigi_gourdy', a: 'WishBearGigi', b: 'Gourdy', recLevel: friendshipRecLevel('WishBearGigi', 'Gourdy'),
+  title: 'The Great Pumpkin Wish',
+  guests: ['Cocoa', 'CheerbearShelly'],
+  stages: [
+    { name: 'A Really Big Wish', cast: ['Gourdy', 'WishBearGigi'], guests: [], lines: [
+      { who: 'Gourdy', text: "*waddles up holding an orange plastic bucket* Excuse me, Miss Bear? Are you really the Wish Bear?" },
+      { who: 'WishBearGigi', text: "*paws on hips, grinning* I sure am, little pumpkin! Every wish from the heart can come true! Do you want a rainbow? A star castle? A rocket ship?!" },
+      { who: 'Gourdy', text: "I wish my pumpkin bucket was never, ever empty of candy." },
+      { who: 'WishBearGigi', text: "Oh! That's... surprisingly specific. But totally doable! By the power of the Care Bear tummy star... WISH GRANTED!" },
+      { who: 'Narrator', text: "A sparkling pink-and-gold flash bursts from Gigi's belly. The pumpkin bucket immediately begins vibrating like a revving chainsaw." },
+      { who: 'Gourdy', text: "*eyes wide with delight* Ooh! It's purring like a kitten!" },
+      { who: 'WishBearGigi', text: "...Wait. Is it supposed to shake that violently?!" }
+    ]},
+    { name: 'The Candy Inspector', cast: ['Cocoa', 'Gourdy', 'WishBearGigi'], guests: ['Cocoa'], lines: [
+      { who: 'Cocoa', text: "*hops through the doorway sniffing wildly* DID SOMEONE SAY CANDY?! I smelled high-grade sugar from three floors away!" },
+      { who: 'Gourdy', text: "Miss Gigi made my bucket magic! Watch!" },
+      { who: 'Narrator', text: "PFFT-POP! A neon-blue jellybean shoots straight out of the bucket, ricochets off the ceiling, and bounces into Cocoa's apron." },
+      { who: 'Cocoa', text: "*examines the jellybean closely* Wait a minute. This jellybean has tiny eyebrows. And it just blinked at me." },
+      { who: 'WishBearGigi', text: "Sometimes wish-powered candy comes with... extra personality!" },
+      { who: 'Cocoa', text: "*pulls out three emergency bags* Do not panic. I brought eighty-four backup Bonbons! If the sentient jellybeans rebel, we bribe them with dark chocolate!" },
+      { who: 'Gourdy', text: "Can I eat the flying ones?" },
+      { who: 'WishBearGigi', text: "PLEASE do not eat anything currently attempting to achieve orbit, Gourdy!" }
+    ]},
+    { name: 'Here Comes the Cheer', cast: ['CheerbearShelly', 'WishBearGigi', 'Cocoa', 'Gourdy'], guests: ['Cocoa', 'CheerbearShelly'], lines: [
+      { who: 'CheerbearShelly', text: "*crashes through the room in a massive, ultra-fluffy pink Care Bear suit* HALT! I sensed a catastrophic drop in regional optimism!" },
+      { who: 'WishBearGigi', text: "Shelly?! Why are you wearing a giant pink bear costume?!" },
+      { who: 'CheerbearShelly', text: "Because Cheer Bear represents unrelenting enthusiasm, Gigi! And right now, your tummy star looks like it's having an emotional breakdown!" },
+      { who: 'Narrator', text: "FWUMP! The pumpkin bucket sneezes a fountain of rainbow candy corn directly onto Shelly's snout." },
+      { who: 'CheerbearShelly', text: "*muffled through sugar* ...IT TASTES LIKE BLUEBERRY CHEER AND DESTINY!" },
+      { who: 'Cocoa', text: "See? Shelly is having a wonderful time!" },
+      { who: 'Gourdy', text: "The bucket is making an angry bumblebee noise now." },
+      { who: 'CheerbearShelly', text: "*starts doing dramatic cheerleader kicks* FEAR NOT! G-O-U-R-D-Y! PUMPKIN POWER IN THE SKY! GIVE ME A P! GIVE ME A CANDY!" },
+      { who: 'WishBearGigi', text: "SHELLY STOP, YOU'RE OVERCLOCKING THE WISH RESONANCE—" }
+    ]},
+    { name: 'Candy Tsunami', cast: ['WishBearGigi', 'Gourdy', 'Cocoa', 'CheerbearShelly'], guests: ['Cocoa', 'CheerbearShelly'], lines: [
+      { who: 'Narrator', text: "A mob of Twisteds stumbles into the hallway, bewildered by the storm of flying confectioneries." },
+      { who: 'Gourdy', text: "Look! Twisteds! Do they get a trick or a treat?" },
+      { who: 'WishBearGigi', text: "I'll handle this! LOADED CAPSULE—wait, why is it launching caramel apples?!" },
+      { who: 'Narrator', text: "THWACK-SPLAT! A volley of sticky caramel apples and jawbreakers peppers the Twisteds into total confusion." },
+      { who: 'Cocoa', text: "*winds up her arm like a pitcher* RAPID-FIRE CHOCOLATE BARRAGE! EAT BONBONS, YOU GOBLINS!" },
+      { who: 'CheerbearShelly', text: "*shaking giant fluffy rainbow pom-poms* TWO, FOUR, SIX, EIGHT! WHO WILL WE OBLITERATE?! THE CORRIDOR WEEDS! YAAAY!" },
+      { who: 'Gourdy', text: "I gave that big one a giant lollipop and he tried to bite his own kneecap!" },
+      { who: 'WishBearGigi', text: "THIS IS COMPLETE ANARCHY! WHY IS THERE SO MUCH GLITTER?!" }
+    ]},
+    { name: 'The Sugar Katamari', cast: ['Cocoa', 'WishBearGigi', 'CheerbearShelly', 'Gourdy'], guests: ['Cocoa', 'CheerbearShelly'], lines: [
+      { who: 'Cocoa', text: "Quick! The candy overflow is threatening the structural integrity of the floor! We need industrial bonding agents!" },
+      { who: 'WishBearGigi', text: "What on earth does that mean?!" },
+      { who: 'Cocoa', text: "Fudge mortar! Marshmallow glue! STAND BACK!" },
+      { who: 'Narrator', text: "Cocoa dumps an entire crate of melted marshmallow fluff directly into the tumbling candy heap. It instantly fuses into a massive, eight-foot-wide rolling sugar sphere." },
+      { who: 'CheerbearShelly', text: "*gasps in awe* IT'S ROLLING! IT'S GLORIOUS! IT'S LIKE A GIANT ROLLING HUG MADE OF TEETH HAZARDS!" },
+      { who: 'WishBearGigi', text: "IT'S PICKING UP SPEED TOWARD THE STAIRWELL!" },
+      { who: 'Gourdy', text: "*already perched triumphantly atop the rolling boulder* LOOK AT ME! I'M THE EMPEROR OF SUGAR MOUNTAIN!" },
+      { who: 'WishBearGigi', text: "GOURDY GET OFF OF THAT RIGHT NOW!" }
+    ]},
+    { name: 'The True Wish', cast: ['Gourdy', 'WishBearGigi', 'Cocoa', 'CheerbearShelly'], guests: ['Cocoa', 'CheerbearShelly'], lines: [
+      { who: 'Narrator', text: "KABOOM-SPLAT! The giant candy boulder collides with the remaining Twisteds at the end of the hall, exploding in a glorious burst of frosting, chocolate sprinkles, and confetti." },
+      { who: 'Gourdy', text: "*slides down a ramp of marshmallow fluff* That was the best thirty seconds of my entire life." },
+      { who: 'CheerbearShelly', text: "*peeling a strawberry ribbon off her pink ear* Flawless execution! Ten out of ten on the dismount!" },
+      { who: 'Cocoa', text: "*scraping chocolate off her boot and eating it* Delicious. And tactically devastating." },
+      { who: 'WishBearGigi', text: "Gourdy... are you alright? Look, your pumpkin bucket finally stopped vibrating." },
+      { who: 'Gourdy', text: "*peers inside the bucket* There's only one piece left. But you know what, Miss Gigi?" },
+      { who: 'WishBearGigi', text: "What, Gourdy?" },
+      { who: 'Gourdy', text: "Having endless candy by myself would've been boring. But making a giant candy mess with everybody? That was way better." },
+      { who: 'WishBearGigi', text: "*smiles warmly* Aww, Gourdy... that's the real magic of a wish." },
+      { who: 'CheerbearShelly', text: "*openly weeping* I'M NOT CRYING! MY SUIT JUST HAS EXCESS CHEER CONDENSATION!" }
+    ]},
+    { name: 'The Golden Pumpkin', cast: ['WishBearGigi', 'Gourdy', 'Cocoa', 'CheerbearShelly'], guests: ['Cocoa', 'CheerbearShelly'], lines: [
+      { who: 'Narrator', text: "Gigi gently taps the remaining candy in Gourdy's bucket. It crystallizes into a warm, softly glowing golden star-pumpkin." },
+      { who: 'WishBearGigi', text: "A Wish Bear Lucky Charm. It won't launch supersonic jellybeans anymore... but whenever you or your friends need a lucky break, it'll always shine for you." },
+      { who: 'Gourdy', text: "*hugs the little glowing pumpkin* I love it forever! Thank you, Miss Gigi!" },
+      { who: 'Cocoa', text: "*chewing on a stray sparkly gumdrop* Um... guys? My feet aren't touching the floor anymore." },
+      { who: 'Narrator', text: "Cocoa begins gently floating upward like a helium balloon." },
+      { who: 'CheerbearShelly', text: "COCOA HAS ACHIEVED MAXIMUM CHEER BUOYANCY! QUICK, GRAB HER SHOELACES!" },
+      { who: 'WishBearGigi', text: "*giggling* Grab her before she drifts into the ceiling fan!" },
+      { who: 'Gourdy', text: "*jumping to grab Cocoa's foot* BEST! WISH! EVER!" }
+    ]}
+  ]
+});
+
+
