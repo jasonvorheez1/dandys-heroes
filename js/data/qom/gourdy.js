@@ -129,7 +129,8 @@ QOM_GOURDY.skills = {
   P: {
     name: 'Keep the Beat', type: 'Support / Control', v: { haste: .10 }, p: {},
     desc: () => 'The drums continue through control. Skills started on the fourth beat gain power and cooldown recovery; enemy Skills started then deal less damage and lose Energy.',
-    passive(u, B) {
+    passive(u, B, S) {
+      u.flat.cdrqomP = (S && S.haste) || .10; u.dirty = true;
       B.on(u, 'allySkillStarting', start => {
         if (u._qomBeat !== 4 || !start.unit) return;
         const ally = start.unit;

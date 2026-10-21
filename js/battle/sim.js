@@ -3050,26 +3050,30 @@ class Battle {
     return foes.reduce((a, b) => u.research[b.uid] > u.research[a.uid] ? b : a);
   }
   gourdyTrick(u, t, mult) {
+    if (!t || !t.alive) return;
     const trick = pick(GOURDY_TRICKS);
     Sound.play('whisper', { vol: .3 }); this.fxFloatIcon(t.x, t.y - 90, trick.icon);
     this.applyStatus(u, t, trick.status, 4 * (mult || 1));
-    if (u._gourdyLucky && chance(u._gourdyLucky.base + u._gourdyLucky.perCdr * Math.max(0, u.st.cdr))) {
+    const bonusStat = Math.max(0, u.st.cdr || 0, (u.st.energyGen || 1) - 1);
+    if (u._gourdyLucky && chance(u._gourdyLucky.base + u._gourdyLucky.perCdr * bonusStat)) {
       const other = pick(GOURDY_TRICKS.filter(x => x !== trick));
       this.applyStatus(u, t, other.status, 3 * (mult || 1));
     }
   }
   gourdyTreat(u, t, mult) {
+    if (!t || !t.alive) return;
+    const bonusStat = Math.max(0, u.st.cdr || 0, (u.st.energyGen || 1) - 1);
     // Halloween's Luck (R): roll three Treats instead of one, keep whichever
     // fits the ally best, and turn the two leftovers into Tricks on enemies
     // instead of wasting them.
     if (u._gourdyLuck && u._gourdyLuck.red) {
       const rolled = pickN(GOURDY_TREATS, 3);
       const scoreTreat = treat => {
-        if (t.hpPct < u._gourdyLuck.thr && (t.status === 'fortify' || t.status === 'mdefup')) return 100;
-        if (t.status === 'overcharge') return Math.max(1, 40 - t.energy);
-        if (t.status === 'atkup') return t.st.atk > t.st.mag ? 30 : 12;
-        if (t.status === 'lucky') return t.st.crit < .15 ? 26 : 8;
-        return t.status === 'speedup' ? 20 : 14;
+        if (t.hpPct < u._gourdyLuck.thr && (treat.status === 'fortify' || treat.status === 'mdefup')) return 100;
+        if (treat.status === 'overcharge') return Math.max(1, 40 - t.energy);
+        if (treat.status === 'atkup') return t.st.atk > t.st.mag ? 30 : 12;
+        if (treat.status === 'lucky') return t.st.crit < .15 ? 26 : 8;
+        return treat.status === 'speedup' ? 20 : 14;
       };
       const chosen = rolled.reduce((best, treat) => scoreTreat(treat) > scoreTreat(best) ? treat : best, rolled[0]);
       Sound.play('get_item', { vol: .55 }); this.fxFloatIcon(t.x, t.y - 90, chosen.icon);
@@ -3077,13 +3081,19 @@ class Battle {
       this.applyStatus(u, t, chosen.status, 8 * (mult || 1));
       this.emitFor(u, 'gourdyTreat', { ally: t, treat: chosen });
       rolled.filter(r => r !== chosen).forEach(() => {
-        const foe = pick(this.enemiesOf(u));
+        const foe = pick(this.enemiesOf(u).filter(e => e.alive));
         const trick = pick(GOURDY_TRICKS);
         if (foe) {
           Sound.play('whisper', { vol: .28 }); this.fxFloatIcon(foe.x, foe.y - 90, trick.icon);
           this.applyStatus(u, foe, trick.status, u._gourdyLuck.trickDur);
         }
       });
+      if (u._gourdyLucky && chance(u._gourdyLucky.base + u._gourdyLucky.perCdr * bonusStat)) {
+        const other = pick(GOURDY_TREATS.filter(x => x !== chosen));
+        this.fxGourdyTreat(u, t, other, true);
+        this.applyStatus(u, t, other.status, 6 * (mult || 1));
+        this.emitFor(u, 'gourdyTreat', { ally: t, treat: other, smaller: true });
+      }
       return;
     }
     const treat = pick(GOURDY_TREATS);
@@ -3091,7 +3101,7 @@ class Battle {
     this.fxGourdyTreat(u, t, treat);
     this.applyStatus(u, t, treat.status, 8 * (mult || 1));
     this.emitFor(u, 'gourdyTreat', { ally: t, treat });
-    if (u._gourdyLucky && chance(u._gourdyLucky.base + u._gourdyLucky.perCdr * Math.max(0, u.st.cdr))) {
+    if (u._gourdyLucky && chance(u._gourdyLucky.base + u._gourdyLucky.perCdr * bonusStat)) {
       const other = pick(GOURDY_TREATS.filter(x => x !== treat));
       this.fxGourdyTreat(u, t, other, true);
       this.applyStatus(u, t, other.status, 6 * (mult || 1));
@@ -3373,7 +3383,15 @@ class Battle {
     FX.squirmSkill(kind, a.x, a.y, Object.assign({ size: a.size }, opt || {}));
   }
   fxGourdyTreat(u, target, treat, smaller) {
-    const candy = { atkup: 'Skillcheckcandy', speedup: 'Speedcandy', fortify: 'Staminacandy', haste: 'Enigmacandy' }[treat.status] || 'Speedcandy';
+    const candy = {
+      atkup: 'Skillcheckcandy',
+      speedup: 'Speedcandy',
+      fortify: 'Staminacandy',
+      haste: 'Enigmacandy',
+      mdefup: 'Staminacandy',
+      lucky: 'Skillcheckcandy',
+      overcharge: 'Enigmacandy'
+    }[treat.status] || 'Speedcandy';
     FX.gourdyTreat(u.x, u.y, target.x, target.y, candy, smaller);
   }
   fxSproutSkill(kind, u, target, targets, opt) {

@@ -342,7 +342,11 @@ defHero({
       cast: (u, B, S, P) => {
         B.anim(u, 'cast', .72, 'gourdyTreat'); Sound.play('get_item'); B.fxGourdyTreatCast(u);
         const allies = B.alliesOf(u).filter(a => B.distance(a, u) < P.radius);
-        B.after(.18, () => { B.fxConfetti(u.x, u.y - 60, 20); allies.forEach(a => B.gourdyTreat(u, a, P.duration / 8)); });
+        B.after(.18, () => {
+          if (!u.alive) return;
+          B.fxConfetti(u.x, u.y - 60, 20);
+          allies.filter(a => a.alive).forEach(a => B.gourdyTreat(u, a, P.duration / 8));
+        });
       }
     },
     G: {
@@ -353,7 +357,9 @@ defHero({
         const rush = (dur, smaller) => {
           if (smaller && B.t < (u._gourdyRushAt || 0) + .25) return;
           u._gourdyRushAt = B.t; const allies = B.alliesOf(u);
-          B.anim(u, 'cast', smaller ? .42 : .68, 'gourdyRush');
+          if (!smaller && !u.casting && u.animStyle !== 'gourdyTreat') {
+            B.anim(u, 'cast', .68, 'gourdyRush');
+          }
           B.fxGourdyRush(u, allies, smaller);
           allies.forEach(a => B.applyStatus(u, a, 'speedup', dur));
         };
@@ -381,21 +387,23 @@ defHero({
           if (!u.alive || !t.alive) return;
           B.anim(u, 'attack', .24, 'gourdyTossRelease'); Sound.play('throwsomething', { vol: .55 });
           B.fxArc(u, t, { kind: 'food', img: 'Pumpkin', size: 34 }, () => {
-            B.damage(u, t, u.st.mag * S.ratio, { type: 'magic', tag: 'Pumpkin Toss' });
+            const hitT = (t && t.alive) ? t : (B.nearest(t, B.enemiesOf(u)) || pick(B.enemiesOf(u)));
+            if (!hitT || !hitT.alive) return;
+            B.damage(u, hitT, u.st.mag * S.ratio, { type: 'magic', tag: 'Pumpkin Toss' });
             const pool = ['stun', 'silence', 'slow', 'drain'];
             const effect = pick(pool);
-            B.fxGourdyPumpkinImpact(t, effect); Sound.play('pop2', { vol: .65 });
-            B.applyStatus(u, t, effect, effect === 'stun' ? 2 : 3);
-            const hug = t.getStatus('hugline');
+            B.fxGourdyPumpkinImpact(hitT, effect); Sound.play('pop2', { vol: .65 });
+            B.applyStatus(u, hitT, effect, effect === 'stun' ? 2 : 3);
+            const hug = hitT.getStatus('hugline');
             if (hug) {
               const goob = hug.src;
-              const line = goob && (goob.goobLines || []).find(item => item.target === t);
+              const line = goob && (goob.goobLines || []).find(item => item.target === hitT);
               if (line && typeof goobEndLine === 'function') goobEndLine(goob, line, B, false);
-              else B.removeStatus(t, 'hugline');
-              B.fxFloatIcon(t.x, t.y - 100, '🎃', '#ff9d4d');
+              else B.removeStatus(hitT, 'hugline');
+              B.fxFloatIcon(hitT.x, hitT.y - 100, '🎃', '#ff9d4d');
             }
-            if (Math.max(t.st.atk, t.st.mag) > u.st.mag && chance(.5)) {
-              B.applyStatus(u, t, pick(pool), 2.5);
+            if (Math.max(hitT.st.atk, hitT.st.mag) > u.st.mag && chance(.5)) {
+              B.applyStatus(u, hitT, pick(pool), 2.5);
             }
           });
         });
