@@ -52,10 +52,40 @@ function skillScalingLine(S, P, level) {
    the visual preview replays that recording until the next skill is chosen.
    Keeping the sandbox detached also means preview FX/audio can never leak into
    a live battle. */
+const PREVIEW_STATUS_PILL_MAP = {
+  stun: { icon: '⚡', label: 'STUNNED', col: '#ffda59' },
+  freeze: { icon: '❄️', label: 'FROZEN', col: '#84e5ff' },
+  exposed: { icon: '🎯', label: 'EXPOSED', col: '#ff5454' },
+  silence: { icon: '🔇', label: 'SILENCED', col: '#c996ff' },
+  blind: { icon: '👁️', label: 'BLINDED', col: '#a8a8a8' },
+  dazed: { icon: '💫', label: 'DAZED', col: '#ffd166' },
+  sleep: { icon: '💤', label: 'ASLEEP', col: '#b9a4ff' },
+  burn: { icon: '🔥', label: 'BURN', col: '#ff6e3a' },
+  bleed: { icon: '🩸', label: 'BLEED', col: '#ff3d5a' },
+  poison: { icon: '🧪', label: 'POISON', col: '#62f06b' },
+  slow: { icon: '⏳', label: 'SLOWED', col: '#7fd8ff' },
+  ward: { icon: '🛡️', label: 'WARD', col: '#60b5ff' },
+  cookie_stringbound: { icon: '🪢', label: 'STRINGBOUND', col: '#8b64ef' },
+  cookie_puppet_show: { icon: '🎭', label: 'PUPPET SHOW', col: '#62a8ff' },
+  cookie_eye_deceit: { icon: '👁️', label: 'DECEIT', col: '#9c6aff' },
+  cookie_taint: { icon: '🟣', label: 'TAINTED', col: '#bf6aff' },
+  haste: { icon: '⚡', label: 'HASTE', col: '#5effb7' },
+  lucky: { icon: '🍀', label: 'LUCKY', col: '#82f556' },
+  fortify: { icon: '🧱', label: 'FORTIFIED', col: '#e8b86d' },
+  taunt: { icon: '💢', label: 'TAUNTED', col: '#ff4c37' },
+  drowsy: { icon: '🌙', label: 'DROWSY', col: '#b9a4ff' },
+  cleanfocus: { icon: '✨', label: 'CLEAN FOCUS', col: '#8be4a0' },
+  weaken: { icon: '💔', label: 'WEAKENED', col: '#ff8a8a' },
+  regen: { icon: '🌱', label: 'REGEN', col: '#67c84c' },
+  invis: { icon: '👻', label: 'VANISHED', col: '#9caaa4' },
+  rage: { icon: '🔥', label: 'ENRAGED', col: '#ff5454' },
+  armor: { icon: '🛡️', label: 'ARMORED', col: '#78c6ff' }
+};
+
 const SkillPreviewSimulator = {
   run(cfg, skill, key) {
     const empty = { duration: 1.8, hitTimes: [], actions: [], damage: 0, heal: 0, shield: 0,
-      targetHpPct: 1, displayValue: 0, label: '', audio: [] };
+      targetHpPct: 1, displayValue: 0, label: '', audio: [], events: [], hasCrit: false };
     if (!skill) return empty;
 
     const B = new Battle({ preview: true });
@@ -139,8 +169,10 @@ const SkillPreviewSimulator = {
       B.damage = (src, tgt, amount, opt) => {
         const beforeHp = tgt && tgt.hp;
         const ev = originalDamage(src, tgt, amount, opt);
-        if (ev) events.push({ kind: 'damage', t: B.t, amount: ev.amount || 0, type: ev.type, target: tgt,
-          hpPct: tgt ? clamp(tgt.hp / Math.max(1, tgt.max.hp), 0, 1) : 1 });
+        if (ev) events.push({ kind: 'damage', t: B.t, amount: ev.amount || 0, type: ev.type || 'physical',
+          crit: !!ev.crit, superCrit: !!ev.superCrit, target: tgt,
+          hpPct: tgt ? clamp(tgt.hp / Math.max(1, tgt.max.hp), 0, 1) : 1,
+          shieldTotal: tgt ? tgt.shieldTotal : 0 });
         else if (tgt && tgt.alive && tgt.hp === beforeHp) events.push({ kind: 'miss', t: B.t, target: tgt });
         return ev;
       };
@@ -148,7 +180,8 @@ const SkillPreviewSimulator = {
       B.heal = (src, tgt, amount, opt) => {
         const before = tgt && tgt.hp;
         const applied = originalHeal(src, tgt, amount, opt);
-        if (applied > 0) events.push({ kind: 'heal', t: B.t, amount: applied, target: tgt, before });
+        if (applied > 0) events.push({ kind: 'heal', t: B.t, amount: applied, target: tgt, before,
+          hpPct: tgt ? clamp(tgt.hp / Math.max(1, tgt.max.hp), 0, 1) : 1 });
         return applied;
       };
       const originalShield = B.shield.bind(B);
@@ -156,7 +189,8 @@ const SkillPreviewSimulator = {
         const before = tgt ? tgt.shieldTotal : 0;
         const result = originalShield(src, tgt, amount, dur, opt);
         const added = tgt ? Math.max(0, tgt.shieldTotal - before) : 0;
-        if (added > 0) events.push({ kind: 'shield', t: B.t, amount: added, target: tgt });
+        if (added > 0) events.push({ kind: 'shield', t: B.t, amount: added, target: tgt,
+          shieldTotal: tgt ? tgt.shieldTotal : 0 });
         return result;
       };
       const originalStatus = B.applyStatus.bind(B);
@@ -233,9 +267,12 @@ const SkillPreviewSimulator = {
     const label = damage > 0 ? `-${fmt(Math.round(damage))}` : shield > 0 ? `+${fmt(Math.round(shield))} SHIELD` : heal > 0 ? `+${fmt(Math.round(heal))}` : events.some(e => e.kind === 'miss') ? 'MISS' : '';
     const lastDamage = events.slice().reverse().find(e => e.kind === 'damage' && e.t <= 1.8);
     const missed = damage <= 0 && events.some(e => e.kind === 'miss');
+    const recordedEvents = events.filter(e => e.t <= 2.8);
+    const hasCrit = events.some(e => e.kind === 'damage' && (e.crit || e.superCrit));
     return { duration, hitTimes, actions, damage, heal, shield, missed, error: failure, audio,
       targetHpPct: lastDamage ? lastDamage.hpPct : startingTargetHpPct,
-      displayValue: Math.round(damage || shield || heal || 0), label };
+      displayValue: Math.round(damage || shield || heal || 0), label,
+      events: recordedEvents, hasCrit };
   }
 };
 
@@ -381,37 +418,158 @@ function heroPreviewVisualKind(skill, source) {
   return 'impact';
 }
 
-/* Collaboration skills use authored action poses and timings instead of one
-   generic attack/cast clip. The cues mirror what each kit actually does. */
+/* Collaboration and bespoke hero skills use authored action poses and timings instead
+   of one generic attack/cast clip. The cues mirror what each kit actually does. */
+const DANDY_SKILL_PREVIEWS = {
+  basic: { dandyMode: 'smile', previewActions: [{ state: 'attack', dur: .32 }], castCue: 'dandy_text', impactCue: 'pop2', floatLabel: 'SMILE!' },
+  W: { dandyMode: 'spotlight', previewActions: [{ state: 'cast', dur: .82 }], castCue: 'dandy_entrance', impactCue: 'beam_fire', forceCinematicFx: true, floatLabel: 'CENTER OF ATTENTION' },
+  G: { dandyMode: 'closing', dashes: true, previewActions: [{ state: 'attack', dur: .68 }], castCue: 'dandy_text', impactCue: 'hit_heavy', floatLabel: 'CLOSING TIME!' },
+  B: { dandyMode: 'smile', previewActions: [{ state: 'cast', dur: .70 }], castCue: 'dandy_text_bright', impactCue: 'ding', floatLabel: 'KEEP SMILING!' },
+  P: { dandyMode: 'favorite', passive: true, previewActions: [{ state: 'idle', dur: .80 }], castCue: 'sparkle', floatLabel: 'FAVORITE' },
+  R: { dandyMode: 'finale', previewActions: [{ state: 'cast', dur: .90 }], castCue: 'dandy_entrance', impactCue: 'currency', forceCinematicFx: true, floatLabel: 'CHA-CHING!' }
+};
+
+const PEBBLE_SKILL_PREVIEWS = {
+  basic: { pebbleMode: 'speak', dashes: true, previewActions: [{ state: 'attack', dur: .28 }], castCue: 'pebble_speak', impactCue: 'hit_blunt', floatLabel: 'BITE!' },
+  W: { pebbleMode: 'speak', dashes: true, previewActions: [{ state: 'wind', dur: .24 }, { state: 'attack', dur: .42 }], castCue: 'pebble_speak', impactCue: 'hit_heavy', floatLabel: 'SPEAK!' },
+  G: { pebbleMode: 'fetch', ally: true, previewActions: [{ state: 'cast', dur: .65 }], castCue: 'pebble_talk', impactCue: 'heal', floatLabel: 'FETCH!' },
+  B: { pebbleMode: 'tackle', dashes: true, previewActions: [{ state: 'wind', dur: .28 }, { state: 'attack', dur: .44 }], castCue: 'dash', impactCue: 'hit_heavy', floatLabel: 'ROCKY TACKLE!' },
+  P: { pebbleMode: 'target', passive: true, previewActions: [{ state: 'idle', dur: .80 }], castCue: 'sparkle', floatLabel: 'EVASIVE' },
+  R: { pebbleMode: 'goodboy', dashes: true, hitTimes: [.35, .50, .65], previewActions: [{ state: 'spin', dur: .88 }], castCue: 'pebble_speak', impactCue: 'crit', floatLabel: 'GOOD BOY!' }
+};
+
+const SCRAPS_SKILL_PREVIEWS = {
+  basic: { scrapsMode: 'whatever', projectile: true, previewActions: [{ state: 'attack', dur: .30 }], castCue: 'throwsomething', impactCue: 'pop2', floatLabel: 'BUTTON TOSS' },
+  W: { scrapsMode: 'grapple', dashes: true, previewActions: [{ state: 'wind', dur: .32 }, { state: 'attack', dur: .46 }], castCue: 'throwsomething', impactCue: 'hit_heavy', floatLabel: 'CRAFTY GRAPPLE!' },
+  G: { scrapsMode: 'whatever', projectile: true, previewActions: [{ state: 'cast', dur: .62 }], castCue: 'throwsomething', impactCue: 'pop2', floatLabel: 'BUTTON TOSS' },
+  B: { scrapsMode: 'piece', previewActions: [{ state: 'cast', dur: .70 }], castCue: 'tw_sprout_skill', impactCue: 'hit_magic', floatLabel: 'EMOTIONAL PIECE' },
+  P: { scrapsMode: 'sharp', passive: true, previewActions: [{ state: 'idle', dur: .80 }], castCue: 'sparkle', floatLabel: 'SHARP EDGES' },
+  R: { scrapsMode: 'crafts', dashes: true, hitTimes: [.34, .46, .58, .70], previewActions: [{ state: 'attack', dur: .90 }], castCue: 'airhorn', impactCue: 'crit', floatLabel: 'ARTS & CRAFTS!' }
+};
+
+const FLUTTER_SKILL_PREVIEWS = {
+  basic: { flutterMode: 'dash', dashes: true, previewActions: [{ state: 'attack', dur: .30 }], castCue: 'whoosh', impactCue: 'hit_light', floatLabel: 'FLUTTER' },
+  W: { flutterMode: 'dash', dashes: true, previewActions: [{ state: 'move', dur: .40 }, { state: 'attack', dur: .45 }], castCue: 'whoosh', impactCue: 'hit_magic', floatLabel: 'FLOATY DASH!' },
+  G: { flutterMode: 'sweep', previewActions: [{ state: 'cast', dur: .68 }], castCue: 'tornado_s', impactCue: 'whoosh', floatLabel: 'WINGBEAT SWEEP!' },
+  B: { flutterMode: 'flutter', previewActions: [{ state: 'cast', dur: .65 }], castCue: 'whisper', impactCue: 'spectral', floatLabel: 'SILENT FLUTTER' },
+  P: { flutterMode: 'catch', passive: true, previewActions: [{ state: 'idle', dur: .80 }], castCue: 'sparkle', floatLabel: 'HARD TO CATCH' },
+  R: { flutterMode: 'storm', hitTimes: [.36, .48, .60, .72], previewActions: [{ state: 'spin', dur: .92 }], castCue: 'tornado_s', impactCue: 'crit', floatLabel: 'STORM OF WINGS!' }
+};
+
+const RIBECCA_SKILL_PREVIEWS = {
+  basic: { ribeccaMode: 'rattle', dashes: true, previewActions: [{ state: 'attack', dur: .30 }], castCue: 'dash', impactCue: 'hit_slash', floatLabel: 'BONE TAP' },
+  W: { ribeccaMode: 'undead', previewActions: [{ state: 'cast', dur: .75 }], castCue: 'spectral', impactCue: 'hit_heavy', floatLabel: 'THE UNDEAD' },
+  G: { ribeccaMode: 'bones', dashes: true, previewActions: [{ state: 'attack', dur: .68 }], castCue: 'sweep', impactCue: 'hit_blunt', floatLabel: 'LOOSE BONES' },
+  B: { ribeccaMode: 'rattle', dashes: true, previewActions: [{ state: 'move', dur: .42 }, { state: 'attack', dur: .40 }], castCue: 'dash', impactCue: 'hit_slash', floatLabel: 'RATTLE STEP' },
+  P: { ribeccaMode: 'unbothered', passive: true, previewActions: [{ state: 'idle', dur: .80 }], castCue: 'sparkle', floatLabel: 'UNBOTHERED' },
+  R: { ribeccaMode: 'standing', previewActions: [{ state: 'cast', dur: .88 }], castCue: 'ult', impactCue: 'guardbreak', floatLabel: 'STILL STANDING' }
+};
+
+const ASTRO_SKILL_PREVIEWS = {
+  basic: { astroMode: 'stars', previewActions: [{ state: 'cast', dur: .35 }], projectile: true, castCue: 'whoosh', impactCue: 'hit_magic', floatLabel: 'LULLABY MOTE' },
+  W: { astroMode: 'pulse', ally: true, previewActions: [{ state: 'cast', dur: .78 }], castCue: 'magiccircle', impactCue: 'ult', forceCinematicFx: true, floatLabel: 'DREAM PULSE' },
+  G: { astroMode: 'slumber', previewActions: [{ state: 'cast', dur: .68 }], castCue: 'whisper', impactCue: 'spectral', floatLabel: 'PEACEFUL SLUMBER' },
+  B: { astroMode: 'stars', hitTimes: [.35, .46, .58, .70], previewActions: [{ state: 'cast', dur: .75 }], castCue: 'sparkle', impactCue: 'hit_magic', floatLabel: 'FALLING STARS' },
+  P: { astroMode: 'rested', ally: true, passive: true, previewActions: [{ state: 'idle', dur: .80 }], castCue: 'sparkle', floatLabel: 'WELL RESTED' },
+  R: { astroMode: 'night', previewActions: [{ state: 'cast', dur: .90 }], castCue: 'ult', impactCue: 'spectral', forceCinematicFx: true, floatLabel: 'ENDLESS NIGHT' }
+};
+
 const COLLAB_SKILL_PREVIEWS = {
   Sora: {
-    W: { previewActions: [{ state:'attack', dur:.95 }], dashes:true, hitTimes:[.34,.40,.46,.52,.58,.64,.69],
+    basic: { khMode: 'combo', dashes: true, previewActions: [{ state: 'attack', dur: .30 }], castCue: 'sora_attack', impactCue: 'keyblade_hit', floatLabel: 'KEYBLADE STRIKE' },
+    W: { khMode: 'finisher', previewActions: [{ state:'attack', dur:.95 }], dashes:true, hitTimes:[.34,.40,.46,.52,.58,.64,.69],
       cast:'HasteEffect', impact:'ShockEffect', col:'#8edcff', castCue:'sora_skill', impactCue:'keyblade_hit',
       forceCinematicFx:true, floatLabel:'7-HIT FINISHER' },
-    G: { previewActions: [{ state:'cast', dur:.70 }], cast:'ShockEffect', impact:'ShockEffect', col:'#a8eaff',
-      castCue:'sora_magic', impactCue:'shock', forceCinematicFx:true, previewType:'3-TARGET CONTROL', floatLabel:'SHOCK ×3' },
-    B: { previewActions: [{ state:'spin', dur:.72 }], cast:'ShieldEffect', impact:'ShockEffect', col:'#dff8ff',
-      castCue:'sora_skill', impactCue:'hit_heavy', forceCinematicFx:true, floatLabel:'KNOCKBACK' }
+    G: { khMode: 'thunder', previewActions: [{ state:'cast', dur:.70 }], cast:'ShockEffect', impact:'ShockEffect', col:'#a8eaff',
+      castCue:'sora_magic', impactCue:'shock', forceCinematicFx:true, previewType:'3-TARGET CONTROL', floatLabel:'THUNDAGA ×3' },
+    B: { khMode: 'strike', previewActions: [{ state:'spin', dur:.72 }], cast:'ShieldEffect', impact:'ShockEffect', col:'#dff8ff',
+      castCue:'sora_skill', impactCue:'hit_heavy', forceCinematicFx:true, floatLabel:'STRIKE RAID' },
+    P: { previewActions: [{ state: 'idle', dur: .80 }], passive: true, castCue: 'sparkle', floatLabel: 'SECOND CHANCE' },
+    R: { khMode: 'limit', dashes: true, hitTimes: [.30, .40, .50, .60, .70], previewActions: [{ state: 'attack', dur: .98 }],
+      castCue: 'sora_limit', impactCue: 'crit', forceCinematicFx: true, floatLabel: 'TRINITY LIMIT!' }
+  },
+  Riku: {
+    basic: { khMode: 'combo', dashes: true, previewActions: [{ state: 'attack', dur: .30 }], castCue: 'riku_attack', impactCue: 'keyblade_hit', floatLabel: 'SOUL EATER' },
+    W: { khMode: 'break', dashes: true, hitTimes: [.35, .48, .62], previewActions: [{ state: 'attack', dur: .88 }],
+      cast: 'CurseEffect', impact: 'ShockEffect', col: '#9c6aff', castCue: 'riku_skill', impactCue: 'keyblade_hit', forceCinematicFx: true, floatLabel: 'DARK BREAK' },
+    G: { khMode: 'aura', dashes: true, hitTimes: [.30, .42, .54, .66], previewActions: [{ state: 'wind', dur: .80 }],
+      cast: 'ShockEffect', impact: 'CurseEffect', col: '#bf6aff', castCue: 'riku_skill', impactCue: 'hit_heavy', floatLabel: 'DARK AURA' },
+    B: { khMode: 'slice', dashes: true, previewActions: [{ state: 'attack', dur: .65 }],
+      castCue: 'riku_attack', impactCue: 'keyblade_hit', floatLabel: 'SHADOW SLICE' },
+    P: { previewActions: [{ state: 'idle', dur: .80 }], passive: true, castCue: 'riku_guard', floatLabel: 'TWILIGHT RESIST' },
+    R: { khMode: 'oblivion', dashes: true, hitTimes: [.32, .44, .56, .68], previewActions: [{ state: 'attack', dur: .92 }],
+      castCue: 'riku_skill', impactCue: 'crit', forceCinematicFx: true, floatLabel: 'DARK OBLIVION' }
   },
   Kairi: {
-    W: { previewActions: [{ state:'attack', dur:.90 }], dashes:true, hitTimes:[.34,.43,.52,.61],
+    basic: { khMode: 'radiant', dashes: true, previewActions: [{ state: 'attack', dur: .30 }], castCue: 'kairi_attack', impactCue: 'keyblade_hit', floatLabel: 'DESTINY STRIKE' },
+    W: { khMode: 'radiant', previewActions: [{ state:'attack', dur:.90 }], dashes:true, hitTimes:[.34,.43,.52,.61],
       cast:'BlessedEffect', impact:'ConfusionEffect', col:'#ffd0ed', castCue:'kairi_skill', impactCue:'keyblade_hit',
       forceCinematicFx:true, floatLabel:'GLEAM BURST' },
-    G: { previewActions: [{ state:'cast', dur:.65 }], ally:true, previewNoDamage:true,
+    G: { khMode: 'radiant', previewActions: [{ state:'cast', dur:.65 }], ally:true, previewNoDamage:true,
       cast:'ShieldEffect', impact:'BlessedEffect', col:'#ffd0ed', castCue:'kairi_protect', impactCue:'sparkle',
       forceCinematicFx:true, previewType:'ALLY ZONE', floatLabel:'RADIANT CIRCLE' },
-    B: { previewActions: [{ state:'cast', dur:.50 }, { state:'attack', dur:.45 }], dashes:true,
+    B: { khMode: 'radiant', previewActions: [{ state:'cast', dur:.50 }, { state:'attack', dur:.45 }], dashes:true,
       cast:'ShieldEffect', impact:'SlowEffect', col:'#ffb8e6', castCue:'kairi_protect', impactCue:'keyblade_hit',
-      forceCinematicFx:true, previewType:'COUNTER STANCE', floatLabel:'COUNTER!' }
+      forceCinematicFx:true, previewType:'COUNTER STANCE', floatLabel:'COUNTER!' },
+    P: { previewActions: [{ state: 'idle', dur: .80 }], ally: true, passive: true, castCue: 'sparkle', floatLabel: 'HEART LIGHT' },
+    R: { khMode: 'radiant', ally: true, previewActions: [{ state: 'cast', dur: .88 }], castCue: 'kairi_protect', impactCue: 'heal', floatLabel: 'LIGHT SANCTUARY' }
   },
   Goofy: {
+    basic: { dashes: true, previewActions: [{ state: 'attack', dur: .32 }], castCue: 'goofy_attack', impactCue: 'hit_blunt', floatLabel: 'SHIELD BASH' },
     W: { previewActions: [{ state:'cast', dur:.70 }, { state:'attack', dur:.75 }], projectile:true,
       projectileObject:'goofy-shield', cast:'ShieldEffect', impact:'ShockEffect', col:'#8ee5ff',
       castCue:'goofy_protect', impactCue:'goofy_skill', forceCinematicFx:true, floatLabel:'SHIELD THROW' },
     G: { previewActions: [{ state:'spin', dur:.72 }], dashes:true, hitTimes:[.42,.52,.62],
       castCue:'tornado_s', impactCue:'tornado_e', floatLabel:'PUSHED BACK' },
     B: { previewActions: [{ state:'move', dur:.48 }, { state:'attack', dur:.46 }], dashes:true,
-      castCue:'goofy_protect', impactCue:'hit_blunt', previewType:'ALLY INTERCEPT', floatLabel:'INTERCEPTED' }
+      castCue:'goofy_protect', impactCue:'hit_blunt', previewType:'ALLY INTERCEPT', floatLabel:'INTERCEPTED' },
+    P: { previewActions: [{ state: 'idle', dur: .80 }], passive: true, castCue: 'sparkle', floatLabel: 'GOOFY GUARD' },
+    R: { dashes: true, previewActions: [{ state: 'attack', dur: .85 }], castCue: 'goofy_skill', impactCue: 'crit', floatLabel: 'TEAM DEFENDER!' }
+  },
+  ShadowMilkCookie: {
+    basic: { milkMode: 'puppets', previewActions: [{ state: 'cast', dur: .35 }], castCue: 'whisper', impactCue: 'pop2', floatLabel: 'DECEIT BOLT' },
+    W: { milkMode: 'lies', previewActions: [{ state: 'cast', dur: .85 }], cast: 'CurseEffect', impact: 'ShockEffect', col: '#84ddff',
+      castCue: 'whisper', impactCue: 'spectral', forceCinematicFx: true, floatLabel: 'ACT 1: LIES' },
+    G: { milkMode: 'truth', previewActions: [{ state: 'cast', dur: .72 }], cast: 'ShockEffect', impact: 'ShockEffect', col: '#9c6aff',
+      castCue: 'whisper', impactCue: 'beam_fire', floatLabel: 'EYE OF DECEIT' },
+    B: { milkMode: 'puppets', previewActions: [{ state: 'cast', dur: .80 }], cast: 'CurseEffect', impact: 'CurseEffect', col: '#7664dc',
+      castCue: 'shrink2', impactCue: 'hit_magic', floatLabel: 'PUPPET MASTER' },
+    P: { milkMode: 'shadow', passive: true, previewActions: [{ state: 'idle', dur: .82 }], castCue: 'spectral', floatLabel: 'SHADOW FORM' },
+    R: { milkMode: 'show', hitTimes: [.34, .48, .62, .76], previewActions: [{ state: 'cast', dur: .95 }],
+      cast: 'ShockEffect', impact: 'ShockEffect', col: '#84ddff', castCue: 'ult', impactCue: 'crit', forceCinematicFx: true, floatLabel: 'GREATEST SHOW' }
+  },
+  PureVanillaCookie: {
+    basic: { vanillaMode: 'peace', previewActions: [{ state: 'cast', dur: .35 }], castCue: 'light_magic', impactCue: 'heal', floatLabel: 'VANILLA ORB' },
+    W: { vanillaMode: 'peace', ally: true, previewActions: [{ state: 'cast', dur: .85 }], cast: 'BlessedEffect', impact: 'HealEffect', col: '#ffe082',
+      castCue: 'light_magic', impactCue: 'heal', forceCinematicFx: true, floatLabel: 'LOVE & PEACE' },
+    G: { vanillaMode: 'truth', ally: true, previewActions: [{ state: 'cast', dur: .72 }], cast: 'ShieldEffect', impact: 'BlessedEffect', col: '#fff59d',
+      castCue: 'light_magic', impactCue: 'cleanse', floatLabel: 'LIGHT OF TRUTH' },
+    B: { vanillaMode: 'shards', hitTimes: [.38, .52, .66], previewActions: [{ state: 'cast', dur: .72 }],
+      cast: 'ShockEffect', impact: 'ShockEffect', col: '#ffd54f', castCue: 'sparkle', impactCue: 'hit_magic', floatLabel: 'SHARDS OF LIGHT' },
+    P: { vanillaMode: 'warmth', ally: true, passive: true, previewActions: [{ state: 'idle', dur: .80 }], castCue: 'sparkle', floatLabel: 'WARMTH' },
+    R: { vanillaMode: 'beacon', ally: true, previewActions: [{ state: 'cast', dur: .90 }], cast: 'BlessedEffect', impact: 'HealEffect', col: '#ffe082',
+      castCue: 'ult', impactCue: 'heal', forceCinematicFx: true, floatLabel: 'BEACON OF TRUTH' }
+  },
+  CreamPuffCookie: {
+    basic: { creamMode: 'jellius', previewActions: [{ state: 'cast', dur: .32 }], castCue: 'sparkle', impactCue: 'pop2', floatLabel: 'CREAM PUFF' },
+    W: { creamMode: 'jellius', hitTimes: [.36, .50, .64], previewActions: [{ state: 'cast', dur: .82 }], cast: 'BlessedEffect', impact: 'ShockEffect', col: '#ffe082',
+      castCue: 'sparkle', impactCue: 'pop2', forceCinematicFx: true, floatLabel: 'JELLIUS EXTREMUS!' },
+    G: { creamMode: 'cream', ally: true, previewActions: [{ state: 'cast', dur: .70 }], cast: 'HealEffect', impact: 'BlessedEffect', col: '#ffecb3',
+      castCue: 'sparkle', impactCue: 'heal', floatLabel: 'EXTRA CREAM' },
+    B: { creamMode: 'jellies', hitTimes: [.35, .50, .65], previewActions: [{ state: 'cast', dur: .75 }],
+      cast: 'HasteEffect', impact: 'ShockEffect', col: '#ffd54f', castCue: 'get_food', impactCue: 'pop2', floatLabel: 'DESSERT JELLIES' },
+    P: { creamMode: 'star', passive: true, previewActions: [{ state: 'idle', dur: .80 }], castCue: 'sparkle', floatLabel: 'RISING STAR' },
+    R: { creamMode: 'spell', ally: true, previewActions: [{ state: 'cast', dur: .90 }], cast: 'BlessedEffect', impact: 'HealEffect', col: '#ffe082',
+      castCue: 'ult', impactCue: 'heal', forceCinematicFx: true, floatLabel: 'GREATEST SPELL!' }
+  },
+  GingerBrave: {
+    basic: { braveMode: 'strike', dashes: true, previewActions: [{ state: 'attack', dur: .30 }], castCue: 'cookie_brave_attack', impactCue: 'hit_blunt', floatLabel: 'BRAVE SLAM' },
+    W: { braveMode: 'never', dashes: true, previewActions: [{ state: 'attack', dur: .85 }], cast: 'HasteEffect', impact: 'ShockEffect', col: '#ff5252',
+      castCue: 'cookie_brave_attack', impactCue: 'cookie_brave_skill_hit', forceCinematicFx: true, floatLabel: 'NEVER BACK DOWN!' },
+    G: { braveMode: 'strike', dashes: true, previewActions: [{ state: 'attack', dur: .70 }], castCue: 'cookie_brave_attack', impactCue: 'hit_heavy', floatLabel: 'BRAVE STRIKE' },
+    B: { braveMode: 'run', dashes: true, previewActions: [{ state: 'move', dur: .50 }, { state: 'attack', dur: .35 }], castCue: 'dash', impactCue: 'hit_light', floatLabel: 'RUN!' },
+    P: { braveMode: 'breaker', passive: true, previewActions: [{ state: 'idle', dur: .80 }], castCue: 'sparkle', floatLabel: 'OVENBREAKER' },
+    R: { braveMode: 'courage', dashes: true, hitTimes: [.35, .50, .65], previewActions: [{ state: 'attack', dur: .90 }], castCue: 'ult', impactCue: 'crit', floatLabel: 'COURAGE!' }
   }
 };
 

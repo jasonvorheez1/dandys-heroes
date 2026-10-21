@@ -1994,7 +1994,7 @@ const FX = {
     if (!this.front || !text) return null;
     opt = opt || {};
     const owner = opt.owner;
-    if (owner && owner.dialogueEl) owner.dialogueEl.remove();
+    if (owner && owner.dialogueEl && typeof owner.dialogueEl.remove === 'function') owner.dialogueEl.remove();
     const n = el('div', 'hero-skill-dialogue');
     n.textContent = text;
     n.style.left = `${x}px`;

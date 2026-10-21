@@ -27,11 +27,17 @@ function makeElem(tag = 'div') {
       toggle: () => {},
       contains: () => false
     },
-    appendChild: function(c) { this.children.push(c); return c; },
+    appendChild: function(c) { this.children.push(c); c.parentNode = this; return c; },
     removeChild: function(c) {
       const idx = this.children.indexOf(c);
       if (idx !== -1) this.children.splice(idx, 1);
+      c.parentNode = null;
       return c;
+    },
+    remove: function() {
+      if (this.parentNode && this.parentNode.removeChild) {
+        this.parentNode.removeChild(this);
+      }
     },
     addEventListener: () => {},
     removeEventListener: () => {},
