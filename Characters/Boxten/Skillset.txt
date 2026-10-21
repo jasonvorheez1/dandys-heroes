@@ -1,0 +1,64 @@
+Boxten
+
+Role: DPS / Consistent Attacker
+Tier: D Tier
+
+Boxten is a quiet and reserved music box Toon who prefers staying around familiar faces. His actual ability, Wind-Up, increases his Extraction Speed depending on how many Toons are alive, making him a team-oriented character rather than a fighter.
+
+For an RPG auto battler adaptation, Boxten becomes a steady but unimpressive DPS. His music box design gives him a unique rhythm-based fighting style, but he lacks the explosive damage, survivability, or utility needed to compete with stronger damage dealers. His strength comes from consistency, not power.
+
+Boxten
+
+Role: DPS / Rhythm Fighter
+Tier: D Tier
+
+Name	Rarity	Damage Type	Description
+Wind-Up Strike	White	Physical Damage	Passive: Boxten slowly builds up Tempo whenever he attacks.
+
+Each Tempo stack increases his Attack Speed slightly.
+
+If Boxten stops attacking for too long, his Tempo begins to disappear.
+
+Active: Boxten winds his key rapidly and releases stored energy, striking the nearest enemy with a powerful spinning attack.
+
+Damage increases based on his current Tempo stacks.
+Music Box Melody	Green	Physical Damage	Boxten plays a short melody that releases sound waves around himself.
+
+Enemies hit take Physical Damage and have their Attack Speed reduced.
+
+If multiple enemies are affected, Boxten gains additional Tempo.
+Perfect Rhythm	Blue	Buff	Boxten focuses and maintains his rhythm.
+
+He gains increased Attack Speed and Critical Hit Chance for several seconds.
+
+While active, every few attacks release a small sound wave that damages nearby enemies.
+Always Wound Up	Purple	Max HP
+Attack	Boxten performs better when surrounded by others.
+
+For every living ally, Boxten gains:
+
+• Increased Attack Speed.
+• Increased Skill Recharge.
+• Increased Energy Generation.
+
+However, these bonuses are reduced whenever allies are defeated.
+Final Performance	Red	Physical Damage	Before combat begins, Boxten winds himself completely.
+
+At the start of battle, Boxten gains maximum Tempo.
+
+While at maximum Tempo:
+
+• His attacks hit additional enemies.
+• His skills have reduced cooldowns.
+• His sound attacks ignore some Armor.
+
+When Boxten loses all Tempo, he becomes Unwound, reducing his Attack Speed until he rebuilds his rhythm.
+Why D Tier?
+
+Boxten is a reliable damage dealer, but he struggles to stand out. His rhythm mechanic rewards consistent attacking, but it takes time to build and does not provide the same explosive payoff as stronger DPS characters.
+
+Compared to Rudie, who can snowball through speed and momentum, or other high-tier carries who have stronger burst or team effects, Boxten is simply too dependent on maintaining his setup.
+
+His greatest strength is reliability. He does not completely fail, but he rarely dominates.
+
+D Tier: A steady music-box fighter who can keep a rhythm going, but lacks the impact needed to compete with stronger DPS characters.

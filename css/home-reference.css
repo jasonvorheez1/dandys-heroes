@@ -1,0 +1,43 @@
+/* Home hub reference notes: a scenic command map, clear named locations,
+   compact resource pills, and one obvious route forward. Keep the hand-built
+   Gardenview palette and the existing actions underneath. */
+#topbar{background:linear-gradient(180deg,#101719f5,#1a2527f5);border-bottom-color:#070d0f;box-shadow:inset 0 -2px #78918a55,inset 0 2px #ffffff0d,0 3px 13px #0007}
+.tb-right{gap:4px}.res{border-radius:99px;padding:3px 8px 3px 6px;background:linear-gradient(180deg,#455454,#202b2d);box-shadow:inset 0 1px #ffffff26,0 2px #070b0c}
+.res i{font-size:12px}.res span{font-size:10px}
+
+.home-stage{isolation:isolate!important;background:
+  radial-gradient(circle at 84% 19%,#f7efaa2c 0 4%,transparent 5%),
+  radial-gradient(circle at 18% 34%,#8fe7ff2d 0 9%,transparent 22%),
+  linear-gradient(180deg,#252c64 0 34%,#496c8c 35% 52%,#5ca778 53% 100%)!important;
+  box-shadow:inset 0 0 0 3px #f2e79c,inset 0 0 0 6px #ffffff35,0 6px #203b43,0 12px 22px #0a191f99!important}
+.home-stage:before{content:"";position:absolute;z-index:0;inset:0;pointer-events:none;background:
+  radial-gradient(ellipse at 76% 52%,#d5f3c34d 0 7%,transparent 23%),
+  linear-gradient(126deg,transparent 0 19%,#a5e0d329 19.2% 20%,transparent 20.3% 51%,#f6e7a92b 51.2% 51.8%,transparent 52%),
+  repeating-linear-gradient(90deg,transparent 0 41px,#d1f4d30e 42px 44px),
+  repeating-linear-gradient(0deg,transparent 0 28px,#d1f4d30c 29px 31px)}
+.home-stage-sky{z-index:0!important;opacity:.64;background:
+  radial-gradient(ellipse at 14% 15%,#e8fbff 0 3%,transparent 4%),
+  radial-gradient(ellipse at 57% 19%,#e8fbffbb 0 2%,transparent 3%),
+  linear-gradient(180deg,#7587c7 0,#2d4078 58%,transparent 59%)!important}
+.home-stage-floor{z-index:1!important;top:43%;background:
+  radial-gradient(ellipse at 60% 6%,#eff7c966 0 4%,transparent 19%),
+  repeating-linear-gradient(90deg,#fff3 0 2px,transparent 2px 34px),
+  repeating-linear-gradient(0deg,transparent 0 25px,#173e3c26 26px 29px),
+  linear-gradient(180deg,#94d69a,#4d9b6e 57%,#24604e)!important;opacity:.9}
+.home-stage-rays{z-index:2!important;opacity:.38!important;background:repeating-conic-gradient(from 7deg at 68% 85%,#fff7 0 3deg,transparent 3deg 18deg)!important}
+.home-stage-copy{z-index:6!important;top:58px!important;max-width:55%;padding:5px 7px;border-left:3px solid #fff09a;border-radius:0 7px 7px 0;background:#101d2e75;text-shadow:1px 2px #102033!important}
+.home-stage-copy b{font-size:clamp(16px,4.7vw,24px)!important;color:#fff6bc!important}
+.home-stage-party{z-index:5!important}
+.home-stage-sign{z-index:8!important;background:linear-gradient(180deg,#ff7655,#c83a37)!important;box-shadow:2px 3px #70261e,0 0 0 2px #ffe77e55!important}
+.home-stage-next{z-index:8!important;min-width:102px!important;background:linear-gradient(180deg,#fff4a2,#efbd4b)!important;box-shadow:2px 3px #733a28,0 0 0 2px #fff3a733!important}
+.home-stage-dashboard{z-index:8!important}
+
+.home-map-labels{position:absolute;z-index:4;inset:0;pointer-events:none}.home-map-label{position:absolute;display:grid;grid-template-columns:19px auto;grid-template-rows:auto auto;align-items:center;column-gap:3px;min-width:57px;padding:2px 4px 2px 2px;color:#fff9dd;text-shadow:2px 2px #152039,-1px -1px #152039;transform:rotate(-2deg);filter:drop-shadow(0 2px 1px #13242c)}.home-map-label:after{content:"";position:absolute;left:8px;right:0;bottom:-4px;height:2px;background:#fff5b566;box-shadow:0 0 5px #fff5b533}.home-map-label i{grid-row:1/3;display:grid;place-items:center;width:18px;height:18px;border:2px solid #17242c;border-radius:50%;color:#18383a;background:linear-gradient(145deg,#efff9e,#63bd78);box-shadow:0 2px #193c35;font-size:9px;font-style:normal;text-shadow:none}.home-map-label b{font:1000 8px/.95 "Arial Black",Arial,sans-serif;letter-spacing:.3px;white-space:nowrap}.home-map-label small{color:#d9f5ce;font-size:4px;font-weight:1000;letter-spacing:.7px;white-space:nowrap}.home-map-run{left:39%;top:16%;transform:rotate(-4deg)}.home-map-events{right:7%;top:34%;transform:rotate(3deg)}.home-map-trials{left:8%;top:48%;transform:rotate(-3deg)}.home-map-crates{right:24%;top:51%;transform:rotate(2deg)}.home-map-heroes{left:44%;top:69%;transform:rotate(-2deg)}
+
+.home-buds{border-radius:10px!important;background:linear-gradient(115deg,#fff6a6,#b5eb75 56%,#62b88b)!important;box-shadow:inset 0 2px #fff,0 4px #0d1612,0 0 0 2px #f0ff9a44!important}.home-continue{border-radius:10px!important;background:linear-gradient(105deg,#e9ff9b,#85d768 55%,#3b8d67)!important;box-shadow:inset 0 2px #fff,0 4px #163d23,0 0 0 2px #dfff8b44!important}
+.home-section header{padding:3px 5px 4px;border-bottom:2px solid #76908555}.home-section header b{color:#f2f8de;font-size:12px}.home-section header small{color:#b8e984;font-size:6px;letter-spacing:1.5px}
+.home-play-card{min-height:88px;border-radius:9px;background:linear-gradient(145deg,#405a62,#202f38)!important;box-shadow:inset 0 1px #fff3,0 3px #101516,0 0 0 1px #9de1cf18}.home-play-card.arena{background:linear-gradient(145deg,#76533b,#322523)!important}.home-play-card.event{background:linear-gradient(145deg,#574b79,#292b4b)!important}.home-play-card.trials{background:linear-gradient(145deg,#2f6973,#1b343e)!important}.home-play-card i{font-size:25px}.home-collect-card,.home-grow-card{border-radius:8px;box-shadow:inset 0 1px #fff3,0 2px #111,0 0 0 1px #b7e7d316}.home-collect-card.ready{background:linear-gradient(180deg,#62773c,#344b2b);box-shadow:inset 0 1px #fff4,0 2px #111,0 0 0 2px #efff8b55}
+.home-mastery{border-radius:10px!important;background:linear-gradient(120deg,#263e42,#1b292f)!important;box-shadow:inset 0 1px #fff2,0 3px #0b1113,0 0 0 1px #90d5c622!important}
+
+@media(max-width:430px){.tb-right{gap:2px}.res{padding-inline:5px}.res i{font-size:10px}.res span{font-size:9px}.home-map-label{transform:scale(.86) rotate(-2deg);transform-origin:left center}.home-map-events{right:1%}.home-map-crates{right:17%}.home-stage-copy{top:54px!important;max-width:58%}.home-stage-copy b{font-size:16px!important}.home-play-grid{gap:5px}.home-play-card{min-height:82px;padding:6px 5px}.home-play-card i{font-size:22px}.home-play-card b{font-size:9px}.home-play-card small{font-size:6px}}
+@media(prefers-reduced-motion:reduce){.home-stage-rays{animation:none!important}}

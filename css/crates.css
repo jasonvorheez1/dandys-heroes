@@ -1,0 +1,205 @@
+/* Crate room polish. The base crate and pull animations stay in game.css;
+   this layer only improves hierarchy, affordance, and reveal readability. */
+.crates-screen .crate-head,
+.crates-screen > .card:last-child {
+  position: relative;
+  overflow: hidden;
+}
+
+.crates-screen .crate-head {
+  border-color: #66748d;
+  background:
+    radial-gradient(circle at 92% 0, #c17bff2a, transparent 34%),
+    linear-gradient(135deg, #263b4c, #343047 56%, #242b36);
+  box-shadow: inset 0 2px #ffffff1c, 0 5px #0e151c, 0 0 24px #6cc4ff12;
+}
+
+.crates-screen .crate-head:before,
+.crates-screen .crate-head:after {
+  content: '';
+  position: absolute;
+  pointer-events: none;
+}
+
+.crates-screen .crate-head:before {
+  width: 150px;
+  height: 150px;
+  right: -42px;
+  top: -78px;
+  border: 1px solid #d6c8ff33;
+  border-radius: 50%;
+  box-shadow: 0 0 0 13px #d6c8ff0d, 0 0 0 26px #d6c8ff08;
+}
+
+.crates-screen .crate-head:after {
+  inset: 0;
+  opacity: .18;
+  background: repeating-linear-gradient(135deg, transparent 0 12px, #ffffff 13px 14px, transparent 15px 27px);
+  mix-blend-mode: overlay;
+}
+
+.crates-screen .crate-head > * {
+  position: relative;
+  z-index: 1;
+}
+
+.crates-screen .crate {
+  isolation: isolate;
+  overflow: hidden;
+  min-height: 238px;
+  cursor: default;
+  transition: transform .16s cubic-bezier(.2, 1.2, .4, 1), filter .16s, box-shadow .16s;
+}
+
+.crates-screen .crate:before,
+.crates-screen .crate:after {
+  content: '';
+  position: absolute;
+  pointer-events: none;
+}
+
+.crates-screen .crate:before {
+  z-index: 0;
+  inset: 7px;
+  border: 1px solid #ffffff20;
+  border-radius: 12px;
+  background: radial-gradient(ellipse at 50% 8%, var(--crate-glow, #ffffff22), transparent 58%);
+}
+
+.crates-screen .crate:after {
+  z-index: 0;
+  width: 90px;
+  height: 22px;
+  left: 50%;
+  bottom: 57px;
+  border-radius: 50%;
+  background: var(--crate-glow, #ffffff);
+  opacity: .16;
+  filter: blur(14px);
+  transform: translateX(-50%);
+}
+
+.crates-screen .crate:hover {
+  transform: translateY(-3px);
+  filter: brightness(1.06);
+  box-shadow: inset 0 3px 0 rgba(255,255,255,.17), 0 8px 0 rgba(0,0,0,.36), 0 0 18px var(--crate-glow, #ffffff22);
+}
+
+.crates-screen .crate:active {
+  transform: translateY(3px);
+}
+
+.crates-screen .crate .cbox,
+.crates-screen .crate .b,
+.crates-screen .crate .mini,
+.crates-screen .crate .pill,
+.crates-screen .crate .row,
+.crates-screen .crate > .btn {
+  position: relative;
+  z-index: 1;
+}
+
+.crates-screen .crate .cbox {
+  margin: 2px 0 1px;
+  text-shadow: 0 0 12px var(--crate-glow, #ffffff66);
+}
+
+.crates-screen .crate.gold { --crate-glow: #e0a020; }
+.crates-screen .crate.diamond { --crate-glow: #6cc4ff; }
+.crates-screen .crate.main { --crate-glow: #c99bff; }
+
+.crates-screen .crate .btn:focus-visible,
+.crates-screen .pool-card:focus-visible {
+  outline: 3px solid #fff1a8;
+  outline-offset: 3px;
+}
+
+.crates-screen .pool-card {
+  position: relative;
+  overflow: hidden;
+  min-height: 96px;
+  cursor: default;
+  transition: transform .14s, filter .14s, box-shadow .14s;
+}
+
+.crates-screen .pool-card[role='button'] {
+  cursor: pointer;
+}
+
+.crates-screen .pool-card[role='button']:hover {
+  z-index: 1;
+  transform: translateY(-3px) rotate(-1deg);
+  filter: brightness(1.1);
+  box-shadow: inset 0 2px #ffffff22, 0 6px 0 rgba(0,0,0,.34), 0 0 14px #ffffff24;
+}
+
+.crates-screen .pool-card:after {
+  content: 'POOL';
+  position: absolute;
+  top: 5px;
+  right: 5px;
+  color: #ffffff66;
+  font-size: 5px;
+  font-weight: 1000;
+  letter-spacing: 1px;
+  pointer-events: none;
+}
+
+.crates-screen .pull-result {
+  position: relative;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at 50% 0, #ffffff12, transparent 48%),
+    linear-gradient(180deg, #4f5c69, #2d343d);
+}
+
+.crates-screen .pull-result:after {
+  content: '';
+  position: absolute;
+  inset: auto 12% 4px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--pull-accent, #7b8791);
+  opacity: .75;
+  filter: blur(2px);
+}
+
+.crates-screen .pull-result[data-type='hero'],
+.crates-screen .pull-result[data-type='shards'] {
+  --pull-accent: #ffce4d;
+}
+
+.crates-screen .pull-result[data-rarity='2'] { --pull-accent: #5fe07a; }
+.crates-screen .pull-result[data-rarity='3'] { --pull-accent: #5aa9ff; }
+.crates-screen .pull-result[data-rarity='4'] { --pull-accent: #c17bff; }
+.crates-screen .pull-result[data-rarity='5'] { --pull-accent: #ff6060; }
+.crates-screen .pull-result[data-rarity='6'] { --pull-accent: #ffce4d; }
+
+.crates-screen .pull-result.new:before {
+  content: 'NEW FILE';
+  position: absolute;
+  z-index: 2;
+  top: 5px;
+  left: 5px;
+  padding: 2px 4px;
+  border: 1px solid #fff0a8;
+  border-radius: 4px;
+  color: #30230b;
+  background: #ffe27b;
+  font-size: 5px;
+  font-weight: 1000;
+  letter-spacing: .6px;
+  transform: rotate(-4deg);
+}
+
+@media(max-width:560px) {
+  .crates-screen .crate { min-height: 250px; padding-inline: 6px; }
+  .crates-screen .crate .row { gap: 3px; }
+  .crates-screen .crate .btn { font-size: 8px; }
+}
+
+@media(prefers-reduced-motion: reduce) {
+  .crates-screen .crate .cbox { animation: none; }
+  .crates-screen .crate,
+  .crates-screen .pool-card { transition: none; }
+}

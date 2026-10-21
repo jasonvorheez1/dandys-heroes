@@ -1,0 +1,15 @@
+Yatta
+
+Tier: S Tier
+Role: Attacker / Combo DPS
+
+Yatta is a high-speed piñata performer who overwhelms enemies through rapid attacks, bouncing movement, and explosive bursts. Her strength comes from constantly keeping momentum, turning her own body into a weapon, and creating openings for her team.
+
+Name	Rarity	Damage Type	Description
+Piñata Party	White	Physical Damage	Passive: Every few Basic Attacks, Yatta gains a stack of Celebration. Each stack increases her Attack Speed and Critical Hit Chance. At maximum stacks, Yatta's next Basic Attack causes a candy explosion that deals bonus Physical Damage to nearby enemies.
+
+Active: Yatta swings herself through the enemy team, repeatedly bouncing between enemies and dealing Physical Damage. Enemies hit multiple times become Dizzy, reducing their Accuracy for a few seconds.
+Candy Crash	Green	Physical Damage	Yatta launches herself toward the enemy with the lowest HP, smashing into them and dealing Physical Damage. If the target is below a percentage of their HP, this attack deals increased damage and briefly Stuns them.
+Spring Loaded	Blue	N/A	Yatta jumps around the battlefield, becoming harder to hit and increasing her Movement Speed and Dodge Chance for a few seconds. Every successful dodge immediately grants her Energy.
+Festival Fuel	Purple	Attack Speed	Piñata Party now grants Celebration stacks faster. When Yatta reaches maximum Celebration, the candy explosion also reduces the Armor of enemies hit.
+The Big Finish	Red	Physical Damage	Candy Crash now bounces to another nearby enemy after defeating its target. Each defeated enemy increases the damage of the next bounce. If multiple enemies are defeated, Yatta immediately refreshes Candy Crash.

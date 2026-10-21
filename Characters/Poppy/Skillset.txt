@@ -1,0 +1,61 @@
+Poppy
+
+Role: Tank / Self-Sustain
+Tier: D Tier
+
+Poppy is a cheerful bubble Toon who relies on her natural bounce and resilience to survive dangerous situations. She is energetic and optimistic, but her lightweight body makes her better at avoiding danger than standing toe-to-toe with powerful enemies.
+
+In an RPG auto battler, Poppy becomes a beginner-friendly defensive character who specializes in self-preservation, temporary protection, and disrupting enemies through her bouncing movements. She can survive longer than expected, but she lacks the team protection and battlefield control of stronger tanks.
+
+Name	Rarity	Damage Type	Description
+Panic Pop	White	Physical Damage / Control	Passive: Whenever Poppy loses HP, she becomes Buoyant for a few seconds.
+
+Buoyant increases her Movement Speed and Dodge Chance.
+
+If Poppy avoids an attack while Buoyant, she restores a small amount of Energy.
+
+Active: Poppy launches herself forward, bouncing between enemies and dealing Physical Damage. The cast also gives her a short burst of Buoyancy.
+
+Enemies hit are pushed back and Slowed briefly.
+Bubble Bounce	Green	Shield	Poppy creates a protective bubble around herself.
+
+The bubble absorbs incoming damage based on Poppy's Max HP and is slightly stronger than her base version.
+
+When the bubble breaks, it bursts outward, pushing nearby enemies away.
+
+When it pops, Poppy gains Attack Speed, Movement Speed, and a short burst of Buoyancy.
+Pop Shock	Blue	Physical Damage	Poppy compresses herself before suddenly expanding outward.
+
+She deals Physical Damage around herself and knocks enemies away.
+
+Enemies hit become Off Balance for several seconds, reducing their Accuracy and Skill Haste.
+Air Filled	Purple	Max HP	Poppy's body becomes harder to break as she takes damage.
+
+Whenever Poppy loses HP, she gains a stack of Air Pressure.
+
+Each stack increases:
+
+• Max HP.
+• Shield strength.
+• Resistance to knockback effects.
+
+At maximum stacks, Poppy cannot be displaced and gains increased damage reduction.
+The Biggest Bubble	Red	Max HP
+Shield	At the start of battle, Poppy gains a protective layer of air around herself.
+
+The first time Poppy would be defeated, she instead becomes a giant bubble.
+
+While in bubble form:
+
+• She cannot attack.
+• She cannot be damaged.
+• She slowly restores HP.
+
+When the bubble pops, Poppy returns to battle, damaging and pushing back nearby enemies.
+
+Afterward, she gains increased Movement Speed but reduced Attack for the rest of the battle.
+Why D Tier?
+
+Poppy is a durable character, but most of her strengths are focused on surviving herself rather than helping her team. She can avoid damage, recover from dangerous situations, and disrupt enemies, but she does not provide the protection of stronger tanks.
+
+Her bubble body makes her surprisingly difficult to remove, but stronger tanks offer more value through ally protection, enemy control, or stronger defensive effects.

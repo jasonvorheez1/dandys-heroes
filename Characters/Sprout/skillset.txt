@@ -1,0 +1,56 @@
+Sprout
+
+Role: Healer / Support
+Tier: SS Tier
+
+Name	Rarity	Damage Type	Description
+Baked Sweets	White	Healing	Passive: Sprout can always see the current HP of his allies. Whenever an ally falls below a certain percentage of Max HP, Sprout prioritizes them with his next Basic Attack. Instead of dealing Damage, Sprout gives that ally a freshly baked treat, Healing them for a portion of their Max HP.
+
+Sprout's Healing is increased against allies who are below half of their Max HP.
+
+Active: Sprout quickly prepares a baked sweet and gives it to the ally with the lowest percentage of HP, immediately Healing them. The Healing is increased if that ally is below a certain percentage of Max HP.
+Stay Close	Green	Healing	Sprout becomes concerned when his allies begin taking heavy Damage. He immediately moves toward the ally with the lowest percentage of HP and gives them a baked sweet, Healing them over several seconds.
+
+The target also gains increased Movement Speed and Damage Reduction for the duration.
+
+Sprout then gains increased Movement Speed for several seconds, allowing him to quickly reach another ally who needs help.
+Fresh Out of the Oven	Blue	Healing	Sprout pulls out several freshly baked treats and distributes them among the two allies missing the most HP. Each ally is Healed and gains increased Healing received for several seconds.
+
+If either ally is below a certain percentage of Max HP, they receive an additional Heal.
+Overprotective	Purple	Max HP
+Healing	Sprout's constant attention to his allies makes him extremely difficult to catch off guard.
+
+Sprout gains increased Healing Power for every ally below a certain percentage of Max HP.
+
+Whenever Sprout Heals an ally, that ally gains a small Max HP increase for the remainder of the wave. This effect can only occur a limited number of times per ally.
+
+If an ally becomes critically injured, Sprout immediately gains Energy.
+I've Got You	Red	Healing
+Max HP	Sprout refuses to let his friends go down without doing everything he can to help them.
+
+Whenever an ally would be KO'd, Sprout immediately intervenes, preventing the KO and restoring a portion of their Max HP. The ally also gains Damage Reduction for several seconds.
+
+Sprout then prepares a baked sweet for every other ally, Healing them for a portion of their Max HP.
+
+This effect can only activate a limited number of times per wave and cannot affect the same ally more than once.
+
+Whenever Sprout prevents a KO this way, his Healing Power is increased for the remainder of the wave.
+Why SS Tier?
+
+The important distinction is triage.
+
+Sprout doesn't just throw out a big team Heal every so often. His passive awareness lets him constantly identify who needs help, while Baked Sweets makes his healing naturally prioritize the most injured ally. That's a direct adaptation of Overprotective and Baked Sweets rather than an invented plant or magic gimmick.
+
+His high Stamina and Movement Speed also become relevant through Stay Close. Canonically, Sprout has 5 star Stamina and 4 star Movement Speed, so making him capable of quickly repositioning to an endangered ally fits much better than making him a stationary healer.
+
+And I've Got You is where his SS tier comes from. Sprout is fundamentally the character who is constantly watching everyone else's condition and getting involved when someone is in trouble. His personality is explicitly described as overprotective and caring, sometimes to the point of being pushy.
+
+I also wouldn't give him magical plant attacks just because he's a strawberry. The food is the mechanic. His healing comes from baking and giving things to people, which is much more faithful to what actually defines him. His own dialogue reinforces that baking is a major part of his identity, with lines about things being fresh out of the oven and making sure everyone is okay.
+
+This gives him a very different identity from the other healers:
+
+Sprout: reactive emergency healer who watches everyone's HP
+Cocoa: item based temporary buffs
+Cosmo: more direct self sacrifice and healing
+Astro: broader team support
+Sprout: "You're hurt. I'm dealing with that now."

@@ -1,0 +1,148 @@
+/* Bobette's signature skill: a gift that feels assembled, sealed, then popped. */
+.bobette-package-hold,
+.bobette-package-release{
+  position:absolute;
+  pointer-events:none;
+  transform-origin:50% 78%;
+  will-change:transform,opacity;
+}
+
+.bobette-package-hold{
+  z-index:8;
+  opacity:0;
+  animation:bpHoldEnter .34s cubic-bezier(.16,1.45,.3,1) forwards;
+}
+.bp-hold-aura{
+  position:absolute;
+  inset:7% -8% 4%;
+  border-radius:44%;
+  background:radial-gradient(ellipse,#ffdf7d55 0 18%,#e8536b22 42%,transparent 72%);
+  filter:blur(7px);
+  animation:bpAuraBreathe 1.15s ease-in-out infinite;
+}
+.bp-package-art{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  filter:drop-shadow(0 6px 2px #250b1399) drop-shadow(0 0 10px #f5c86055);
+  animation:bpPackageBreathe 1.1s ease-in-out infinite;
+}
+.bp-seal{
+  position:absolute;
+  left:50%;
+  top:49%;
+  display:grid;
+  place-items:center;
+  width:23%;
+  aspect-ratio:1;
+  border:2px solid #8a2d32;
+  border-radius:50%;
+  color:#fff0bd;
+  background:radial-gradient(circle at 35% 30%,#fff3bd,#d94b58 44%,#8f213b 100%);
+  box-shadow:0 2px 0 #5d162b,0 0 8px #ffd56d99;
+  font:1000 clamp(8px,1.8vw,13px)/1 Arial,sans-serif;
+  transform:translate(-50%,-50%) rotate(-7deg);
+  animation:bpSealPulse 1.1s ease-in-out infinite;
+}
+.bp-ribbon-sheen{
+  position:absolute;
+  left:-20%;
+  top:16%;
+  width:140%;
+  height:12%;
+  border-radius:999px;
+  background:linear-gradient(90deg,transparent,#fff5bdaa 47%,transparent 56%);
+  mix-blend-mode:screen;
+  transform:rotate(-8deg) translateX(-100%);
+  animation:bpSheen 1.35s .28s ease-in-out infinite;
+}
+.bp-hold-tag{
+  position:absolute;
+  left:50%;
+  bottom:-2%;
+  padding:3px 6px;
+  border:2px solid #3b1520;
+  border-radius:5px;
+  color:#fff2c9;
+  background:#7d263b;
+  box-shadow:0 2px #26101a;
+  font:1000 6px/1 Arial,sans-serif;
+  letter-spacing:1px;
+  transform:translateX(-50%) rotate(-3deg);
+  animation:bpTagBob 1.1s ease-in-out infinite;
+}
+.bp-paper{
+  position:absolute;
+  width:7%;
+  height:13%;
+  border:2px solid #f8d994;
+  background:#fff1c7;
+  box-shadow:0 1px 2px #35101a99;
+  opacity:0;
+}
+.bp-paper.one{left:3%;top:24%;transform:rotate(-24deg);animation:bpPaperFloat 1.1s .08s ease-out infinite}
+.bp-paper.two{right:2%;top:33%;transform:rotate(31deg);animation:bpPaperFloat 1.1s .34s ease-out infinite reverse}
+.bp-paper.three{left:17%;bottom:12%;transform:rotate(42deg);animation:bpPaperFloat 1.1s .56s ease-out infinite}
+.bobette-package-hold.bp-releasing{
+  animation:bpHoldRelease .22s ease-in forwards;
+}
+.bobette-package-hold.bp-releasing .bp-package-art{
+  animation:bpPackageRelease .22s cubic-bezier(.2,.8,.5,1) forwards;
+}
+
+.bobette-package-release{
+  z-index:9;
+  opacity:0;
+  animation:bpReleaseIn .24s cubic-bezier(.15,1.55,.3,1) forwards;
+}
+.bp-release-glow{
+  position:absolute;
+  inset:9%;
+  border-radius:50%;
+  background:radial-gradient(circle,#fff4bf99 0 8%,#f5c86055 26%,#e8536b22 52%,transparent 72%);
+  filter:blur(4px);
+  animation:bpReleaseGlow .45s ease-out forwards;
+}
+.bp-present-burst{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  filter:drop-shadow(0 5px 2px #2b0d1888) drop-shadow(0 0 12px #f5c86088);
+  animation:bpBurstIn .5s cubic-bezier(.12,1.42,.25,1) forwards;
+}
+.bp-release-star{
+  position:absolute;
+  left:50%;
+  top:50%;
+  color:#fff8c9;
+  font:1000 21px/1 Arial,sans-serif;
+  text-shadow:0 0 7px #fff,0 0 15px #f5c860;
+  transform:translate(-50%,-50%) scale(.2);
+  animation:bpStarPop .45s .06s cubic-bezier(.18,1.65,.3,1) forwards;
+}
+
+@keyframes bpHoldEnter{0%{opacity:0;transform:translateY(16px) scale(.38) rotate(-8deg)}70%{opacity:1;transform:translateY(-3px) scale(1.06) rotate(2deg)}100%{opacity:1;transform:none}}
+@keyframes bpHoldRelease{to{opacity:0;transform:translateY(-18px) scale(1.13) rotate(4deg)}}
+@keyframes bpPackageBreathe{0%,100%{transform:translateY(0) rotate(-1deg) scale(1)}50%{transform:translateY(-4px) rotate(1deg) scale(1.025)}}
+@keyframes bpAuraBreathe{0%,100%{opacity:.45;transform:scale(.9)}50%{opacity:.9;transform:scale(1.08)}}
+@keyframes bpSealPulse{0%,100%{filter:brightness(.95);transform:translate(-50%,-50%) rotate(-7deg) scale(.96)}50%{filter:brightness(1.25);transform:translate(-50%,-50%) rotate(4deg) scale(1.06)}}
+@keyframes bpSheen{0%,36%{transform:rotate(-8deg) translateX(-100%)}66%,100%{transform:rotate(-8deg) translateX(100%)}}
+@keyframes bpTagBob{0%,100%{transform:translateX(-50%) rotate(-3deg)}50%{transform:translateX(-50%) translateY(-2px) rotate(2deg)}}
+@keyframes bpPaperFloat{0%,100%{opacity:0;translate:0 5px}25%,70%{opacity:.92}50%{translate:0 -6px}}
+@keyframes bpReleaseIn{from{opacity:0;transform:scale(.52)}to{opacity:1;transform:scale(1)}}
+@keyframes bpReleaseGlow{from{opacity:.2;transform:scale(.45)}to{opacity:0;transform:scale(1.4)}}
+@keyframes bpBurstIn{0%{opacity:0;transform:scale(.26) rotate(-18deg)}38%{opacity:1;transform:scale(1.08) rotate(4deg)}100%{opacity:0;transform:scale(1.32) rotate(19deg)}}
+@keyframes bpStarPop{0%{opacity:0;transform:translate(-50%,-50%) scale(.2) rotate(-35deg)}48%{opacity:1;transform:translate(-50%,-50%) scale(1.25) rotate(12deg)}100%{opacity:0;transform:translate(-50%,-50%) scale(1.8) rotate(28deg)}}
+
+@media(max-width:430px){
+  .bp-hold-tag{font-size:5px;padding:3px 5px}
+  .bp-seal{font-size:8px}
+}
+
+@media(prefers-reduced-motion:reduce){
+  .bobette-package-hold,.bobette-package-release,.bp-hold-aura,.bp-package-art,.bp-seal,.bp-ribbon-sheen,.bp-paper,.bp-hold-tag,.bp-release-glow,.bp-present-burst,.bp-release-star{animation-duration:.01ms!important;animation-iteration-count:1!important}
+}

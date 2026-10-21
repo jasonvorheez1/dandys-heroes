@@ -1,0 +1,59 @@
+Cocoa
+
+Role: Support / Utility / Buffer
+Tier: SS Tier
+
+Cocoa is an endlessly optimistic chocolate bunny who believes everyone deserves help, even if they never ask for it. She constantly prepares BonBon candies for her teammates, rewarding proactive play and ensuring her allies always have the resources to keep fighting. Rather than restoring large amounts of Health, Cocoa excels at accelerating her entire team through buffs, Energy, and cooldown reduction.
+
+Name	Rarity	Damage Type	Description
+BonBon Delivery	White	Buff	Passive: Every few seconds, Cocoa prepares a BonBon. She can store up to 5 BonBons.
+
+Whenever an ally uses a skill, Cocoa immediately throws them a BonBon if one is available. Each ally can only receive a BonBon this way once every several seconds.
+
+If that ally already has Sugar Rush, the BonBon restores Energy and extends the existing buff instead of wasting the delivery.
+
+Active: Cocoa throws BonBons to every nearby ally. Allies that receive one gain Sugar Rush for several seconds.
+
+Sugar Rush increases Attack Speed, Movement Speed, Skill Haste, and Energy Generation.
+
+If an ally already has Sugar Rush, consuming another BonBon instead restores Energy and extends Sugar Rush's duration.
+Sharing is Caring	Green	Shield / Cleanse	Cocoa refuses to leave anyone behind.
+
+Whenever an ally gains Sugar Rush, they also gain a Shield based on Cocoa's Max HP.
+
+If the ally is already Shielded, they instead restore Health over several seconds.
+
+Shielded allies also restore a small amount of Energy when this healing effect begins.
+
+Allies below half HP receive a stronger Shield. Casting this skill applies BonBon Blessing to every ally. BonBon Blessing cleanses one negative status when received and improves Crowd Control Resistance.
+Sweet Surprise	Blue	Physical Damage	Cocoa tosses a large chocolate treat into the largest group of enemies. The treat bursts apart, dealing Physical Damage and covering enemies in sticky chocolate for several seconds.
+
+Chocolate-covered enemies have reduced Attack Speed and Skill Haste.
+
+Whenever an ally attacks a chocolate-covered enemy, they restore a small amount of Energy and briefly gain Movement Speed. Cocoa only rewards each attacker once every short interval so the effect stays useful without becoming infinite.
+Always Prepared	Purple	Energy	Cocoa is always ready with another treat.
+
+Whenever an ally consumes a BonBon, Cocoa has a chance to immediately prepare another one.
+
+Whenever an ally under Sugar Rush personally defeats an enemy, Cocoa restores Energy, reduces the cooldown of BonBon Delivery, and prepares another BonBon.
+
+Cocoa's maximum BonBon storage is increased by 2.
+A Basket for Everyone	Red	Max HP
+Shield	Cocoa begins every battle with maximum BonBons prepared.
+
+Sugar Rush now also grants increased Critical Chance and Crowd Control Resistance.
+
+Whenever an ally falls below a percentage of their Max HP, Cocoa immediately gives them a BonBon without consuming one from storage. This effect has a cooldown for each ally.
+
+While every living ally is affected by Sugar Rush, all allies gain increased Skill Haste, generate additional Energy, and cannot have their positive buffs removed or stolen.
+
+This completed delivery cycle also pulses Energy to the whole team and grants temporary protection against buff removal.
+
+Whenever Cocoa prepares a BonBon while already at maximum storage, the excess BonBon is automatically delivered to the ally with the lowest HP.
+Why SS Tier?
+
+Cocoa is one of the strongest supports because she constantly improves the tempo of her entire team. Instead of waiting for the perfect moment, she is always preparing BonBons, rewarding allies for using skills and staying active. Her buffs create a positive feedback loop where teammates gain more Energy, use more abilities, receive more BonBons, and continue accelerating throughout the fight.
+
+She contributes very little direct damage and has modest personal defenses, but no other support can maintain such consistent team-wide buffs and resource generation over the course of a long battle. Her ability to keep allies empowered almost indefinitely makes her a cornerstone of many team compositions.
+
+SS Tier: A proactive support whose endless supply of BonBons keeps her entire team fighting faster, stronger, and longer.

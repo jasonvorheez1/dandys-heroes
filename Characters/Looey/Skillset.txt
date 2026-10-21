@@ -1,0 +1,64 @@
+Looey
+
+Role: DPS / Speed Fighter
+Tier: D Tier
+
+Looey is a cheerful balloon Toon and part of a circus troupe alongside Yatta and Blot. His personality revolves around performing, making people laugh, and hiding his nervousness behind his energetic personality. His defining ability, Heart of Helium, makes him become faster as he loses Hearts, turning damage into mobility.
+
+For this RPG auto battler adaptation, Looey becomes a high-risk speed-based DPS. His gimmick is that he gets stronger when injured, but unlike higher-tier carries, he struggles to convert that speed into consistent damage. He is exciting and can snowball, but his reliance on missing HP keeps him unreliable.
+
+Looey
+
+Role: DPS / Speed Fighter
+Tier: D Tier
+
+Name	Rarity	Damage Type	Description
+Helium Hustle	White	Physical Damage	Passive: Looey gains a stack of Inflated whenever he loses HP. Each stack increases his Movement Speed and Attack Speed.
+
+Healing Looey removes Inflated stacks.
+
+Active: Looey rapidly bounces across the battlefield, striking enemies multiple times. Each hit deals Physical Damage.
+
+For every Inflated stack, this skill gains increased range and damage.
+Balloon Bounce	Green	Physical Damage	Looey launches himself into enemies like a bouncing ball.
+
+He damages the closest enemies and ricochets between them.
+
+Each bounce increases the damage of the next bounce, but Looey loses a small amount of HP after the final bounce.
+Big Top Performance	Blue	Buff	Looey puts on a show for his teammates.
+
+All allies gain increased Movement Speed and Attack Speed for several seconds.
+
+Looey gains double the bonuses but takes increased damage while performing.
+Light As Air	Purple	Max HP	Looey becomes harder to pin down as he loses HP.
+
+For every missing portion of his Health, he gains:
+
+• Increased Dodge Chance.
+• Increased Attack Speed.
+• Increased Movement Speed.
+
+However, Looey's Defense decreases as his Health gets lower, making him easier to defeat if enemies can catch him.
+The Greatest Show	Red	Physical Damage
+Max HP	At the start of battle, Looey enters the spotlight.
+
+Whenever Looey loses a Heart of Health, he gains Maximum Inflation.
+
+While at Maximum Inflation:
+
+• His basic attacks hit additional enemies.
+• His skills have reduced cooldowns.
+• He gains immunity to slows.
+
+If Looey defeats an enemy while at Maximum Inflation, he restores some HP but loses part of his bonus speed.
+
+If Looey is healed back to full HP, all Inflation effects disappear.
+Why D Tier?
+
+Looey has a fun and unique mechanic, but it is difficult to make work consistently in an auto battler. His entire kit revolves around being injured, which creates a dangerous balance problem: if he is healthy, he is average; if he is weak, he becomes powerful but also much easier to defeat.
+
+Compared to higher-tier DPS characters like Rudie, who can build momentum while staying aggressive, Looey has to intentionally put himself at risk before reaching his strongest state.
+
+His speed is impressive and his comeback potential is real, but he lacks the damage consistency, survivability, and team utility needed for higher ranks.
+
+D Tier: A risky speed-based DPS who can have explosive moments, but struggles to compete with reliable carries.

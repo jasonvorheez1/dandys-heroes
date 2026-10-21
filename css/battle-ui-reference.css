@@ -1,0 +1,236 @@
+/* Reference-inspired battle HUD.
+   The screenshot's useful ideas are the hierarchy and readability: a calm
+   status rail at the top, an unobstructed arena, and chunky role-colored
+   character cards at the bottom. Keep the project's dark Dandy materials and
+   outlined type, and leave special collaboration/world battle skins alone. */
+
+#battle:not(.kh-battle):not(.unknown-world-battle){
+  background:#0b1113;
+  box-shadow:0 0 0 3px #080b0c,0 0 60px #000;
+}
+
+#battle:not(.kh-battle):not(.unknown-world-battle) #battleHud{
+  padding:calc(9px + env(safe-area-inset-top,0px)) 9px calc(10px + env(safe-area-inset-bottom,0px));
+}
+
+#battle:not(.kh-battle):not(.unknown-world-battle) #hudTop{
+  position:relative;
+  z-index:12;
+  align-items:center;
+  gap:5px;
+  min-height:42px;
+  padding:4px;
+  border:2px solid #080b0c;
+  border-radius:13px;
+  background:linear-gradient(180deg,#172123d9,#0b1113e8);
+  box-shadow:inset 0 1px #f1fff21c,0 4px 12px #0008;
+}
+
+#battle:not(.kh-battle):not(.unknown-world-battle) #waveInfo,
+#battle:not(.kh-battle):not(.unknown-world-battle) #hudTimer{
+  min-height:31px;
+  padding:5px 9px;
+  border:2px solid #344547;
+  border-radius:9px;
+  background:linear-gradient(180deg,#334446e8,#182325e8);
+  box-shadow:inset 0 1px #ffffff18,0 2px #050708;
+  text-shadow:0 1px #050708;
+}
+
+#battle:not(.kh-battle):not(.unknown-world-battle) #waveInfo{
+  border-left:3px solid var(--accent);
+  letter-spacing:.3px;
+}
+
+#battle:not(.kh-battle):not(.unknown-world-battle) #waveInfo i{
+  color:var(--accent);
+}
+
+#battle:not(.kh-battle):not(.unknown-world-battle) #hudTimer{
+  color:#d9f2ff;
+  border-color:#496b75;
+}
+
+#battle:not(.kh-battle):not(.unknown-world-battle) #hudTimer i{
+  color:#85dfff;
+}
+
+#battle:not(.kh-battle):not(.unknown-world-battle) #hudBtns{
+  gap:4px;
+}
+
+#battle:not(.kh-battle):not(.unknown-world-battle) #hudBtns button{
+  width:34px;
+  height:32px;
+  border:2px solid #344547;
+  border-radius:10px;
+  background:linear-gradient(180deg,#4b5b5b,#263335);
+  box-shadow:inset 0 1px #ffffff20,0 2px #050708;
+}
+
+#battle:not(.kh-battle):not(.unknown-world-battle) #hudBtns button:first-child{
+  color:#d7f2dc;
+}
+
+#battle:not(.kh-battle):not(.unknown-world-battle) #hudBtns button.on{
+  border-color:#e8cc70;
+  background:linear-gradient(180deg,#f4da79,#aa752b);
+}
+
+#battle:not(.kh-battle):not(.unknown-world-battle) #hudBtns button:last-child{
+  color:#ffb0b0;
+  border-color:#78484b;
+  background:linear-gradient(180deg,#713c42,#3b2228);
+}
+
+#battle:not(.kh-battle):not(.unknown-world-battle) #logBox{
+  left:10px;
+  right:10px;
+  bottom:132px;
+  max-height:54px;
+  padding:5px 8px;
+  border-left:2px solid #6b857f;
+  border-radius:5px;
+  background:linear-gradient(90deg,#0b1314d9,#0b131400);
+}
+
+#battle:not(.kh-battle):not(.unknown-world-battle) #logBox div{
+  font-size:9px;
+  -webkit-text-stroke:2px #080b0c;
+}
+
+#battle:not(.kh-battle):not(.unknown-world-battle) #allyDock{
+  left:8px;
+  right:8px;
+  bottom:calc(8px + env(safe-area-inset-bottom,0px));
+  justify-content:center;
+  gap:5px;
+  padding:14px 6px 6px;
+  border:3px solid #080b0c;
+  border-radius:14px;
+  background:linear-gradient(180deg,#253234e8,#11191aeF);
+  box-shadow:inset 0 2px #d7eee51b,0 4px #050708,0 0 18px #0008;
+}
+
+#battle:not(.kh-battle):not(.unknown-world-battle) #allyDock:before{
+  content:'TEAM // AUTO-BATTLE';
+  position:absolute;
+  top:4px;
+  left:8px;
+  padding:2px 7px;
+  border:1px solid #526662;
+  border-radius:4px;
+  color:#a8d4bd;
+  background:#142020e8;
+  font-size:6px;
+  font-weight:1000;
+  letter-spacing:1px;
+  text-shadow:0 1px #050708;
+}
+
+#battle:not(.kh-battle):not(.unknown-world-battle) .unitcard{
+  width:60px;
+  flex:0 1 60px;
+  min-width:0;
+  padding:4px 4px 5px;
+  border:3px solid #080b0c;
+  border-radius:9px;
+  background:linear-gradient(180deg,var(--card-top,#5a6967),var(--card-bottom,#2b3939));
+  box-shadow:inset 0 2px #ffffff32,0 3px #050708;
+  transform:translateY(0);
+  transition:transform .12s,opacity .3s,filter .3s;
+}
+
+#battle:not(.kh-battle):not(.unknown-world-battle) .unitcard:hover{
+  transform:translateY(-3px);
+}
+
+#battle:not(.kh-battle):not(.unknown-world-battle) .unitcard.role-damage{
+  --card-top:#d86b68;
+  --card-bottom:#813a46;
+}
+
+#battle:not(.kh-battle):not(.unknown-world-battle) .unitcard.role-support{
+  --card-top:#69c995;
+  --card-bottom:#2d765f;
+}
+
+#battle:not(.kh-battle):not(.unknown-world-battle) .unitcard.role-tank{
+  --card-top:#6fb8d2;
+  --card-bottom:#315f78;
+}
+
+#battle:not(.kh-battle):not(.unknown-world-battle) .unitcard.role-control{
+  --card-top:#b184d3;
+  --card-bottom:#5c3f83;
+}
+
+#battle:not(.kh-battle):not(.unknown-world-battle) .uc-port{
+  width:52px;
+  height:52px;
+  border:2px solid #080b0c;
+  border-radius:6px;
+  background:#edf2d8;
+  box-shadow:inset 0 1px #fff8,0 2px #1a2525;
+}
+
+#battle:not(.kh-battle):not(.unknown-world-battle) .uc-port img{
+  width:94%;
+  height:94%;
+}
+
+#battle:not(.kh-battle):not(.unknown-world-battle) .uc-lv{
+  top:-6px;
+  left:-5px;
+  padding:1px 4px;
+  border:2px solid #080b0c;
+  border-radius:5px;
+  background:#1c2829;
+  color:#ffe27a;
+  font-size:8px;
+}
+
+#battle:not(.kh-battle):not(.unknown-world-battle) .uc-stars{
+  margin-top:3px;
+  color:#ffe27a;
+  font-size:8px;
+}
+
+#battle:not(.kh-battle):not(.unknown-world-battle) .uc-hpwrap,
+#battle:not(.kh-battle):not(.unknown-world-battle) .uc-enwrap{
+  width:52px;
+  height:6px;
+  border:2px solid #080b0c;
+  border-radius:2px;
+  background:#152021;
+}
+
+#battle:not(.kh-battle):not(.unknown-world-battle) .uc-hp{
+  background:linear-gradient(180deg,#d8ff8b,#4dbb65);
+}
+
+#battle:not(.kh-battle):not(.unknown-world-battle) .uc-en{
+  background:linear-gradient(90deg,#55d8ee,#b591ed);
+}
+
+#battle:not(.kh-battle):not(.unknown-world-battle) .unitcard.ult-ready{
+  border-color:#ffe17c;
+}
+
+#battle:not(.kh-battle):not(.unknown-world-battle) .unitcard.ko{
+  filter:grayscale(.8);
+}
+
+@media(max-width:430px){
+  #battle:not(.kh-battle):not(.unknown-world-battle) #hudTop{min-height:38px;padding:3px}
+  #battle:not(.kh-battle):not(.unknown-world-battle) #waveInfo,
+  #battle:not(.kh-battle):not(.unknown-world-battle) #hudTimer{min-height:28px;padding:4px 7px;font-size:10px}
+  #battle:not(.kh-battle):not(.unknown-world-battle) #hudBtns button{width:30px;height:29px}
+  #battle:not(.kh-battle):not(.unknown-world-battle) #allyDock{left:5px;right:5px;gap:3px;padding-inline:3px}
+  #battle:not(.kh-battle):not(.unknown-world-battle) .unitcard{width:calc((100vw - 42px) / 5);flex-basis:calc((100vw - 42px) / 5);padding-inline:2px}
+  #battle:not(.kh-battle):not(.unknown-world-battle) .uc-port,
+  #battle:not(.kh-battle):not(.unknown-world-battle) .uc-hpwrap,
+  #battle:not(.kh-battle):not(.unknown-world-battle) .uc-enwrap{width:100%}
+  #battle:not(.kh-battle):not(.unknown-world-battle) .uc-port{height:calc((100vw - 42px) / 5)}
+  #battle:not(.kh-battle):not(.unknown-world-battle) #logBox{bottom:119px}
+}

@@ -1,0 +1,46 @@
+Toodles
+
+Tier: S Tier
+Role: DPS / Support Tank / Adaptive Fighter
+
+Toodles is a cheerful but determined junior detective who refuses to be underestimated. She treats every fight like a case, makes an absurdly confident guess, and somehow turns it into the exact advantage her team needs.
+
+Name	Rarity	Damage Type	Description
+Beginner's Luck	White	Normal Damage	Passive: Whenever Toodles or an ally gains a buff, Toodles has a chance to gain a Lucky Boost. Lucky Boosts can increase her Damage, Defense, Attack Speed, Movement Speed, or Energy generation.
+
+Active: Toodles rolls for luck, gaining a stronger random stat increase for several seconds. The effect changes depending on the result. Damage Boost increases her attacks, Defense Boost reduces incoming damage, Speed Boost increases her Attack and Movement Speed, and Support Boost improves her Energy generation and healing received.
+Lucky Strike	Green	Normal Damage	Toodles rushes forward and attacks the enemy with the highest Attack, dealing stronger Normal Damage and lowering their Damage dealt. If Toodles currently has a Lucky Boost, this attack gains an additional effect based on the boost she received.
+Small Miracle	Blue	Shield	Toodles protects the ally with the lowest HP, granting them a stronger Shield and removing one negative effect. If the ally is below 55% HP, Toodles also grants them increased Movement Speed and Damage Reduction.
+Always Improving	Purple	Max HP / Armor	Beginner's Luck now grants an additional smaller bonus to nearby allies whenever Toodles receives a Lucky Boost. Each different Lucky Boost she gains increases her Max HP and Armor.
+Lucky Charm	Red	Normal Damage	Lucky Strike now gains additional effects based on Toodles' current Lucky Boost.
+
+Damage Boost: Deals increased damage and can critically hit.
+Defense Boost: Creates a Shield for Toodles after attacking.
+Speed Boost: Strikes multiple times.
+Support Boost: Restores Energy to the lowest HP ally.
+
+Toodles cannot receive the same Lucky Boost twice in a row.
+Additional Stat Boosts:
+More Max HP
+More Attack Speed
+More Armor
+More Skill Power
+Gameplay Summary
+
+Toodles would be an S Tier hybrid character because she breaks the normal role system.
+
+She can:
+
+Deal respectable DPS
+Protect weaker teammates
+Become a temporary tank
+Adapt to enemy compositions
+
+Her gameplay loop:
+
+Activate Beginner's Luck.
+Adapt her playstyle based on the buff.
+Protect allies with Small Miracle.
+Use Lucky Strike to pressure enemies.
+
+Her weakness is that she is less consistent than a dedicated DPS or dedicated tank. However, the upside is that she can cover whatever the team lacks.

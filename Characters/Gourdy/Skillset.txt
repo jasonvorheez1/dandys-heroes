@@ -1,0 +1,63 @@
+Gourdy
+
+Tier: B
+Role: Control / Support
+Damage Type: Magic
+
+Name	Rarity	Damage Type	Description
+Trick or Treat	White	N/A	Passive: Gourdy's Basic Attacks have a small chance to apply a random Trick to the enemy for several seconds. Tricks can reduce Attack, Attack Speed, Movement Speed, Defense, Magic Defense, or Mana regeneration. Active: Gourdy gives every ally within range a random Treat, increasing one of their stats by 25% for several seconds. Possible Treats include Attack, Attack Speed, Movement Speed, Defense, Magic Defense, Critical Chance, or Mana regeneration.
+Sugar Rush	Green	N/A	At the beginning of combat, Gourdy gives all allies increased Movement Speed for several seconds. Whenever Gourdy's team gains a Treat, all allies gain a smaller Movement Speed increase for several seconds. When Gourdy reaches full Mana, he refreshes the Movement Speed bonus.
+Pumpkin Toss	Blue	Magic	Gourdy throws a pumpkin at a random enemy, dealing very low Magic Damage and applying a random Control effect. The target can be Stunned, Silenced, Slowed, or have their Mana reduced. The effect has a higher chance of being stronger when the target has higher Attack or Magic Attack than Gourdy.
+Trickster's Fortune	Purple	N/A	Whenever a Trick is applied, Gourdy has a chance to immediately apply a second Trick to the same enemy. Whenever a Treat is granted, Gourdy has a chance to grant that ally a second, different Treat. Gourdy's chance of triggering an additional effect increases with his Mana regeneration.
+Halloween's Luck	Red	N/A	Whenever Gourdy uses Trick or Treat, he rolls three possible Treats for each ally and grants the strongest one based on that ally's current stats. The remaining two Treats are converted into random Tricks and applied to nearby enemies. If an ally is below 50% HP, Gourdy instead prioritizes defensive Treats. Additional Stat Boosts: Mana, Mana Regeneration, Control Duration.
+Why I'd change the previous version
+
+The previous kit made Gourdy too much like a random status effect character. That's not really what makes him Gourdy.
+
+His actual gimmick is much cleaner:
+
+Gourdy gives you something random.
+
+That's what Trick or Treat actually does.
+
+So I would build the entire RPG kit around Treats and Tricks, rather than giving him arbitrary random attacks.
+
+His RNG should have a purpose
+
+For example, Gourdy uses Trick or Treat and gets:
+
++25% Attack Speed
+
+Another time:
+
++25% Defense
+
+Another:
+
++25% Mana Regeneration
+
+You don't control what you receive, but every result is useful.
+
+His Purple skill makes the RNG more interesting by potentially turning one result into two. That gives you the "gambling" aspect without making him frustrating.
+
+His control is where the B Tier comes from
+
+Gourdy's direct damage should be awful.
+
+His Magic Attack can be intentionally low, and Pumpkin Toss should mostly exist as a delivery mechanism for his control effects.
+
+His real value is:
+
+Random stat buffs + random enemy disruption + excellent Movement Speed support.
+
+And I'd make his control effects very strong when they happen, because otherwise RNG characters can become useless.
+
+For example, a lucky Pumpkin Toss could:
+
+Silence + Slow
+
+while an unlucky one might only:
+
+Slow
+
+That's where his RNG creates excitement.

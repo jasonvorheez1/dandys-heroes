@@ -1,0 +1,48 @@
+Eggson
+
+Role: DPS / Utility
+Tier: D Tier
+
+Name	Rarity	Damage Type	Description
+Old Reliable	White	Physical Damage	Passive: Eggson's Basic Attacks have a chance to Inspect the enemy he hits. Inspected enemies have their Armor slightly reduced for several seconds.
+
+Active: Eggson firmly plants his cane before swinging it into the closest enemy, dealing Physical Damage and briefly interrupting their current action.
+
+If the enemy is already Inspected, Eggson's cane strikes them again and briefly reduces their Movement Speed.
+Let Me Show You	Green	Physical Damage	Eggson tells the enemy exactly how things are going to work before demonstrating.
+
+He taps his cane against the ground, dealing Physical Damage to nearby enemies and reducing their Attack Speed.
+
+Eggson then gains increased Attack Speed and Movement Speed for several seconds.
+Back in My Day	Blue	Buff	Eggson recalls his old adventures and somehow finds himself energized by the story.
+
+He gains increased Attack and Skill Haste for several seconds.
+
+All allies gain a smaller version of the Attack bonus.
+
+If Eggson is below half HP when he casts this skill, he also restores some Health.
+Still Got It	Purple	Attack
+Max HP	Eggson may be old, but he is still perfectly capable of keeping up.
+
+Whenever Eggson defeats an enemy or damages an Inspected enemy, he gains a small amount of Attack and Movement Speed for several seconds.
+
+His Basic Attacks against Inspected enemies also have a chance to restore Energy.
+Egg Hunt Champion	Red	Physical Damage
+Attack	Eggson begins battle with the knowledge and experience of countless Egg Hunts.
+
+Old Reliable now Inspects enemies permanently until they are defeated.
+
+Whenever Eggson attacks an Inspected enemy, his cane has a chance to strike a second time, dealing bonus Physical Damage.
+
+Whenever an Inspected enemy is defeated, Eggson immediately targets the enemy with the highest HP and Inspects them.
+
+Eggson also gains increased Attack for every Inspected enemy currently in combat.
+Why D Tier?
+
+Eggson is a perfectly functional DPS, but his kit is intentionally built around utility and consistency rather than raw damage. His ability to Inspect enemies gives him a little team value, while his cane attacks provide respectable sustained damage.
+
+His biggest problem is that his strongest characteristics in Dandy's World are not combat abilities. His real strength is his experience, his extraction utility, and his ability to help get Machines working. His 20% Machine completion ability is genuinely useful in the original game, but there is no direct equivalent in an RPG combat system.
+
+So rather than inventing an overly powerful combat gimmick, this adaptation makes him an old-fashioned, straightforward fighter with a little utility attached.
+
+D Tier: A surprisingly capable elderly fighter who knows exactly what he's doing, but lacks the damage output and specialized combat utility of stronger DPS characters.

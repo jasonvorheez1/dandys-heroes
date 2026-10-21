@@ -1,0 +1,42 @@
+Bassie
+
+Role: Support / DPS
+Tier: A Tier
+
+Bassie always keeps her basket stocked with useful supplies, believing that being prepared is the best way to help her friends. She eagerly shares whatever she has with her teammates, and when her basket is overflowing, she turns the remaining supplies into surprisingly effective attacks.
+
+Name	Rarity	Damage Type	Description
+Springful Sharing	White	Physical Damage	Passive: Bassie prepares a Supply every few seconds, storing up to 5 Supplies. Whenever an ally falls below 50% HP or Energy, Bassie automatically gives them a Supply if one is available. Supplies restore Health or Energy depending on which is lower. Each ally can only receive an automatic Supply once every several seconds.
+
+Active: Bassie throws every remaining Supply at the largest group of enemies. Each Supply deals Physical Damage and briefly reduces the target's Attack. Enemies hit by multiple Supplies become Exposed, causing them to take increased damage from allies for several seconds.
+Packed for Everyone	Green	Buff	Bassie opens her basket and shares carefully prepared supplies with every ally.
+
+Allies gain increased Attack Speed, Skill Haste, and Critical Chance for several seconds.
+
+Allies who receive a Supply while this buff is active also gain a small Shield.
+Basket Toss	Blue	Physical Damage	Bassie hurls her basket into the enemy team before quickly catching it. The basket bursts open, scattering eggs, ribbons, and supplies across the battlefield.
+
+Enemies struck take Physical Damage and become Disorganized, reducing their Armor and Accuracy for several seconds.
+
+Bassie immediately prepares one new Supply for every enemy hit, up to her storage limit.
+Always Prepared	Purple	Max HP
+Attack	Bassie's careful planning pays off.
+
+Her maximum Supply storage increases by 2.
+
+Whenever an ally consumes a Supply, Bassie permanently gains a small amount of Attack for the remainder of the battle.
+
+Whenever Bassie reaches maximum Supplies, her next damaging skill ignores a portion of the target's Armor.
+Overflowing Basket	Red	Max HP
+Attack	Bassie begins battle with maximum Supplies.
+
+Supplies now restore both Health and Energy instead of whichever is lower.
+
+Whenever Bassie would prepare a Supply while already at maximum storage, she instead creates an Overflow Supply. The next time she uses Springful Sharing, every Overflow Supply explodes on impact, dealing bonus Physical Damage and extending Exposed on affected enemies.
+
+Allies who consume Supplies also gain increased Attack and Skill Power for several seconds, and Bassie's buffs cannot be removed while she has maximum Supplies.
+Why A Tier?
+
+Bassie is a proactive support that rewards preparation. She constantly keeps her basket stocked, automatically helping struggling teammates while converting any extra Supplies into offensive pressure. Unlike Cocoa, whose BonBons continuously accelerate an entire team, Bassie focuses on resource management, deciding whether her Supplies are used to rescue allies or fuel her own attacks.
+
+Her versatility makes her valuable in many team compositions, but because her strongest effects depend on maintaining a healthy stock of Supplies, she lacks the overwhelming consistency and tempo control that define SS-tier supports. She excels as a flexible hybrid who always has something useful ready.

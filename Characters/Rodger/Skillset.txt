@@ -1,0 +1,77 @@
+Rodger
+
+Role: Backline Control
+Tier: C Tier
+
+Rodger does not perform Basic Attacks. Instead, he continuously investigates enemies from the backline, building Research on them and using his findings to disrupt their abilities. He is weak when enemies are not yet studied, but becomes increasingly troublesome against targets he has had time to investigate.
+
+Name	Rarity	Damage Type	Description
+Field Research	White	N/A	Passive: Rodger does not perform Basic Attacks. Instead, every few seconds he observes the enemy with the highest Energy, gaining Research on them.
+
+Rodger can hold Research on multiple enemies. Each enemy can have a limited amount of Research.
+
+Whenever Rodger gains Research on an enemy, he records one of their current properties, such as their Attack, Skill Haste, Movement Speed, or current buffs.
+
+Active: Rodger opens his notebook and rapidly studies the enemy with the highest Energy, gaining a large amount of Research on them and briefly interrupting their current action.
+Research Capsule	Green	Control	Rodger throws a Research Capsule at the enemy with the most Research.
+
+The Capsule breaks on impact, briefly Stunning the target and reducing their Skill Haste.
+
+The more Research Rodger has on the target, the longer the Stun lasts.
+
+If the target has maximum Research, the Capsule also removes one positive effect from them.
+Case File	Blue	Control	Rodger opens his case file and identifies the enemy he has researched the most.
+
+That enemy becomes Investigated for several seconds. While Investigated, they have reduced Energy generation and their Skills cost additional Energy.
+
+Whenever the Investigated enemy uses a Skill, Rodger records it and briefly reduces their Movement Speed.
+Observant Detective	Purple	Skill Haste
+Energy	Rodger's observations allow him to anticipate enemy behavior.
+
+Whenever an enemy with Research begins using a Skill, Rodger gains Energy and has a chance to interrupt the Skill. The chance increases based on how much Research he has on that enemy.
+
+Rodger also gains Skill Haste whenever one of his Investigated enemies is Crowd Controlled by an ally.
+Complete Research	Red	Control
+Energy	Rodger's investigations eventually reveal everything he needs to know.
+
+Whenever an enemy reaches maximum Research, Rodger immediately completes their case.
+
+The enemy becomes Exposed, reducing their Skill Haste, Energy generation, and Crowd Control Resistance. Their current buffs are also revealed to Rodger.
+
+For several seconds, whenever the Exposed enemy attempts to use a Skill, Rodger immediately interrupts it and removes a portion of their Energy. This effect has a cooldown.
+
+When an Exposed enemy is defeated, Rodger immediately begins researching the enemy with the highest Energy.
+Research
+
+Research is not a buff or debuff. It is simply information Rodger accumulates about an enemy.
+
+This is important because it keeps the mechanic faithful to Rodger's actual identity. He isn't magically weakening people because he "studied" them. He's watching them, figuring them out, and then using that knowledge to interfere with what they do.
+
+Why C Tier?
+
+Rodger has an unusual strength curve.
+
+At the beginning of a fight, he's relatively unimpressive. He doesn't attack normally, his damage contribution is minimal, and his strongest control effects require him to spend time researching enemies.
+
+But once he has thoroughly investigated an important enemy, he can become extremely annoying for that specific target.
+
+He's especially good against:
+
+Skill dependent enemies
+High Energy characters
+Powerful backline enemies
+Enemies with dangerous buffs
+Bosses with predictable powerful Skills
+
+He's much worse against:
+
+Large groups of weak enemies
+Extremely fast battles
+Enemies that don't rely on Skills
+Teams that can quickly reach his backline
+
+That makes C tier feel appropriate. He isn't bad, but he's highly specialized and requires setup.
+
+Most importantly, this gives Rodger an identity that isn't just "detective who throws magnifying glass."
+
+He's the weird backline character who spends the fight watching the enemy instead of attacking them, gradually filling out his case file until he knows exactly when to shut them down.

@@ -1,0 +1,36 @@
+Eclipse
+
+Role: DPS
+Tier: S Tier
+
+Name	Rarity	Damage Type	Description
+Moonlit Hunt	White	Physical Damage	Passive: Eclipse's Basic Attacks deal increased Physical Damage to enemies below a certain percentage of Max HP. Whenever Eclipse damages an enemy below this threshold, she Marks and Focuses them, causing her to prioritize that enemy with her Basic Attacks. Marked prey is easier for Eclipse to expose and Rend.
+
+When a Focused enemy is KO'd, Eclipse immediately targets the enemy with the lowest HP.
+
+Active: Eclipse lunges toward the enemy with the lowest HP, dealing Physical Damage several times. Each successive strike grows stronger, applies Rend, and can switch to a new low-HP target if the first prey is defeated. She then returns to her exact starting position and gains Attack Speed, Movement Speed, and Haste for several seconds.
+
+Blackout: Eclipse's Basic Attacks deal additional Physical Damage, apply Rend, and every second claw strike performs an additional claw hit against her target.
+Moon Rush	Green	Physical Damage	Eclipse charges toward the enemy with the lowest HP, dealing Physical Damage and applying Rend to every enemy in her path. She then leaps onto her target, dealing additional Physical Damage, Marking them, and briefly Knocking them Back.
+
+Eclipse gains increased Movement Speed and Attack Speed plus Haste for several seconds.
+
+Blackout: Eclipse's charge deals additional Physical Damage, applies extra Rend and Expose to enemies it catches, and the leap applies Defense Down.
+Savage Swipe	Blue	Physical Damage	Eclipse rapidly slashes the closest enemy three times, dealing Physical Damage and applying Rend with each hit. The final strike deals additional Physical Damage and applies Defense Down.
+
+During a Blackout, the final strike also damages nearby enemies, Rends them, and Slows them.
+Predator's Instinct	Purple	Attack
+Critical Damage	Eclipse deals increased Damage to enemies below a percentage of Max HP, Marks them, and remains Focused on them.
+
+Whenever Eclipse personally KO's an enemy, she gains Energy, increased Attack Speed, Haste, and partial cooldown recovery for several seconds.
+Total Eclipse	Red	Attack
+Movement Speed
+Max HP	At the start of a Blackout, Eclipse transforms into her werewolf form. While transformed, Eclipse gains increased Attack, Attack Speed, Movement Speed, Max HP, and Critical Chance.
+
+Eclipse's Basic Attacks deal additional Physical Damage, can hit nearby enemies, and spread Rend.
+
+Eclipse cannot have her Movement Speed reduced during a Blackout.
+
+Whenever Eclipse personally KO's an enemy during a Blackout, she immediately restores Energy, gains a burst of Speed, and increases the duration of her transformation.
+
+When the Blackout ends, Eclipse returns to her normal form.

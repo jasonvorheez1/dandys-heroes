@@ -1,0 +1,39 @@
+.settings-audio {
+  padding: 10px 11px 9px;
+  border: 2px solid #263a34;
+  border-radius: 10px;
+  background: linear-gradient(145deg, #354946, #202d2d);
+  box-shadow: inset 0 1px #fff2, 0 2px #101617;
+}
+
+.settings-audio-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 7px;
+  color: #efffd1;
+  font-size: 12px;
+}
+
+.settings-audio-value {
+  color: #dfff83;
+  font-size: 11px;
+}
+
+.settings-audio input[type="range"] {
+  display: block;
+  width: 100%;
+  height: 28px;
+  margin: 0;
+  accent-color: #b9ed67;
+  cursor: pointer;
+}
+
+.settings-audio small {
+  display: block;
+  margin-top: 4px;
+  color: #b8cbc1;
+  font-size: 8px;
+  line-height: 1.3;
+}

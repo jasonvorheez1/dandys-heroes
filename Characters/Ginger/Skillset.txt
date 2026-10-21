@@ -1,0 +1,114 @@
+Ginger
+
+Role: Healer / Buffer / Team Sustain
+Tier: A Tier
+
+Ginger is a supportive character who keeps her team alive through kindness and preparation. She is not a frontline fighter or a burst healer. Instead, she slowly improves her team's ability to survive through healing, morale boosts, and carefully prepared treats.
+
+Her biggest strength is making a team stronger over a long battle.
+
+Baked With Care!
+
+White Skill
+Damage Type: Healing
+
+Passive: Ginger keeps track of injured allies.
+
+Whenever an ally falls below 50% HP, Ginger gains a stack of Concern.
+
+Each stack increases her next healing effect.
+
+Active: Ginger gives one of her own Hearts to an ally, restoring a large amount of their HP. At maximum Perfect Decoration, the next use heals the whole team and consumes the decorations.
+
+The healing is extremely powerful but reduces Ginger's own HP.
+
+Ginger cannot use this skill if she is at critical HP.
+
+If this skill saves an ally from defeat, both Ginger and that ally gain Encouraged:
+
+Increased Defense.
+Increased Energy Generation.
+Increased Resistance to Crowd Control.
+Decorated Treats
+
+Green Skill
+Damage Type: Buff
+
+Ginger shares her decorated cookies with the team.
+
+All allies gain Sweet Support for several seconds.
+
+All allies also gain Freshly Baked, a status effect that cleanses one negative status when applied and increases Crowd Control Resistance.
+
+Sweet Support provides:
+
+Increased Attack Speed.
+Increased Skill Recharge.
+Increased Healing Received.
+
+The ally with the lowest HP receives an additional Shield.
+
+Frosting Care
+
+Blue Skill
+Damage Type: Healing / Cleanse
+
+Ginger sends decorated cookies to the whole team.
+
+All allies are healed and receive Freshly Baked.
+
+Freshly Baked cleanses one negative status when applied and increases Crowd Control Resistance.
+
+The ally with the lowest Health also receives a Shield.
+
+Little Improvements
+
+Purple Skill
+Damage Type: Passive
+
+Ginger's attention to detail helps everyone.
+
+Whenever Ginger heals or buffs an ally, she gains a stack of Perfect Decoration.
+
+Each stack increases:
+
+Healing Power.
+Buff Duration.
+Energy Generation.
+
+At maximum stacks, Ginger's next support skill affects the entire team.
+
+A Recipe For Everyone
+
+Red Skill
+Damage Type: Healing
+Max HP
+
+Before battle begins, Ginger prepares treats for everyone.
+
+At the start of combat:
+
+All allies gain a small HP increase.
+All allies gain increased Healing Received.
+The weakest ally receives an extra Shield.
+
+During battle, whenever an ally drops below 25% HP, Ginger automatically gives them a Last Bite.
+
+Last Bite:
+
+Restores HP.
+Removes one negative status effect.
+Gives a temporary damage boost.
+
+After activating, Ginger becomes Determined:
+
+Increased Healing Power.
+Increased Defense.
+Reduced skill cooldowns.
+Why A Tier?
+
+Ginger is an extremely reliable support because she directly prevents teams from collapsing. Her healing can completely reverse dangerous situations, and her buffs make every teammate perform better.
+
+However, she is not S Tier because her support is reactive rather than controlling. She cannot manipulate enemies like Vee, protect the whole battlefield like Astro, or completely change positioning like Scraps.
+
+She is an A-tier team backbone: a character who makes everyone around her better, but still needs a strong team to reach her full potential.

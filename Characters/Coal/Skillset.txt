@@ -1,0 +1,109 @@
+Coal
+
+Role: Tank / Protector
+Tier: B Tier
+
+Coal is a small but dependable pet rock who proves that size does not determine strength. She is not an aggressive powerhouse, but her durability and loyalty make her an excellent defensive unit. Coal specializes in absorbing hits, protecting vulnerable allies, and becoming increasingly difficult to move as the battle continues.
+
+Rolling Pebble
+
+White Skill
+Damage Type: Physical Damage
+
+Passive: Coal's rocky body reduces incoming damage.
+
+Whenever Coal takes damage, she gains a stack of Sturdy.
+
+Each Sturdy stack increases her Armor slightly.
+
+Active: Coal rolls toward the enemy with the highest Attack, dealing increased Physical Damage and interrupting their current action.
+
+The enemy hit has their Attack Speed reduced for a few seconds and is slowed longer.
+
+If Coal has Sturdy stacks, she deals bonus damage based on her current stacks.
+
+Cozy Companion
+
+Green Skill
+Damage Type: Shield
+
+Coal stays close to her favorite ally, protecting them from danger.
+
+Coal grants the ally with the lowest Health a larger Shield on a shorter cooldown.
+
+While the Shield remains:
+
+The ally takes reduced damage.
+Coal receives a portion of damage they would take.
+Both gain increased Crowd Control Resistance.
+Rock Toss
+
+Blue Skill
+Damage Type: Physical Damage
+
+Coal launches herself at enemies like a small cannonball, creating a rocky impact zone.
+
+She damages the farthest enemy and nearby enemies, briefly knocking the main target backward.
+
+Every enemy hit loses one existing buff and gains Buff Sealed. While Buff Sealed, the next hostile buff applied to that enemy is blocked. The main target receives two stacks and the nearby enemies receive one.
+
+Enemies hit have their Movement Speed reduced.
+
+If the target is already slowed, they become Pinned, reducing their Attack Speed. Nearby enemies are also slowed briefly.
+
+Heavy Heart
+
+Purple Skill
+Damage Type: Max HP
+
+Coal's determination makes her harder to defeat.
+
+Whenever Coal loses Health, she gains Weight.
+
+Each Weight stack increases:
+
+Max HP.
+Damage Reduction.
+Taunt effectiveness.
+
+At maximum stacks, Coal becomes Anchored:
+
+Cannot be knocked back.
+Cannot have her Movement Speed reduced.
+Redirects a portion of nearby ally damage to herself.
+The Best Present
+
+Red Skill
+Damage Type: Max HP
+Armor
+
+Before combat begins, Coal chooses the ally she wants to protect most.
+
+That ally gains:
+
+Increased Max HP.
+Increased Defense.
+Reduced incoming damage.
+
+Whenever the protected ally takes damage, Coal gains Loyalty.
+
+Loyalty increases Coal's:
+
+Armor.
+Attack.
+Shield strength.
+
+If the protected ally would be defeated, Coal takes their place and survives with more of her own HP.
+
+For several seconds afterward:
+
+Coal gains increased size.
+Her attacks hit nearby enemies.
+She becomes immune to Crowd Control.
+Why B Tier?
+
+Coal is a simple but effective tank. She does not have the battlefield control of stronger tanks like Scraps, but she provides consistent protection and can save teammates from dangerous situations.
+
+Her biggest weakness is that she relies on taking damage to become stronger. Against enemies that ignore her or burst down her allies quickly, she loses much of her value.
+
+B Tier: A loyal defensive tank who excels at protecting one team member, but lacks the versatility of higher-ranked guardians.

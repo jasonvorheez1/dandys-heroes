@@ -1,0 +1,44 @@
+Dyle
+
+Role: DPS
+Tier: SS Tier
+
+Dyle is an exceptionally consistent DPS who controls the battlefield through his train and precise attacks. Rather than relying on flashy supernatural abilities, he fights with the same strict efficiency he applies to his work. His attacks establish routes across the battlefield, allowing him to repeatedly strike enemies who fail to move out of the way.
+
+Name	Rarity	Damage Type	Description
+All Aboard	White	Physical Damage	Passive: Dyle's Basic Attacks have a chance to place a Rail Marker beneath the target for several seconds. An enemy can only have one Rail Marker at a time.
+
+When Dyle attacks an enemy with a Rail Marker, he deals additional Physical Damage. If the enemy has already been hit by Dyle several times, the Rail Marker is extended to nearby enemies.
+
+Active: Dyle signals the train and a train rapidly travels across the battlefield along a straight route, dealing heavy Physical Damage to every enemy it passes through. Enemies hit are briefly knocked aside.
+Mind the Gap	Green	Physical Damage	Dyle calmly checks his watch before adjusting his position and attacking the enemy with the highest Attack.
+
+He deals Physical Damage and briefly interrupts them. Dyle then gains increased Attack Speed and Movement Speed for several seconds.
+
+While this effect is active, Dyle's Basic Attacks against enemies with Rail Markers deal additional damage.
+Express Service	Blue	Physical Damage	Dyle summons a train that makes a rapid trip across the battlefield, dealing Physical Damage to every enemy in its path.
+
+The train returns along the same route after a short delay, dealing additional damage.
+
+Enemies struck on both trips are Delayed, reducing their Movement Speed and Skill Haste for several seconds.
+
+Enemies already affected by a Rail Marker take increased damage from the returning train.
+Strict Schedule	Purple	Attack
+Skill Haste	Dyle does not tolerate delays.
+
+Whenever Dyle damages an enemy shortly after they finish using a Skill, he deals additional Physical Damage and restores some Energy.
+
+Whenever Dyle successfully triggers this effect several times, he gains increased Attack Speed and Skill Haste for the remainder of the battle, up to a limit.
+
+Missing the timing does not remove his existing bonuses.
+Last Train	Red	Physical Damage
+Attack
+Max HP	Dyle's efficiency reaches its peak when the battle begins to fall apart.
+
+All Aboard now causes the train to leave behind a Rail Route for several seconds. Enemies crossing the route take Physical Damage and have their Movement Speed reduced.
+
+Express Service now has a third pass if at least one enemy was hit by both previous passes.
+
+Whenever Dyle defeats an enemy, he immediately restores Energy and gains increased Attack for several seconds.
+
+If Dyle falls below 30% HP, he immediately activates All Aboard without consuming its normal cooldown. This can only happen once per battle.

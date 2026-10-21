@@ -1,0 +1,27 @@
+Soulvester
+
+Tier: S
+Role: Tank / Bruiser
+Damage Type: Physical / Ghost
+
+Name	Rarity	Damage Type	Description
+Knightly Armor	White	Physical	Passive: Soulvester has greatly increased Max HP and Armor. He is immune to damage from ranged Basic Attacks. A percentage of Soulvester's Max HP is added to his Armor. A percentage of his Armor is also converted into Attack Damage. Active: Soulvester reinforces his armor, increasing his Armor, Magic Defense, and Damage Reduction for several seconds.
+A Knight's Duty	Green	Physical	Soulvester protects the ally with the lowest HP percentage, causing a percentage of the damage they receive to be redirected to him for several seconds. Soulvester gains Armor based on the amount of damage redirected. The lower the protected ally's HP, the greater this Armor bonus becomes.
+Soul Sword	Blue	Physical / Ghost	Soulvester attacks the enemy with the highest Attack Damage, dealing Physical Damage based on his Attack and a percentage of his Max HP. The attack reduces the target's Attack Speed and Movement Speed based on Soulvester's Armor. Soulvester's Basic Attacks against that enemy deal additional Ghost Damage based on his Magic Defense.
+Unshaken	Purple	Attack / Armor	Whenever Soulvester falls below 75%, 50%, and 25% of his Max HP, he gains a permanent combat bonus. At 75%, he gains Attack Damage. At 50%, he gains Armor and Magic Defense. At 25%, he gains Attack Speed and Damage Reduction. Each threshold can activate only once per battle.
+Soulvester's Resolve	Red	Physical / Ghost	When Soulvester falls below 20% of his Max HP, he immediately restores a percentage of his Max HP and gains increased Attack Damage, Armor, and Magic Defense for several seconds. The strength of these bonuses scales with how much HP Soulvester was missing when the effect activated. Additional Stat Boosts: Max HP, Armor, Attack Damage.
+His stat identity
+
+This makes Soulvester's main stat loop:
+
+Max HP → Armor → Attack Damage → stronger Soul Sword
+
+while his HP thresholds give him increasingly strong combat stats.
+
+So if you invest heavily into Max HP, you aren't merely making him survive longer. You're also increasing his Armor.
+
+If you invest into Armor, you're also increasing his Attack Damage.
+
+And because Soul Sword scales from Max HP and Attack, his defensive build naturally gives him respectable DPS.
+
+His low mobility can remain a genuine weakness too. He doesn't need to be fast because his strength is staying in the fight and becoming increasingly difficult to remove.

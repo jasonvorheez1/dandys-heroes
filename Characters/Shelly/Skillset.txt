@@ -1,0 +1,130 @@
+Shelly
+
+Role: Skill Power Support / Team Buffer / Strategist
+Tier: S Tier
+
+Shelly is a support who turns her team's abilities into something greater. Her passion for discovery allows her to analyze enemies, inspire allies, and improve the effectiveness of every skill used in battle.
+
+Rather than directly fighting, Shelly creates the perfect conditions for her allies to shine.
+
+Fossil Findings
+
+White Skill
+Damage Type: Support
+
+Passive: Shelly analyzes enemies throughout combat.
+
+Whenever an enemy uses a skill, Shelly gains Research on that enemy.
+
+Research reveals weaknesses, causing the enemy to take increased Skill Damage.
+
+Fully Researched enemies:
+
+Take increased damage from skills.
+Have reduced Skill Resistance.
+Give additional Energy when hit by abilities.
+
+Active: Shelly reveals her latest discovery.
+
+All allies gain increased Skill Power and Skill Critical Chance for several seconds.
+
+The bonus is increased against Fully Researched enemies.
+
+Inspiration
+
+Green Skill
+Damage Type: Buff
+
+Shelly motivates the entire team with her discoveries.
+
+All allies gain Inspired.
+
+Inspired allies receive:
+
+Increased Skill Power.
+Faster Skill Cooldowns.
+Increased Energy Generation.
+Increased Healing from abilities.
+
+Whenever an ally defeats an enemy while Inspired, the duration is extended.
+
+Problem Solver
+
+Blue Skill
+Damage Type: Utility
+
+Shelly identifies the ally who needs help the most and creates a solution.
+
+The selected ally receives one of three effects:
+
+Offensive Solution
+
+Massive Skill Power increase.
+Increased Critical Skill Chance.
+
+Defensive Solution
+
+Damage Reduction.
+Shield based on Shelly's Skill Power.
+
+Recovery Solution
+
+Restores Energy.
+Reduces current skill cooldowns.
+
+Shelly always chooses the effect that benefits the ally most.
+
+Paleontologist's Passion
+
+Purple Skill
+Damage Type: Skill Power
+
+Shelly's enthusiasm spreads across the battlefield.
+
+Whenever an ally uses a skill, Shelly gains Excitement.
+
+Each Excitement stack increases the entire team's Skill Power.
+
+At maximum stacks:
+
+The next ally skill deals greatly increased damage.
+The skill costs less Energy.
+The cooldown is reduced after use.
+
+Excitement slowly decreases when no skills are used.
+
+Greatest Discovery
+
+Red Skill
+Damage Type: Skill Power
+Max HP
+Magic Defense
+
+Shelly uncovers the ultimate breakthrough.
+
+At the beginning of battle, Shelly creates the Research Lab.
+
+While inside the Research Lab:
+
+Allies gain constant Skill Power.
+Skills recharge faster.
+Skill Damage ignores a portion of enemy defenses.
+Healing abilities become stronger.
+
+Every time an ally uses their ultimate skill, Shelly gains a Breakthrough stack.
+
+At maximum Breakthrough:
+
+The Research Lab evolves into the Ancient Archive.
+
+Ancient Archive effects:
+
+All allies gain a massive Skill Power increase.
+Ally skills cannot be interrupted.
+The first skill each ally uses deals bonus damage.
+Shelly automatically grants Inspiration whenever an ally falls below 50% HP.
+Why S Tier?
+
+Shelly is an S-tier support because she massively increases the ceiling of every team composition. Characters with powerful ultimate abilities become significantly stronger with her, making her especially valuable in skill-focused teams.
+
+She is not SS-tier because she does not provide the immediate battlefield control of characters like Scraps or the universal sustain of Astro. Shelly needs allies who can take advantage of her buffs, but when paired with strong ability users, she becomes one of the best enablers in the game.

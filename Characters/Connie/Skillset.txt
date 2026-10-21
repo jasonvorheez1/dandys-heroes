@@ -1,0 +1,37 @@
+Connie is a ghost-themed Toon built around stealth, survival, and escaping dangerous situations. Her biggest strengths are her extremely high stealth, her ability to temporarily become invisible with Haunting Escape, and her ability to avoid being targeted rather than simply overpowering enemies. In an RPG auto battler, she would translate extremely well into a high-value evasive support unit who manipulates enemy targeting and protects allies through ghostly tricks.
+
+Name	Rarity	Damage Type	Description
+Haunting Escape	White	N/A	Passive: Connie constantly reduces enemy accuracy against her due to her ghostly nature. Enemies are less likely to target Connie while other allies are available.
+
+Active: Connie fades into the spirit world, becoming Invisible for several seconds. While Invisible, she cannot be targeted and removes all negative effects from herself. When she returns, she frightens nearby enemies, lowering their Attack Speed and Accuracy briefly.
+Phantom Prank	Green	Magic Damage	Connie briefly disappears and reappears behind the enemy backline, dealing Magic Damage to the farthest enemy. The target becomes Haunted, causing them to take increased damage from Connie and have their skills recharge slower for a short duration.
+Spectral Drift	Blue	N/A	Connie phases through attacks, gaining a large Dodge chance and increased Movement Speed. Every successful dodge restores some Energy and reduces the cooldown of Haunting Escape.
+Ghostly Presence	Purple	Control	Connie's supernatural presence unnerves enemies. The enemy team starts combat with reduced Accuracy and slower Energy gain. Enemies who miss attacks against Connie become Afraid, briefly lowering their Damage dealt.
+Beyond the Veil	Red	Magic Damage / Support	Connie fully embraces her ghostly abilities. When Connie uses a skill, she enters the Veil state for a short duration. While in the Veil, she cannot be targeted and allies gain increased Dodge.
+
+Every time Connie avoids an attack, she creates a Phantom Copy that distracts enemies. Phantom Copies disappear after absorbing a hit.
+Additional Stat Boosts:
+Increased Dodge Chance
+Increased Magic Defense
+Increased Energy Generation
+Increased Skill Damage
+Gameplay Summary
+
+Connie would be an S Tier evasive support, similar to a character who wins fights through control rather than raw damage.
+
+Her main purpose would be:
+
+Making enemies waste attacks
+Protecting fragile allies
+Disrupting enemy skill rotations
+Punishing enemies who rely on single-target attacks
+
+She would not be a traditional tank because she does not survive by having huge HP. Instead, she survives because enemies struggle to interact with her.
+
+Her weakness would be:
+
+Area attacks that ignore targeting
+Anti-dodge mechanics
+Long fights where her disruption becomes less impactful
+
+Overall, Connie would be one of the strongest defensive utility characters in the game because her ghost abilities translate naturally into an auto battler. She would feel unique without just being "another invisible character."

@@ -1,0 +1,108 @@
+/* Run with node tools/cookie-event-test.cjs. Real battle/economy code; detached DOM/audio only. */
+const fs=require('fs'),vm=require('vm'),assert=require('assert'),path=require('path');
+const root=path.resolve(__dirname,'..');
+function node(){return {style:{setProperty(){},removeProperty(){}},classList:{add(){},remove(){},toggle(){},contains(){return false}},dataset:{},children:[],append(...v){this.children.push(...v)},appendChild(v){this.children.push(v);return v},removeChild(){},replaceChildren(){this.children=[]},remove(){},querySelector(){return node()},querySelectorAll(){return []},setAttribute(){},getAttribute(){return ''},removeAttribute(){},addEventListener(){},getBoundingClientRect(){return {width:560,height:760,left:0,top:0}},get firstChild(){return null},parentElement:{classList:{toggle(){}}},clientWidth:560,clientHeight:760,hidden:true};}
+const nodes={};const doc={querySelector(s){return nodes[s]||(nodes[s]=node())},querySelectorAll(){return []},createElement:node,documentElement:node(),body:node(),addEventListener(){}};
+const warnings=[];
+const ctx=vm.createContext({console:{log:console.log,error:console.error,warn(...a){warnings.push(a.map(String).join(' '));}},document:doc,window:null,localStorage:{getItem(){return null},setItem(){},removeItem(){}},navigator:{userAgent:'node',hardwareConcurrency:4},location:{search:'',href:'http://localhost'},performance,URL,URLSearchParams,Image:class{},Audio:class{},setTimeout:()=>0,clearTimeout(){},setInterval:()=>0,clearInterval(){},requestAnimationFrame:()=>0,cancelAnimationFrame(){},matchMedia:()=>({matches:false,addEventListener(){}}),innerWidth:560,innerHeight:760,assert});ctx.window=ctx;ctx.addEventListener=()=>{};
+const scripts=[...fs.readFileSync(path.join(root,'index.html'),'utf8').matchAll(/<script src="([^"]+)"/g)].map(x=>x[1]).filter(x=>!['js/main.js','js/websim.js'].includes(x));
+for(const path of scripts){try{vm.runInContext(fs.readFileSync(root+'/'+path,'utf8'),ctx,{filename:path});}catch(e){console.error('LOAD',path,e);process.exit(1)}}
+vm.runInContext(`
+Save.data=Save.fresh(); Save.data.mastery=100; Save.write=()=>{}; UI.queueHeroUnlock=()=>{}; UI.toast=()=>{}; Achievements.record=()=>{};
+Object.keys(FX).forEach(k=>{if(typeof FX[k]==='function')FX[k]=()=>{};});Object.keys(Sound).forEach(k=>{if(typeof Sound[k]==='function')Sound[k]=()=>false;});
+const ev=Raid.event('cookie-run');assert(ev.isCookieRun);assert(PLAYABLE_IDS.includes('GingerBrave'));assert(!PLAYABLE_IDS.includes('BerryBishop'));
+assert.equal(obtainOf('GingerBrave').name,'Collab');assert.equal(obtainOf('ShadowMilkCookie').name,'Collab');assert.equal(obtainOf('CreamPuffCookie').name,'Collab');assert.equal(obtainOf('TigerLilyCookie').name,'Collab');assert(!cratePool('diamond').includes('GingerBrave'));assert(!cratePool('diamond').includes('CreamPuffCookie'));assert(!cratePool('diamond').includes('TigerLilyCookie'));
+Object.values(COOKIE_ART).forEach(asset=>assert(asset.startsWith('uploads/')));
+const before=JSON.stringify(Save.data.heroes);let party=CookieRun.team(playerTeamSpecs(Save.data.team),0);assert.equal(party[0].level,70);assert.equal(party[0].rarity,5);assert.equal(party[0].rarityPlus,1);assert.equal(JSON.stringify(Save.data.heroes),before);assert.equal(CookieRun.loan(7).level,760);assert.equal(CookieRun.ensureWave(party.filter(s=>s.id!=='GingerBrave'),2)[0].id,'GingerBrave');
+assert.equal(CookieRun.team([...party,...party],0).filter(s=>s.id==='GingerBrave').length,1);
+for(const level of ev.stageLevels){
+ const final=Raid.makeWave(ev.id,3,level,ev);
+ assert.equal(final.filter(s=>s.id==='ShadowMilkCookie'&&s.kind==='boss').length,1);
+ assert.equal(Raid.makeWave(ev.id,1,level,ev).some(s=>s.id==='ShadowMilkCookie'),false);
+ assert.equal(Raid.makeWave(ev.id,2,level,ev).some(s=>s.id==='ShadowMilkCookie'),false);
+}
+const state=CookieRun.state();assert.equal(CookieRun.bake(1).ok,false);state.crumbs=100;state.pity=199;const pull=CookieRun.bake(1);assert.equal(pull.results[0].id,'ShadowMilkCookie');assert(Save.owns('ShadowMilkCookie'));assert.equal(state.crumbs,0);assert.equal(state.pity,0);assert.equal(CookieRun.bake(2).ok,false);
+state.crumbs=100;state.creamPity=249;const creamPull=CookieRun.bake(1);assert.equal(creamPull.results[0].id,'CreamPuffCookie');assert(Save.owns('CreamPuffCookie'));assert.equal(state.creamPity,0);
+state.crumbs=100;state.tigerPity=179;const tigerPull=CookieRun.bake(1);assert.equal(tigerPull.results[0].id,'TigerLilyCookie');assert(Save.owns('TigerLilyCookie'));assert.equal(state.tigerPity,0);
+const tokens=Raid.tokens();const reward=Raid.resolve(ev.id,true,ev,0);assert.equal(reward,45);assert.equal(state.crumbs,45);assert.equal(Raid.tokens(),tokens);assert(Raid.stageCleared(ev.id,0));
+console.log('PASS registration, Collab acquisition, loan isolation, gacha cost/pity, reward isolation');
+const spec=(id,lv=70)=>({id,level:lv,rarity:5,rarityPlus:1,stars:3,skillLv:lv});
+const ownedCream=Save.hero('CreamPuffCookie');ownedCream.skills.W=1;ownedCream.skills.G=100;const creamSpec=playerSpec('CreamPuffCookie');assert.equal(creamSpec.skillLevels.W,1);assert.equal(creamSpec.skillLevels.G,100);
+const levelBattle=new Battle({offscreen:true});levelBattle.start([creamSpec],CookieRun.wave(1,70),{timeLimit:20});const leveledCream=levelBattle.units[0];assert.equal(leveledCream.skillLevel('W'),1);assert.equal(leveledCream.skillLevel('G'),100);assert.equal(levelBattle.skillParams(leveledCream,'W').stun,2);assert(levelBattle.skillParams(leveledCream,'G').dur>12);AI.fire(leveledCream,levelBattle,'G');assert.equal(leveledCream.cds.G,skillCooldown(HEROES.CreamPuffCookie.skills.G,100));
+console.log('PASS individual owned skill levels control their own combat values and cooldowns');
+for(const id of ['GingerBrave','ShadowMilkCookie','CreamPuffCookie','TigerLilyCookie','Poppy','Cosmo','Sora','CheerbearShelly'])for(const key of SKILL_ORDER){const sk=HEROES[id].skills[key];if(!sk||!sk.desc)continue;const S={};Object.entries(sk.v||{}).forEach(([k,v])=>S[k]=v*skillMult(100));const copy=sk.desc(S,skillGrowthParams(sk,100));assert(typeof copy==='string'&&copy.length>20,id+' '+key);}
+assert(skillGrowthParams(HEROES.Sora.skills.R,100).cd<18);assert(skillGrowthParams(HEROES.Poppy.skills.P,100).stackHp>.02);assert(skillGrowthParams(HEROES.Cosmo.skills.P,100).splash>.45);assert(skillGrowthParams(HEROES.CheerbearShelly.skills.P,100).energy>18);
+console.log('PASS expanded skill values and descriptions for Cookies, regular Toons, and collabs');
+function battle(foes){const B=new Battle({offscreen:true});B.start([spec('GingerBrave'),spec('Poppy'),spec('Ginger'),spec('Cosmo')],foes,{timeLimit:45});return B;}
+let B=battle(CookieRun.wave(1,70));let bishop=B.units.find(u=>u.id==='BerryBishop'),box=B.units.find(u=>u.id==='DangerInTheBox'),brave=B.units[0];
+let hp=brave.hp;assert.equal(B.damage(bishop,brave,1e9,{type:'true'}),null);assert.equal(B.damage(box,brave,1e9,{type:'true'}),null);assert.equal(brave.hp,hp);
+const wounded=B.units.find(u=>u.id==='PomegranateSnake');wounded.hp=wounded.max.hp*.25;const oldHP=wounded.hp;AI.beginBasic(bishop,B,brave);assert(wounded.hp>oldHP);assert.equal(brave.hp,hp);
+HEROES.BerryBishop.skills.G.cast(bishop,B);assert(B.units.some(u=>u.id==='BerryHealingBot'));let bot=B.units.find(u=>u.id==='BerryHealingBot');assert(bot.st.aspd>bishop.st.aspd);assert(bot.st.mag<bishop.st.mag);
+box.x=brave.x;box.depth=brave.depth;B.kill(box,brave);assert.equal(B.units.filter(u=>u.id==='PaperPuppetKnight').length,1);assert(brave.hasStatus('status_corruption'));assert(!B.units.find(u=>u.id==='PaperPuppetKnight').minion);
+bot._cookieLastTag='Never Back Down!';B.kill(bot,brave);assert(brave.hasStatus('cookie_victory'));
+console.log('PASS zero damage, lowest-percentage healing, healing summon, death corruption, persistent knight and minion defeat bonuses');
+B=battle(CookieRun.wave(2,70));assert.equal(B.bestTarget(B.units.find(u=>u.id==='PomegranateSnake')).role,'Tank');assert.equal(B.bestTarget(B.units.find(u=>u.id==='CookieScorpion')).role,'Support');
+brave=B.units[0];HEROES.GingerBrave.skills.B.cast(brave,B,B.scaled(brave,'B'),B.skillParams(brave,'B'));
+assert(brave.dashUntil>B.t);assert(brave._cookieDashFollowupUntil>B.t);
+B.emitFor(brave,'basicHit',{target:B.enemiesOf(brave)[0]});assert.equal(brave._cookieDashFollowupUntil,0);
+const damage={target:B.enemiesOf(brave)[0],amount:100,tag:'Brave Strike'};B.emitFor(brave,'dealDamage',damage);assert(Math.abs(damage.amount-100*(1+B.skillParams(brave,'R').highHp))<.01);
+assert(Math.abs(brave.flat.crit71-B.skillParams(brave,'P').crit)<1e-8);assert.equal(HEROES.GingerBrave.skills.R.name,'Overflowing Courage');
+console.log('PASS prey targeting, GingerBrave dash follow-up, high-HP damage, and critical bonus');
+assert.equal(HEROES.ShadowMilkCookie.tier,'SS');
+const showBattle=new Battle({offscreen:true});showBattle.start([spec('ShadowMilkCookie'),spec('Poppy')],CookieRun.wave(1,70),{timeLimit:65});
+const shadow=showBattle.units.find(u=>u.id==='ShadowMilkCookie'),showPoppy=showBattle.units.find(u=>u.id==='Poppy'),showBishop=showBattle.units.find(u=>u.id==='BerryBishop'),showSnake=showBattle.units.find(u=>u.id==='PomegranateSnake');
+assert(shadow.hasStatus('cookie_eye_truth'));
+showBattle.applyStatus(showBishop,showPoppy,'poison',6);
+for(let i=0;i<4;i++)showBattle.applyStatus(shadow,showBishop,'cookie_taint',6);
+assert(!showPoppy.hasStatus('poison'));assert(shadow.hasStatus('cookie_truth_power'));assert(shadow.shields.length>0);
+HEROES.ShadowMilkCookie.skills.G.cast(shadow,showBattle,showBattle.scaled(shadow,'G'),showBattle.skillParams(shadow,'G'));assert(showBattle.units.some(u=>u.minion&&u.owner===shadow));
+assert(showBattle.units.some(u=>u.team!==shadow.team&&u.hasStatus('cookie_deceived')));
+HEROES.ShadowMilkCookie.skills.B.cast(shadow,showBattle,showBattle.scaled(shadow,'B'),showBattle.skillParams(shadow,'B'));assert(showBattle.units.some(u=>u.team!==shadow.team&&u.hasStatus('cookie_stringbound')));
+HEROES.ShadowMilkCookie.skills.W.cast(shadow,showBattle,showBattle.scaled(shadow,'W'),showBattle.skillParams(shadow,'W'));
+const firstShow=shadow._cookieShow;assert(firstShow&&firstShow.primary);
+showBattle.kill(firstShow.primary,shadow);assert(firstShow.phantom&&firstShow.phantom.alive);
+milkGrandFinale(shadow,showBattle,firstShow);assert(firstShow.done);
+HEROES.ShadowMilkCookie.skills.W.cast(shadow,showBattle,showBattle.scaled(shadow,'W'),showBattle.skillParams(shadow,'W'));
+milkGrandFinale(shadow,showBattle,shadow._cookieShow);assert(shadow._cookieCurtainUsed);
+showSnake._cookieInterruptNext=true;assert.equal(AI.fire(showSnake,showBattle,'G'),false);
+showBattle.damage(showSnake,shadow,shadow.max.hp*4,{type:'true',noDodge:true});
+assert(shadow.alive&&shadow._cookieShadowUsed&&shadow.hasStatus('untargetable'));
+const puppet=shadow._cookieShadowPuppet;assert(puppet&&puppet.alive&&puppet.shields.length);
+showBattle.kill(puppet,showSnake);assert(shadow.hasStatus('cookie_shadow_power')&&shadow.hasStatus('cookie_eye_deceit'));
+assert(!shadow.hasStatus('untargetable'));
+console.log('PASS Shadow Milk Eye, illusions, strings, Puppet Show, Curtain Call, and Shadow Form');
+assert.equal(HEROES.CreamPuffCookie.role,'Support');
+assert.equal(HEROES.CreamPuffCookie.skills.W.name,'Jellius Extremus!');
+const creamBattle=new Battle({offscreen:true});creamBattle.start([spec('CreamPuffCookie'),spec('Poppy')],CookieRun.wave(1,70),{timeLimit:65});
+const creamUnit=creamBattle.units.find(u=>u.id==='CreamPuffCookie'),creamPoppy=creamBattle.units.find(u=>u.id==='Poppy');
+const oldRandom=Math.random;Math.random=()=>.999;
+HEROES.CreamPuffCookie.skills.G.cast(creamUnit,creamBattle,creamBattle.scaled(creamUnit,'G'),creamBattle.skillParams(creamUnit,'G'));assert(creamUnit.hasStatus('cookie_cream_practice'));
+Math.random=()=>0;
+HEROES.CreamPuffCookie.skills.G.cast(creamUnit,creamBattle,creamBattle.scaled(creamUnit,'G'),creamBattle.skillParams(creamUnit,'G'));assert(!creamUnit.hasStatus('cookie_cream_practice'));assert(creamUnit.hasStatus('cookie_cream_mastery'));assert(creamPoppy.hasStatus('cookie_cream_jelly'));assert(creamPoppy.hasStatus('cookie_cream_guarded_jelly'));creamBattle.dispel(creamPoppy,99);assert(creamPoppy.hasStatus('cookie_cream_guarded_jelly'));
+for(let i=0;i<4;i++)HEROES.CreamPuffCookie.skills.W.cast(creamUnit,creamBattle,creamBattle.scaled(creamUnit,'W'),creamBattle.skillParams(creamUnit,'W'));
+assert(creamUnit._creamSuccesses>=5);
+HEROES.CreamPuffCookie.skills.W.cast(creamUnit,creamBattle,creamBattle.scaled(creamUnit,'W'),creamBattle.skillParams(creamUnit,'W'));assert(creamUnit._creamUltimateUsed);assert(creamPoppy.hasStatus('cookie_cream_guard'));
+Math.random=oldRandom;
+console.log('PASS Cream Puff pity, Practice, Great Success, Mastery, Jellies, and Ultimate Great Success');
+assert.equal(HEROES.TigerLilyCookie.tier,'SS');assert.equal(HEROES.TigerLilyCookie.skills.W.name,'Tiger Rider');
+const tigerBattle=new Battle({offscreen:true});tigerBattle.start([spec('TigerLilyCookie'),spec('Poppy')],CookieRun.wave(1,70),{timeLimit:65});
+const lily=tigerBattle.units.find(u=>u.id==='TigerLilyCookie'),tigerEnemy=tigerBattle.units.find(u=>u.id==='PomegranateSnake');
+const tigerRange=lily.st.range;
+HEROES.TigerLilyCookie.skills.G.cast(lily,tigerBattle,tigerBattle.scaled(lily,'G'),tigerBattle.skillParams(lily,'G'));
+assert(tigerBattle.enemiesOf(lily).some(e=>e.hasStatus('cookie_tiger_prey')));
+HEROES.TigerLilyCookie.skills.B.cast(lily,tigerBattle,tigerBattle.scaled(lily,'B'),tigerBattle.skillParams(lily,'B'));
+assert(lily.hasStatus('cookie_tiger_evasion'));
+HEROES.TigerLilyCookie.skills.W.cast(lily,tigerBattle,tigerBattle.scaled(lily,'W'),tigerBattle.skillParams(lily,'W'));
+assert(lily.hasStatus('cookie_tiger_mounted'));lily.recompute();assert(lily.st.range<tigerRange);
+HEROES.TigerLilyCookie.basic.onHit(lily,tigerEnemy,tigerBattle);assert(lily._tigerSpearHits===1);
+HEROES.TigerLilyCookie.skills.W.cast(lily,tigerBattle,tigerBattle.scaled(lily,'W'),tigerBattle.skillParams(lily,'W'));
+assert(lily._tigerApexUsed&&lily.hasStatus('cookie_tiger_apex')&&lily.shields.length);
+const tigerSim=new Battle({offscreen:true});const tigerResult=tigerSim.simulateOffscreen([spec('TigerLilyCookie'),spec('GingerBrave'),spec('Poppy'),spec('Ginger')],CookieRun.wave(1,70),{timeLimit:75},{});assert(tigerResult&&typeof tigerResult.win==='boolean');assert(tigerSim.units.every(u=>Number.isFinite(u.hp)&&Number.isFinite(u.x)));
+console.log('PASS Tiger Lily gacha, Prey, Pounce, mounted combat, Apex Predator, and battle simulation');
+const creamSim=new Battle({offscreen:true});const creamResult=creamSim.simulateOffscreen([spec('GingerBrave'),spec('CreamPuffCookie'),spec('Poppy'),spec('Ginger')],CookieRun.wave(1,70),{timeLimit:75},{});assert(creamResult&&typeof creamResult.win==='boolean');assert(creamSim.units.every(u=>Number.isFinite(u.hp)&&Number.isFinite(u.x)));console.log('CREAM WAVE',creamResult.why,'time',creamSim.t.toFixed(1));
+const otherSim=new Battle({offscreen:true});const otherResult=otherSim.simulateOffscreen([spec('Sora'),spec('CheerbearShelly'),spec('Cosmo'),spec('Poppy')],CookieRun.wave(3,70),{timeLimit:75},{});assert(otherResult&&typeof otherResult.win==='boolean');assert(otherSim.units.every(u=>Number.isFinite(u.hp)&&Number.isFinite(u.x)));console.log('TOON + COLLAB WAVE',otherResult.why,'time',otherSim.t.toFixed(1));
+for(let wave=1;wave<=3;wave++){const sim=new Battle({offscreen:true});const result=sim.simulateOffscreen([spec('GingerBrave'),spec('Poppy'),spec('Ginger'),spec('Cosmo'),spec('ShadowMilkCookie')],Raid.equipWave(CookieRun.wave(wave,70),ev.id,wave,70),{timeLimit:wave===3?210:75},{});assert(result&&typeof result.win==='boolean');assert(sim.units.every(u=>Number.isFinite(u.hp)&&Number.isFinite(u.x)));console.log('WAVE',wave,result.why,'time',sim.t.toFixed(1),'units',sim.units.length);}
+const starterFinal=new Battle({offscreen:true});const starterResult=starterFinal.simulateOffscreen([spec('GingerBrave'),spec('Poppy'),spec('Ginger'),spec('Cosmo'),spec('Scraps')],Raid.equipWave(CookieRun.wave(3,70),ev.id,3,70),{timeLimit:210},{});assert(starterResult&&typeof starterResult.win==='boolean');console.log('STARTER FINAL',starterResult.why,'time',starterFinal.t.toFixed(1));
+`,ctx,{timeout:25000});
+const newAssets=vm.runInContext('Object.values(COOKIE_ART).concat(Object.values(COOKIE_BRAVE_ANIMS),Object.values(COOKIE_CREAM_ANIMS),Object.values(COOKIE_TIGER_ANIMS),Object.values(COOKIE_BRAVE_EMOTIONS))',ctx);newAssets.concat(['uploads/image-84.png','uploads/image-85.png','uploads/image-86.png','uploads/crkbbg1.png','uploads/crkbbg2.png','uploads/crkbbg3.png','uploads/crkshop.mp3','uploads/shadow_milk_raisestaff.gif','uploads/shadow_milk_run.gif','uploads/shadow_milk_teleportinportal.gif','uploads/shadow_milk_twirlstaffanddosomething.gif','uploads/Shadow_milk_gacha_animation.gif','sfx/cookie-cane-swing.wav','sfx/cookie-cane-slam.wav','sfx/cookie-shadow-strings.wav','sfx/cookie-jelly-tornado.wav','sfx/cookie-great-success.wav','sfx/cookie-tiger-spear.wav','sfx/cookie-tiger-pounce.wav']).forEach(file=>assert(fs.existsSync(path.join(root,file)),file));
+if(warnings.length){console.error(warnings);process.exit(1)}console.log('PASS full three-wave combat simulations and asset references without runtime warnings');

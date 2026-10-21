@@ -1,0 +1,17 @@
+Delilah Keen
+
+Role: Control / Summoner
+Tier: SS Tier
+
+Delilah is a clinical observer who turns the battlefield into a living experiment. She marks dangerous targets, releases the right Twisted sample for the formation, and rewards careful control with stronger specimens.
+
+Name	Rarity	Damage Type	Description
+Controlled Experiment	White	True Damage / Summon	Passive: Delilah releases a formation-selected Twisted at the start of battle. Crowd-controlled enemies become Test Subjects, and Delilah and her samples cannot be Dodged by marked targets.
+
+Active: releases another sample up to the active cap and immediately performs its signature action.
+Unstable Sample	Green	True Damage / Debuff	Injects the highest-Energy enemy for True Damage and applies Contamination. Test Subjects spread the contamination to a nearby enemy. Cleansing Contamination causes a brief Stun, and contaminated defeats heal Delilah's weakest active sample.
+Containment Procedure	Blue	Control / Cleanse	Orders every active Twisted to surround the highest-Attack enemy, applying Contained. Delilah and her samples gain Sterile Protocol, which cleanses one negative status when received and improves Crowd Control Resistance.
+
+When Containment ends, every sample strikes the target. If Delilah has no samples, she Stuns the target instead.
+Clinical Observation	Purple	Skill Haste / Defense	Test Subjects casting or suffering Crowd Control feeds Delilah Energy and Skill Haste. The first time each marked target falls below half Health, her active samples are permanently reinforced. A sample defeated by a Test Subject becomes a Failed Variable for the next release.
+Further Testing Required	Red	True Damage / Control	Delilah can maintain a third sample. Sample defeats leave Ichor Spills that damage enemies and heal samples. Sustained Crowd Control marks new Test Subjects and helps recharge Controlled Experiment. Once per wave, a surviving sample intercepts Delilah's lethal damage.

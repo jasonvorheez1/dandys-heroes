@@ -1,0 +1,56 @@
+Rudie
+
+Tier: SS Tier
+Role: DPS / Assassin / Momentum Carry
+
+Rudie is a hyperactive reindeer Toon who relies on speed, confidence, and overwhelming pressure. Rather than being a simple attacker, Rudie becomes stronger the longer he maintains his momentum. His gameplay revolves around charging through enemies, building speed stacks, and turning movement into damage.
+
+Icon	Name	Rarity	Damage Type	Description
+	Antler Rush	White	Physical Damage	Passive: Rudie gains Momentum whenever he moves a certain distance or damages an enemy. Momentum increases his Attack Speed and Critical Hit Chance. Rudie can hold a maximum amount of Momentum stacks.
+
+Whenever Rudie is slowed or stunned, he loses Momentum stacks.
+
+Active: Rudie lowers his antlers and charges across the battlefield, dealing Physical Damage to all enemies he passes through. Enemies hit are knocked aside and briefly interrupted.
+
+For every Momentum stack Rudie has, this attack deals increased damage. If Rudie defeats an enemy with this skill, he immediately gains additional Momentum.
+---	---	---	---	---
+	Hoofstep Barrage	Green	Physical Damage	Rudie rapidly kicks forward, striking enemies multiple times. Each hit deals Physical Damage.
+
+Consecutive hits against the same enemy increase the damage of future hits. If Rudie reaches maximum Momentum, every third hit becomes a Critical Hit.
+---	---	---	---	---
+	Red Nose Rush	Blue	Normal Damage	Rudie's confidence shines through as he charges forward.
+
+Rudie increases his Attack Speed and Movement Speed for several seconds. During this time, his attacks deal bonus damage based on his current Momentum stacks.
+
+Whenever Rudie defeats an enemy while this effect is active, the duration is extended.
+---	---	---	---	---
+	Born To Run	Purple	Max HP
+Armor	Rudie refuses to slow down.
+
+For every Momentum stack Rudie has, he gains Armor and Damage Reduction.
+
+While above half of his maximum Momentum, Rudie cannot have his Movement Speed reduced below his normal speed.
+
+Whenever Rudie loses a large amount of HP at once, he immediately gains Momentum.
+---	---	---	---	---
+	The Fastest Delivery	Red	Physical Damage
+Max HP	Before combat begins, Rudie prepares himself for the ultimate charge.
+
+At the start of battle, Rudie immediately attacks the enemy with the lowest HP, leaving a trail behind him that damages enemies who cross it.
+
+Rudie's maximum Momentum is increased. While at maximum Momentum:
+
+• His basic attacks hit multiple enemies.
+• His Charge skills cannot be interrupted.
+• He gains increased Critical Damage.
+
+Whenever Rudie defeats an enemy, he instantly restores some HP and refreshes part of his skill cooldowns.
+
+If Rudie would be defeated while at maximum Momentum, he instead performs one final charge before being knocked out.
+Why SS Tier?
+
+Rudie is an SS-tier DPS because he is a true scaling carry. Unlike characters who have one burst window, Rudie becomes more dangerous the longer he stays active. His Momentum mechanic rewards aggressive play and allows him to snowball fights.
+
+His weaknesses are clear: if enemies can consistently disable him or prevent him from building momentum, his performance drops heavily. However, when supported by tanks or characters who protect him from crowd control, Rudie can completely overwhelm enemy teams.
+
+SS Tier: A high-speed carry who turns constant movement into unstoppable damage.

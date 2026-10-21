@@ -1,0 +1,76 @@
+Gigi
+
+Role: RNG Support
+Tier: S Tier
+
+Gigi is a living gachapon who loves collecting things. In battle, she produces random items from her collection and gives them to her allies. The items vary in usefulness, making her unpredictable, but her ability to provide exactly the kind of utility a team needs gives her an extremely high ceiling.
+
+Name	Rarity	Damage Type	Description
+Surprise Inside!	White	Varies	Passive: Every few seconds, Gigi produces a random Dandy's World Item from her collection. She can hold up to 3 Items at a time.
+
+Active: Gigi gives a random stored Item to the ally who can benefit from it the most. The Item immediately activates when received.
+
+Items can provide Healing, Energy, Shields, Attack increases, Movement Speed, Skill Haste, or other useful effects depending on the Item selected.
+
+Gigi's Items are consumed when used, causing her to begin searching for another Item.
+Take This!	Green	Varies	Gigi rummages through her collection and throws a random Dandy's World Item toward an ally.
+
+The Item lands near the ally and can be picked up by them.
+
+The possible Items include different types of healing, defensive, offensive, and mobility items.
+
+If the ally is below half HP, Gigi prioritizes Items that restore Health or provide protection. If they are already healthy, she is more likely to provide an offensive or Energy related Item.
+Lucky Find	Blue	Varies	Gigi excitedly produces a particularly valuable Item from her collection and immediately uses it.
+
+The Item is randomly selected from a higher rarity pool and affects the entire team.
+
+Possible effects include restoring Energy to all allies, Healing all allies, granting Shields, increasing Attack and Skill Haste, or increasing Movement Speed.
+
+The rarer the Item selected, the stronger its effect.
+Big Collection	Purple	Max HP
+Skill Haste	Gigi's enormous collection gives her more opportunities to find something useful.
+
+Gigi can now store an additional Item.
+
+Whenever she gives an Item to an ally, she has a chance to immediately produce another one.
+
+Whenever Gigi produces the same Item twice in a row, the second Item is Improved, increasing its effect.
+Gigi's Gachapon	Red	Max HP
+Skill Power
+Healing	At the beginning of battle, Gigi immediately produces several random Dandy's World Items and adds them to her collection.
+
+Surprise Inside! can now produce Items from the highest rarity pool.
+
+Whenever Gigi gives an Item to an ally, that ally gains a short bonus based on the Item they received.
+
+If Gigi gives three different types of Items to the same ally, that ally receives a Lucky Break, restoring Health and Energy while gaining increased Attack and Skill Haste for several seconds.
+
+Gigi's Items cannot be removed, stolen, or destroyed by enemies.
+Item Pool
+
+The important part is that these should be actual Dandy's World items, not generic RPG objects.
+
+For example, Gigi could randomly produce things such as:
+
+Bandage: Restores Health.
+Chocolate: Restores Energy.
+Valve: Increases Attack Speed.
+Gumball: Provides a random temporary buff.
+Bottle: Restores Health over time.
+Speed Candy: Increases Movement Speed.
+Extraction Candy: Increases Skill Haste or Energy generation.
+Pop Pack: Provides a stronger temporary combat effect.
+
+The exact pool could expand as more items are added to Dandy's World.
+
+Why S Tier?
+
+Gigi becomes an item based RNG support, rather than simply a character who randomly rolls buffs.
+
+That makes her much more faithful to both sides of her character. She is a gachapon, so producing random things is fundamental to her identity, while her tendency to collect and hoard things gives her a reason to have an enormous inventory of possible effects.
+
+Her biggest strength is adaptability. A dedicated healer will heal more consistently, and a dedicated buffer will provide stronger predetermined buffs, but Gigi can potentially provide healing, Energy, defense, offense, mobility, or utility depending on what she happens to produce.
+
+The RNG also isn't completely meaningless. Her AI can prioritize items based on what her allies currently need, so she isn't just randomly making the team better or worse.
+
+S Tier: Gigi is an unpredictable but exceptionally versatile support who turns Dandy's World items themselves into her arsenal.

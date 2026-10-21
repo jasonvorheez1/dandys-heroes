@@ -1,0 +1,56 @@
+Squirm
+
+Role: Tank / DPS
+Tier: A Tier
+
+Name	Rarity	Damage Type	Description
+Distressed Delicacy	White	Physical Damage
+Max HP	Passive: Whenever Squirm takes damage while below 60% HP, he has a chance to immediately consume a book, restoring some Health. This effect has a short cooldown.
+
+Active: Squirm begins frantically eating a book, gaining increased Max HP and Damage Reduction for several seconds. While eating, he cannot use Basic Attacks but cannot be interrupted.
+
+When the effect ends, Squirm releases the book with a nervous jolt, dealing Physical Damage to nearby enemies. The lower Squirm's HP was when he began eating, the stronger the attack becomes.
+Please Don't Hurt Me	Green	Shield
+Healing	Squirm curls himself up defensively, gaining a large Shield based on his Max HP and restoring Health over several seconds.
+
+While the Shield remains, enemies that attack Squirm are briefly slowed and deal reduced damage to him.
+
+If the Shield is destroyed, Squirm immediately gains increased Armor and Magic Defense for several seconds.
+Nervous Flailing	Blue	Physical Damage	Squirm panics and rapidly flails his many limbs around himself, striking nearby enemies several times.
+
+Each hit deals Physical Damage and briefly interrupts enemies.
+
+For every enemy struck, Squirm gains a small amount of Damage Reduction for several seconds. This effect can stack up to a limit.
+
+If Squirm is below half HP, the final strike also restores Health based on the number of enemies hit.
+Bookworm	Purple	Max HP
+Armor
+Magic Defense	Squirm's strange appetite has made him surprisingly difficult to wear down.
+
+Whenever Squirm restores Health through one of his skills, he permanently gains a small amount of Max HP for the remainder of the battle, up to a limit.
+
+Whenever Squirm is affected by Stun, Silence, Slow, or another Crowd Control effect, he gains Armor and Magic Defense while the effect lasts.
+
+The longer Squirm remains under Crowd Control, the stronger these defensive increases become.
+What Could Go Wrong?	Red	Max HP
+Armor
+Magic Defense	Squirm constantly expects the worst, and somehow this makes him very difficult to finish off.
+
+Whenever Squirm falls below certain percentages of his Max HP, he immediately restores Health and gains Damage Reduction for several seconds. Each threshold can only activate once per battle.
+
+Whenever Squirm would be defeated, he instead consumes a book and survives with a portion of his Max HP. This effect can only activate once per battle.
+
+After surviving this way, Distressed Delicacy immediately becomes available and Squirm gains increased Armor and Magic Defense for the remainder of the battle.
+Why A Tier?
+
+Squirm's strength is surviving situations that should have killed him.
+
+His actual Dandy's World ability is already based around stress eating books, with his cooldown recovering faster near bookshelves. Rather than awkwardly translating his extraction ability into combat, the RPG version turns that same behavior into a defensive resource.
+
+He has several ways to recover from low HP, temporary Shields, escalating defenses, and an emergency survival effect. Bookworm also makes Crowd Control less reliable against him, which fits his tendency to become increasingly distressed when overwhelmed without simply making him immune to everything.
+
+His DPS is intentionally secondary. Nervous Flailing gives him respectable close-range damage, but his real value comes from staying alive, disrupting enemies, and forcing opponents to spend considerably more resources than expected to remove him.
+
+He isn't S tier because he offers relatively little protection to other allies. He's primarily protecting himself. He also lacks the positioning control of Scraps or the team-wide utility of stronger support tanks.
+
+A Tier: A stubborn survival tank who looks like he's constantly one inconvenience away from breaking down, yet somehow becomes harder and harder to kill the more pressure is put on him.

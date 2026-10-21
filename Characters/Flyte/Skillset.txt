@@ -1,0 +1,57 @@
+Flyte
+
+Role: Support / Utility
+Tier: S Tier
+
+Name	Rarity	Damage Type	Description
+Guiding Gust	White	Buff	Passive: Whenever Flyte moves a significant distance, he leaves behind a small breeze that lasts for several seconds. Allies who pass through it gain increased Movement Speed for a short time.
+
+Active: Flyte creates a large Gust at the location of the ally furthest from the rest of the team. Allies who pass through the Gust gain increased Movement Speed, Attack Speed, and Skill Haste for several seconds. Flyte also gains these effects.
+
+Allies affected by the Gust cannot have their Movement Speed reduced for its duration.
+Stay Close	Green	Shield	Flyte rushes toward the ally with the lowest HP and creates a strong gust around them.
+
+The ally gains a Shield based on Flyte's Max HP and increased Movement Speed.
+
+Nearby allies are also pushed slightly away from enemies, creating space around the protected ally.
+
+If the Shield is broken, the protected ally receives another brief Movement Speed increase.
+Clear the Way	Blue	Physical Damage	Flyte rapidly sweeps across the battlefield, creating powerful gusts around himself.
+
+Enemies caught in his path take Physical Damage and are pushed away.
+
+Allies Flyte passes through gain a brief burst of Movement Speed and Skill Haste.
+
+Flyte can pass through allies while using this skill, allowing him to reach endangered teammates without being stopped by his own team.
+Watch Your Step	Purple	Movement Speed
+Max HP	Flyte is constantly paying attention to where everyone is.
+
+Allies affected by one of Flyte's Gusts gain increased Dodge Chance and Crowd Control Resistance.
+
+Whenever an affected ally is targeted by an enemy Crowd Control effect, they immediately receive a short burst of Movement Speed and Flyte reduces the remaining cooldown of his Guiding Gust.
+
+This effect can only activate once per ally within a short period.
+Looking Out for You	Red	Max HP
+Movement Speed
+Skill Haste	At the start of battle, Flyte immediately places a Gust between his team and the enemy team.
+
+Allies who pass through the Gust gain Flight Path.
+
+Flight Path grants increased Movement Speed, Attack Speed, Skill Haste, and Crowd Control Resistance.
+
+Whenever an ally under Flight Path falls below a percentage of their Max HP, Flyte immediately creates a new Gust at their location and grants them a Shield.
+
+The Gusts created this way last longer and provide stronger bonuses.
+
+Flyte's Gusts can overlap, allowing allies who repeatedly move through them to refresh their bonuses.
+Why S Tier?
+
+Flyte's strength isn't raw numbers. It's mobility as team utility.
+
+His Gust gives him a distinctive mechanic that can affect the whole battlefield. Instead of simply giving everyone a permanent Movement Speed buff, Flyte creates physical areas that his allies have to move through, turning positioning and movement into part of his support gameplay.
+
+He can accelerate the entire team, help fragile characters escape dangerous situations, protect an ally who is being overwhelmed, and even create openings by pushing enemies away. His own strong mobility means he can reposition himself to help teammates rather than being stuck in a single location.
+
+He isn't SS tier because his buffs are heavily centered around movement and tempo. Teams that don't benefit much from mobility get considerably less from him, and he has limited direct healing and damage.
+
+S Tier: A highly versatile mobility support who turns movement itself into a team-wide advantage.

@@ -1,0 +1,36 @@
+Cosmo
+
+Tier: A Tier
+Role: Healer / Sustain Support
+
+Cosmo is a gentle and supportive baker Toon who puts his friends before himself. Rather than dealing damage, he keeps his team alive through careful healing and sharing his own strength.
+
+Name	Rarity	Damage Type	Description
+Sharing is Caring	White	Healing	Passive: Whenever Cosmo heals an ally, that ally gains increased Damage Reduction for a short duration. Cosmo cannot receive healing from his own abilities.
+
+Active: Cosmo gives part of his own HP to the ally with the lowest HP, healing them and removing negative effects. If the ally was below a certain amount of HP, the heal is increased.
+Fresh Baked Treats	Green	Healing	Cosmo tosses freshly made treats to the ally with the lowest HP, restoring HP over time. If the target is at critical HP, they also gain increased Defense while being healed.
+Comforting Presence	Blue	Support	Cosmo encourages his allies, reducing damage taken by the entire team and increasing their healing received for a few seconds.
+A Recipe For Care	Purple	Healing	Sharing is Caring now heals nearby allies around the target. Additionally, allies healed by the ability gain increased Attack Speed for a short duration.
+The Sweetest Gift	Red	Healing / Shield	Fresh Baked Treats now creates an extra treat that heals the ally with the lowest HP after the first heal finishes. Any overhealing from this ability becomes a Shield instead.
+Additional Stat Boosts:
+More Healing Power
+More Max HP
+More Energy Generation
+More Magic Defense
+Gameplay Summary
+
+Cosmo would be an A Tier healer because he is extremely reliable but lacks the overwhelming utility of the best supports.
+
+Strengths
+
+Strong emergency healing
+Protects fragile allies
+Great in long battles
+Keeps teams stable
+
+Weaknesses
+
+Sacrifices his own HP
+Low personal damage
+Less effective if he is targeted early

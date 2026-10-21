@@ -1,0 +1,122 @@
+Bobette Carolynne
+
+Role: Defensive Support / Survival Tank
+Tier: B Tier
+
+Bobette is a cheerful holiday Toon who loves preparing gifts and making others feel safe. Her strength is not overwhelming enemies, but ensuring her team always has a second chance. Through wrapping supplies, protective presents, and her own durability, Bobette turns losing situations into recoverable ones.
+
+She is not as disruptive as Scraps or as powerful of a support as Astro, but she provides consistent protection and team stability.
+
+Precious Packaging
+
+White Skill
+Damage Type: Shield
+
+Passive: Bobette keeps extra wrapping supplies ready.
+
+Whenever Bobette takes a large amount of damage, she gains a stack of Packed Protection.
+
+Each stack increases her Armor slightly.
+
+At maximum stacks, her next Shield ability becomes stronger.
+
+Active: Bobette quickly wraps herself inside a large gift package.
+
+While wrapped:
+
+Bobette cannot attack or move.
+Bobette takes greatly reduced damage.
+Bobette cannot be affected by Crowd Control.
+
+When the package opens:
+
+Bobette restores Health.
+Nearby allies gain a Shield.
+Nearby enemies are pushed away and briefly slowed.
+Holiday Spirit
+
+Green Skill
+Damage Type: Healing / Buff
+
+Bobette shares her positive energy with her teammates.
+
+All allies gain Festive Cheer:
+
+Increased Movement Speed.
+Increased Energy Generation.
+Increased Healing Received.
+
+Whenever an ally uses their ultimate ability while Festive Cheer is active, Bobette creates a small Shield for them.
+
+The effect becomes stronger for every nearby ally.
+
+Wrapped Surprise
+
+Blue Skill
+Damage Type: Physical Damage
+
+Bobette throws decorated presents at enemies.
+
+Each present deals Physical Damage and applies Wrapped.
+
+Wrapped enemies:
+
+Have reduced Attack Speed.
+Have reduced Skill Haste.
+Generate less Energy.
+
+If a Wrapped enemy is hit by another Bobette ability, the wrapping becomes tighter, briefly Rooting them.
+
+Ornament Protection
+
+Purple Skill
+Damage Type: Max HP / Armor
+
+Bobette becomes stronger when protecting others.
+
+Whenever a nearby ally loses Health, Bobette gains a stack of Festive Guard.
+
+Each stack increases:
+
+Armor.
+Magic Defense.
+Shield strength.
+
+At maximum stacks, Bobette shares Festive Guard with nearby allies.
+
+Whenever Bobette gains a Shield, allies with Festive Guard gain a smaller Shield as well.
+
+The Perfect Present
+
+Red Skill
+Damage Type: Max HP / Armor / Healing
+
+Before battle begins, Bobette prepares a special present for her team.
+
+The ally with the lowest Max HP receives Holiday Favor:
+
+Increased Max HP.
+Damage Reduction.
+Increased Healing Received.
+
+If that ally would be defeated, Holiday Favor opens instead.
+
+They survive with a portion of their Health and become protected for several seconds.
+
+After the present opens:
+
+Bobette gains:
+
+Increased Armor.
+Increased Shield strength.
+Increased Healing.
+
+However, Bobette's damage is reduced because she focuses entirely on protecting her friends.
+
+Why B Tier?
+
+Bobette is a reliable defensive support who specializes in preventing defeats rather than winning fights quickly. Her Shields, emergency protection, and team buffs make her valuable in long battles, especially with fragile damage dealers.
+
+However, she lacks the battlefield control of higher-tier tanks and does not provide enough offensive support to compete with stronger characters. She cannot force enemies into bad positions like Scraps or completely empower a team like Astro.
+
+B Tier: A dependable protector who keeps the team alive through preparation and care.

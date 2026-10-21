@@ -1,0 +1,80 @@
+Role: Support Controller / Enchanter
+Tier: S Tier
+
+Astro is a gentle, reserved support whose abilities revolve around rest, dreams, and protecting teammates. In Dandy's World, he restores stamina and watches over exhausted allies, while his personality emphasizes calming others and quietly helping from the background. This kit transforms those themes into powerful battlefield support without making him an overwhelming carry.
+
+Dream Pulse
+
+White Skill
+Damage Type: Magic Damage
+
+Passive: Astro radiates a peaceful aura. Allies gradually recover Energy every second while they remain near him.
+
+Whenever an ally falls below 40% Health, Astro immediately grants them a small Heal and a brief increase to Damage Reduction. This effect has a short cooldown per ally.
+
+Active: Astro releases a wave of dream energy across the battlefield.
+
+All allies recover a large amount of Energy, are Healed, and have one negative status effect removed.
+
+Enemies caught in the wave take Magic Damage and become Drowsy, reducing their Attack Speed and Skill Haste for several seconds.
+
+Peaceful Slumber
+
+Green Skill
+Damage Type: Crowd Control
+
+Astro places the enemy with the highest Energy into a magical sleep.
+
+Sleeping enemies are unable to act for several seconds. Taking heavy damage awakens them early.
+
+When the target awakens, they deal reduced damage for several seconds and lose a portion of their Energy.
+
+Falling Stars
+
+Blue Skill
+Damage Type: Magic Damage
+
+Small stars rain from above, striking random enemies several times.
+
+Each impact deals Magic Damage.
+
+If a target is Drowsy or Asleep, the stars always prioritize them and deal increased damage.
+
+Every strike slightly restores Health to the weakest ally.
+
+Well Rested
+
+Purple Skill
+Damage Type: Passive
+
+Astro's soothing presence strengthens the team throughout battle.
+
+Allies gain increased Healing Received and Energy Generation.
+
+Whenever an ally is Healed to full Health, their next skill deals increased damage and ignores a portion of the target's Magic Defense.
+
+Astro also regenerates Energy faster than normal.
+
+Endless Night
+
+Red Skill
+Damage Type: Max HP
+Magic Defense
+Healing
+
+At the start of battle, Astro blankets the battlefield in a peaceful night for several seconds.
+
+During this time:
+
+Allies gradually recover Health and Energy every second.
+Enemy Energy generation is reduced.
+Enemies affected by Drowsy cannot gain Attack Speed bonuses.
+Sleeping enemies remain asleep for longer.
+
+Whenever Astro casts a skill, the ally with the lowest Health immediately gains a Shield and becomes immune to Crowd Control for a short duration.
+
+If an ally would be defeated while Astro is alive, they instead survive with a small amount of Health, instantly recover Energy, and become Untargetable for a brief moment. This effect can only occur once per ally each battle.
+
+Why S Tier?
+
+Astro is one of the strongest dedicated supports in the game. His constant Energy generation, healing, cleansing, and defensive utility allow his team to outlast prolonged fights, while Sleep provides reliable crowd control against dangerous enemies. Unlike SS-tier supports that can completely dictate the pace of a battle, Astro focuses on enabling his teammates rather than winning fights on his own, making him an excellent but balanced S-tier support.
