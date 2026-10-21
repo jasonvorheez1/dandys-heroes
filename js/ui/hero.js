@@ -1209,6 +1209,8 @@ const HeroPage = {
       if (key === 'W') { x = actorX + w * .10; y = h * .48; opacity = mime * .8; scale = .45 + mime * .72; rotate = -8 + mime * 12; }
       else if (key === 'G') { x = actorX + w * .13; y = h * .48; opacity = mime * .8; scale = .5 + mime * .78; rotate = -8; }
       else if (key === 'B') { x = targetX; y = targetY; opacity = Math.max(mime * .35, spill); scale = .48 + Math.max(mime, spill) * .82; rotate = p * 70; }
+      else if (key === 'P') { x = actorX; y = h * .48; opacity = mime; scale = .5 + mime * .5; rotate = mime * 15; }
+      else if (key === 'R') { x = actorX + w * .10; y = h * .48; opacity = mime * .8; scale = .45 + mime * .72; rotate = -8 + mime * 12; }
       else { x = targetX; y = targetY; opacity = spill; scale = .45 + spill * .92; rotate = -18 + spill * 30; }
       node.style.opacity = String(clamp(opacity, 0, 1));
       node.style.transform = `translate3d(${x - 42}px,${y - 42}px,0) rotate(${rotate}deg) scale(${scale})`;

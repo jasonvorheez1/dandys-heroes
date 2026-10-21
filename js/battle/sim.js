@@ -2297,6 +2297,7 @@ class Battle {
     u._castId = (u._castId || 0) + 1;
     u.casting = null; u.pendingHit = null; u.moving = false; u.movingY = false;
     u.animState = 'idle'; u.animT = 0; u.animDur = 0; u.animStyle = null;
+    if (u.poppyBubbleEl) this.poppyBubblePop(u, true);
     this._liveDirty = true;
     if (src) { src.kills++; if (src.team !== u.team) this.emitFor(src, 'defeatedEnemy', u); }
     if (!this.offscreen) {
@@ -2405,7 +2406,7 @@ class Battle {
     let amt = amount * (src ? src.st.healPow : 1);
     if (!opt.pure) amt *= tgt.st.healRecv;
     const ev = { src, target: tgt, amount: amt };
-    tgt.statuses.forEach(s => { const d = STATUS[s.id]; if (d.onHealed) d.onHealed(tgt, s, ev, this); });
+    tgt.statuses.slice().forEach(s => { const d = STATUS[s.id]; if (d.onHealed) d.onHealed(tgt, s, ev, this); });
     amt = Math.max(0, ev.amount);
     const missing = tgt.max.hp - tgt.hp;
     const applied = Math.min(missing, amt);
@@ -2774,8 +2775,9 @@ class Battle {
       if (m.cls && CLASSES[m.cls]) CLASSES[m.cls].apply(m, this, m.classRank || 1);
       if (m.subcls && SUBCLASSES[m.subcls]) SUBCLASSES[m.subcls].apply(m, this, m.subclassRank || 1);
     }
-    m.x = clamp(u.x + u.face * (60 + (def.offset || 0)), this.leftWall, this.rightWall);
-    m.depth = clamp(u.depth + rnd(-.08, .08), .04, .92); m.depthHome = m.depth;
+    if (def.immovable) { m.immovable = true; m.flags.noMove = true; m.flags.noAct = true; }
+    m.x = clamp(def.x != null ? def.x : u.x + u.face * (60 + (def.offset || 0)), this.leftWall, this.rightWall);
+    m.depth = clamp(def.depth != null ? def.depth : u.depth + rnd(-.08, .08), .04, .92); m.depthHome = m.depth;
     m.y = this.ground - m.depth * this.depthSpan;
     m.recompute(true); m.hp = def.hp; m.max.hp = def.hp;
     this.units.push(m);
@@ -2786,9 +2788,14 @@ class Battle {
       m.baseFilter = m.imgEl.style.filter;
       m._filterCache = m.baseFilter;
     }
-    if (def.taunt) this.every(m, 2, () => this.enemiesOf(m).forEach(e => {
-      if (this.distance(e, m) < def.taunt) this.applyStatus(m, e, 'taunt', 2.2);
-    }));
+    if (def.taunt) {
+      this.enemiesOf(m).forEach(e => {
+        if (this.distance(e, m) < def.taunt) this.applyStatus(m, e, 'taunt', 4);
+      });
+      this.every(m, 2, () => this.enemiesOf(m).forEach(e => {
+        if (this.distance(e, m) < def.taunt) this.applyStatus(m, e, 'taunt', 2.2);
+      }));
+    }
     if (def.life && def.life < 900) this.after(def.life, () => { if (m.alive) this.kill(m); });
     if (def.onTick) def.onTick(m);
     FX.ring(m.x, m.y - 20, 120, def.tint || '#fff', .4);

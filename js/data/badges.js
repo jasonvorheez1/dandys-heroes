@@ -97,12 +97,10 @@ defBadge({
   apply(u, B, lvl) {
     u.flat.crit = (u.flat.crit || 0) + lvl * .015;
     u.dirty = true;
-    B.on(u, 'cast', ev => {
-      if (ev.key !== 'G') return;
-      B.after(7, () => {
-        const t = B.nearest(u, B.enemiesOf(u));
-        if (t) { B.dispel(t, 1 + Math.floor(lvl / 3)); B.applyStatus(u, t, 'weaken', 2 + lvl * .4); }
-      });
+    B.on(u, 'poppyBubblePop', () => {
+      if (!u.alive) return;
+      const t = B.nearest(u, B.enemiesOf(u));
+      if (t) { B.dispel(t, 1 + Math.floor(lvl / 3)); B.applyStatus(u, t, 'weaken', 2 + lvl * .4); }
     });
   }
 });

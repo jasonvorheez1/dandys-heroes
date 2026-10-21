@@ -131,6 +131,33 @@ defHero({
 
 /* ============================================================ BLOT
    Frontline Control / Threat Manipulator - A Tier */
+function blotAddPool(u, B, x, radius) {
+  const pools = u._blotPools || (u._blotPools = []);
+  x = clamp(x, B.leftWall + 20, B.rightWall - 20);
+  const r = radius || 190;
+  u._blotPoolSeq = (u._blotPoolSeq || 0) + 1;
+  pools.push({ id: u._blotPoolSeq, x, radius: r });
+  B.fxPool(x, 999, '#3b2560', r * 1.1);
+  if (!u._blotPoolInterval) {
+    u._blotPoolInterval = true;
+    B.every(u, 1, () => {
+      if (!u.alive && (!u._blotPools || !u._blotPools.length)) return;
+      u._blotPools.forEach(pool => {
+        B.enemiesOf(u).forEach(e => {
+          if (e.alive && Math.abs(e.x - pool.x) <= pool.radius) {
+            B.applyStatus(u, e, 'slow', 1.5);
+          }
+        });
+        B.alliesOf(u).forEach(a => {
+          if (a.alive && Math.abs(a.x - pool.x) <= pool.radius) {
+            B.energy(a, 3.5);
+          }
+        });
+      });
+    });
+  }
+}
+
 defHero({
   id: 'Blot', name: 'Blot', folder: 'Blot', file: 'Blot', icon: 'Blot',
   role: 'Control', tier: 'A', element: 'Ink',
@@ -150,15 +177,15 @@ defHero({
       desc: (S, P) => `<span class="sk-pas">Blot Jr. trails after Blot, tossing ink at the nearest enemy every 3s and applying 🧪 Corrode.</span>
         Active: Blot paints a lifelike decoy carrying <em>${pcn(S.hp * 100)}</em> of his Max HP, 🎭 Taunting everything near it for ${P.taunt}s. When it is destroyed or expires it bursts for <em>${pcn(S.ratio * 100)}</em> Magic and 🐢 Slows everything nearby for ${P.slow}s.`,
       passive: (u, B, S) => {
-        // Blot stays exactly where he's placed - the mime routine is that
-        // nothing ever quite reaches him, not that he runs from it.
-        B.applyStatus(u, u, 'planted', 999);
         B.after(.4, () => {
-          B.summon(u, {
+          if (!u.alive || (u._blotJr && u._blotJr.alive)) return;
+          const jr = B.summon(u, {
             name: 'Blot Jr.', art: ASSET + 'Characters/Blot/Blotjr.png', hp: u.max.hp * (u.jrScale ? u.jrScale.hp : .30),
             scale: .62, life: 999, follow: u, tint: '#8f6bff', noSkills: true,
             onTick: (m) => B.every(m, 3, () => {
-              const t = B.nearest(m, B.enemiesOf(u)); if (!t) return;
+              if (!m.alive || !u.alive) return;
+              const foes = B.enemiesOf(u); if (!foes.length) return;
+              const t = B.nearest(m, foes); if (!t) return;
               B.fxBlotSkill('flick', m, { target: t });
               B.fxProj(m, t, { kind: 'blob', col: '#8f6bff' }, () => {
                 Sound.play('blot_ink_burst', { vol: .22 });
@@ -167,28 +194,37 @@ defHero({
               });
             })
           });
+          u._blotJr = jr;
           Sound.play('summon', { vol: .5 });
         });
       },
       cast: (u, B, S, P) => {
         B.anim(u, 'cast', .72, 'blotDecoy'); Sound.play('blot_ink_cast', { vol: .42 });
         B.fxBlotSkill('decoy', u);
-        const spawn = (offset) => {
+        const spawn = (offset, customX, customDepth) => {
           const m = B.summon(u, {
-          name: 'Ink Decoy', art: ASSET + 'assets/fx/blot-decoy.png', hp: u.max.hp * S.hp,
-          scale: .9, life: P.life, taunt: 260, tint: '#8f6bff', offset, noSkills: true,
-          onDeath: (m) => {
-            Sound.play('blot_ink_burst', { vol: .42 }); B.fxBlotSkill('decoyBurst', m);
-            B.aoe(u, m.x, 240, u.team, u.st.mag * S.ratio, { type: 'magic', tag: 'Ink Decoy' });
-            B.aoeStatus(u, m.x, 240, 'slow', P.slow);
-            if (u.inkPools) B.fxPool(m.x, 10, '#3b2560', 200);
-          }
+            name: 'Ink Decoy', art: ASSET + 'assets/fx/blot-decoy.png', hp: u.max.hp * S.hp,
+            scale: .9, life: P.life, taunt: 260, tint: '#8f6bff', offset,
+            x: customX, depth: customDepth,
+            immovable: true, noSkills: true,
+            onDeath: (decoy) => {
+              Sound.play('blot_ink_burst', { vol: .42 }); B.fxBlotSkill('decoyBurst', decoy);
+              B.aoe(u, decoy.x, 240, u.team, u.st.mag * S.ratio, { type: 'magic', tag: 'Ink Decoy' });
+              B.aoeStatus(u, decoy.x, 240, 'slow', P.slow);
+              if (u.inkPools) blotAddPool(u, B, decoy.x, 190);
+            }
           });
           B.fxBlotSkill('decoySpawn', m);
           return m;
         };
         spawn(60);
-        if (u.rarity >= 5) { spawn(-260); u.inkPools = true; }
+        if (u.rarity >= 5 || u.inkPools) {
+          const farFoe = B.farthestN(u, B.enemiesOf(u), 1)[0];
+          const backX = farFoe ? clamp(farFoe.x - u.face * 30, B.leftWall + 40, B.rightWall - 40)
+                               : clamp(u.x + u.face * 380, B.leftWall + 40, B.rightWall - 40);
+          const backDepth = farFoe ? farFoe.depth : u.depth;
+          spawn(0, backX, backDepth);
+        }
       }
     },
     G: {
@@ -205,11 +241,20 @@ defHero({
           B.fxBlotSkill('shield', u, { target: a });
         });
         u._wallUntil = B.t + P.dur;
-        B.on(u, 'allyDamaged', ev => {
-          if (B.t > (u._wallUntil || 0) || !ev.src) return;
-          B.applyStatus(u, ev.src, 'slow', P.slow);
-          B.fxBlotSkill('wallHit', u, { target: ev.src });
-        });
+        if (!u._hasWallListener) {
+          u._hasWallListener = true;
+          B.on(u, 'allyDamaged', ev => {
+            if (!u.alive || B.t > (u._wallUntil || 0) || !ev || !ev.src || !ev.src.alive || ev.src.team === u.team || ev.dot || ev.selfharm) return;
+            if (ev.unit && B.distance(ev.unit, u) <= 320) {
+              B.applyStatus(u, ev.src, 'slow', P.slow);
+              if (B.t - (u._lastWallHitAt || 0) >= .25) {
+                u._lastWallHitAt = B.t;
+                B.fxBlotSkill('wallHit', u, { target: ev.src });
+                Sound.play('blot_mime_wall', { vol: .24, throttle: 250 });
+              }
+            }
+          });
+        }
       }
     },
     B: {
@@ -219,13 +264,18 @@ defHero({
       ai: { prio: 48, cond: () => true },
       cast: (u, B, S, P) => {
         const foes = B.enemiesOf(u); if (!foes.length) return;
-        const t = foes.reduce((a, b) => b.dmgDone > a.dmgDone ? b : a);
+        const t = foes.reduce((a, b) => {
+          const aDmg = (a.dmgDone || 0) + Math.max(a.st.atk, a.st.mag);
+          const bDmg = (b.dmgDone || 0) + Math.max(b.st.atk, b.st.mag);
+          return bDmg > aDmg ? b : a;
+        });
         B.anim(u, 'cast', .58, 'blotTrail'); Sound.play('blot_ink_cast', { vol: .3 });
         const cx = t.x;
         B.fxBlotSkill('trail', u, { x: cx, dur: P.dur });
         B.repeat(P.dur, 1, () => {
+          if (!u.alive || B.over) return;
           B.enemiesOf(u).forEach(e => {
-            if (Math.abs(e.x - cx) > 240) return;
+            if (!e.alive || Math.abs(e.x - cx) > 220) return;
             B.damage(u, e, u.st.mag * S.ratio, { type: 'magic', dot: true, tag: 'Slippery Trail' });
             B.applyStatus(u, e, 'blind', 2);
             B.applyStatus(u, e, 'exposed', 2);
@@ -240,24 +290,27 @@ defHero({
       desc: (S, P) => `Every time an enemy uses an offensive skill Blot gains 🤫 Mimicry (max ${P.max}), raising Evasion and cutting damage taken. At maximum stacks his next basic attack 🔇 Silences its target for ${P.silence}s and spends the stacks.`,
       passive: (u, B, S, P) => {
         B.on(u, 'enemyCast', () => {
+          if (!u.alive) return;
           B.applyStatus(u, u, 'mimicry', 999, { stacks: 1 });
           const m = u.getStatus('mimicry');
           B.fxBlotSkill('mimic', u, { stacks: m ? m.stacks : 1 });
           Sound.play('blot_ink_cast', { vol: .16, throttle: 220 });
         });
         B.on(u, 'basicHit', ev => {
+          if (!u.alive || !ev || !ev.target || !ev.target.alive) return;
           const m = u.getStatus('mimicry');
           if (!m || m.stacks < P.max) return;
           B.removeStatus(u, 'mimicry');
           B.applyStatus(u, ev.target, 'silence', P.silence);
-          B.fxBlotSkill('silence', u, { target: ev.target }); Sound.play('blot_mime_wall', { vol: .28 });
+          B.fxBlotSkill('silence', u, { target: ev.target });
+          Sound.play('blot_mime_wall', { vol: .28, throttle: 120 });
         });
       }
     },
     R: {
       name: 'Grand Illusion', type: 'Summon Upgrade',
       v: {}, p: {},
-      desc: () => `Ink Decoy now paints two decoys at once, one beside Blot and one in the enemy backline. Each burst leaves a lasting Ink Pool that slows anything standing in it.`,
+      desc: () => `Ink Decoy now paints two decoys at once, one beside Blot and one in the enemy backline. Each burst leaves a lasting Ink Pool that continuously slows enemies and regenerates Energy for allies standing inside it.`,
       passive: (u) => { u.inkPools = true; u.jrScale = { hp: .45, dmg: .45 }; }
     }
   }
@@ -416,6 +469,7 @@ defHero({
         Active: he ricochets ${P.hits} times for <em>${pcn(S.ratio * 100)}</em> Attack per hit, with more damage per Inflated stack. At ${P.popAt} stacks, the final hit creates a 🎈 Final Pop for <em>${pcn(S.popRatio * 100)}</em> Attack in an area, Slows enemies, and spends 2 stacks.`,
       passive: (u, B) => {
         u._looeyShowCueAt = 0;
+        u._looeyPopSave = false;
         B.on(u, 'damaged', ev => { if (!ev.dot) B.applyStatus(u, u, 'inflated', 999, { stacks: 1 }); });
         B.on(u, 'allyCast', ally => {
           if (!ally || ally === u || ally.team !== u.team || B.t >= (u._looeyShowUntil || 0) || B.t < u._looeyShowCueAt) return;
@@ -426,6 +480,8 @@ defHero({
         B.on(u, 'lethal', ev => {
           if (ev.src === u || u._looeyPopSave) return;
           u._looeyPopSave = true; ev.prevented = true; u.hp = Math.max(1, u.max.hp * .18);
+          u.invuln = Math.max(u.invuln || 0, B.t + .35);
+          B.cleanse(u, 99);
           B.applyStatus(u, u, 'inflated', 999, { stacks: 2 });
           B.shield(u, u, u.max.hp * .12, 3.5);
           Sound.play('pop2', { vol: .62 }); B.fxBoom(u.x, u.y - 35, .95, '#fff4fb'); B.shake(7, .24);
@@ -441,19 +497,29 @@ defHero({
           if (!u.alive) return;
           B.anim(u, 'attack', .72, 'looeyHustle'); Sound.play('bounce');
           B.repeat(P.hits, .13, i => {
+            if (!u.alive || (u.flags && u.flags.noAct)) return;
             const foes = B.enemiesOf(u); if (!foes.length) return;
             const t = pick(foes);
             last = t;
-            B.blink(u, t.x - u.face * 50, t.depth);
+            const dir = t.x < u.x ? -1 : 1;
+            u.face = dir;
+            B.blink(u, t.x - dir * 50, t.depth);
             Sound.play('hit_light', { vol: .55, rate: rnd(.9, 1.3), throttle: 12 });
             B.fxBoom(t.x, t.y - 40, .6, '#ff8fb0'); B.shake(4, .1);
             B.damage(u, t, u.st.atk * S.ratio * (1 + inf * .12), { type: 'physical', tag: 'Helium Hustle' });
             if (i === P.hits - 1 && inf >= P.popAt) B.after(.06, () => {
-              if (!u.alive || !last) return;
-              Sound.play('pop2', { vol: .68 }); B.fxBoom(last.x, last.y - 42, 1.05, '#fff2fa'); B.shake(9, .22);
-              B.aoe(u, last.x, 190, u.team, u.st.atk * S.popRatio, { type: 'physical', area: true, tag: 'Final Pop' });
-              B.aoeStatus(u, last.x, 190, 'slow', P.popSlow);
-              const stack = u.getStatus('inflated'); if (stack) { stack.stacks = Math.max(0, stack.stacks - 2); u.dirty = true; }
+              if (!u.alive) return;
+              const popX = (last && last.alive) ? last.x : (last ? last.x : u.x);
+              const popY = (last && last.alive) ? last.y : (last ? last.y : u.y);
+              Sound.play('pop2', { vol: .68 }); B.fxBoom(popX, popY - 42, 1.05, '#fff2fa'); B.shake(9, .22);
+              B.aoe(u, popX, 190, u.team, u.st.atk * S.popRatio, { type: 'physical', area: true, tag: 'Final Pop' });
+              B.aoeStatus(u, popX, 190, 'slow', P.popSlow);
+              const stack = u.getStatus('inflated');
+              if (stack) {
+                stack.stacks = Math.max(0, stack.stacks - 2);
+                if (stack.stacks <= 0) B.removeStatus(u, 'inflated');
+                u.dirty = true;
+              }
             });
           });
         });
@@ -473,15 +539,27 @@ defHero({
           if (!u.alive) return;
           B.anim(u, 'attack', .34, 'looeyLaunch'); Sound.play('bounce');
           B.repeat(P.bounces, .16, i => {
+            if (!u.alive || (u.flags && u.flags.noAct)) return;
             const foes = B.nearestN(u, B.enemiesOf(u), P.bounces); if (!foes.length) return;
-            const t = foes.find(e => !visited.has(e.uid)) || foes[i % foes.length]; visited.add(t.uid);
-            B.blink(u, t.x - u.face * 48, t.depth);
+            const t = foes.find(e => !visited.has(e.uid)) || foes[i % foes.length];
+            if (!t) return;
+            visited.add(t.uid);
+            const dir = t.x < u.x ? -1 : 1;
+            u.face = dir;
+            B.blink(u, t.x - dir * 48, t.depth);
             Sound.play('hit_blunt', { vol: .5, rate: 1 + i * .12, throttle: 12 });
             B.fxLooeySkill('bounceHit', u, { target: t });
             B.fxSlash(u, t, { col: '#ff8fb0', ang: rnd(-40, 40), small: true }); B.shake(4, .12);
             B.damage(u, t, u.st.atk * S.ratio * (1 + i * .35), { type: 'physical', tag: 'Balloon Bounce' });
             if (inf >= P.launchStacks) B.knockback(u, t, 56 + inf * 5);
-            if (i === P.bounces - 1) B.damage(u, u, u.max.hp * P.selfCost, { type: 'true', selfharm: true, silent: true });
+            if (i === P.bounces - 1) {
+              const selfDmg = Math.max(0, Math.min(u.hp - 1, u.max.hp * P.selfCost));
+              if (selfDmg > 0) {
+                B.damage(u, u, selfDmg, { type: 'true', selfharm: true, silent: true });
+              } else {
+                B.applyStatus(u, u, 'inflated', 999, { stacks: 1 });
+              }
+            }
           });
         });
       }
@@ -490,7 +568,7 @@ defHero({
       name: 'Big Top Performance', type: 'Buff', cd: 15,
       v: {}, p: { dur: 8, damageTaken: .12 },
       desc: (S, P) => `Looey puts on a show for ${P.dur}s. Allies gain Move and Attack Speed; Looey gains double the bonus and an <em>8%</em> max-HP stage shield, but takes ${pc(P.damageTaken)} more damage. Every allied skill cast during the show grants Looey 🎈 Inflated (once per 1.2s).`,
-      ai: { prio: 50, cond: () => true },
+      ai: { prio: 50, cond: (u, B) => B.enemiesOf(u).length >= 1 },
       cast: (u, B, S, P) => {
         const allies = B.alliesOf(u);
         B.anim(u, 'cast', 1.00, 'looeyShow'); Sound.play('cheer'); B.fxLooeySkill('show', u, { allies, dur: P.dur });
@@ -500,11 +578,15 @@ defHero({
           allies.forEach(a => B.applyStatus(u, a, 'speedup', P.dur));
           B.applyStatus(u, u, 'speedup', P.dur, { stacks: 2 });
           B.shield(u, u, u.max.hp * .08, P.dur);
-          u.flat.dmgTaken4 = P.damageTaken; u._looeyShowUntil = B.t + .36 + P.dur; u.dirty = true;
-        });
-        B.after(.36 + P.dur, () => {
-          if (!u.alive || B.t < (u._looeyShowUntil || 0)) return;
-          u.flat.dmgTaken4 = 0; u.dirty = true;
+          u.flat.dmgTaken4 = P.damageTaken;
+          u._looeyShowUntil = B.t + P.dur;
+          u.dirty = true;
+          B.after(P.dur, () => {
+            if (B.t >= (u._looeyShowUntil || 0)) {
+              u.flat.dmgTaken4 = 0;
+              u.dirty = true;
+            }
+          });
         });
       }
     },
@@ -514,10 +596,11 @@ defHero({
       desc: (S) => `The emptier Looey gets the harder he is to hit: up to <em>${pcn(S.eva * 100)}</em> Evasion, <em>${pcn(S.aspd * 100)}</em> Attack Speed, and <em>${pcn(S.dmgGuard * 100)}</em> Damage Reduction at 1 HP. His Defense falls by up to <em>${pcn(S.defLoss * 100)}</em> over the same range, but the penalty is limited so a hit does not immediately pop him.`,
       passive: (u, B, S) => {
         B.every(u, .4, () => {
-          const m = 1 - u.hpPct;
-          u.flat.evaP = m * S.eva;
+          if (!u.alive) return;
+          const m = 1 - (u.hpPct || (u.hp / u.max.hp));
+          u.flat.evaP3 = m * S.eva;
           u.flat.aspdP2 = m * S.aspd;
-          u.flat.defP = -m * S.defLoss;
+          u.flat.defP3 = -m * S.defLoss;
           u.flat.dmgTaken5 = -m * S.dmgGuard;
           u.dirty = true;
         });
@@ -531,30 +614,37 @@ defHero({
         u.looeyStatusBlockAt = 0;
         u.looeyDebuffImmuneUntil = 0;
         u.guards = u.guards || [];
-        u.guards.push((id, d, battle) => {
-          const inf = (u.getStatus('inflated') || {}).stacks || 0;
-          if (inf < P.max || !d || d.kind !== 'debuff') return false;
-          if (battle.t < u.looeyDebuffImmuneUntil) return true;
-          if (battle.t < u.looeyStatusBlockAt) return false;
-          u.looeyStatusBlockAt = battle.t + 5.5;
-          u.looeyDebuffImmuneUntil = battle.t + 2.5;
-          B.applyStatus(u, u, 'ccimmune', 2.5);
-          return true;
-        });
+        if (!u._looeyRGuard) {
+          u._looeyRGuard = true;
+          u.guards.push((id, d, battle) => {
+            const inf = (u.getStatus('inflated') || {}).stacks || 0;
+            if (inf < P.max || !d || d.kind !== 'debuff') return false;
+            if (id === 'slow' || (d && d.slow)) return true;
+            if (battle.t < u.looeyDebuffImmuneUntil) return true;
+            if (battle.t < u.looeyStatusBlockAt) return false;
+            u.looeyStatusBlockAt = battle.t + 5.5;
+            u.looeyDebuffImmuneUntil = battle.t + 2.5;
+            B.applyStatus(u, u, 'ccimmune', 2.5);
+            return true;
+          });
+        }
         B.every(u, .5, () => {
+          if (!u.alive) return;
           const inf = (u.getStatus('inflated') || {}).stacks || 0;
           const maxed = inf >= P.max;
           u.pierce = maxed;
           u.flat.cdr4 = maxed ? .3 : 0;
           if (maxed) B.removeStatus(u, 'slow');
-          if (u.hp >= u.max.hp) B.removeStatus(u, 'inflated');
+          if (u.hp >= u.max.hp - 1) B.removeStatus(u, 'inflated');
           u.dirty = true;
         });
-        B.on(u, 'enemyDown', () => {
+        B.on(u, 'defeatedEnemy', () => {
           const inf = u.getStatus('inflated');
           if (!inf || inf.stacks < P.max) return;
           B.heal(u, u, u.max.hp * P.heal, { pure: true });
-          inf.stacks = Math.max(0, inf.stacks - 3); u.dirty = true;
+          inf.stacks = Math.max(0, inf.stacks - 3);
+          if (inf.stacks <= 0) B.removeStatus(u, 'inflated');
+          u.dirty = true;
         });
       }
     }
@@ -1343,9 +1433,12 @@ defHero({
         B.applyStatus(u, u, 'buoyant', P.dur, { stacks: 2 });
         B.fxRing(u.x, u.y - 32, 72, '#ffe9f2');
         B.repeat(5, .13, () => {
+          if (!u.alive || (u.flags && u.flags.noAct)) return;
           const foes = B.enemiesOf(u); if (!foes.length) return;
           const t = pick(foes);
-          B.blink(u, t.x - u.face * 46, t.depth);
+          const dir = t.x < u.x ? -1 : 1;
+          u.face = dir;
+          B.blink(u, t.x - dir * 46, t.depth);
           Sound.play('hit_light', { vol: .5, rate: rnd(.9, 1.2), throttle: 12 });
           B.fxBoom(t.x, t.y - 30, .6, '#ffe9f2'); B.shake(3, .1);
           B.damage(u, t, u.st.atk * S.ratio, { type: 'physical', tag: 'Panic Pop' });
@@ -1371,6 +1464,8 @@ defHero({
         const burst = () => {
           if (!u.poppyBubbleEl || u.poppyBubbleEl !== bubble) return;
           B.poppyBubblePop(u, false, bubble);
+          B.emitFor(u, 'poppyBubblePop', { bubble });
+          if (!u.alive) return;
           Sound.play('explode', { vol: .5 }); B.fxBoom(u.x, u.y - 30, 1, '#ffe9f2'); B.shake(8, .3);
           B.enemiesOf(u).forEach(e => { if (B.distance(e, u) < 220) B.knockback(u, e, P.kb); });
           B.applyStatus(u, u, 'speedup', 4, { stacks: 2 });
@@ -1387,10 +1482,11 @@ defHero({
       name: 'Pop Shock', type: 'Physical Damage / Debuff', cd: 12,
       v: { ratio: 1.18 }, p: { dur: 6, kb: 145, radius: 220 },
       desc: (S, P) => `Poppy compresses, then suddenly expands outward for <em>${pcn(S.ratio * 100)}</em> Attack to everything nearby, knocking enemies away. Anyone hit becomes 🥴 Off Balance for ${P.dur}s, losing Accuracy and cooldown recovery.`,
-      ai: { prio: 50, cond: () => true },
+      ai: { prio: 50, cond: (u, B) => B.enemiesOf(u).some(e => B.distance(e, u) <= 260) },
       cast: (u, B, S, P) => {
         B.anim(u, 'wind', .74, 'poppyPopShock'); Sound.play('warn'); Sound.play('beam_charge', { vol: .18, throttle: 260 });
         B.after(.38, () => {
+          if (!u.alive) return;
           Sound.play('explode'); B.hitstop(90); B.shake(11, .35); B.fxBoom(u.x, u.y - 30, 1.2, '#ffe9f2');
           B.enemiesOf(u).forEach(e => {
             if (B.distance(e, u) > P.radius) return;
@@ -1415,7 +1511,9 @@ defHero({
           u.poppyPressure = a ? a.stacks / 10 : 0;
           u.poppyPressureMax = !!maxed;
           if (maxed && !wasMaxed) {
-            B.anim(u, 'cast', .66, 'poppyPressure');
+            if (!u.casting && u.animStyle !== 'poppyBigBubble') {
+              B.anim(u, 'cast', .66, 'poppyPressure');
+            }
             B.fxRing(u.x, u.y - 38, 118, '#ffe9f2');
             Sound.play('grow', { vol: .42 });
           }
@@ -1440,13 +1538,17 @@ defHero({
         B.on(u, 'lethal', ev => {
           if (u._bubbled) return;
           u._bubbled = true; ev.prevented = true;
+          u._castId = (u._castId || 0) + 1;
+          u.casting = null; u.pendingHit = null; u.windup = 0;
+          u.moving = false; u.movingY = false; u.actionArtSrc = null;
+          B.cleanseAll(u);
           Sound.play('cloth'); B.fxRing(u.x, u.y - 40, 140, '#ffe9f2');
           B.anim(u, 'cast', P.bubbleDur, 'poppyBigBubble');
           B.poppyBubble(u, true);
           u.invuln = B.t + P.bubbleDur;    // "cannot be damaged" - a hard guarantee, not just untargetable
           B.applyStatus(u, u, 'untargetable', P.bubbleDur);
           B.applyStatus(u, u, 'stun', P.bubbleDur);
-          B.applyStatus(u, u, 'regen', P.bubbleDur, { val: u.max.hp * S.shield * P.heal });
+          B.applyStatus(u, u, 'regen', P.bubbleDur, { val: u.max.hp * P.heal });
           B.log('<b>' + u.name + '</b> becomes The Biggest Bubble.');
           B.after(P.bubbleDur, () => {
             if (!u.alive) return;

@@ -493,7 +493,7 @@ const Preload = {
       Gourdy: ['item:Pumpkin','item:Skillcheckcandy','item:Speedcandy','item:Staminacandy','item:Enigmacandy'],
       Rodger: ['obj:Book','obj:Magifyingglass','obj:researchcapsule','item:paper'],
       Brightney: ['item:Trinkets/BRIGHTNEY_SpareBulb'],
-      Blot: ['raw:assets/fx/blot-decoy.png'],
+      Blot: ['obj:canvas', 'raw:assets/fx/blot-decoy.png', 'raw:Characters/Blot/Blotjr.png'],
       Rudie: ['raw:assets/fx/rudie-wind-rush.png','raw:assets/fx/rudie-hoof-barrage.png'],
       Goofy: ['obj:goofy-shield'],
       Shrimpo: ['item:Trinkets/SHRIMPO_Brick'],

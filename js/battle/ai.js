@@ -61,6 +61,21 @@ const AI = {
       return;
     }
 
+    // companion trailing its owner
+    if (u.followTarget && u.followTarget.alive) {
+      const ft = u.followTarget;
+      const targetX = clamp(ft.x - ft.face * 55, B.leftWall + 20, B.rightWall - 20);
+      const targetDepth = ft.depth;
+      const dist = Math.hypot(targetX - u.x, (targetDepth - u.depth) * B.depthSpan);
+      if (dist > 18) {
+        this.moveToward(u, B, targetX, dt, 1.15, targetDepth);
+      } else {
+        this.holdPosition(u);
+        u.face = ft.face;
+      }
+      return;
+    }
+
     const distractor = u._teaganDistractor;
     let tgt = distractor && distractor.team !== u.team && B.isTargetable(distractor)
       && B.t < (u._teaganDistractUntil || 0) ? distractor : B.bestTarget(u);

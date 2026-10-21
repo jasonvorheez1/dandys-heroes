@@ -222,8 +222,8 @@ defBadge({
     u.dirty = true;
     u._masterpieceMarks = Object.create(null);
     B.on(u, 'statusApplied', ev => {
-      if (!ev || ev.src !== u || !ev.unit || ev.unit.team === u.team) return;
-      if (!['corrode', 'slow', 'blind', 'sticky', 'silence'].includes(ev.id)) return;
+      if (!ev || (ev.src !== u && (!ev.src || ev.src.owner !== u)) || !ev.unit || ev.unit.team === u.team) return;
+      if (!['corrode', 'slow', 'blind', 'sticky', 'silence', 'taunt'].includes(ev.id)) return;
       const key = ev.unit.uid || ev.unit.id;
       if (u._masterpieceMarks[key]) return;
       u._masterpieceMarks[key] = true;
