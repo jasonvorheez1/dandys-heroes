@@ -507,6 +507,69 @@ defBadge({
 });
 
 defBadge({
+  id: 'ginger_bobette', owner: 'Ginger', friend: 'Bobette',
+  name: "Bobette's Festive Music Box", icon: '🎶', color: '#ff7892',
+  desc: 'A wind-up music box Bobette wrapped in festive gingerbread trim and mint ribbons. It plays a gentle caroling tune that warms the entire room.',
+  stat: lvl => `+${(12 + lvl * 6).toFixed(0)}% Shield Power · +${(10 + lvl * 5).toFixed(0)}% Cooldown Reduction`,
+  effect: "Bobette's sweet music box fills Ginger's holiday bakes with resonant festive cheer! Whenever Ginger shields an ally, they gain 🎁 Caroled Spirits (+20% Move Speed, +25% Energy Generation) and a Frosting Resonance aura that continuously burns nearby foes for 8% Magic Damage per second. In addition, when Ginger casts Baked With Care! or an ally receives Last Bite, Bobette's music box chimes: unleashes a chiming shockwave that freezes all foes for 2s, grants all allies 50 Energy over 3s, and immediately grants Ginger 3 additional stacks of Perfect Decoration!",
+  apply(u, B, lvl) {
+    u.flat.shieldPowP = (u.flat.shieldPowP || 0) + (0.12 + lvl * 0.06);
+    u.flat.cdrP = (u.flat.cdrP || 0) + (0.10 + lvl * 0.05);
+    u.dirty = true;
+    u._musicBoxAt = {};
+
+    B.on(u, 'shieldDone', ev => {
+      const a = ev && ev.target;
+      if (!a || a.team !== u.team || !a.alive) return;
+      const last = u._musicBoxAt[a.uid] || 0;
+      if (B.t < last) return;
+      u._musicBoxAt[a.uid] = B.t + Math.max(2.0, 4.0 - lvl * .25);
+      B.applyStatus(u, a, 'speedup', 5.0 + lvl * .4);
+      B.applyStatus(u, a, 'tenacity', 5.0 + lvl * .4);
+      B.energy(a, 12 + lvl * 2);
+      Sound.play('item_pop', { vol: .35, throttle: 150 });
+      B.fxFloatIcon(a.x, a.y - 100, '🎶 CAROLED SPIRITS', '#ff7892');
+      B.enemiesOf(u).forEach(e => {
+        if (Math.hypot(e.x - a.x, e.y - a.y) < 140) {
+          B.damage(u, e, u.st.mag * (0.35 + lvl * 0.05), { type: 'magic', tag: 'Frosting Resonance' });
+          B.fxSparkle(e.x, e.y - 40, 8, '#ffeedb');
+        }
+      });
+    });
+
+    const triggerChime = () => {
+      Sound.play('magiccircle', { vol: .45 });
+      Sound.play('cheer', { vol: .40 });
+      B.enemiesOf(u).forEach(e => {
+        B.applyStatus(u, e, 'freeze', 2.0);
+        B.damage(u, e, u.st.mag * (0.65 + lvl * 0.10), { type: 'magic', tag: 'Festive Music Box Chime' });
+      });
+      B.alliesOf(u).forEach(a => {
+        B.energy(a, 50);
+        B.fxSparkle(a.x, a.y - 40, 14, '#ffd166');
+      });
+      if (typeof gingerDecoration === 'function') {
+        for (let i = 0; i < 3; i++) {
+          gingerDecoration(u, B, { per: .065, cdr: .025 }, { max: 8 }, u);
+        }
+      }
+      B.fxFloatIcon(u.x, u.y - 110, '🎶 FESTIVE CHIME!', '#ff7892');
+    };
+
+    B.on(u, 'skillCast', ev => {
+      if (ev && ev.key === 'W') triggerChime();
+    });
+
+    B.on(u, 'allyLow', a => {
+      if (a.hpPct <= 0.35 && (!a._musicBoxChime || B.t - a._musicBoxChime > 12)) {
+        a._musicBoxChime = B.t;
+        triggerChime();
+      }
+    });
+  }
+});
+
+defBadge({
   id: 'blot_scraps', owner: 'Blot', friend: 'Scraps',
   name: "Scraps' Inked Masterpiece", icon: '🖋️', color: '#8f6bff',
   desc: 'A strange collaborative piece: part ink, part craft, and somehow better upside down.',
@@ -1545,5 +1608,203 @@ defBadge({
   }
 });
 
+defBadge({
+  id: 'vee_shelly', owner: 'Vee', friend: 'Shelly',
+  name: "Shelly's Amber Broadcast Lens", icon: '🔍', color: '#ffb347',
+  desc: "A polished prehistoric amber lens Shelly fashioned to fit over Vee's camera. It filters out interference and reveals ancient structural weaknesses.",
+  stat: lvl => `+${(15 + lvl * 5).toFixed(0)}% Max HP · +${(12 + lvl * 4).toFixed(0)}% Shield Power`,
+  effect: "Shelly's amber lens refracts studio spotlights with prehistoric clarity! When Spotlight On or Audience Support is cast, all allies gain an Amber Resonator Shield (20%+ of Vee's Max HP for 8s) and +25% Critical Chance against the Headline. The Headline suffers 30% Defense and Magic Defense shred for 7s. Furthermore, whenever Vee absorbs redirected allied damage, the lens emits an Amber Pulse that blinds nearby enemies for 2.5s and restores 15 Energy to Vee.",
+  apply(u, B, lvl) {
+    u.flat.hpP = (u.flat.hpP || 0) + (0.15 + lvl * 0.05);
+    u.flat.shieldPowP = (u.flat.shieldPowP || 0) + (0.12 + lvl * 0.04);
+    u.dirty = true;
 
+    const amberRefraction = () => {
+      if (!u.alive) return;
+      Sound.play('get_rare', { vol: 0.45 });
+      B.fxRing(u.x, u.y - 35, 190, '#ffb347', 0.45);
+      B.alliesOf(u).forEach(a => {
+        B.shield(u, a, u.max.hp * (0.20 + lvl * 0.04), 8);
+        B.applyStatus(u, a, 'critup', 7, { val: 0.25 });
+        B.fxSparkle(a.x, a.y - 45, 8, '#ffb347');
+      });
+      const headline = B.enemiesOf(u).find(e => e.hasStatus('headline'));
+      if (headline && headline.alive) {
+        B.applyStatus(u, headline, 'defdown', 7, { stacks: 3 });
+        B.applyStatus(u, headline, 'magdown', 7, { stacks: 3 });
+        B.fxRing(headline.x, headline.y - 40, 100, '#ffb347', 0.4);
+      }
+      B.fxFloatIcon(u.x, u.y - 110, '🔍 AMBER LENS', '#ffb347');
+    };
+
+    B.after(0.25, amberRefraction);
+    B.on(u, 'cast', ev => {
+      if (ev.key === 'W' || ev.key === 'G') amberRefraction();
+    });
+
+    // When Vee absorbs redirected allied damage:
+    B.on(u, 'damaged', ev => {
+      if (!ev || !ev.redirected || !u.alive) return;
+      if (B.t < (u._veeAmberPulseAt || 0)) return;
+      u._veeAmberPulseAt = B.t + Math.max(3.0, 5.0 - lvl * 0.4);
+      Sound.play('hit_magic', { vol: 0.4 });
+      B.energy(u, 15 + lvl * 3);
+      B.enemiesOf(u).forEach(e => {
+        if (B.distance(u, e) <= 260) {
+          B.applyStatus(u, e, 'blind', 2.5);
+          B.fxSparkle(e.x, e.y - 40, 6, '#ffb347');
+        }
+      });
+      B.fxFloatIcon(u.x, u.y - 95, '✨ AMBER PULSE', '#ffb347');
+    });
+  }
+});
+
+defBadge({
+  id: 'cocoa_squirm', owner: 'Cocoa', friend: 'Squirm',
+  name: "Squirm's Pressed Book-Ribbon", icon: '🔖', color: '#cba76c',
+  desc: "A neat ribbon Squirm pressed inside a favorite book for Cocoa. It smells slightly like vanilla and paper glue.",
+  stat: lvl => `+${(12 + lvl * 5).toFixed(0)}% Max HP · +${(10 + lvl * 5).toFixed(0)}% Healing Power`,
+  effect: "Squirm's careful reading habits turn Cocoa's delivery into an organized feast! Whenever Cocoa delivers a Bonbon or casts Bonbon Delivery, the recipient gains an Erudite Bookmark Shield (18%+ of Cocoa's Max HP for 8s), dispels 2 debuffs, and gains +25% Attack and +20% Skill Haste. Whenever an ally drops below 40% HP, Squirm's bookmark triggers an emergency chapter break: grants the ally Invulnerability for 1.5s, restores 20% Max HP, and feeds 25 Energy to Cocoa.",
+  apply(u, B, lvl) {
+    u.flat.hpP = (u.flat.hpP || 0) + (0.12 + lvl * 0.05);
+    u.flat.healPowP = (u.flat.healPowP || 0) + (0.10 + lvl * 0.05);
+    u.dirty = true;
+
+    B.on(u, 'bonbonDelivered', ev => {
+      if (!ev || !ev.target || !ev.target.alive) return;
+      Sound.play('get_rare', { vol: 0.42 });
+      B.shield(u, ev.target, u.max.hp * (0.18 + lvl * 0.04), 8);
+      B.cleanse(ev.target, 2);
+      B.applyStatus(u, ev.target, 'atkup', 6, { val: 0.25 });
+      B.applyStatus(u, ev.target, 'haste', 6, { stacks: 2 });
+      B.fxSparkle(ev.target.x, ev.target.y - 45, 8, '#cba76c');
+      B.fxFloatIcon(ev.target.x, ev.target.y - 100, '🔖 BOOKMARK SHIELD', '#cba76c');
+    });
+
+    B.on(u, 'allyLow', a => {
+      if (!a.alive || a.hpPct > 0.40) return;
+      if (B.t < (u._squirmRibbonAt || 0)) return;
+      u._squirmRibbonAt = B.t + Math.max(8.0, 14.0 - lvl * 1.0);
+      Sound.play('get_food', { vol: 0.55 });
+      B.applyStatus(u, a, 'invulnerable', 1.5);
+      B.heal(u, a, u.max.hp * (0.20 + lvl * 0.04), { tag: 'Emergency Chapter' });
+      B.energy(u, 25);
+      B.cleanse(a, 99);
+      B.fxSparkle(a.x, a.y - 45, 12, '#cba76c');
+      B.fxFloatIcon(a.x, a.y - 110, '🔖 CHAPTER BREAK!', '#cba76c');
+    });
+  }
+});
+
+defBadge({
+  id: 'glisten_goob', owner: 'Glisten', friend: 'Goob',
+  name: "Goob's Plush Mirror Cozy", icon: '🧸', color: '#ffb3d9',
+  desc: "A hand-knitted, ultra-soft plush sleeve Goob crafted for Glisten's golden handle. Glisten insists he only keeps it to avoid fingerprints, but he secretly treasures how soft and safe it feels.",
+  stat: lvl => `+${(12 + lvl * 6).toFixed(0)}% Shield Power · +${(10 + lvl * 5).toFixed(0)}% Max HP`,
+  effect: "Goob's plush craftwork cushions Glisten's fragile glass against recoil and hard landings! Glisten is completely immune to Dizzy. Whenever Glisten casts Reflection! or activates Right on Time, Goob's yarn wrap cushions the impact: Glisten and his teleport target gain a Plush Hug Shield (18%+ Max HP for 7s), Ward, and +30% Damage Reduction for 4s. In addition, when Glisten's Perfect Reflection counters an attack, a soft yarn ball entangles and taunts the attacker for 2.5s, healing the lowest-HP ally for 10%+ Max HP.",
+  apply(u, B, lvl) {
+    u.flat.shieldPowP = (u.flat.shieldPowP || 0) + (0.12 + lvl * 0.06);
+    u.flat.hpP = (u.flat.hpP || 0) + (0.10 + lvl * 0.05);
+    u.dirty = true;
+
+    // Prevent / cleanse Dizzy on Glisten (soft landings)
+    B.every(u, 0.15, () => {
+      if (!u.alive) return;
+      if (u.hasStatus('glisten_dizzy')) {
+        B.removeStatus(u, 'glisten_dizzy');
+        B.shield(u, u, u.max.hp * (0.16 + lvl * 0.04), 6);
+        B.applyStatus(u, u, 'ward', 4);
+        B.fxFloatIcon(u.x, u.y - 100, '🧸 SOFT LANDING!', '#ffb3d9');
+      }
+    });
+
+    // When Glisten rescues or jumps to an ally (W or R)
+    B.on(u, 'cast', () => {
+      if (!u.alive) return;
+      const partner = glistenPartner(u, B);
+      if (!partner) return;
+      const shieldAmt = u.max.hp * (0.18 + lvl * 0.04);
+      B.shield(u, partner, shieldAmt, 7);
+      B.applyStatus(u, partner, 'ward', 4);
+      B.applyStatus(u, partner, 'defup', 4, { val: 0.30 });
+      B.shield(u, u, shieldAmt * 0.6, 7);
+      B.applyStatus(u, u, 'ward', 4);
+      B.fxSparkle(partner.x, partner.y - 45, 12, '#ffb3d9');
+      B.fxFloatIcon(partner.x, partner.y - 110, '🧸 PLUSH HUG SHIELD', '#ffb3d9');
+    });
+
+    // When Perfect Reflection counters damage
+    B.on(u, 'dealDamage', ev => {
+      if (!ev || ev.tag !== 'Perfect Reflection' || !ev.target || !ev.target.alive) return;
+      if (B.t < (u._goobPlushCounterAt || 0)) return;
+      u._goobPlushCounterAt = B.t + 1.2;
+      B.applyStatus(u, ev.target, 'slow', 2.5, { val: 0.45 });
+      B.applyStatus(u, ev.target, 'taunt', 2, { src: u });
+      const lowest = B.lowestHp(B.alliesOf(u));
+      if (lowest && lowest.alive) {
+        B.heal(u, lowest, u.max.hp * (0.10 + lvl * 0.02), { tag: 'Plush Fluff' });
+        B.cleanse(lowest, 1);
+        B.fxFloatIcon(lowest.x, lowest.y - 95, '🧸 HEALING FLUFF', '#ffb3d9');
+      }
+      B.fxFloatIcon(ev.target.x, ev.target.y - 100, '🧶 ENTANGLED', '#ffb3d9');
+    });
+  }
+});
+
+defBadge({
+  id: 'glisten_vee', owner: 'Glisten', friend: 'Vee',
+  name: "Vee's Studio Broadcast Filter", icon: '📺', color: '#7be0ff',
+  desc: "A polarized broadcast-grade studio lens Vee calibrated for Glisten. She claimed his natural glare was ruining her camera exposure, but it focuses his reflections into pure primetime broadcast lasers.",
+  stat: lvl => `+${(12 + lvl * 6).toFixed(0)}% Magic Attack · +${(10 + lvl * 5).toFixed(0)}% Skill Haste`,
+  effect: "Vee's television optics turn Glisten's mirror into a high-powered studio spotlight! Glisten's 🪞 Audience is permanently Exposed (taking 20%+ Magic Damage) and has their Attack Speed slowed by 25%. When Glisten casts Prismatic Close-Up, an overhead Studio Spotlight strikes the target for 90%+ Magic Damage, Shocks all enemies hit for 4s, and steals 20 Energy from the Audience to grant to all allies. When Perfect Reflection counters, an electrostatic burst dispels 1 buff, Silences the attacker for 1.5s, and grants Glisten +15% Magic Attack (stacks 3x).",
+  apply(u, B, lvl) {
+    u.flat.magP = (u.flat.magP || 0) + (0.12 + lvl * 0.06);
+    u.flat.cdr = (u.flat.cdr || 0) + (0.10 + lvl * 0.05);
+    u.dirty = true;
+
+    // Audience Exposure & debuff
+    B.every(u, 0.4, () => {
+      if (!u.alive) return;
+      const aud = glistenAudience(u);
+      if (!aud || !aud.alive) return;
+      if (!aud.hasStatus('vee_exposed')) {
+        B.applyStatus(u, aud, 'exposed', 999, { val: 0.20 + lvl * 0.04 });
+        B.applyStatus(u, aud, 'vee_exposed', 999);
+        B.applyStatus(u, aud, 'slow', 999, { val: 0.25 });
+        B.fxFloatIcon(aud.x, aud.y - 115, '🔴 PRIMETIME AUDIENCE', '#7be0ff');
+      }
+    });
+
+    // When Prismatic Close-Up deals damage: fire Studio Spotlight
+    B.on(u, 'dealDamage', ev => {
+      if (!ev || ev.tag !== 'Prismatic Close-Up' || !ev.target || !ev.target.alive) return;
+      if (B.t < (u._glistenVeeSpotlightAt || 0)) return;
+      u._glistenVeeSpotlightAt = B.t + 3.5;
+      Sound.play('beam_fire', { vol: 0.5 });
+      B.damage(u, ev.target, u.st.mag * (0.90 + lvl * 0.25), { type: 'magic', tag: 'Studio Spotlight' });
+      B.applyStatus(u, ev.target, 'shock', 4);
+      B.fxRing(ev.target.x, ev.target.y - 30, 150, '#7be0ff', 0.55);
+      B.fxFloatIcon(ev.target.x, ev.target.y - 120, '💡 PRIMETIME SPOTLIGHT!', '#7be0ff');
+      const aud = glistenAudience(u);
+      if (aud && aud.alive) {
+        B.energy(aud, -20);
+        B.alliesOf(u).forEach(a => B.energy(a, 15 + lvl * 5));
+      }
+    });
+
+    // When Perfect Reflection counters: electrostatic feedback
+    B.on(u, 'dealDamage', ev => {
+      if (!ev || ev.tag !== 'Perfect Reflection' || !ev.target || !ev.target.alive) return;
+      if (typeof B.dispel === 'function') B.dispel(ev.target, 1);
+      else if (ev.target.statuses) {
+        const buff = ev.target.statuses.find(s => STATUS[s.id] && STATUS[s.id].kind === 'buff');
+        if (buff) B.removeStatus(ev.target, buff.id);
+      }
+      B.applyStatus(u, ev.target, 'silence', 1.5);
+      B.applyStatus(u, u, 'magup', 6, { val: 0.15, maxStacks: 3 });
+      B.fxFloatIcon(u.x, u.y - 105, '📺 OVERCHARGED!', '#7be0ff');
+    });
+  }
+});
 

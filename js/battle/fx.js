@@ -1563,49 +1563,135 @@ const FX = {
   scrapsSignature(phase, x, y, opt) {
     if (!this.front) return;
     opt = opt || {};
-    const size = opt.size || 92, dir = opt.face || 1;
-    if (phase === 'cast') {
-      // A yarn loop cinches around the active craft while a real material
-      // piece rises from Scraps' hands.
-      const loop = el('div');
-      loop.style.cssText = `position:absolute;left:${x - size * .55}px;top:${y - size * .31}px;
-        width:${size * 1.1}px;height:${size * .62}px;border:5px dashed #d84e80;border-radius:50%;
-        pointer-events:none;opacity:0;transform:rotate(-18deg) scale(.25);filter:drop-shadow(0 2px 1px #3b1724aa)`;
-      this.front.appendChild(loop);
-      requestAnimationFrame(() => {
-        loop.style.transition = 'transform .3s cubic-bezier(.15,1.5,.35,1),opacity .12s';
-        loop.style.opacity = .9; loop.style.transform = `rotate(${dir * 16}deg) scale(1)`;
-      });
-      setTimeout(() => { loop.style.transition = 'transform .24s ease-in,opacity .22s';
-        loop.style.transform = `rotate(${dir * 42}deg) scale(1.18)`; loop.style.opacity = 0; }, 330);
-      setTimeout(() => loop.remove(), 650);
-      this.castProp(x - dir * 8, y + size * .26,
-        pick([{ kind: 'obj', img: 'cardboard', size: 48 }, { kind: 'obj', img: 'Tape', size: 44 },
-          { kind: 'item', img: 'Trinkets/SCRAPS_Crayonset', size: 48 }]), '#ffd166', .42);
-      this.burst(x, y, opt.ultimate ? 14 : 8, ['#d7b27a', '#f1dfb4', '#d84e80'],
-        { shape: 'paper', spMin: 45, spMax: 150, lift: 55, sMin: 4, sMax: 10, life: .65, g: 360 });
+    const size = opt.size || 92;
+    const craft = opt.craft || 'cardboard';
+    const color = { cardboard: '#e9b86d', cup: '#ff80a7', yarn: '#ce78b4' }[craft] || '#ffd166';
+    if (opt.key === 'W') {
+      if (phase === 'cast') {
+        // Her real grapple travels to a friend. A stitched thread makes that
+        // path readable before the dash, then the landing supplies the impact.
+        const tx = opt.targetX, ty = opt.targetY;
+        if (Number.isFinite(tx) && Number.isFinite(ty)) {
+          const dx = tx - x, dy = ty - y, length = Math.hypot(dx, dy);
+          if (length > 20 && this.effectAllowed(2)) {
+            const thread = el('div');
+            const angle = Math.atan2(dy, dx);
+            thread.style.cssText = `position:absolute;left:${x}px;top:${y}px;width:${length}px;height:0;
+              border-top:4px dashed #e75591;transform-origin:0 50%;transform:rotate(${angle}rad) scaleX(.08);
+              filter:drop-shadow(0 1px 1px #421b2d) drop-shadow(0 0 5px #ffb1cc);
+              opacity:0;pointer-events:none;z-index:6`;
+            this.front.appendChild(thread);
+            requestAnimationFrame(() => { thread.style.transition = 'transform .28s ease-out,opacity .1s';
+              thread.style.opacity = 1; thread.style.transform = `rotate(${angle}rad) scaleX(1)`; });
+            setTimeout(() => { thread.style.transition = 'opacity .18s'; thread.style.opacity = 0; }, 360);
+            setTimeout(() => thread.remove(), 570);
+          }
+        }
+        this.ring(x, y + size * .18, size * .95, '#e75591', .35);
+        this.floatIcon(x, y - size * .55, '🧶', '#ffbed3');
+      } else {
+        this.ring(x, y + size * .22, size * 1.12, '#e75591', .3);
+        this.burst(x, y, 5, ['#fff2c8', '#ff9fbb'], { shape: 'paper', spMax: 105, life: .35 });
+      }
       return;
     }
-
-    // Impact is a physical taped-together craft smash, followed by her
-    // three-claw rake. It is intentionally a claw/rend effect, not a blood effect.
-    for (let i = 0; i < 2; i++) {
-      const tape = el('div');
-      const w = size * 1.05, h = Math.max(8, size * .11), ang = (i ? -31 : 26) * dir;
-      tape.style.cssText = `position:absolute;left:${x - w / 2}px;top:${y - h / 2}px;width:${w}px;height:${h}px;
-        background:repeating-linear-gradient(90deg,#f3dfac 0 18px,#d1ad68 18px 21px);border:2px solid #604326;
-        border-radius:3px;pointer-events:none;opacity:0;transform:rotate(${ang}deg) scaleX(.18);filter:drop-shadow(0 2px 1px #0007)`;
-      this.front.appendChild(tape);
-      setTimeout(() => { tape.style.transition = 'transform .13s cubic-bezier(.1,1.5,.3,1),opacity .08s';
-        tape.style.opacity = .94; tape.style.transform = `rotate(${ang}deg) scaleX(1)`; }, i * 45);
-      setTimeout(() => { tape.style.transition = 'opacity .24s,transform .24s'; tape.style.opacity = 0;
-        tape.style.transform = `rotate(${ang + dir * 7}deg) scaleX(1.12)`; }, 230 + i * 45);
-      setTimeout(() => tape.remove(), 570);
+    if (opt.key === 'B') {
+      this.ring(x, y + size * .20, size * (phase === 'cast' ? 1.35 : 1.08), '#ffd166', .4);
+      this.burst(x, y, phase === 'cast' ? 12 : 9, ['#ff8eae', '#f5d17b', '#fff0cf'],
+        { shape: 'paper', spMin: 70, spMax: 195, lift: 70, sMin: 4, sMax: 11, life: .62, g: 440 });
+      if (phase === 'impact') this.slash(x, y, { col: '#fff0cf', ang: -22, big: true });
+      return;
     }
-    [-22, 0, 22].forEach((off, i) => setTimeout(() => this.slash(x + off * dir, y - 5,
-      { col: i === 1 ? '#fff1c2' : '#d84e80', ang: dir * (-28 + i * 28), small: true }), i * 35));
-    this.burst(x, y, opt.ultimate ? 18 : 10, ['#d7b27a', '#ffd166', '#d84e80'],
-      { shape: 'paper', spMin: 90, spMax: 250, lift: 75, sMin: 4, sMax: 11, life: .72, g: 520 });
+    if (phase === 'cast') {
+      const prop = craft === 'cardboard' ? { kind: 'obj', img: 'cardboard', size: 52 }
+        : craft === 'cup' ? { kind: 'item', img: 'Stein', size: 48 } : null;
+      if (prop) this.castProp(x, y + size * .18, prop, color, .38);
+      else this.floatIcon(x, y - size * .42, '🧶', color);
+      this.ring(x, y + size * .24, size * 1.12, color, .34);
+      this.burst(x, y, 7, [color, '#fff1c8'],
+        { shape: 'paper', spMin: 40, spMax: 125, lift: 55, sMin: 4, sMax: 9, life: .48 });
+      return;
+    }
+    if (craft === 'cardboard') {
+      [-20, 0, 20].forEach((offset, i) => setTimeout(() => this.slash(x + offset, y,
+        { col: i === 1 ? '#fff1c2' : color, ang: -25 + i * 24, small: true }), i * 30));
+    } else if (craft === 'cup') {
+      this.ring(x, y + size * .15, size * 1.25, color, .33);
+    } else {
+      this.floatIcon(x, y - size * .30, '🧶', color);
+      this.ring(x, y + size * .15, size, color, .33);
+    }
+    this.burst(x, y, 8, [color, '#fff1c8'],
+      { shape: 'paper', spMin: 75, spMax: 180, lift: 55, sMin: 4, sMax: 10, life: .55 });
+  },
+
+  scrapsCircle(x, y, radius, craft, powered) {
+    if (!this.back || this.reducedEffects || !this.effectAllowed(2)) return;
+    const color = { cardboard: '#e9b86d', cup: '#ff80a7', yarn: '#ce78b4' }[craft] || '#ffd166';
+    const width = Math.max(140, Math.min(650, radius * 2));
+    const height = width * .44;
+    const token = { cardboard: '📦', cup: '🥤', yarn: '🧶' }[craft] || '✂️';
+    const ring = el('div');
+    ring.style.cssText = `position:absolute;left:${x - width / 2}px;top:${y - height / 2}px;
+      width:${width}px;height:${height}px;border:3px dashed ${color};border-radius:50%;
+      background:radial-gradient(ellipse,${color}26 0 28%,${color}10 55%,transparent 72%);
+      box-shadow:inset 0 0 16px ${color}77,0 0 ${powered ? 22 : 10}px ${color}88;
+      pointer-events:none;opacity:0;transform:scale(.72);z-index:1`;
+    // Counter-rotating stitched inner rim: reads as a sewn pattern, not a flat ring.
+    const inner = el('div');
+    inner.style.cssText = `position:absolute;left:12%;top:12%;width:76%;height:76%;border-radius:50%;
+      border:2px dotted #fff1c8;opacity:${powered ? .85 : .5};pointer-events:none`;
+    ring.appendChild(inner);
+    if (powered) {
+      const rim = el('div');
+      rim.style.cssText = `position:absolute;left:-6px;top:-6px;right:-6px;bottom:-6px;border-radius:50%;
+        border:2px solid ${color}cc;box-shadow:0 0 14px ${color};pointer-events:none`;
+      ring.appendChild(rim);
+    }
+    // Craft tokens drift around the rim like pinned paper scraps.
+    const tokens = [];
+    const count = powered ? 4 : 3;
+    for (let i = 0; i < count; i++) {
+      const t = el('div');
+      const a = (i / count) * Math.PI * 2 + Math.random() * .4;
+      t.textContent = token;
+      t.style.cssText = `position:absolute;left:${50 + Math.cos(a) * 48}%;top:${50 + Math.sin(a) * 48}%;
+        font-size:${powered ? 20 : 16}px;line-height:1;transform:translate(-50%,-50%) rotate(${i * 40}deg);
+        filter:drop-shadow(0 2px 2px #0008);pointer-events:none`;
+      ring.appendChild(t); tokens.push(t);
+    }
+    this.back.appendChild(ring);
+    if (inner.animate) inner.animate([{ transform: 'rotate(0deg)' }, { transform: 'rotate(-120deg)' }],
+      { duration: 1150, easing: 'linear', fill: 'forwards' });
+    if (ring.animate) ring.animate([{ transform: 'scale(1) rotate(0deg)' }, { transform: 'scale(1.03) rotate(6deg)' }],
+      { duration: 1150, easing: 'ease-out', fill: 'forwards', delay: 420 });
+    tokens.forEach((t, i) => { if (t.animate) t.animate([{ offset: 0, opacity: 0, transform: t.style.transform + ' scale(.4)' },
+      { offset: .25, opacity: 1 }, { offset: 1, opacity: 0, transform: t.style.transform + ' translateY(-14px) scale(1.05)' }],
+      { duration: 1000, delay: i * 70, fill: 'forwards' }); });
+    requestAnimationFrame(() => { ring.style.transition = 'transform .42s cubic-bezier(.18,.8,.3,1),opacity .15s';
+      ring.style.opacity = powered ? .95 : .66; ring.style.transform = 'scale(1)'; });
+    setTimeout(() => { ring.style.transition = 'opacity .3s'; ring.style.opacity = 0; }, 850);
+    setTimeout(() => ring.remove(), 1200);
+  },
+
+  /** Paper-shard explosion for Every Piece Counts when a foe falls inside the circle. */
+  scrapsShards(x, y, radius) {
+    if (!this.front || this.reducedEffects || !this.effectAllowed(3)) return;
+    const r = Math.max(60, Math.min(220, radius || 120));
+    this.ring(x, y, r * 1.6, '#fff1c8', .28);
+    this.burst(x, y - 30, 16, ['#e9b86d', '#ff9fbb', '#fff1c8', '#ce78b4'],
+      { shape: 'paper', spMin: 110, spMax: 300, lift: 90, sMin: 5, sMax: 12, life: .8, g: 520 });
+    [-1, 1].forEach((d, i) => setTimeout(() => this.slash(x + d * 26, y - 28,
+      { col: i ? '#ff9fbb' : '#fff1c8', ang: d * 38, small: true }), i * 45));
+  },
+
+  /** Quick craft-change flourish so G's new weapon is readable at a glance. */
+  scrapsCraftSwap(x, y, craft) {
+    if (!this.front || this.reducedEffects || !this.effectAllowed(2)) return;
+    const color = { cardboard: '#e9b86d', cup: '#ff80a7', yarn: '#ce78b4' }[craft] || '#ffd166';
+    this.ring(x, y + 12, 96, color, .3);
+    this.burst(x, y - 40, 9, [color, '#fff1c8'],
+      { shape: 'paper', spMin: 50, spMax: 140, lift: 70, sMin: 4, sMax: 9, life: .55 });
   },
 
   cocoaSignature(phase, x, y, opt) {
@@ -1651,6 +1737,66 @@ const FX = {
     this.sparkle(x, y - size * .18, opt.ultimate ? 8 : 5, '#f3c795');
   },
 
+  /** Soft rising steam wisps: the signature of food that was just made. */
+  sproutSteam(x, y, n, col) {
+    if (!this.front || this.reducedEffects || !this.effectAllowed(2)) return;
+    for (let i = 0; i < (n || 4); i++) setTimeout(() => this.part({
+      x: x + (Math.random() - .5) * 26, y, vx: (Math.random() - .5) * 18, vy: -(44 + Math.random() * 40),
+      g: -12, drag: .65, size: 11 + Math.random() * 9, col: col || '#fff2dc', shape: 'dot',
+      alpha: .6, life: .95 + Math.random() * .4, scale: .6, dscale: 1.15 }), i * 55);
+  },
+
+  /** Little hearts that float up off a freshly healed ally. */
+  sproutHearts(x, y, n) {
+    if (!this.front || this.reducedEffects || !this.effectAllowed(2)) return;
+    for (let i = 0; i < (n || 3); i++) setTimeout(() => this.part({
+      x: x + (Math.random() - .5) * 34, y, vx: (Math.random() - .5) * 36, vy: -(55 + Math.random() * 45),
+      g: -18, drag: .55, size: 13 + Math.random() * 6, col: i % 2 ? '#ff758f' : '#ffd166', shape: 'txt',
+      char: i % 3 ? '♥' : '✦', life: .95 + Math.random() * .3, spin: (Math.random() - .5) * 40 }), i * 75);
+  },
+
+  /** Fresh mint strawberry sprout leaves fluttering up during heals & saves. */
+  sproutLeaves(x, y, n, opt) {
+    if (!this.front || this.reducedEffects || !this.effectAllowed(2)) return;
+    opt = opt || {};
+    const cols = ['#80ed99', '#57cc99', '#b7efc5', '#70e000'];
+    const chars = ['🌱', '🍃', '☘️', '✦'];
+    for (let i = 0; i < (n || 4); i++) setTimeout(() => this.part({
+      x: x + (Math.random() - .5) * (opt.spread || 32),
+      y: y + (Math.random() - .5) * 12,
+      vx: (Math.random() - .5) * (opt.sp || 50),
+      vy: -(opt.lift || 48) - Math.random() * 32,
+      g: 35, drag: 1.1, size: 12 + Math.random() * 6,
+      col: cols[i % cols.length], shape: 'txt',
+      char: chars[i % chars.length],
+      life: .9 + Math.random() * .4,
+      spin: (Math.random() - .5) * 160
+    }), i * 60);
+  },
+
+  /** Golden protective dome with strawberry vine shimmer that settles over the person Sprout is saving. */
+  sproutDome(x, y, radius, dur) {
+    if (!this.front || this.reducedEffects || !this.effectAllowed(3)) return;
+    const w = radius * 1.8, h = radius * 1.45;
+    const n = el('div');
+    n.style.cssText = `position:absolute;left:${x - w / 2}px;top:${y - h * .85}px;width:${w}px;height:${h}px;
+      border-radius:50% 50% 46% 46%;border:3.5px solid #ffd166dd;pointer-events:none;opacity:0;z-index:5;
+      background:radial-gradient(ellipse at 50% 38%,#fff8e777 0 25%,#ffd16633 55%,transparent 75%);
+      box-shadow:0 0 32px #f4a261dd, 0 0 16px #80ed99aa, inset 0 0 26px #fff2cf88;transform:scale(.35);transform-origin:50% 90%`;
+    this.front.appendChild(n);
+    requestAnimationFrame(() => {
+      n.style.transition = 'transform .38s cubic-bezier(.15,1.5,.35,1),opacity .18s';
+      n.style.opacity = .98;
+      n.style.transform = 'scale(1)';
+    });
+    setTimeout(() => {
+      n.style.transition = 'opacity .45s,transform .45s';
+      n.style.opacity = 0;
+      n.style.transform = 'scale(1.15)';
+    }, Math.max(300, (dur || 1.2) * 1000 - 450));
+    setTimeout(() => n.remove(), (dur || 1.2) * 1000 + 100);
+  },
+
   /** Sprout's combat language is delivery and protection: recognizable food
       leaves his hands, allies get a warm tether, and the emergency save forms
       a barrier around the person he protects. Keep these beats local so his
@@ -1660,57 +1806,302 @@ const FX = {
     opt = opt || {};
     const col = '#f4a261', target = opt.target, targets = opt.targets || [];
     const face = opt.face || 1;
-    const food = opt.food || 'Proteinbar';
+    const food = opt.food || (kind === 'delivery' ? 'Bread' : 'Brownie');
     const mark = (t, size) => {
       if (!t) return;
-      this.ring(t.x, t.y - 34, size || 74, col, .34);
-      this.sparkle(t.x, t.y - 58, opt.ultimate ? 10 : 6, '#ffd7a0');
+      this.ring(t.x, t.y - 34, size || 78, col, .35);
+      this.sparkle(t.x, t.y - 58, opt.ultimate ? 12 : 7, '#ffd7a0');
+      this.sproutHearts(t.x, t.y - 60, opt.ultimate ? 6 : 4);
+      this.sproutLeaves(t.x, t.y - 56, opt.ultimate ? 5 : 3);
+    };
+    // Crumbs shed along the flight of a thrown treat.
+    const crumbTrail = (x1, y1, x2, y2, dur) => {
+      for (let i = 1; i <= 4; i++) setTimeout(() => this.burst(x1 + (x2 - x1) * i / 5, y1 + (y2 - y1) * i / 5 - 30 * Math.sin(i / 5 * Math.PI), 2,
+        ['#ffd7a0', '#e9b97c', '#fff2cf'], { spMin: 10, spMax: 45, lift: 10, sMin: 2, sMax: 4, life: .4, g: 260 }), dur * 1000 * i / 5);
     };
     if (kind === 'bake' || kind === 'delivery') {
       this.castProp(x + face * 18, y, { kind: 'item', img: food, size: 48 }, col, .38);
+      this.sproutSteam(x + face * 18, y - 70, kind === 'bake' ? 5 : 3);
+      this.sproutLeaves(x + face * 18, y - 60, 3);
       if (target) {
         this.itemArc(x + face * 24, y - 62, target.x, target.y - 62, food,
-          { size: 26, dur: .40, arc: 54, col, spin: 260 });
-        setTimeout(() => mark(target, 82), 380);
+          { size: 28, dur: .40, arc: 54, col, spin: 260 });
+        crumbTrail(x + face * 24, y - 62, target.x, target.y - 62, .40);
+        setTimeout(() => {
+          mark(target, 84);
+          this.sproutSteam(target.x, target.y - 60, 3);
+          this.floatItem(target.x, target.y - 88, food, col);
+        }, 380);
       } else {
         this.ring(x, y - 34, 70, col, .28);
       }
       return;
     }
     if (kind === 'rush') {
-      this.ring(x, y - 28, 64, col, .25);
+      this.ring(x, y - 28, 68, col, .28);
+      this.sproutLeaves(x, y - 40, 4);
       if (target) {
         this.heartLink(x + face * 20, y - 52, target.x, target.y - 54);
-        setTimeout(() => { if (target.alive) { mark(target, 106); this.aura(target.x, target.y, col, 4.8); } }, 360);
+        // Hurried dust puffs, crumbs, and mint leaves chase the dash path.
+        for (let i = 0; i < 4; i++) setTimeout(() => {
+          this.burst(x + (target.x - x) * (i + 1) / 5, y - 6, 3, ['#ffe6c2', '#fff2cf', '#ffd166'],
+            { spMin: 20, spMax: 70, lift: 25, sMin: 3, sMax: 6, life: .4, g: 220 });
+          this.sproutHearts(x + (target.x - x) * (i + 1) / 5, y - 50, 1);
+          this.sproutLeaves(x + (target.x - x) * (i + 1) / 5, y - 44, 1);
+        }, i * 70);
+        setTimeout(() => {
+          if (target.alive) {
+            mark(target, 110);
+            this.ring(target.x, target.y - 32, 115, '#ffd166', .45);
+            this.sproutDome(target.x, target.y, 64, .9);
+            this.aura(target.x, target.y, col, 4.8);
+            this.sproutSteam(target.x, target.y - 60, 4);
+            this.floatItem(target.x, target.y - 92, 'Proteinbar', '#ffd166');
+          }
+        }, 360);
       }
-      this.burst(x, y - 35, 7, ['#f4a261', '#ffd7a0', '#fff2cf'],
+      this.burst(x, y - 35, 8, ['#f4a261', '#ffd7a0', '#fff2cf'],
         { spMin: 40, spMax: 130, lift: 45, sMin: 3, sMax: 7, life: .5, g: 330 });
       return;
     }
     if (kind === 'oven') {
-      this.ring(x, y - 30, 108, col, .42);
+      this.ring(x, y - 30, 118, '#ff9f43', .45);
+      this.sproutSteam(x + face * 14, y - 62, 8, '#ffe9cc');
+      this.sproutLeaves(x + face * 14, y - 55, 5);
+      this.burst(x + face * 14, y - 48, 12, ['#ffbf69', '#ff9f43', '#fff2cf', '#ff758f'],
+        { spMin: 35, spMax: 130, lift: 75, sMin: 3, sMax: 7, life: .55, g: 240 });
       targets.slice(0, 2).forEach((t, i) => {
         setTimeout(() => {
           if (!t || !t.alive) return;
-          this.itemArc(x + face * 18, y - 62, t.x, t.y - 62, i ? 'Brownie' : food,
-            { size: 24, dur: .42, arc: 70 - i * 12, col, spin: i ? -280 : 280 });
-          setTimeout(() => mark(t, 76), 390);
+          const treatItem = i ? 'Brownie' : 'Bread';
+          this.itemArc(x + face * 18, y - 62, t.x, t.y - 62, treatItem,
+            { size: 26, dur: .42, arc: 70 - i * 12, col, spin: i ? -280 : 280 });
+          crumbTrail(x + face * 18, y - 62, t.x, t.y - 62, .42);
+          setTimeout(() => {
+            mark(t, 82);
+            this.sproutSteam(t.x, t.y - 60, 4);
+            this.floatItem(t.x, t.y - 88, treatItem, col);
+          }, 390);
         }, i * 150);
       });
-      this.castProp(x + face * 18, y, { kind: 'item', img: food, size: 48 }, col, .52);
+      this.castProp(x + face * 18, y, { kind: 'item', img: food, size: 50 }, col, .52);
+      return;
+    }
+    if (kind === 'batch') {
+      // Wave-start Fresh Batch: a warm kitchen pulse that reaches every ally.
+      this.ring(x, y - 42, 160, col, .5);
+      this.ring(x, y - 42, 280, '#ffd7a0', .65);
+      this.ring(x, y - 42, 360, '#ff758f', .7);
+      this.sproutSteam(x, y - 70, 8, '#fff2dc');
+      this.sproutLeaves(x, y - 60, 8);
+      targets.filter(t => t && t.alive).forEach((t, i) => setTimeout(() => {
+        this.ring(t.x, t.y - 34, 76, col, .35);
+        this.sproutHearts(t.x, t.y - 56, 3);
+        this.sproutLeaves(t.x, t.y - 56, 3);
+        this.sparkle(t.x, t.y - 56, 5, '#ffd7a0');
+        this.floatItem(t.x, t.y - 82, 'Bread', '#ffd166');
+      }, 120 + i * 70));
       return;
     }
     if (kind === 'save') {
       if (target) {
-        this.ring(target.x, target.y - 30, opt.ultimate ? 170 : 132, '#ffd166', .55);
-        this.aura(target.x, target.y, '#f4a261', 1.25);
+        this.flash('#ffb3c1', .25, .3);
+        this.ring(target.x, target.y - 30, opt.ultimate ? 180 : 140, '#ffd166', .6);
+        this.ring(target.x, target.y - 30, opt.ultimate ? 270 : 200, '#fff2cf', .75);
+        this.aura(target.x, target.y, '#f4a261', 1.4);
         this.heartLink(x + face * 18, y - 62, target.x, target.y - 62);
-        this.burst(target.x, target.y - 38, opt.ultimate ? 18 : 11,
-          ['#f4a261', '#ffd166', '#fff2cf'],
-          { spMin: 80, spMax: 260, lift: 90, sMin: 4, sMax: 10, life: .75, g: 450 });
+        this.sproutDome(target.x, target.y, opt.ultimate ? 104 : 82, 1.4);
+        this.burst(target.x, target.y - 38, opt.ultimate ? 22 : 14,
+          ['#f4a261', '#ffd166', '#fff2cf', '#ff758f', '#80ed99'],
+          { spMin: 90, spMax: 280, lift: 95, sMin: 4, sMax: 10, life: .8, g: 420 });
+        this.sproutHearts(target.x, target.y - 70, opt.ultimate ? 9 : 6);
+        this.sproutLeaves(target.x, target.y - 65, opt.ultimate ? 8 : 5);
+        this.sproutSteam(target.x, target.y - 50, 6, '#fff7e6');
+        this.floatItem(target.x, target.y - 105, 'Trinkets/SPROUT_SavoryCharm', '#ffd166');
+        this.shake(3.5, .2);
       }
       targets.filter(t => t && t !== target && t.alive).forEach((t, i) =>
-        setTimeout(() => mark(t, 68), 170 + i * 50));
+        setTimeout(() => mark(t, 72), 170 + i * 50));
+    }
+  },
+
+  /** Astro's celestial drifting stardust motes and crescent moon particles. */
+  astroStardust(x, y, n, col, opt) {
+    if (!this.front || this.reducedEffects || !this.effectAllowed(2)) return;
+    opt = opt || {};
+    const cols = col ? [col] : ['#b9a4ff', '#dcd0ff', '#8f7fff', '#ffffff', '#ffd166'];
+    const glyphs = ['✦', '✧', '⭐', '🌙', '·'];
+    for (let i = 0; i < (n || 5); i++) setTimeout(() => {
+      const a = (opt.dir != null ? opt.dir : Math.random() * Math.PI * 2) + (Math.random() - .5) * (opt.spread || 2.5);
+      const sp = (opt.spMin || 35) + Math.random() * ((opt.spMax || 110) - (opt.spMin || 35));
+      this.part({
+        x: x + (Math.random() - .5) * (opt.jitter || 24),
+        y: y + (Math.random() - .5) * (opt.jitter || 16),
+        vx: Math.cos(a) * sp,
+        vy: Math.sin(a) * sp - (opt.lift == null ? 35 : opt.lift),
+        g: opt.g != null ? opt.g : 40,
+        drag: 1.15,
+        size: 11 + Math.random() * 8,
+        col: cols[i % cols.length],
+        shape: 'txt',
+        char: glyphs[i % glyphs.length],
+        life: .9 + Math.random() * .4,
+        spin: (Math.random() - .5) * 140
+      });
+    }, i * 45);
+  },
+
+  /** Drowsy / sleep status: soft sleepy glyphs and lavender dream mist circling head. */
+  astroDrowsy(target) {
+    if (!target || !this.front || this.reducedEffects || !this.effectAllowed(2)) return;
+    const glyphs = ['💤', '🌙', '💤', '✦'];
+    for (let i = 0; i < 4; i++) {
+      const a = (i / 4) * Math.PI * 2;
+      this.part({
+        x: target.x + Math.cos(a) * 22,
+        y: target.y - 92 + Math.sin(a) * 8,
+        vx: -Math.sin(a) * 75,
+        vy: Math.cos(a) * 20 - 15,
+        g: 10,
+        drag: 1.25,
+        size: 13,
+        col: '#dcd0ff',
+        shape: 'txt',
+        char: glyphs[i],
+        life: .95,
+        fade: true
+      });
+    }
+  },
+
+  /** Lunar crescent barrier shield that encases Astro or his protected allies. */
+  astroMoonShield(x, y, radius, dur) {
+    if (!this.front || this.reducedEffects || !this.effectAllowed(3)) return;
+    const w = radius * 1.7, h = radius * 1.5;
+    const n = el('div');
+    n.style.cssText = `position:absolute;left:${x - w / 2}px;top:${y - h * .82}px;width:${w}px;height:${h}px;
+      border-radius:50%;border:3px dashed #b9a4ffcc;pointer-events:none;opacity:0;z-index:5;
+      background:radial-gradient(ellipse at 42% 38%,#f3eaff66 0 25%,#7c4dff26 60%,transparent 76%);
+      box-shadow:0 0 28px #7c4dffcc,inset 0 0 20px #b9a4ff88;transform:scale(.35);transform-origin:50% 85%`;
+    this.front.appendChild(n);
+    requestAnimationFrame(() => {
+      n.style.transition = 'transform .36s cubic-bezier(.15,1.5,.35,1),opacity .18s';
+      n.style.opacity = .95;
+      n.style.transform = 'scale(1)';
+    });
+    setTimeout(() => {
+      n.style.transition = 'opacity .45s,transform .45s';
+      n.style.opacity = 0;
+      n.style.transform = 'scale(1.15)';
+    }, Math.max(300, (dur || 1.2) * 1000 - 450));
+    setTimeout(() => n.remove(), (dur || 1.2) * 1000 + 100);
+  },
+
+  /** Falling shooting star diving from the night sky with stardust streak and impact burst. */
+  starfall(x, y, opt) {
+    if (!this.front || this.reducedEffects) return;
+    opt = opt || {};
+    const col = opt.col || '#b9a4ff';
+    const sx = x - 55 + (Math.random() - .5) * 20;
+    const sy = y - 240;
+    const n = el('div');
+    n.style.cssText = `position:absolute;left:${sx}px;top:${sy}px;width:6px;height:52px;
+      border-radius:99px;background:linear-gradient(180deg,#ffffff,#ffd166 40%,${col});
+      box-shadow:0 0 16px ${col},0 0 8px #ffffff;transform:rotate(24deg);transform-origin:50% 0;
+      pointer-events:none;opacity:0;transition:transform .26s cubic-bezier(.2,.8,.4,1),opacity .08s;z-index:6;`;
+    this.front.appendChild(n);
+    requestAnimationFrame(() => {
+      n.style.opacity = 1;
+      n.style.transform = `translate(${x - sx}px,${y - sy - 40}px) rotate(24deg) scaleY(1.4)`;
+    });
+    setTimeout(() => {
+      n.style.opacity = 0;
+      n.remove();
+      this.burst(x, y - 36, 12, ['#ffffff', '#ffd166', '#b9a4ff', '#7c4dff'],
+        { spMin: 60, spMax: 190, lift: 55, sMin: 3, sMax: 8, life: .5, g: 320 });
+      this.ring(x, y - 30, 84, col, .35);
+      this.astroStardust(x, y - 40, 5, col, { spMin: 40, spMax: 130, lift: 45 });
+    }, 250);
+  },
+
+  /** Astro's signature celestial support language:
+      Deep dream pulse waves, orbiting sleep glyphs, shooting starfalls,
+      and starlight star pillows cushioning wounded allies. */
+  astroSkill(kind, x, y, opt) {
+    if (!this.front) return;
+    opt = opt || {};
+    const col = '#b9a4ff', target = opt.target, targets = opt.targets || [];
+    if (kind === 'pulse') {
+      this.ring(x, y - 40, 180, '#7c4dff', .45);
+      this.ring(x, y - 40, 340, '#b9a4ff', .6);
+      this.ring(x, y - 40, 520, '#dcd0ff', .75);
+      this.astroStardust(x, y - 50, 14, '#b9a4ff', { spread: Math.PI * 2, spMin: 60, spMax: 220, lift: 40 });
+      this.floatItem(x, y - 96, 'Trinkets/ASTRO_Starpillow', '#b9a4ff');
+      targets.forEach((t, i) => {
+        if (!t || !t.alive) return;
+        setTimeout(() => {
+          if (opt.isAlly) {
+            this.ring(t.x, t.y - 34, 76, '#b9a4ff', .35);
+            this.sparkle(t.x, t.y - 50, 8, '#dcd0ff');
+            this.astroStardust(t.x, t.y - 50, 4, '#b9a4ff');
+            this.floatItem(t.x, t.y - 88, 'Trinkets/ASTRO_Starpillow', '#b9a4ff');
+          } else {
+            this.astroDrowsy(t);
+            this.ring(t.x, t.y - 34, 70, '#7c4dff', .3);
+          }
+        }, i * 40);
+      });
+      return;
+    }
+    if (kind === 'slumber') {
+      if (target) {
+        this.ring(target.x, target.y - 45, 115, '#7f6bd6', .45);
+        this.ring(target.x, target.y - 45, 160, '#b9a4ff', .55);
+        this.astroDrowsy(target);
+        this.astroStardust(target.x, target.y - 55, 8, '#7f6bd6');
+        this.floatItem(target.x, target.y - 96, 'Trinkets/ASTRO_Starpillow', '#7f6bd6');
+        this.floatIcon(target.x, target.y - 120, '💤 SLUMBER', '#b9a4ff');
+      }
+      return;
+    }
+    if (kind === 'starfall') {
+      if (target) {
+        this.starfall(target.x, target.y, { col: '#b9a4ff' });
+      }
+      return;
+    }
+    if (kind === 'rested') {
+      if (target) {
+        this.ring(target.x, target.y - 34, 82, '#b9a4ff', .38);
+        this.sparkle(target.x, target.y - 50, 7, '#dcd0ff');
+        this.astroStardust(target.x, target.y - 50, 4, '#ffd166');
+        this.floatItem(target.x, target.y - 88, 'Trinkets/ASTRO_Starpillow', '#ffd166');
+      }
+      return;
+    }
+    if (kind === 'shield') {
+      if (target) {
+        this.ring(target.x, target.y - 35, 120, '#b9a4ff', .45);
+        this.astroMoonShield(target.x, target.y, 76, opt.dur || 1.3);
+        this.astroStardust(target.x, target.y - 50, 6, '#b9a4ff');
+        this.floatItem(target.x, target.y - 94, 'Trinkets/ASTRO_Starpillow', '#b9a4ff');
+      }
+      return;
+    }
+    if (kind === 'save') {
+      if (target) {
+        this.flash('#2b2160', .35, .35);
+        this.ring(target.x, target.y - 35, 150, '#ffffff', .6);
+        this.ring(target.x, target.y - 35, 230, '#b9a4ff', .75);
+        this.aura(target.x, target.y, '#7c4dff', 1.8);
+        this.astroMoonShield(target.x, target.y, 90, 1.8);
+        this.burst(target.x, target.y - 40, 20, ['#ffffff', '#ffd166', '#b9a4ff', '#7c4dff'],
+          { spMin: 90, spMax: 260, lift: 90, sMin: 4, sMax: 10, life: .8, g: 400 });
+        this.astroStardust(target.x, target.y - 60, 10, '#ffffff', { spMin: 60, spMax: 200, lift: 60 });
+        this.floatItem(target.x, target.y - 105, 'Trinkets/ASTRO_Starpillow', '#ffffff');
+        this.floatIcon(target.x, target.y - 128, '🌙 SAVED', '#dcd0ff');
+        this.shake(4, .22);
+      }
     }
   },
 
@@ -3031,12 +3422,49 @@ const FX = {
     setTimeout(() => down.remove(), 680);
   },
 
+  /** Drifting wing/feather particles shared by every Flutter effect. */
+  flutterFeathers(x, y, n, col, opt) {
+    if (!this.front || this.reducedEffects || !this.effectAllowed(2)) return;
+    opt = opt || {};
+    const cols = col ? [col] : ['#f1ffff', '#bff6ff', '#8fe6f3'];
+    for (let i = 0; i < n; i++) {
+      const a = (opt.dir != null ? opt.dir : Math.random() * Math.PI * 2) + (Math.random() - .5) * (opt.spread || 2.4);
+      const sp = (opt.spMin || 40) + Math.random() * ((opt.spMax || 130) - (opt.spMin || 40));
+      this.part({ x: x + (Math.random() - .5) * (opt.jitter || 14), y: y + (Math.random() - .5) * 10,
+        vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - (opt.lift == null ? 30 : opt.lift), g: 120, drag: 1.1,
+        size: 11 + Math.random() * 8, col: cols[i % cols.length], shape: 'txt', char: i % 3 ? '🪶' : '🪽',
+        life: .9 + Math.random() * .5, spin: (Math.random() - .5) * 220, rot: Math.random() * 360 });
+    }
+  },
+
+  /** Lift stack gained: a rising wing chevron whose size follows the stack count. */
+  flutterLift(u, stacks, max) {
+    if (!u || !this.front || this.reducedEffects || !this.effectAllowed(2)) return;
+    const full = stacks >= max;
+    this.ring(u.x, u.y - 46, 56 + stacks * 9, full ? '#ffffff' : '#a8effb', full ? .42 : .26);
+    this.flutterFeathers(u.x, u.y - 55, full ? 14 : 3 + stacks, full ? '#ffffff' : null,
+      { dir: -Math.PI / 2, spread: 1.7, spMin: 30, spMax: full ? 170 : 95, lift: 20 });
+    this.floatIcon(u.x, u.y - 96, '🪽'.repeat(Math.min(5, stacks)), full ? '#ffffff' : '#bff6ff');
+  },
+
+  /** Off Balance: a dizzy ring of stars circles the enemy's head. */
+  flutterDizzy(target) {
+    if (!target || !this.front || this.reducedEffects || !this.effectAllowed(2)) return;
+    for (let i = 0; i < 4; i++) {
+      const a = i / 4 * Math.PI * 2;
+      this.part({ x: target.x + Math.cos(a) * 20, y: target.y - 92 + Math.sin(a) * 6,
+        vx: -Math.sin(a) * 90, vy: Math.cos(a) * 24, g: 0, drag: 1.4, size: 12, col: '#e9ffff',
+        shape: 'txt', char: i % 2 ? '💫' : '✦', life: .75, fade: true });
+    }
+  },
+
   flutterEntry(x, y, toX, dir, dur) {
     if (!this.front) return;
     this.flyteWindRibbon(x, y - 78, toX, y - 72, dur || .52, '#d8fbff', 0);
     this.flyteWindRibbon(x, y - 56, toX, y - 50, (dur || .52) + .06, '#7ee8f7', 18);
     this.burst(x, y - 62, 15, ['#eaffff', '#9cecf8', '#6bd5ea'], { shape: 'streak', spMin: 100, spMax: 260, lift: 42, sMin: 3, sMax: 8, life: .5 });
     this.ring(x, y - 42, 84, '#d8fbff', .32);
+    this.flutterFeathers(x, y - 62, 12, null, { dir: dir > 0 ? Math.PI : 0, spread: 1.4, spMin: 80, spMax: 220 });
   },
 
   flutterDash(x, y, toX, dir, dur, returning) {
@@ -3045,6 +3473,11 @@ const FX = {
     this.flyteWindRibbon(x, y - 70, toX, y - 65, dur || .36, col, returning ? 15 : 0);
     this.flyteWindRibbon(x, y - 45, toX, y - 40, (dur || .36) + .05, returning ? '#73d9ed' : '#d9fcff', returning ? 30 : 22);
     this.sweep(x, y - 54, dir || 1, dur || .36, col);
+    // Feathers are shed along the whole flight path, not just at the start.
+    const steps = returning ? 6 : 5, d = (dur || .36) * 1000;
+    for (let i = 0; i < steps; i++) setTimeout(() =>
+      this.flutterFeathers(x + (toX - x) * ((i + .5) / steps), y - 58, returning ? 3 : 2, col,
+        { dir: dir > 0 ? Math.PI : 0, spread: 1.2, spMin: 20, spMax: 90, lift: 10 }), d * i / steps);
   },
 
   flutterGust(x, y, tx, ty, radius, face) {
@@ -3052,6 +3485,7 @@ const FX = {
     const size = Math.max(110, Math.min(360, radius || 250));
     this.flyteWindRibbon(x, y - 56, tx, ty - 50, .42, '#baf6ff', 0);
     this.wave(tx, ty - 46, size, '#baf6ff', .42);
+    this.flutterFeathers(tx, ty - 52, 9, null, { dir: face > 0 ? 0 : Math.PI, spread: 1.1, spMin: 90, spMax: 240, jitter: size * .35 });
     const n = el('div');
     n.className = 'flutter-gust-live';
     n.style.cssText = `left:${Math.min(x, tx) - size * .24}px;top:${Math.min(y, ty) - 96}px;width:${size}px;height:92px;--flutter-face:${face || 1}`;
@@ -3068,6 +3502,7 @@ const FX = {
     n.className = 'flutter-trail-live';
     n.style.cssText = `left:${x - 42}px;top:${y - 55}px;--flutter-face:${face || 1}`;
     this.back.appendChild(n);
+    this.flutterFeathers(x, y - 50, 2, null, { dir: face > 0 ? Math.PI : 0, spread: .9, spMin: 10, spMax: 55, lift: 5 });
     requestAnimationFrame(() => n.classList.add('active'));
     setTimeout(() => n.classList.add('leaving'), Math.max(120, (dur || .42) * 1000));
     setTimeout(() => n.remove(), Math.max(360, (dur || .42) * 1000 + 260));
@@ -3081,6 +3516,13 @@ const FX = {
     n.style.cssText = `left:${x - size / 2}px;top:${y - size * .60}px;width:${size}px;height:${size * .72}px`;
     n.innerHTML = '<i></i><i></i><i></i><i></i><b>WINGSTORM</b>';
     this.back.appendChild(n);
+    this.ring(x, y - 40, size * .9, '#ffffff', .5);
+    this.flutterFeathers(x, y - 50, 22, null, { spread: Math.PI * 2, spMin: 80, spMax: 260, jitter: size * .5, lift: 50 });
+    // The storm keeps shedding feathers for its whole duration.
+    const total = Math.max(1, Math.min(8, Math.round((dur || 5.5) * .9)));
+    for (let i = 1; i <= total; i++) setTimeout(() =>
+      this.flutterFeathers(x, y - 50, 5, null, { spread: Math.PI * 2, spMin: 40, spMax: 160, jitter: size * .55, lift: 40 }),
+      (dur || 5.5) * 1000 * i / (total + 1));
     requestAnimationFrame(() => n.classList.add('active'));
     setTimeout(() => n.classList.add('leaving'), Math.max(400, (dur || 5.5) * 1000 - 360));
     setTimeout(() => n.remove(), Math.max(700, (dur || 5.5) * 1000 + 120));
@@ -3090,6 +3532,9 @@ const FX = {
     if (!target) return;
     this.ring(target.x, target.y - 42, returning ? 112 : 86, returning ? '#f1ffff' : '#9cecf8', .28);
     this.burst(target.x, target.y - 54, returning ? 11 : 7, ['#f1ffff', '#8fe6f3', '#5ec9df'], { shape: 'streak', spMin: 65, spMax: 180, lift: 26, life: .34 });
+    [-1, 1].forEach((d, i) => setTimeout(() => this.slash(target.x + d * 12, target.y - 52,
+      { col: i ? '#9cecf8' : '#ffffff', ang: d * 32, small: !returning }), i * 40));
+    this.flutterFeathers(target.x, target.y - 54, returning ? 8 : 5);
   },
 
   flutterIntercept(target) {
@@ -3097,17 +3542,21 @@ const FX = {
     this.ring(target.x, target.y - 45, 88, '#f1ffff', .3);
     this.floatIcon(target.x, target.y - 100, '✖ AIR CUT', '#d8fbff');
     this.burst(target.x, target.y - 55, 9, ['#fff', '#a8effb'], { shape: 'streak', spMin: 70, spMax: 190, lift: 24, life: .3 });
+    this.slash(target.x, target.y - 52, { col: '#ffffff', ang: -32, small: true });
+    this.slash(target.x, target.y - 52, { col: '#a8effb', ang: 32, small: true });
+    this.flutterFeathers(target.x, target.y - 55, 6);
   },
 
   flutterFlyby(u) {
     if (!u) return;
     this.sweep(u.x, u.y - 52, u.face || 1, .38, '#baf6ff');
+    this.flutterFeathers(u.x, u.y - 52, 6, null, { dir: u.face > 0 ? Math.PI : 0, spread: 1, spMin: 40, spMax: 150 });
     this.floatIcon(u.x, u.y - 105, 'FLY-BY', '#eaffff');
   },
 
   flutterSilent(a, b) {
-    if (a) this.floatIcon(a.x, a.y - 102, 'DISTRACTED', '#d8fbff');
-    if (b) this.floatIcon(b.x, b.y - 102, 'SKILL DELAY', '#b5eaf5');
+    if (a) { this.floatIcon(a.x, a.y - 102, 'DISTRACTED', '#d8fbff'); this.flutterDizzy(a); }
+    if (b) { this.floatIcon(b.x, b.y - 102, 'SKILL DELAY', '#b5eaf5'); this.ring(b.x, b.y - 50, 74, '#b5eaf5', .3); }
   },
 
   /** A short, quiet target line. It makes retargeting readable without
@@ -3547,6 +3996,7 @@ const FX = {
   },
 
   floatIcon(x, y, char, col) {
+    if (!this.pop) return;
     if (!this.combatNumbers && typeof char === 'string' && char.length > 2) return;
     this.trimPops();
     const str = String(char != null ? char : '');
@@ -3575,6 +4025,7 @@ const FX = {
       spin-in, a little sparkle burst and a gentle idle wobble rather than
       just sitting there as a flat static icon. */
   floatItem(x, y, img, col, resolver) {
+    if (!this.pop) return;
     this.trimPops();
     const n = el('div', 'pop');
     n.style.cssText = `left:${x}px;top:${y}px;width:20px;height:20px;margin-left:-10px;margin-top:-10px;
@@ -4701,6 +5152,145 @@ const FX = {
       gem.classList.add('leaving');
     }, Math.max(150, (duration - 0.3) * 1000));
     setTimeout(() => gem.remove(), duration * 1000 + 120);
+  },
+
+  /* ============================================================
+     GINGER CONFECTION ARTISAN LIVE COMBAT VISUAL FX (DHBM)
+     ============================================================ */
+
+  /* Ginger Radiant Heart Burst (Baked With Care!) */
+  gingerHeartBurst(x, y, s, opt) {
+    if (!this.front || this.reducedEffects) return;
+    const size = s || 135;
+    const burst = el('div', 'ginger-heart-burst');
+    burst.style.cssText = `left:${x - size / 2}px;top:${y - size / 2}px;width:${size}px;height:${size}px;`;
+    burst.innerHTML = `
+      <div class="ginger-heart-core"></div>
+      <div class="ginger-heart-shockwave s1"></div>
+      <div class="ginger-heart-shockwave s2"></div>
+      <div class="ginger-heart-glyph">💖</div>
+    `;
+    this.front.appendChild(burst);
+    requestAnimationFrame(() => burst.classList.add('active'));
+
+    this.ring(x, y, size * 1.15, '#ffd166', 0.45);
+    this.ring(x, y, size * 1.45, '#ff7892', 0.65);
+    this.sparkle(x, y, 16, '#ffd166');
+
+    setTimeout(() => {
+      burst.classList.remove('active');
+      burst.classList.add('leaving');
+    }, 450);
+    setTimeout(() => burst.remove(), 750);
+  },
+
+  /* Ginger Royal Icing Barrier */
+  gingerRoyalIcing(x, y, s, dur) {
+    if (!this.front || this.reducedEffects) return;
+    const size = s || 105;
+    const duration = dur || 4.5;
+    const ring = el('div', 'ginger-royal-icing');
+    ring.style.cssText = `left:${x - size / 2}px;top:${y - size / 2}px;width:${size}px;height:${size}px;`;
+    ring.innerHTML = `
+      <div class="icing-barrier-core"></div>
+      <div class="icing-piping-ring"></div>
+      <div class="icing-sugar-stars">✨</div>
+    `;
+    this.front.appendChild(ring);
+    requestAnimationFrame(() => ring.classList.add('active'));
+
+    this.ring(x, y, size * 1.1, '#ffeedb', 0.4);
+
+    setTimeout(() => {
+      ring.classList.remove('active');
+      ring.classList.add('leaving');
+    }, Math.max(150, (duration - 0.3) * 1000));
+    setTimeout(() => ring.remove(), duration * 1000 + 100);
+  },
+
+  /* Ginger Peppermint Swirl Hearth */
+  gingerPeppermintHearth(x, y, dur) {
+    if (!this.back || this.reducedEffects) return;
+    const duration = dur || 5.0;
+    const hearth = el('div', 'ginger-peppermint-hearth');
+    hearth.style.cssText = `left:${x - 70}px;top:${y - 24}px;`;
+    hearth.innerHTML = `
+      <div class="peppermint-hearth-glow"></div>
+      <div class="peppermint-mote m1">🍬</div>
+      <div class="peppermint-mote m2">✨</div>
+      <div class="peppermint-mote m3">🍪</div>
+    `;
+    this.back.appendChild(hearth);
+    requestAnimationFrame(() => hearth.classList.add('active'));
+
+    this.sparkle(x, y - 20, 12, '#ffb56b');
+
+    setTimeout(() => {
+      hearth.classList.remove('active');
+      hearth.classList.add('leaving');
+    }, Math.max(150, (duration - 0.4) * 1000));
+    setTimeout(() => hearth.remove(), duration * 1000 + 100);
+  },
+
+  /* Ginger Emergency Last Bite */
+  gingerLastBite(x, y) {
+    if (!this.front || this.reducedEffects) return;
+    this.gingerHeartBurst(x, y, 120);
+    this.floatItem(x, y - 30, 'Trinkets/GINGER_PeppermintIcing', '#ff7892');
+    this.sparkle(x, y - 20, 20, '#ffd166');
+    this.floatIcon(x, y - 85, '🍪 EMERGENCY LAST BITE!', '#ff7892');
+  },
+
+  /* Vee Live Broadcast Climax Transformation */
+  veeLiveBroadcast(x, y) {
+    if (!this.front || this.reducedEffects) return;
+    const size = 160;
+    const broadcast = el('div', 'vee-live-broadcast');
+    broadcast.style.cssText = `left:${x - size / 2}px;top:${y - size / 2}px;width:${size}px;height:${size}px;`;
+    broadcast.innerHTML = `
+      <div class="vee-live-aura"></div>
+      <div class="vee-live-scanlines"></div>
+      <div class="vee-live-sign"><i></i>LIVE</div>
+    `;
+    this.front.appendChild(broadcast);
+    requestAnimationFrame(() => broadcast.classList.add('active'));
+
+    this.ring(x, y, 180, '#ff2b6b', 0.55);
+    this.ring(x, y, 240, '#7be0ff', 0.75);
+    this.sparkle(x, y, 20, '#7be0ff');
+
+    setTimeout(() => {
+      broadcast.classList.remove('active');
+      broadcast.classList.add('leaving');
+    }, 1800);
+    setTimeout(() => broadcast.remove(), 2200);
+  },
+
+  /* Squirm Full Biblio-Panic Climax Transformation */
+  squirmBiblioPanic(x, y) {
+    if (!this.front || this.reducedEffects) return;
+    const size = 160;
+    const panic = el('div', 'squirm-biblio-panic');
+    panic.style.cssText = `left:${x - size / 2}px;top:${y - size / 2}px;width:${size}px;height:${size}px;`;
+    panic.innerHTML = `
+      <div class="squirm-biblio-aura"></div>
+      <div class="squirm-biblio-pages"></div>
+      <div class="squirm-biblio-sign">📚 BIBLIO-PANIC!</div>
+    `;
+    this.front.appendChild(panic);
+    requestAnimationFrame(() => panic.classList.add('active'));
+
+    this.ring(x, y, 170, '#f5e5b2', 0.55);
+    this.ring(x, y, 230, '#cba76c', 0.75);
+    this.burst(x, y - 30, 16, ['#f4e7bb', '#c9a979', '#a9c68b', '#fff'],
+      { shape: 'paper', spMin: 70, spMax: 200, lift: 80, sMin: 5, sMax: 12, life: 0.75, g: 420 });
+
+    setTimeout(() => {
+      panic.classList.remove('active');
+      panic.classList.add('leaving');
+    }, 1800);
+    setTimeout(() => panic.remove(), 2200);
   }
 };
+
 

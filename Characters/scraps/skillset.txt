@@ -1,79 +1,17 @@
 Scraps
 
 Tier: SS Tier
-Role: Tank / Control / Utility Support
+Role: Damage
 
-Scraps is a creative and energetic Toon who loves making art and crafts. Her long stretchy arms allow her to bring her creations to life, manipulate the battlefield, and protect her friends. She does not win fights through brute force, but through clever inventions, unpredictable attacks, and constantly changing the battlefield around her.
+Scraps is an unstoppable, relentless paper-craft predator. Armed with razor-sharp cardboard shredders, a crushing cup flail, and weighted yarn snares, she hurls herself aggressively across the battlefield with Crafty Grapple, dragging an expanding Craft Circle that continuously shreds armor and tears through enemy ranks. Striking Frayed enemies drives her into a relentless frenzy of blinding scissor slashes and ricocheting paper shrapnel.
 
 Name	Rarity	Damage Type	Description
-Crafty Capture	White	Physical Damage	Passive: Scraps constantly creates small crafts during battle. Every few seconds, she throws a handmade creation at the enemy with the highest Attack, briefly distracting them and reducing their Attack Speed.
+Crafty Grapple	White	Physical Damage	Passive: Every third Basic Attack unleashes her current handmade craft with heightened ferocity: Cardboard punctures with heavy Armor Penetration and Frays, Cup flails a group while cracking shields, and Yarn deals damage, Frays, and heavily slows. Scraps' attacks cannot be Dodged by Frayed enemies, and striking Frayed foes builds Relentless Shred (+Attack Speed, +Move Speed, and double-strikes at max stacks). Active: Scraps launches a high-velocity grapple toward the fray (or to an endangered ally) while completely Invulnerable and Untargetable. On landing, her Craft Circle slams down in an expanding shockwave that pulls enemies inward, deals heavy Physical Damage, applies Frayed, and unleashes an immediate 3-hit scissor claw flurry. If any foe dies shortly after, Scraps refunds 45 Energy and resets Whatever Works.
+Whatever Works	Green	Physical Damage	Rapidly cycles her craft arsenal (Cardboard Claws -> Cup Flail -> Yarn Ball) and grants Craft Adrenaline (+30% Attack Speed, +25% Move Speed). Instantly strikes with the chosen craft: Cardboard pierces ignoring 50% Armor with bonus damage against Frayed foes; Cup Flail sweeps a wide arc dragging enemies inward and concussing them; Yarn Ball fires a ricocheting snare that roots enemies and applies Frayed.
+Craft Class Crash	Blue	Physical Damage	Scraps spins into a manic hurricane of cut paper, scissors, and flying origami shurikens, striking all nearby enemies 3 times in rapid succession. Each wave deals Physical Damage, gains bonus damage for each Frayed stack, refreshes Frayed, and shreds enemy Armor. Scraps gains Crowd Control immunity and 25% damage reduction during the spin.
+Craft Circle	Purple	Physical Damage / Attack Speed	The Craft Circle around Scraps is an active shredder zone. Every second, enemies inside take Physical Damage, take increased damage from Scraps, and gain Frayed stacks. Cardboard mode shreds 25% Armor, Cup mode increases circle damage by 50% and pulls foes inward, and Yarn mode slows Move Speed and Attack Speed by 35%. Scraps gains +6% Attack per nearby enemy (up to 5 enemies), while nearby allies gain stacking Attack Speed.
+Every Piece Counts	Red	Physical Damage / Craft Circle	Each skill cast permanently expands Craft Circle for the battle and triggers Paper Frenzy (+25% Critical Damage and +25% True Damage on craft and circle hits). Whenever an enemy inside the circle is defeated or suffers a critical strike, they erupt into razor paper shards that deal heavy Physical Damage to all nearby foes and spread Frayed. Slain foes refund 25 Energy and extend Paper Frenzy.
 
-If the enemy is already affected by a debuff, Scraps gains a stack of Creative Spark, increasing her Armor.
-
-Active: Scraps stretches her arms across the battlefield and wraps enemies in a giant paper craft net. She pulls the two farthest enemies toward her, dealing Physical Damage to enemies caught along the way.
-
-Enemies pulled become Tangled, reducing their Armor and preventing them from increasing their Movement Speed.
-
-If two enemies collide, they become briefly Stunned as they get stuck together.
-Handmade Shield	Green	Shield	Scraps quickly creates a protective craft around an ally.
-
-The ally with the lowest HP receives a Shield based on Scraps' Max HP.
-
-While protected, the ally gains increased Crowd Control Resistance.
-
-A portion of damage dealt to the ally is absorbed by Scraps' creation instead.
-
-When the Shield breaks, it bursts into paper scraps, briefly slowing nearby enemies.
-Art Attack	Blue	Physical Damage	Scraps throws several handmade creations across the battlefield.
-
-Each creation deals Physical Damage and applies a different effect:
-
-Paper Ball: Reduces Accuracy.
-
-Craft Glue: Reduces Movement Speed.
-
-Paint Splash: Reduces Attack Speed.
-
-Enemies affected by all three effects become Messy, increasing the damage they take from allies.
-Endless Imagination	Purple	Max HP
-Armor	Scraps becomes stronger through creativity.
-
-Whenever Scraps applies a different effect to enemies, she gains a stack of Creative Spark.
-
-Each stack increases:
-
-• Max HP.
-• Armor.
-• Skill Range.
-
-At maximum stacks, Scraps' crafts become more elaborate, causing her abilities to affect additional enemies.
-
-Whenever an enemy affected by one of Scraps' crafts is defeated, she restores Energy.
-Scraps' Masterpiece	Red	Max HP
-Armor
-Magic Defense	Before combat begins, Scraps creates her biggest project yet.
-
-At the start of battle, she places a giant handmade creation in the center of the battlefield.
-
-The creation:
-
-• Taunts nearby enemies.
-• Reduces enemy damage.
-• Provides nearby allies with a Shield over time.
-
-Every enemy affected by Scraps' abilities becomes Part of the Artwork.
-
-Enemies in the Artwork take increased damage from allies and have reduced Energy generation.
-
-If four or more enemies are affected, Scraps enters Creative Mode:
-
-• Her abilities have increased range.
-• She cannot be Crowd Controlled.
-• Her crafts remain active longer.
-
-Creative Mode ends when no enemies remain affected.
 Why SS Tier?
 
-Scraps is SS-tier because she combines battlefield control, protection, and scaling durability into one character. Her creativity gives her a unique way to influence fights: instead of simply attacking enemies, she changes the battlefield with her crafts.
-
-She can protect allies like a tank, disrupt enemies like a controller, and weaken opponents so her team can finish them. Her weakness is that she is not the highest damage dealer, but her ability to constantly create advantages makes her one of the strongest support tanks.
+Scraps embodies the premier relentless physical DPS archetype: high-frequency attacks, armor-shredding area control, gap-closing invulnerability, and cascading resets. By aggressively chaining her crafts and keeping enemies trapped in her growing Craft Circle, she relentlessly blends through enemy formations with non-stop scissor flurries and explosive paper shard detonations.

@@ -1,121 +1,76 @@
 Role: Tank / Support / Battlefield Director
-Tier: A Tier
+Tier: SS Tier
 
-Vee is the charismatic television host of Gardenview. She is analytical, competitive, and always wants everything to run efficiently. In Dandy's World, she specializes in gathering information through Skill Checks, making her one of the best characters at exposing Twisteds and helping her team. Rather than turning her into a generic shield tank, this kit revolves around directing the battlefield like a live television production, marking priority targets, exposing weaknesses, and protecting allies through superior planning. She stands on the front line because she controls the pace of combat, not because she is the toughest character.
+Vee is the charismatic, commanding prime-time anchor of Gardenview. Analytical, competitive, and in complete control of the studio floor, she operates as the supreme battlefield director. Rather than serving as a passive damage sponge, Vee controls the pace, camera angles, and rules of engagement. By designating high-threat enemies as the Headline, granting continuous audience healing, dilating time during Commercial Breaks, and redirecting incoming allied damage through executive production shielding, she dictates every moment of combat. In dire straits, she flips the master switch to go LIVE BROADCAST, turning every foe into a Headline under blinding studio spotlights.
 
 Spotlight On
 
-White Skill
+White Skill (Ultimate)
 Damage Type: Magic Damage
 
-Passive: Vee is constantly broadcasting the battle.
-
-Every few seconds she identifies the enemy contributing the most to their team's damage as the Headline.
-
+Passive: Vee is constantly broadcasting telemetry data across the allied ranks.
+Every 2.5 seconds, she identifies the highest-damage enemy as the 📺 Headline.
 Only one enemy may be the Headline at a time.
+All allies gain +35% Accuracy, +25% Critical Chance, and deal +30% bonus damage against the Headline.
+Whenever the Headline attacks or casts a skill, Vee records telemetry data, granting all allies 10 Energy.
+When the Headline falls, all allies heal for 20% Max HP, cleanse all debuffs, and Vee immediately designates a new Headline.
 
-All allies gain increased Accuracy and deal bonus damage against the Headline.
-
-Whenever the Headline casts a skill, Vee records valuable data, granting all allies Energy.
-
-Active: Vee floods the battlefield with blinding studio lights.
-
-All enemies take Magic Damage.
-
-The current Headline is Interrupted, briefly Blinded, and loses a percentage of their current Energy.
-
-If the Headline is defeated while marked, Vee immediately selects a new one and all allies recover Health.
+Active: Vee floods the battlefield with blinding studio spotlights.
+All enemies take heavy Magic Damage.
+The Headline is Interrupted, Stunned for 2.0s, Blinded for 6.0s, and stripped of 50% of their current Energy.
+All allies gain 🌟 Prime Time (+35% Attack Speed, +30% Skill Haste, +30% Damage Boost against Headline for 8s) and a crystalline On-Air Broadcast Shield equal to 25% of Vee's Max HP.
 
 Audience Support
 
 Green Skill
-Damage Type: Healing
+Damage Type: Healing / Shield
 
-Vee calls for audience participation.
-
-Cheers from the crowd strengthen nearby allies.
-
-The three allies with the lowest Health recover HP over several seconds while gaining Armor and Magic Defense.
-
-Any overhealing becomes a Shield.
-
-If an ally already has a Shield, they instead gain increased Energy Generation until the effect expires.
+Vee calls for live audience participation as thunderous cheering applause floods the arena.
+Cleanses up to 2 debuffs from all allies.
+The entire team recovers HP over 5s (scaling with Vee's Max HP and Magic), while gaining Studio Fortification (+35% Defense & Magic Defense).
+Overhealing crumbles into a crystalline 🛡️ Broadcast Shield.
+Allies with active shields gain ⚡ Overcharge (+35% Energy Generation, +20% Cooldown Reduction).
 
 Commercial Break
 
 Blue Skill
-Damage Type: Buff
+Damage Type: Team Buff / Enemy Stasis
 
-Vee pauses the flow of battle for the enemy team.
-
-Enemy cooldowns recover more slowly for several seconds.
-
-Meanwhile, allies regenerate Energy faster, gain increased Skill Haste, and become immune to Energy drain effects.
-
-Whenever an ally casts a skill during Commercial Break, they recover a small amount of Health.
+Vee cuts the broadcast to commercial! Time dilates across the studio floor for 6s.
+Enemy cooldowns crawl (-50% recovery speed), their Attack Speed and Move Speed drop by 35%, and their energy is completely locked (cannot gain Energy during the break).
+All allies gain 💨 Super Haste (+35% Move Speed, +30% Skill Haste), regenerate 30 Energy, and become immune to Energy drain.
+Whenever an ally casts a skill during Commercial Break, Vee broadcasts a sponsor spot that restores 10% of Vee's Max HP to the caster and zaps nearby enemies with static shock.
 
 Studio Production
 
-Purple Skill
-Damage Type: Armor
-Magic Defense
+Purple Skill (Passive)
+Damage Type: Defense / Magic Defense / Redirection
 
-Vee's production crew is always one step ahead.
-
-Whenever an ally damages the Headline, Vee gains a stack of Production Value.
-
-Each stack increases her Armor and Magic Defense.
-
-At maximum stacks:
-
-Vee redirects a portion of all damage dealt to nearby allies onto herself.
-Damage redirected this way is reduced.
-Whenever Vee survives redirected damage, she grants the protected ally a burst of Energy.
-
-Production Value is only lost if Vee is defeated.
+Vee's production crew is always five steps ahead.
+Whenever an ally damages the Headline, or whenever Vee shields or protects an ally, Vee gains 1 stack of 🎬 Production Value (max 12 stacks).
+Each stack permanently grants Vee +4.5% Defense, +4.5% Magic Defense, and +2.5% Damage Reduction.
+Executive Damage Redirection: Vee redirects 35% of all incoming damage from nearby allies onto herself, absorbing 50% of the redirected damage.
+Whenever Vee takes redirected damage, she immediately grants the protected ally 12 Energy and a reflective Static Barrier.
+At maximum stacks (12), Vee radiates an Executive Director Aura: all allies deal +20% True Damage to Headline enemies and are completely immune to Silences and Disables. Production Value is only lost if Vee falls.
 
 Season Finale
 
-Red Skill
-Damage Type: Armor
-Magic Defense
-Max HP
+Red Skill (Opener / Climax)
+Damage Type: Defense / Max HP / Live Broadcast
 
-The battlefield becomes Vee's studio.
+The battlefield becomes Vee's broadcast studio.
+Enemies build Exposure whenever they attack, cast skills, or move. At 5 Exposure stacks, they are permanently exposed as a Headline:
+Deal 25% reduced damage, cannot dodge, cannot become invisible or untargetable, receive 50% reduced healing, and take 25% increased damage from all sources.
+Whenever a Headline enemy is defeated, Vee triggers a Grand Finale:
+Restores 35 Energy to every ally, refreshes all active Shields to full strength, reduces every ally's cooldowns by 3.5s, and permanently grants Vee +6% Max HP and +6% Defense (stacking up to 5 times).
 
-At the start of combat, every enemy is analyzed.
+LIVE BROADCAST (Emergency Climax):
+Once per wave, if Vee falls below 35% HP or is the last ally standing, she enters 🔴 LIVE BROADCAST for 14 seconds:
+Cannot be interrupted or crowd-controlled.
+Heals 40% Max HP and gains +50% Magic Attack, +40% Attack Speed, and +300 Attack Range.
+Basic attacks become piercing long-range broadcast laser beams.
+Every surviving enemy is instantly branded as a 📺 Headline, triggering non-stop allied passive benefits and telemetry energy!
 
-Enemies gradually build Exposure whenever:
+Why SS Tier?
 
-They attack.
-They cast skills.
-They defeat an ally.
-
-At maximum Exposure, they become the Headline automatically.
-
-Headline enemies:
-
-Deal reduced damage.
-Cannot become Invisible or Untargetable.
-Receive reduced healing.
-Generate less Energy.
-Take increased damage from all allies.
-
-Whenever a Headline enemy is defeated, Vee immediately:
-
-Restores Energy to every ally.
-Refreshes all active Shields.
-Reduces every ally's cooldowns.
-Permanently increases her Armor and Magic Defense for the rest of the battle.
-
-Once per battle, if every other ally is defeated, Vee enters Live Broadcast for 12 seconds.
-
-During Live Broadcast:
-
-She cannot be Interrupted.
-Her basic attacks become ranged energy blasts.
-Spotlight On activates every few seconds without consuming Energy.
-Every surviving enemy is treated as the Headline.
-Why A Tier?
-
-Vee excels in coordinated teams by identifying the most dangerous opponent and turning the entire team against them. She offers reliable protection, cooldown support, and sustained utility, but her effectiveness depends on the battle developing over time. Unlike SS-tier controllers that can instantly reshape the battlefield or S-tier supports with universally powerful healing, Vee rewards planning and target prioritization, making her a uniquely strategic A-tier tank/support rather than a straightforward defensive wall.
+Vee is the quintessential battlefield director: she bends the pacing, energy flow, and target prioritization of combat entirely to her team's favor. Combining unmatched damage redirection, team-wide crowd control stasis, continuous defensive shielding, and a game-winning emergency Live Broadcast transformation, Vee guarantees total arena dominance.

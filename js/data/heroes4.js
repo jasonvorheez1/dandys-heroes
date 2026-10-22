@@ -892,8 +892,8 @@ defHero({
     healPow: 1.55, shieldPow: 1.10, cdr: .10, ccRes: .15, kbRes: .25, armorPen: 0, magPen: 0 },
   growth: { hp: .085, atk: .044, def: .082, mag: .096, mdef: .091 },
   move: { gait: 'walk', bob: 3.5, freq: 1.2, lean: 2, squash: .02, idle: 'look', step: 'step',
-    particles: 'none', pcol: '#f4a261', trail: { on: false }, brake: .35 },
-  basic: { name: 'Baked Sweets', type: 'magic', ratio: .28, range: 250, proj: 'orb', pcol: '#f4a261',
+    particles: 'crumbs', pcol: '#ffd166', trail: { on: true, col: '#ff758f', rate: .12 }, brake: .35 },
+  basic: { name: 'Baked Sweets', type: 'magic', ratio: .28, range: 250, proj: 'food', pimg: 'Brownie', pcol: '#f4a261',
     sfx: 'throwsomething', hit: 'hit_magic', wind: .15 },
   skills: {
     W: {
@@ -909,7 +909,8 @@ defHero({
         const ratio = ally.hpPct < S.lowThreshold ? S.healLow : S.heal;
         B.fxSproutSkill('bake', u, ally);
         B.heal(u, ally, ally.max.hp * ratio, { tag: 'Baked Sweets' });
-        B.fxFloatIcon(ally.x, ally.y - 90, '🍰');
+        B.fxFloatItem(ally.x, ally.y - 88, 'Brownie');
+        B.fxFloatIcon(ally.x, ally.y - 110, 'SWEET!', '#ffd166');
         B.fxSparkle(ally.x, ally.y - 50, 8, '#f4a261');
         if (u._tryHpBoost) u._tryHpBoost(ally);
         Sound.play('heal');
@@ -930,7 +931,8 @@ defHero({
           const bonus = ally.hpPct < .50 ? P.triageLowBonus : 0;
           B.heal(u, ally, ally.max.hp * (P.triageHeal + bonus), { silent: true, tag: 'triage' });
           B.fxSproutSkill('delivery', u, ally);
-          B.fxFloatIcon(ally.x, ally.y - 80, '🍞');
+          B.fxFloatItem(ally.x, ally.y - 82, 'Bread');
+          B.fxFloatIcon(ally.x, ally.y - 104, 'TRIAGE', '#80ed99');
           if (u._tryHpBoost) u._tryHpBoost(ally);
           u._triageReady = false;
         });
@@ -950,7 +952,8 @@ defHero({
           B.applyStatus(u, ally, 'regen', S.regenDur, { val: ally.max.hp * S.regenVal });
           B.applyStatus(u, ally, 'fortify', S.buffDur, { stacks: S.fortStacks });
           B.applyStatus(u, ally, 'speedup', S.buffDur);
-          B.fxFloatIcon(ally.x, ally.y - 95, '🧁');
+          B.fxFloatItem(ally.x, ally.y - 92, 'Proteinbar');
+          B.fxFloatIcon(ally.x, ally.y - 114, 'STAY CLOSE', '#ffd166');
           B.fxSparkle(ally.x, ally.y - 40, 6, '#f4a261');
           if (u._tryHpBoost) u._tryHpBoost(ally);
         });
@@ -977,13 +980,15 @@ defHero({
             // Temporary healing-received boost via flat modifier
             a.flat.healRecv = (a.flat.healRecv || 0) + S.healRecvBuff; a.dirty = true;
             B.after(S.buffDur, () => { a.flat.healRecv = (a.flat.healRecv || 0) - S.healRecvBuff; a.dirty = true; });
-            B.fxFloatIcon(a.x, a.y - 90, '🍩');
+            B.fxFloatItem(a.x, a.y - 88, i ? 'Brownie' : 'Bread');
+            B.fxFloatIcon(a.x, a.y - 110, '+HEAL REC', '#80ed99');
             if (u._tryHpBoost) u._tryHpBoost(a);
             if (a.hpPct < S.threshold) {
               B.after(.35, () => {
                 if (!a.alive) return;
                 B.heal(u, a, a.max.hp * S.bonusHeal, { tag: 'Fresh Out of the Oven (bonus)' });
-                B.fxFloatIcon(a.x, a.y - 110, '✨');
+                B.fxFloatItem(a.x, a.y - 98, 'Trinkets/SPROUT_SavoryCharm');
+                B.fxFloatIcon(a.x, a.y - 120, 'SAVORY!', '#ff758f');
                 if (u._tryHpBoost) u._tryHpBoost(a);
               });
             }
@@ -1006,10 +1011,11 @@ defHero({
         };
         B.after(.24, () => {
           if (!u.alive) return;
+          B.fxSproutSkill('batch', u, null, B.alliesOf(u));
           B.alliesOf(u).forEach(a => {
             B.heal(u, a, a.max.hp * .06, { tag: 'Fresh Batch' });
             B.applyStatus(u, a, 'receptive', 5, { val: .14 });
-            B.fxFloatIcon(a.x, a.y - 86, '🍞', '#f4a261');
+            B.fxFloatItem(a.x, a.y - 84, 'Bread');
           });
           B.fxRing(u.x, u.y - 42, 280, '#f4a261', .42);
         });
@@ -1021,7 +1027,8 @@ defHero({
         B.on(u, 'allyLethal', ev => {
           if (!ev.unit || ev.unit === u) return;
           B.energy(u, S.energyOnLethal);
-          B.fxFloatIcon(u.x, u.y - 80, '💛');
+          B.fxFloatItem(u.x, u.y - 82, 'Trinkets/SPROUT_SavoryCharm');
+          B.fxFloatIcon(u.x, u.y - 104, 'ALERT!', '#ff758f');
         });
       }
     },
@@ -1044,14 +1051,15 @@ defHero({
           u._igySaved.add(t.id);
           B.fxSproutSkill('save', u, t, B.alliesOf(u), { ultimate: true });
           B.applyStatus(u, t, 'fortify', S.fortDur, { stacks: S.fortStacks });
-          B.fxFloatIcon(t.x, t.y - 100, '💛');
+          B.fxFloatItem(t.x, t.y - 96, 'Trinkets/SPROUT_SavoryCharm');
+          B.fxFloatIcon(t.x, t.y - 120, "I'VE GOT YOU!", '#ffd166');
           B.flash('#f4a261', .28, .3);
           B.fxSparkle(t.x, t.y - 50, 14, '#f4a261');
           B.fxRing(t.x, t.y - 30, 180, '#f4a261', .5);
           B.alliesOf(u).forEach(a => {
             if (a.alive && a !== t) {
               B.heal(u, a, a.max.hp * S.otherHeal, { tag: "I've Got You" });
-              B.fxFloatIcon(a.x, a.y - 75, '🍰');
+              B.fxFloatItem(a.x, a.y - 80, 'Brownie');
             }
           });
           u.flat.healPowP3 = (u.flat.healPowP3 || 0) + S.healPowGain;

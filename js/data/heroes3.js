@@ -82,7 +82,7 @@ defHero({
         B.applyStatus(u, u, 'speedup', P.dur, { stacks: 2 });
         u._gapUntil = B.t + P.dur;
       },
-      passive: (u, B) => {
+      passive: (u, B, S, P) => {
         B.on(u, 'dealDamage', ev => { if (B.t < (u._gapUntil || 0) && ev.target.hasStatus('railmarker')) ev.amount *= P.marker; });
       }
     },
@@ -233,7 +233,7 @@ defHero({
       v: { ratio: 1.15 }, p: { dur: 6 },
       desc: (S, P) => `Gigi flips a loaded coin at the highest-Attack enemy for <em>${pcn(S.ratio * 100)}%</em> Magic Damage and Jinxes them, reducing Attack and Accuracy for ${P.dur}s. If they are already Jinxed, Gigi gains a Wheel tape.`,
       ai: { prio: 55, cond: () => true },
-      cast: (u, B, S) => {
+      cast: (u, B, S, P) => {
         const t = B.highestStat(B.enemiesOf(u), 'atk'); if (!t) return;
         B.anim(u, 'cast', .62, 'gigiLoaded'); Sound.play('gigi_ability', { vol: .30, throttle: 700 });
         B.fxProj(u, t, { kind: 'orb', col: '#ffd166' }, () => {
@@ -293,131 +293,276 @@ defHero({
 });
 
 /* ============================================================ SQUIRM
-   Tank / DPS - A Tier. Survives by eating books at the worst possible times. */
+   Tank / Disruptor / Survivor - SS Tier */
 defHero({
   id: 'Squirm', name: 'Squirm', folder: 'Squirm', file: 'Squirm', icon: 'Squirm',
-  role: 'Tank', tier: 'A', element: 'Paper',
-  blurb: 'Constantly one inconvenience away from falling apart, and somehow harder to finish off the more pressure you put on him.',
-  base: { hp: 5850, atk: 240, def: 335, mag: 168, mdef: 268, spd: 90, acc: 168, eva: 88 },
-  hidden: { range: 175, aspd: .84, ms: 58, aggro: 1.75, crit: .05, critDmg: 1.5, healPow: 1.15, shieldPow: 1.35,
-    cdr: .04, ccRes: .18, kbRes: .55, armorPen: .06, magPen: 0 },
-  growth: { hp: .114, atk: .074, def: .100, mag: .058, mdef: .088 },
+  role: 'Tank', tier: 'SS', element: 'Paper',
+  blurb: 'Constantly on the verge of a panic attack, and terrifyingly unstoppable once the stress sets in. The more pressure and chaos in the room, the harder he hits, heals, and fortifies.',
+  base: { hp: 5850, atk: 270, def: 380, mag: 180, mdef: 370, spd: 110, acc: 210, eva: 95 },
+  hidden: { range: 185, aspd: 1.02, ms: 68, aggro: 1.85, crit: .08, critDmg: 1.6, healPow: 1.15, shieldPow: 1.20,
+    cdr: .10, ccRes: .35, kbRes: .70, armorPen: .10, magPen: 0 },
+  growth: { hp: .115, atk: .082, def: .110, mag: .060, mdef: .108 },
   move: { gait: 'skitter', bob: 6, freq: 3.4, lean: 8, squash: .08, idle: 'jitter', step: 'step_soft',
     particles: 'paint', pcol: '#e8d4a0', trail: { on: false }, brake: .6, jitter: 2.4 },
-  basic: { name: 'Panicked Nibble', type: 'physical', ratio: 1.0, range: 175, sfx: 'swing_light', hit: 'hit_light', animStyle: 'squirmNibble',
-    wind: .12, note: 'Bites first, worries about it after.' },
+  basic: {
+    name: 'Panicked Nibble & Paper Shred', type: 'physical', ratio: 1.15, range: 185, sfx: 'swing_light', hit: 'hit_light', animStyle: 'squirmNibble',
+    wind: .12, note: 'Bites first, worries about it after. Bites shred enemy Armor and siphon Energy.',
+    onHit: (u, t, B) => {
+      B.energy(u, 7);
+      B.applyStatus(u, t, 'defdown', 5, { stacks: 1 });
+      u._squirmHits = (u._squirmHits || 0) + 1;
+      if (u._squirmHits % 3 === 0) {
+        Sound.play('squirm_book_chomp', { vol: .52, throttle: 120 });
+        Sound.play('hit_blade', { vol: .4, throttle: 120 });
+        B.heal(u, u, u.max.hp * 0.015, { tag: 'Panicked Nibble' });
+        B.fxSquirmSkill('jolt', t);
+        B.enemiesOf(u).forEach(e => {
+          if (B.distance(t, e) <= 180) {
+            B.damage(u, e, u.st.atk * 0.55, { type: 'physical', tag: 'Paper Shred' });
+          }
+        });
+      }
+      if (u._biblioPanic) {
+        B.enemiesOf(u).forEach(e => {
+          if (B.distance(u, e) <= 200) {
+            B.damage(u, e, u.st.atk * 0.40, { type: 'physical', tag: 'Biblio Cleave' });
+            B.fxSparkle(e.x, e.y - 35, 5, '#f4e7bb');
+          }
+        });
+      }
+    }
+  },
   skills: {
     W: {
-      name: 'Distressed Delicacy', type: 'Defense', energy: 100,
-      v: { heal: .12, hp: .30, jolt: 1.6 }, p: { thr: .60, dur: 3.5, icd: 6 },
-      desc: (S, P) => `<span class="sk-pas">Below ${pc(P.thr)} HP, getting hit has a chance to make Squirm eat a book, healing <em>${pcn(S.heal * 100)}</em> Max HP (short cooldown).</span>
-        Active: Squirm frantically eats for ${P.dur}s, gaining <em>${pcn(S.hp * 100)}</em> Max HP and heavy Damage Reduction. He cannot Basic Attack but cannot be interrupted. When it ends he releases the book in a nervous jolt - the lower his HP was when he started, the harder it hits.`,
+      name: 'Distressed Delicacy', type: 'Physical Damage / Sustain', energy: 100,
+      v: { heal: .14, jolt: 2.20, shred: .25 }, p: { thr: .50, dur: 3.0, icd: 12.0, stun: 1.2 },
+      desc: (S, P) => `<span class="sk-pas">Below ${pc(P.thr)} HP, taking damage makes Squirm stress-eat an ancient tome: heals <em>${pcn(S.heal * 100)}</em> Max HP, cleanses 2 debuffs, and gains a Ward (${P.icd}s cooldown). Frantic chewing inspires allies, granting <em>8</em> Energy.</span>
+        Active: Squirm burrows into a massive tome for ${P.dur}s, gaining +30% Damage Reduction, CC Immunity, Disarm, and rapid HP regeneration (recovers <em>${pcn(S.heal * 100)}</em> Max HP over ${P.dur}s). When it ends, he unleashes a seismic Literary Shockwave dealing <em>${pcn(S.jolt * 100)}</em> Attack Physical Damage (+up to 60% more based on missing HP), Stunning enemies for ${P.stun}s and shredding 25% Armor & Magic Defense for 6s.`,
       passive: (u, B, S, P) => {
         B.on(u, 'damaged', () => {
           if (u.hpPct > P.thr || !u.alive) return;
           if (u._eatCd && B.t - u._eatCd < P.icd) return;
-          if (!chance(.35)) return;
-          u._eatCd = B.t; Sound.play('squirm_book_chomp', { vol: .48 });
-          B.heal(u, u, u.max.hp * S.heal, { tag: 'book' }); B.fxSquirmSkill('eat', u, { dur: .8 });
+          u._eatCd = B.t; Sound.play('squirm_book_chomp', { vol: .6 });
+          B.cleanse(u, 2);
+          B.heal(u, u, u.max.hp * S.heal, { tag: 'Distressed Delicacy' });
+          B.applyStatus(u, u, 'ward', 3.5);
+          B.alliesOf(u).forEach(a => B.energy(a, 8));
+          B.fxSquirmSkill('eat', u, { dur: .9 });
         });
       },
       cast: (u, B, S, P) => {
         const startPct = u.hpPct;
-        B.anim(u, 'cast', .88, 'squirmEat'); Sound.play('squirm_book_chomp', { vol: .62 }); B.fxSquirmSkill('eat', u, { dur: P.dur });
-        u.flat.hpP2 = S.hp; B.applyStatus(u, u, 'ward', P.dur);
-        B.applyStatus(u, u, 'disarm', P.dur); u.dirty = true;
+        B.anim(u, 'cast', .88, 'squirmEat'); Sound.play('squirm_book_chomp', { vol: .7 }); B.fxSquirmSkill('eat', u, { dur: P.dur });
+        B.applyStatus(u, u, 'ward', P.dur);
+        B.applyStatus(u, u, 'ccimmune', P.dur); B.applyStatus(u, u, 'disarm', P.dur);
+        B.applyStatus(u, u, 'regen', P.dur, { val: u.max.hp * S.heal / P.dur });
         B.after(P.dur, () => {
           if (!u.alive) return;
-          u.flat.hpP2 = 0; u.dirty = true;
-          B.anim(u, 'cast', .52, 'squirmJolt'); Sound.play('squirm_panic_flail', { vol: .62 }); B.shake(10, .3); B.fxSquirmSkill('jolt', u);
-          const mult = 1 + (1 - startPct) * 2;
-          B.aoe(u, u.x, 210, u.team, u.st.atk * S.jolt * mult, { type: 'physical', tag: 'Distressed Delicacy' });
+          B.anim(u, 'cast', .52, 'squirmJolt'); Sound.play('squirm_panic_flail', { vol: .7 }); Sound.play('ult', { vol: .6 });
+          B.shake(10, .35); B.flash('#f4e7bb', .25, .4); B.fxSquirmSkill('jolt', u);
+          const mult = 1 + (1 - startPct) * 0.60;
+          B.aoe(u, u.x, 240, u.team, u.st.atk * S.jolt * mult, { type: 'physical', tag: 'Distressed Delicacy' });
+          B.enemiesOf(u).forEach(e => {
+            if (B.distance(u, e) <= 240) {
+              B.applyStatus(u, e, 'stun', P.stun);
+              B.applyStatus(u, e, 'defdown', 6, { stacks: 2 });
+              B.applyStatus(u, e, 'magdown', 6, { stacks: 2 });
+            }
+          });
         });
       }
     },
     G: {
-      name: "Please Don't Hurt Me", type: 'Shield', cd: 11,
-      v: { shield: .28, heal: .06 }, p: { dur: 6, slow: 3 },
-      desc: (S, P) => `Squirm curls up, gaining a Shield worth <em>${pcn(S.shield * 100)}</em> of his Max HP and healing <em>${pcn(S.heal * 100)}</em> Max HP per second for ${P.dur}s. While the Shield holds, attackers are 🐢 Slowed and deal less damage to him. If the Shield breaks, he gains a burst of Armor and Magic Defense.`,
-      ai: { prio: 56, cond: (u) => u.hpPct < .85 },
+      name: "Please Don't Hurt Me", type: 'Shield / Reflect', cd: 12,
+      v: { shield: .22, heal: .025, reflect: .25, fortify: .25 }, p: { dur: 4.5, slow: 3.5, tauntDur: 2.5 },
+      desc: (S, P) => `Squirm curls up defensively into a razor-edged paper cocoon, gaining a Shield worth <em>${pcn(S.shield * 100)}</em> of his Max HP and healing <em>${pcn(S.heal * 100)}</em> Max HP per second for ${P.dur}s. While the Shield holds, he reflects <em>${pcn(S.reflect * 100)}</em> incoming damage back to attackers, and attackers are Slowed and Weakened. When the Shield breaks or ends, Squirm unleashes a Spine Shiver burst: Taunts all nearby enemies for ${P.tauntDur}s and grants all allies Fortification (+25% Def & MDef for 6s) and 15 Energy!`,
+      ai: { prio: 60, cond: u => u.hpPct < .85 },
       cast: (u, B, S, P) => {
-        B.anim(u, 'cast', .62, 'squirmCurl'); Sound.play('squirm_curl_shield', { vol: .56 }); B.fxSquirmSkill('curl', u);
-        B.shield(u, u, u.max.hp * S.shield, P.dur, {
-          onBreak: () => { B.applyStatus(u, u, 'fortify', 6, { stacks: 3 }); Sound.play('icebreak'); B.fxSquirmSkill('break', u); }
-        });
+        B.anim(u, 'cast', .65, 'squirmCurl'); Sound.play('squirm_curl_shield', { vol: .65 }); B.fxSquirmSkill('curl', u);
+        const burstShiver = () => {
+          if (u._spineShiverUsed) return;
+          u._spineShiverUsed = true;
+          Sound.play('icebreak'); Sound.play('cheer', { vol: .4 }); B.fxSquirmSkill('break', u);
+          B.enemiesOf(u).forEach(e => {
+            if (B.distance(u, e) <= 220) B.applyStatus(u, e, 'taunt', P.tauntDur);
+          });
+          B.alliesOf(u).forEach(a => {
+            B.applyStatus(u, a, 'fortify', 6, { stacks: 2 });
+            B.energy(a, 15);
+            B.fxSparkle(a.x, a.y - 45, 6, '#f5e5b2');
+          });
+        };
+
+        u._spineShiverUsed = false;
+        B.shield(u, u, u.max.hp * S.shield, P.dur, { onBreak: burstShiver });
         B.applyStatus(u, u, 'regen', P.dur, { val: u.max.hp * S.heal });
         u._curledUntil = B.t + P.dur;
-        B.on(u, 'damaged', ev => {
-          if (B.t >= (u._curledUntil || 0) || !ev.src) return;
-          B.applyStatus(u, ev.src, 'slow', P.slow);
-          B.applyStatus(u, ev.src, 'weaken', P.slow, { stacks: 1 });
-        });
+        B.after(P.dur, burstShiver);
+
+        if (!u._gReflectRegistered) {
+          u._gReflectRegistered = true;
+          B.on(u, 'damaged', ev => {
+            if (B.t >= (u._curledUntil || 0) || !ev.src || ev.dot || ev.tag === 'Reflected Spine') return;
+            B.applyStatus(u, ev.src, 'slow', P.slow);
+            B.applyStatus(u, ev.src, 'weaken', P.slow, { stacks: 1 });
+            B.damage(u, ev.src, ev.amount * S.reflect, { type: 'physical', noDodge: true, tag: 'Reflected Spine' });
+          });
+        }
       }
     },
     B: {
-      name: 'Nervous Flailing', type: 'Physical Damage', cd: 13,
-      v: { ratio: .38, heal: .05 }, p: { hits: 5, radius: 190, max: 4 },
-      desc: (S, P) => `Squirm flails ${P.hits} times at everything nearby for <em>${pcn(S.ratio * 100)}</em> Attack each, interrupting them. Every distinct enemy struck grants Damage Reduction (up to ${P.max} stacks). Below half HP, the final strike heals him based on how many enemies were hit.`,
-      ai: { prio: 50, cond: (u, B) => B.enemiesOf(u).some(e => B.distance(e, u) < 190) },
+      name: 'Nervous Flailing', type: 'Physical Damage / Interrupt', cd: 11,
+      v: { ratio: .48, heal: .03, slam: 1.25 }, p: { hits: 6, radius: 210, maxStacks: 5, stun: 1.0 },
+      desc: (S, P) => `Squirm completely loses his composure, rolling forward and whirling his many limbs in a 6-hit flurry of paper slashes for <em>${pcn(S.ratio * 100)}</em> Attack each, interrupting enemies. Each distinct enemy hit grants 1 stack of Panic Armor (up to ${P.maxStacks} stacks: +5% Def, +5% MDef, +2% Damage Reduction for 7s). Below 50% HP, hits siphon a small amount of HP. The 6th hit slams the ground for <em>${pcn(S.slam * 100)}</em> Attack, Stunning enemies for ${P.stun}s!`,
+      ai: { prio: 52, cond: (u, B) => B.enemiesOf(u).some(e => B.distance(e, u) < 210) },
       cast: (u, B, S, P) => {
-        // Give the roll enough runway to read as a deliberate panic tumble.
-        // The hit loop stays compact, while the final part of the animation
-        // is reserved for Squirm's awkward landing.
-        B.anim(u, 'attack', .86, 'squirmFlailRoll'); Sound.play('squirm_panic_flail', { vol: .62 }); B.fxSquirmSkill('flail', u);
+        B.anim(u, 'attack', .86, 'squirmFlailRoll'); Sound.play('squirm_panic_flail', { vol: .65 }); B.fxSquirmSkill('flail', u);
         const struck = new Set();
-        B.repeat(P.hits, .11, i => {
+        B.repeat(P.hits, .10, i => {
           B.enemiesOf(u).forEach(e => {
             if (B.distance(e, u) > P.radius) return;
-            Sound.play('hit_light', { vol: .45, throttle: 10 });
+            Sound.play('hit_blade', { vol: .42, throttle: 15 });
             B.damage(u, e, u.st.atk * S.ratio, { type: 'physical', tag: 'Nervous Flailing' });
             B.interrupt(e); struck.add(e);
+            if (u.hpPct < .50) B.heal(u, u, u.max.hp * (S.heal * 0.3), { tag: 'Flail Siphon', silent: true });
           });
-          B.shake(3, .1);
+          B.shake(3, .08);
           if (i === P.hits - 1) {
-            B.applyStatus(u, u, 'fortify', 8, { stacks: Math.min(P.max, struck.size) });
-            if (u.hpPct < .5 && struck.size) B.heal(u, u, u.max.hp * S.heal * struck.size, { tag: 'Nervous Flailing' });
+            Sound.play('hit_heavy', { vol: .6 }); B.shake(7, .25);
+            B.enemiesOf(u).forEach(e => {
+              if (B.distance(e, u) <= P.radius) {
+                B.damage(u, e, u.st.atk * S.slam, { type: 'physical', tag: 'Flail Slam' });
+                B.applyStatus(u, e, 'stun', P.stun);
+              }
+            });
+            B.applyStatus(u, u, 'fortify', 7, { stacks: Math.min(P.maxStacks, struck.size) });
           }
         });
       }
     },
     P: {
-      name: 'Bookworm', type: 'Passive',
-      v: { hp: .012, cc: .05 }, p: { max: 15 },
-      desc: (S, P) => `Whenever Squirm heals himself through one of his own skills, he permanently gains <em>${pcn(S.hp * 100)}</em> Max HP for the rest of the battle, up to ${P.max} times. While under any Crowd Control, he gains Armor and Magic Defense that grows the longer it lasts.`,
+      name: 'Bookworm', type: 'Passive / Growth / Tenacity',
+      v: { hp: .012, healRec: .010, atk: .012, ccDef: .25 }, p: { maxStacks: 10, ccIcd: 5.0 },
+      desc: (S, P) => `Whenever Squirm restores Health through any skill or stress-eating, he digests the literary knowledge, permanently gaining 1 stack of 📖 <b>Digestive Erudition</b> (max ${P.maxStacks}). Each stack grants <em>+${(S.hp * 100).toFixed(1)}%</em> Max HP, <em>+${(S.healRec * 100).toFixed(1)}%</em> Healing Received, and <em>+${(S.atk * 100).toFixed(1)}%</em> Attack.
+        <b>Panic Reflex</b>: When hit by Crowd Control, Squirm immediately gains +25% Def & MDef, heals 4% Max HP (5s cooldown), and generates Energy 30% faster while CC'd. At ${P.maxStacks} stacks, radiates a <b>Walking Archive Aura</b>: reduces damage taken by all allies by 8% and grants them +10% Skill Haste.`,
       passive: (u, B, S, P) => {
         u.bookStacks = 0;
         B.on(u, 'healDone', ev => {
-          if (ev.target !== u || u.bookStacks >= P.max) return;
-          u.bookStacks++; u.flat.hpP3 = u.bookStacks * S.hp; u.dirty = true;
+          if (ev.target !== u || (u.bookStacks || 0) >= P.maxStacks) return;
+          u.bookStacks = (u.bookStacks || 0) + 1;
+          u.flat.hpPBook = u.bookStacks * S.hp;
+          u.flat.healRecPBook = u.bookStacks * S.healRec;
+          u.flat.atkPBook = u.bookStacks * S.atk;
+          u.dirty = true;
+          if (u.bookStacks === P.maxStacks) {
+            B.fxFloatIcon(u.x, u.y - 110, '📚 WALKING ARCHIVE', '#f5e5b2');
+            Sound.play('get_rare', { vol: .5 });
+          }
         });
+
+        B.on(u, 'statusApplied', ev => {
+          if (ev.unit === u && STATUS[ev.id] && STATUS[ev.id].cc && u.alive) {
+            if (u._panicReflexAt && B.t - u._panicReflexAt < P.ccIcd) return;
+            u._panicReflexAt = B.t;
+            Sound.play('squirm_book_chomp', { vol: .45 });
+            B.heal(u, u, u.max.hp * 0.04, { tag: 'Panic Reflex' });
+            B.energy(u, 10);
+            B.fxSparkle(u.x, u.y - 45, 6, '#f4e7bb');
+          }
+        });
+
         B.every(u, .5, () => {
-          const cc = u.statuses.find(s => STATUS[s.id].cc);
-          if (cc) { u._ccStart = u._ccStart || B.t; const t = clamp((B.t - u._ccStart) * S.cc, 0, .35);
-            u.flat.defP2 = t; u.flat.mdefP2 = t; u.dirty = true; }
-          else if (u._ccStart) { u._ccStart = 0; u.flat.defP2 = 0; u.flat.mdefP2 = 0; u.dirty = true; }
+          const cc = u.statuses.find(s => STATUS[s.id] && STATUS[s.id].cc);
+          if (cc) {
+            u.flat.defPCC = S.ccDef;
+            u.flat.mdefPCC = S.ccDef;
+            u.energyGenBonus = 0.30;
+            u.dirty = true;
+          } else if (u.flat.defPCC) {
+            u.flat.defPCC = 0;
+            u.flat.mdefPCC = 0;
+            u.energyGenBonus = 0;
+            u.dirty = true;
+          }
+        });
+
+        B.teamAura(u, m => {
+          if ((u.bookStacks || 0) >= P.maxStacks) {
+            m.dmgRedP += 0.08;
+            m.cdr += 0.10;
+          }
         });
       }
     },
     R: {
-      name: 'What Could Go Wrong?', type: 'Survival',
-      v: { heal: .20, revive: .25 }, p: { thresholds: [.5, .25] },
-      desc: (S, P) => `Whenever Squirm crosses ${P.thresholds.map(t => pc(t)).join(' or ')} HP he immediately heals <em>${pcn(S.heal * 100)}</em> Max HP and gains Damage Reduction - each threshold once. If he would be defeated, he instead eats a book and survives at <em>${pc(S.revive)}</em> HP, once per battle, immediately refreshing Distressed Delicacy and gaining permanent Armor and Magic Defense.`,
+      name: 'What Could Go Wrong?', type: 'Opener / Climax / Lethal Defiance',
+      v: { heal: .14, wardShield: .16, reviveHp: .30, panicAtk: .30, panicAspd: .25 }, p: { thresholds: [.50, .25], panicDur: 10 },
+      desc: (S, P) => `Dual-Phase Panic Thresholds: When Squirm's Health drops below 50% or 25% Max HP, he panic-eats: cleanses 2 debuffs, restores <em>${pcn(S.heal * 100)}</em> Max HP, gains a 🛡️ Ward Shield for <em>${pcn(S.wardShield * 100)}</em> Max HP for 4.5s, and gives all allies 10 Energy. (Each threshold once per battle).
+        📚 <b>FULL BIBLIO-PANIC (Lethal Defiance)</b>: Once per battle, upon taking lethal damage or dropping below 12% HP, Squirm devours an entire encyclopedia! Restores <em>${pcn(S.reviveHp * 100)}</em> Max HP, gains Invulnerability for 1.5s, CC Immunity for ${P.panicDur}s, cuts remaining skill cooldowns by 50%, gains +30% Attack, +25% Attack Speed, +15% Def & MDef for ${P.panicDur}s, piercing basic attacks, and Taunts all enemies for 3.0s!`,
       passive: (u, B, S, P) => {
         u._thresholds = P.thresholds.slice();
+        u._wcgwUsed = false;
+        u._biblioPanic = false;
+
+        B.on(u, 'waveStart', () => {
+          u._thresholds = P.thresholds.slice();
+          u._wcgwUsed = false;
+          u._biblioPanic = false;
+        });
+
         B.on(u, 'damaged', () => {
           if (!u._thresholds.length || !u.alive) return;
           if (u.hpPct > u._thresholds[0]) return;
-          u._thresholds.shift();
-          Sound.play('squirm_book_chomp', { vol: .5 }); B.heal(u, u, u.max.hp * S.heal, { tag: 'What Could Go Wrong?' }); B.fxSquirmSkill('eat', u, { dur: .75 });
-          B.applyStatus(u, u, 'ward', 5);
+          const thr = u._thresholds.shift();
+          Sound.play('squirm_book_chomp', { vol: .55 });
+          B.cleanse(u, 2);
+          B.heal(u, u, u.max.hp * S.heal, { tag: 'What Could Go Wrong?' });
+          B.shield(u, u, u.max.hp * S.wardShield, 4.5);
+          B.alliesOf(u).forEach(a => B.energy(a, 10));
+          B.fxSquirmSkill('eat', u, { dur: .75 });
+          B.fxFloatIcon(u.x, u.y - 110, '📚 ' + pc(thr) + ' CONTINGENCY', '#f5e5b2');
         });
-        B.on(u, 'lethal', ev => {
-          if (u._wcgwUsed) return;
-          u._wcgwUsed = true; ev.prevented = true;
-          u.hp = u.max.hp * S.revive;
-          Sound.play('squirm_book_chomp', { vol: .7 }); B.anim(u, 'cast', .64, 'squirmJolt'); B.fxSquirmSkill('revive', u); B.shake(14, .5); B.flash('#e8d4a0', .4, .4);
-          B.log('<b>Squirm was NOT ready for that.</b>');
-          B.resetCd(u, 'W'); u.flat.defP4 = .25; u.flat.mdefP4 = .25; u.dirty = true;
+
+        const triggerBiblioPanic = (ev) => {
+          if (u._wcgwUsed || !u.alive) return;
+          u._wcgwUsed = true;
+          u._biblioPanic = true;
+          if (ev) ev.prevented = true;
+          u.hp = u.max.hp * S.reviveHp;
+          Sound.play('squirm_book_chomp', { vol: .8 }); Sound.play('suddendeath'); Sound.play('ult');
+          B.anim(u, 'cast', .64, 'squirmJolt');
+          if (B.fxSquirmBiblioPanic) B.fxSquirmBiblioPanic(u.x, u.y); else B.fxSquirmSkill('revive', u);
+          B.shake(12, .45); B.flash('#f4e7bb', .3, .4);
+          B.log('<b>📚 SQUIRM ENTERED FULL BIBLIO-PANIC!</b>');
+          B.applyStatus(u, u, 'invulnerable', 1.5);
+          B.applyStatus(u, u, 'ccimmune', P.panicDur);
+          B.applyStatus(u, u, 'haste', P.panicDur, { stacks: 2 });
+          if (u._cd) {
+            if (u._cd.W) u._cd.W *= 0.5;
+            if (u._cd.G) u._cd.G *= 0.5;
+            if (u._cd.B) u._cd.B *= 0.5;
+          }
+          u.flat.atkPPanic = S.panicAtk;
+          u.flat.aspdPPanic = S.panicAspd;
+          u.flat.defPPanic = 0.15;
+          u.flat.mdefPPanic = 0.15;
+          u.rangeBonus = 60;
+          u.dirty = true;
+          B.after(P.panicDur, () => {
+            if (!u.alive) return;
+            u.flat.atkPPanic = 0;
+            u.flat.aspdPPanic = 0;
+            u.flat.defPPanic = 0;
+            u.flat.mdefPPanic = 0;
+            u.rangeBonus = 0;
+            u.dirty = true;
+          });
+          B.enemiesOf(u).forEach(e => B.applyStatus(u, e, 'taunt', 3.0));
+        };
+
+        B.on(u, 'lethal', ev => triggerBiblioPanic(ev));
+        B.every(u, 0.5, () => {
+          if (!u._wcgwUsed && u.alive && u.hpPct <= 0.12) triggerBiblioPanic(null);
         });
       }
     }
@@ -679,8 +824,8 @@ defHero({
             B.energy(ev.unit, Math.min(25, Math.round(ev.amount * 0.25 / 10)));
           }
         };
-        B.on(u, 'allyDamaged', onAllyDamaged);
-        B.after(P.dur, () => { B.off(u, 'allyDamaged', onAllyDamaged); });
+        const removeAllyDamaged = B.on(u, 'allyDamaged', onAllyDamaged);
+        B.after(P.dur, removeAllyDamaged);
       },
       passive: (u, B) => {
         B.every(u, 0.8, () => {
@@ -800,10 +945,10 @@ defHero({
             B.fxSparkle(ev.src.x, ev.src.y - 40, 5, '#ffe066');
           }
         };
-        B.on(u, 'damaged', onDamaged);
+        const removeDamaged = B.on(u, 'damaged', onDamaged);
 
         B.after(P.dur, () => {
-          B.off(u, 'damaged', onDamaged);
+          removeDamaged();
           u.flat.evaP_mocking = 0;
           u.dirty = true;
           if (u.alive) {

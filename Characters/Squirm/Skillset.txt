@@ -1,56 +1,78 @@
-Squirm
+Role: Tank / Disruptor / Survivor
+Tier: SS Tier
 
-Role: Tank / DPS
-Tier: A Tier
+Squirm is Gardenview's anxious, book-munching centipede-like bibliophile. Under Dandy's Heroes Battle Mania (DHBM) standards, Squirm is a high-tension, high-disruption frontline Tank. Constantly on the verge of a panic attack, his sheer terror and neurotic coping mechanisms—stress-eating ancient tomes, curling into a razor-sharp paper cocoon, and wildly flailing all of his many limbs in a paper-shredding flurry—make him a resilient, clutch protector. While formidable under pressure, he is balanced and mortal: enemy teams with concentrated burst or anti-heal can overwhelm him, but ignoring his panic triggers will unleash FULL BIBLIO-PANIC to turn the tide of defeat into overwhelming victory.
 
-Name	Rarity	Damage Type	Description
-Distressed Delicacy	White	Physical Damage
-Max HP	Passive: Whenever Squirm takes damage while below 60% HP, he has a chance to immediately consume a book, restoring some Health. This effect has a short cooldown.
+Distressed Delicacy
 
-Active: Squirm begins frantically eating a book, gaining increased Max HP and Damage Reduction for several seconds. While eating, he cannot use Basic Attacks but cannot be interrupted.
+White Skill (Ultimate)
+Damage Type: Physical Damage / Sustain / Crowd Control
 
-When the effect ends, Squirm releases the book with a nervous jolt, dealing Physical Damage to nearby enemies. The lower Squirm's HP was when he began eating, the stronger the attack becomes.
-Please Don't Hurt Me	Green	Shield
-Healing	Squirm curls himself up defensively, gaining a large Shield based on his Max HP and restoring Health over several seconds.
+Passive: Squirm's stress-eating instincts activate when danger closes in. Whenever Squirm takes damage while below 50% HP, he instinctively devours an ancient volume, restoring 14% Max HP, cleansing 2 debuffs, and gaining a Ward barrier for 3.5s (12s internal cooldown). Whenever Squirm stress-eats, his frantic chewing inspires his allies, granting all allies 8 Energy!
 
-While the Shield remains, enemies that attack Squirm are briefly slowed and deal reduced damage to him.
+Active: Squirm completely panics and burrows into a massive enchanted tome for 3.0 seconds!
+- Gains +30% Damage Reduction, CC Immunity, Disarm, and rapid continuous regeneration (recovering 14% Max HP over the duration).
+- While eating, Squirm cannot use Basic Attacks, but he cannot be interrupted or displaced.
+- When the feast ends, Squirm violently ejects the book with a Literary Shockwave!
+- Deals Physical Damage (2.20x Attack) to all enemies within 240px (+up to 60% bonus damage based on missing HP).
+- All enemies hit by the shockwave are Stunned for 1.2s and suffer 25% Armor and Magic Defense shred for 6s.
 
-If the Shield is destroyed, Squirm immediately gains increased Armor and Magic Defense for several seconds.
-Nervous Flailing	Blue	Physical Damage	Squirm panics and rapidly flails his many limbs around himself, striking nearby enemies several times.
+Please Don't Hurt Me
 
-Each hit deals Physical Damage and briefly interrupts enemies.
+Green Skill
+Damage Type: Shield / Reflect / Team Fortification
+Cooldown: 12 seconds
 
-For every enemy struck, Squirm gains a small amount of Damage Reduction for several seconds. This effect can stack up to a limit.
+Squirm curls up defensively into a razor-edged paper cocoon, begging to be left alone!
+- Gains a paper shield equal to 22% of his Max HP and recovers 2.5% Max HP per second for 4.5 seconds (11.25% Max HP total).
+- While the Shield remains active, Squirm reflects 25% of incoming damage back onto attackers as Physical Damage, and attackers are Slowed (-35% Attack Speed and Move Speed) and Weakened (-20% Attack) for 3.5s.
+- When the Shield breaks or expires, Squirm unleashes a Spine Shiver burst:
+- Taunts all nearby enemies within 220px for 2.5s, forcing them to focus him.
+- Grants Squirm and all allies Fortification (+25% Defense and Magic Defense for 6s) and restores 15 Energy to every ally.
 
-If Squirm is below half HP, the final strike also restores Health based on the number of enemies hit.
-Bookworm	Purple	Max HP
-Armor
-Magic Defense	Squirm's strange appetite has made him surprisingly difficult to wear down.
+Nervous Flailing
 
-Whenever Squirm restores Health through one of his skills, he permanently gains a small amount of Max HP for the remainder of the battle, up to a limit.
+Blue Skill
+Damage Type: Physical Damage / Interrupt / Lifesteal
+Cooldown: 11 seconds
 
-Whenever Squirm is affected by Stun, Silence, Slow, or another Crowd Control effect, he gains Armor and Magic Defense while the effect lasts.
+Squirm completely loses his composure, rolling forward and wildly flailing his numerous limbs in a 6-hit flurry of paper slashes!
+- Strikes all enemies within a 210px radius 6 times for 48% Attack Physical Damage each.
+- Each hit interrupts enemies and knocks them back slightly.
+- For every distinct enemy struck, Squirm gains 1 stack of Panic Armor (up to 5 stacks: +5% Defense, +5% Magic Defense, and +2% Damage Reduction for 7s).
+- Desperate Siphon: If Squirm is below 50% HP, hits siphon a small amount of HP per enemy struck.
+- Final Slam: The 6th strike is a double-limb ground slam that deals 1.25x Attack area damage and Stuns all enemies in the radius for 1.0s.
 
-The longer Squirm remains under Crowd Control, the stronger these defensive increases become.
-What Could Go Wrong?	Red	Max HP
-Armor
-Magic Defense	Squirm constantly expects the worst, and somehow this makes him very difficult to finish off.
+Bookworm
 
-Whenever Squirm falls below certain percentages of his Max HP, he immediately restores Health and gains Damage Reduction for several seconds. Each threshold can only activate once per battle.
+Purple Skill (Passive)
+Damage Type: Permanent Stat Scaling / CC Tenacity / Team Aura
 
-Whenever Squirm would be defeated, he instead consumes a book and survives with a portion of his Max HP. This effect can only activate once per battle.
+Squirm's peculiar appetite allows him to absorb the wisdom and structural integrity of the texts he consumes.
+- Whenever Squirm restores Health through any of his skills or stress-eating, he digests the literary knowledge, permanently gaining 1 stack of 📖 Digestive Erudition for the remainder of battle (up to 10 stacks).
+- Each stack permanently grants Squirm +1.2% Max HP, +1.0% Healing Received, and +1.2% Attack.
+- Panic Reflex (CC Tenacity): Whenever affected by Crowd Control (Stun, Silence, Freeze, Sleep, Slow, Root), Squirm panics!
+- Gains +25% Defense and Magic Defense for the duration of the CC.
+- Heals 4% Max HP upon being CC'd (5s internal cooldown).
+- Generates Energy 30% faster while under Crowd Control.
+- Walking Archive Aura: At maximum stacks (10), Squirm radiates compiled knowledge, reducing incoming damage taken by all allies by 8% and granting all allies +10% Skill Haste.
 
-After surviving this way, Distressed Delicacy immediately becomes available and Squirm gains increased Armor and Magic Defense for the remainder of the battle.
-Why A Tier?
+What Could Go Wrong?
 
-Squirm's strength is surviving situations that should have killed him.
+Red Skill (Opener / Climax)
+Damage Type: Dual-Threshold Survival / Lethal Defiance / Full Biblio-Panic
 
-His actual Dandy's World ability is already based around stress eating books, with his cooldown recovering faster near bookshelves. Rather than awkwardly translating his extraction ability into combat, the RPG version turns that same behavior into a defensive resource.
+Squirm constantly anticipates worst-case scenarios, turning his chronic anxiety into survival contingencies.
+- Dual-Phase Panic Thresholds: When Squirm's Health drops below 50% and 25% Max HP, he instinctively panic-eats:
+- Cleanses 2 debuffs, restores 14% Max HP, gains a Ward Shield (16% Max HP for 4.5s), and grants 10 Energy to all allies. (Each threshold activates once per battle).
 
-He has several ways to recover from low HP, temporary Shields, escalating defenses, and an emergency survival effect. Bookworm also makes Crowd Control less reliable against him, which fits his tendency to become increasingly distressed when overwhelmed without simply making him immune to everything.
+- 📚 FULL BIBLIO-PANIC (Emergency Climax & Lethal Defiance):
+- Once per battle, whenever Squirm would suffer lethal damage (or if his HP falls below 12%):
+- Squirm devours an entire encyclopedia, restoring 30% Max HP and gaining Invulnerability for 1.5s and CC Immunity for 10 seconds.
+- Reduces remaining cooldowns of Please Don't Hurt Me (G) and Nervous Flailing (B) by 50%.
+- Enters FULL BIBLIO-PANIC for 10 seconds: gains +30% Attack, +25% Attack Speed, +15% Defense & Magic Defense, and piercing paper slash basic attacks!
+- Emits a panic shriek that Taunts all surviving enemies for 3.0 seconds.
 
-His DPS is intentionally secondary. Nervous Flailing gives him respectable close-range damage, but his real value comes from staying alive, disrupting enemies, and forcing opponents to spend considerably more resources than expected to remove him.
+Why SS Tier?
 
-He isn't S tier because he offers relatively little protection to other allies. He's primarily protecting himself. He also lacks the positioning control of Scraps or the team-wide utility of stronger support tanks.
-
-A Tier: A stubborn survival tank who looks like he's constantly one inconvenience away from breaking down, yet somehow becomes harder and harder to kill the more pressure is put on him.
+Squirm is a premier survival tank and disruptor: he converts enemy pressure and crowd control into escalating defensive stats, team energy generation, and clutch counter-attacks. With dual-threshold panic cleanses, sustained team shields, and a high-stakes Full Biblio-Panic transformation, Squirm anchors the team with authentic DHBM-tier mechanics while remaining fair, mortal, and balanced.

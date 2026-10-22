@@ -43,7 +43,7 @@ Object.assign(Screens, {
     const page = $('.battle-pass-page');
     if (page) page.classList.add('leaving');
     Sound.play('ui_back');
-    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const reduced = typeof Accessibility !== 'undefined' ? Accessibility.enabled() : (typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches);
     clearTimeout(this._passExitTimer);
     this._passExitTimer = setTimeout(() => {
       this._passLeaving = false;

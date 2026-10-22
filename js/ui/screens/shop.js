@@ -894,8 +894,7 @@
     root.classList.add('talking');
     if (announcement) announcement.textContent = text;
     box.textContent = '';
-    const reduced = document.documentElement.classList.contains('accessibility-reduced-effects')
-      || (window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    const reduced = typeof Accessibility !== 'undefined' ? Accessibility.enabled() : document.documentElement.classList.contains('accessibility-reduced-effects');
     if (reduced) {
       box.textContent = text;
       root.classList.remove('talking');

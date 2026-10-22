@@ -56,7 +56,7 @@ const Save = {
       // Depths progress so claiming its recruit crate is always one-time.
       buds: { state: 'available', stage: 1, chosen: null, startedAt: 0, completedAt: 0, previousRun: null, previousTeam: null, pausedRun: null, refusals: 0, demandShown: false, dandyConsequence: false, levelTutorialShown: false, levelTutorialPending: false, dialogueSeen: {} },
       mastery: 1, masteryXp: 0, masteryTuningV2: true,
-      opt: { speed: 1, paceV2: true, sound: true, musicVolume: MUSIC_DEFAULT_VOLUME, sfxVolume: HANDHELD_AUDIO ? .88 : .68, reducedEffects: false, graphicsQuality: 50, graphicsParticles: 'auto', graphicsBackground: true, combatNumbers: true, screenShake: true, cameraZoom: true },
+      opt: { speed: 1, paceV2: true, sound: true, menuMusic: 'random', musicVolume: MUSIC_DEFAULT_VOLUME, sfxVolume: HANDHELD_AUDIO ? .88 : .68, reducedEffects: false, graphicsQuality: 50, graphicsParticles: 'auto', graphicsBackground: true, combatNumbers: true, screenShake: true, cameraZoom: true },
       seen: {}
     };
     // The starting pair are genuine level-1 recruits. Dandy's Buds supplies
@@ -204,6 +204,7 @@ const Save = {
     Sound.on = this.data.opt.sound !== false;
     if (typeof Sound.setVolume === 'function') Sound.setVolume(this.data.opt.sfxVolume, { skipSave: true });
     Music.volume = clamp(Number(this.data.opt.musicVolume), 0, 1);
+    if (this.data.opt.menuMusic && typeof Music.menuMode !== 'undefined') Music.menuMode = this.data.opt.menuMusic;
     if (typeof Accessibility !== 'undefined') Accessibility.sync();
     if (typeof GraphicsSettings !== 'undefined') GraphicsSettings.sync();
     this.activityReady = true;

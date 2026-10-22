@@ -137,7 +137,7 @@ defHero({
         [ .16, .29, .42, .55, .68, .81 ].slice(0, P.hits).forEach((delay, i) => {
           B.after(delay, () => {
             if (!u.alive) return;
-            if (!t.alive) t = B.nearest(u, B.enemiesOf(u));
+            if (!t || !t.alive) t = B.nearest(u, B.enemiesOf(u));
             if (t) soraStrike(u, t, B, S.hit, { tag: 'Ars Arcanum ' + (i + 1) });
           });
         });

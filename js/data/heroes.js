@@ -86,10 +86,15 @@ defHero({
   hidden: { range: 300, aspd: 0.96, ms: 72, aggro: 0.55, crit: .05, critDmg: 1.5, healPow: 1.35, shieldPow: 1.20, cdr: .04, ccRes: .15, kbRes: .35, armorPen: 0, magPen: .06 },
   growth: { hp: .088, atk: .07, def: .078, mag: .095, mdef: .090 },
   move: { gait: 'float', bob: 9, freq: 1.1, lean: 3, squash: .02, hover: 16, idle: 'pulse', step: null,
-    particles: 'sparkle', pcol: '#b9a4ff', trail: { on: true, col: '#8f7fff', rate: .1 }, brake: .1 },
+    particles: 'sparkle', pcol: '#b9a4ff', trail: { on: true, col: '#7c4dff', rate: .08 }, brake: .1 },
   basic: { name: 'Lullaby Mote', type: 'magic', ratio: 1.08, range: 300, proj: 'orb', pcol: '#b9a4ff',
     sfx: 'whoosh', hit: 'hit_magic', wind: .28, note: 'A drifting mote that slows whatever it settles on.',
-    onHit: (u, t, B) => { if (chance(.35) || t.hasStatus('drowsy')) B.applyStatus(u, t, 'drowsy', 3.5); } },
+    onHit: (u, t, B) => {
+      if (chance(.35) || t.hasStatus('drowsy')) {
+        B.applyStatus(u, t, 'drowsy', 3.5);
+        if (typeof FX !== 'undefined' && FX.astroDrowsy) FX.astroDrowsy(t);
+      }
+    } },
   skills: {
     W: {
       name: 'Dream Pulse', type: 'Magic Damage', energy: 100,
@@ -103,21 +108,27 @@ defHero({
           a._dreamGuard = B.t;
           B.heal(u, a, u.st.mag * S.heal * 0.35, { tag: 'dream' });
           B.applyStatus(u, a, 'ward', 3);
-          B.fxRing(a.x, a.y - 40, 70, '#b9a4ff');
+          B.fxAstroSkill('shield', u, a, null, { dur: 3 });
+          B.fxFloatItem(a.x, a.y - 88, 'Trinkets/ASTRO_Starpillow');
+          B.fxFloatIcon(a.x, a.y - 110, 'DREAM WARD', '#dcd0ff');
         });
       },
       cast: (u, B, S, P) => {
-        B.anim(u, 'cast', .55); Sound.play('magiccircle');
+        B.anim(u, 'cast', .55); Sound.play('hero_astro_ability');
         B.after(.4, () => {
           Sound.play('ult'); B.tint('#7a6bff', .35, .45); B.shake(7, .4);
-          B.fxRing(u.x, u.y - 40, 520, '#b9a4ff', .9);
+          B.fxAstroSkill('pulse', u, null, B.alliesOf(u), { isAlly: true });
+          B.fxAstroSkill('pulse', u, null, B.enemiesOf(u), { isAlly: false });
           B.alliesOf(u).forEach(a => {
             B.energy(a, P.en); B.heal(u, a, u.st.mag * S.heal, { tag: 'dream' }); B.cleanse(a, 3);
             B.fxSparkle(a.x, a.y - 40, 14, '#dcd0ff');
+            B.fxFloatItem(a.x, a.y - 88, 'Trinkets/ASTRO_Starpillow');
+            B.fxFloatIcon(a.x, a.y - 110, 'RESTORED', '#b9a4ff');
           });
           B.enemiesOf(u).forEach(e => {
             B.damage(u, e, u.st.mag * S.ratio, { type: 'magic', tag: 'Dream Pulse' });
             B.applyStatus(u, e, 'drowsy', P.drowsy);
+            if (typeof FX !== 'undefined' && FX.astroDrowsy) FX.astroDrowsy(e);
           });
         });
       }
@@ -133,7 +144,8 @@ defHero({
         B.anim(u, 'cast', .4); Sound.play('dizzy');
         B.after(.28, () => {
           if (!t.alive) return;
-          B.fxRing(t.x, t.y - 50, 110, '#7f6bd6'); B.fxFloatIcon(t.x, t.y - 90, '💤'); B.dispel(t, 3);
+          B.fxAstroSkill('slumber', u, t);
+          B.dispel(t, 3);
           t.energy = Math.max(0, t.energy * (1 - P.drain));
           B.damage(u, t, u.st.mag * S.ratio, { type: 'magic', tag: 'Slumber' });
           B.applyStatus(u, t, 'sleep', P.sleep, { groggyDur: P.groggy });
@@ -157,7 +169,12 @@ defHero({
             Sound.play('hit_magic', { vol: .5, rate: rnd(.9, 1.2) });
             B.damage(u, t, u.st.mag * S.ratio * bonus, { type: 'magic', tag: 'Falling Stars' });
             B.shake(2, .1);
-            const w = B.lowestHp(B.alliesOf(u)); if (w) B.heal(u, w, u.st.mag * S.heal, { silent: true, tag: 'Falling Stars Heal' });
+            const w = B.lowestHp(B.alliesOf(u));
+            if (w) {
+              B.heal(u, w, u.st.mag * S.heal, { silent: true, tag: 'Falling Stars Heal' });
+              B.fxSparkle(w.x, w.y - 45, 4, '#dcd0ff');
+              B.fxAstroSkill('rested', u, w);
+            }
           });
         });
       }
@@ -171,7 +188,8 @@ defHero({
         const armRest = (a) => {
           if (!a || !a.alive) return;
           a._astroPenActive = true;
-          B.fxFloatIcon(a.x, a.y - 80, '✨', '#dcd0ff');
+          B.fxFloatItem(a.x, a.y - 82, 'Trinkets/ASTRO_Starpillow');
+          B.fxFloatIcon(a.x, a.y - 104, 'WELL RESTED', '#dcd0ff');
           if (!a._astroPenListener) {
             a._astroPenListener = true;
             B.on(a, 'dealDamage', ev => {
@@ -193,17 +211,22 @@ defHero({
       desc: (S, P) => `Battle opens under a peaceful night for ${P.dur}s: allies regenerate, enemies are 🌙 Drowsy. Whenever Astro casts, his weakest ally gains a <em>${pcn(S.shield * 100)}</em> Magic Shield and ⚓ CC immunity. Once per ally, a lethal blow leaves them at <em>${pc(P.revive)}</em> HP and briefly 👻 Ethereal.`,
       passive: (u, B, S, P) => {
         B.tint('#2b2160', .28, 2.2);
-        B.enemiesOf(u).forEach(e => B.applyStatus(u, e, 'drowsy', P.dur));
+        B.enemiesOf(u).forEach(e => {
+          B.applyStatus(u, e, 'drowsy', P.dur);
+          if (typeof FX !== 'undefined' && FX.astroDrowsy) FX.astroDrowsy(e);
+        });
         B.alliesOf(u).forEach(a => B.applyStatus(u, a, 'regen', P.dur, { val: u.st.mag * .14 }));
         B.on(u, 'cast', () => {
           const w = B.lowestHp(B.alliesOf(u)); if (!w) return;
           B.shield(u, w, u.st.mag * S.shield, 6); B.applyStatus(u, w, 'ccimmune', 3.5);
+          B.fxAstroSkill('shield', u, w, null, { dur: 6 });
         });
         B.on(u, 'allyLethal', ev => {
           if (ev.unit._nightSave) return; ev.unit._nightSave = 1;
           ev.prevented = true; ev.unit.hp = ev.unit.max.hp * P.revive;
           B.energy(ev.unit, 55); B.applyStatus(u, ev.unit, 'untargetable', 1.8);
-          Sound.play('cleanse'); B.fxRing(ev.unit.x, ev.unit.y - 40, 160, '#fff');
+          Sound.play('cleanse');
+          B.fxAstroSkill('save', u, ev.unit);
           B.log('<b>Endless Night</b> catches ' + ev.unit.name + '.');
         });
       }
@@ -212,18 +235,13 @@ defHero({
 });
 
 /* ============================================================ SCRAPS
-   Sustained physical DPS / Improvised crafts - SS Tier */
+   Craft-circle physical DPS / ally grapple - SS Tier */
 const SCRAPS_CRAFTS = {
   cardboard: { name: 'Cardboard Claws', icon: '📦', prop: { kind: 'obj', img: 'cardboard' } },
   cup: { name: 'Cup Flail', icon: '🥤', prop: { kind: 'item', img: 'Stein' } },
   yarn: { name: 'Yarn Ball', icon: '🧶' }
 };
-const SCRAPS_MATERIALS = {
-  glue: { name: 'Glitter Glue', icon: '🧴', prop: { kind: 'obj', img: 'glue' } },
-  scissors: { name: 'Scissors', icon: '✂️' },
-  crayons: { name: 'Crayons', icon: '🖍️', prop: { kind: 'item', img: 'Trinkets/SCRAPS_Crayonset' } },
-  tape: { name: 'Tape', icon: '📼', prop: { kind: 'obj', img: 'Tape' } }
-};
+const SCRAPS_CRAFT_ORDER = ['cardboard', 'cup', 'yarn'];
 
 function scrapsShowProp(u, B, def, at) {
   const x = at ? at.x : u.x, y = at ? at.y : u.y;
@@ -231,383 +249,526 @@ function scrapsShowProp(u, B, def, at) {
   else if (def.prop && def.prop.kind === 'item') B.fxFloatItem(x, y - 82, def.prop.img);
   else B.fxFloatIcon(x, y - 82, def.icon, '#ffd166');
 }
-
-function scrapsFinishCraft(u, B, forceDifferent) {
-  let keys = Object.keys(SCRAPS_CRAFTS);
-  if (forceDifferent !== false && u.scrapsCraft) keys = keys.filter(k => k !== u.scrapsCraft);
-  u.scrapsCraft = pick(keys);
-  u.scrapsCraftBasics = 0;
-  u.rangeBonus = Math.max((u.scrapsInspired || u.scrapsCraft === 'cup') ? 72 : 0, u.scrapsSparkRange || 0);
-  u.dirty = true;
+function scrapsNearby(u, B, radius, center) {
+  return B.enemiesOf(u).filter(e => B.distance(e, center || u) <= radius);
+}
+function scrapsCastBoost(u, B) {
+  return B.t < (u.scrapsBurstUntil || 0) ? 1 + (u.scrapsBurstBonus || 0) : 1;
+}
+function scrapsFray(u, t, B, duration, stacks) {
+  B.applyStatus(u, t, 'frayed', duration, { stacks: stacks || 1 });
+  B.fxFloatIcon(t.x, t.y - 92, '🧵', '#ffd166');
+}
+function scrapsSetCraft(u, B) {
+  u.scrapsCraftIndex = ((u.scrapsCraftIndex || 0) + 1) % SCRAPS_CRAFT_ORDER.length;
+  u.scrapsCraft = SCRAPS_CRAFT_ORDER[u.scrapsCraftIndex];
   scrapsShowProp(u, B, SCRAPS_CRAFTS[u.scrapsCraft]);
-  B.fxConfetti(u.x, u.y - 55, 10); Sound.play('item_pickup', { vol: .30, throttle: 300 });
-  B.log(`<b>${u.name}</b> finishes ${SCRAPS_CRAFTS[u.scrapsCraft].name}.`);
-}
-
-function scrapsCraftPower(u, craft) { return 1 + ((u.scrapsCraftPower && u.scrapsCraftPower[craft]) || 0); }
-
-/** Apply one or all craft properties. Inspired Scraps deliberately gets all
-    three, but only the equipped craft's accumulated material bonus scales the
-    hit so rotating crafts remains meaningful after the transformation. */
-function scrapsCraftHit(u, t, B, S, active) {
-  if (!t || !t.alive) return;
-  t._scrapsCraftedBy = t._scrapsCraftedBy || {};
-  t._scrapsCraftedBy[u.uid] = true;
-  const craft = u.scrapsCraft || 'cardboard';
-  const power = scrapsCraftPower(u, craft);
-  const kinds = u.scrapsInspired ? Object.keys(SCRAPS_CRAFTS) : [craft];
-  kinds.forEach((kind, i) => {
-    if (kind === 'cardboard') {
-      B.after(i * .04, () => { if (!t.alive) return; B.fxSlash(u, t, { col: '#d7b27a', ang: i ? 28 : -24, small: true });
-        Sound.play('hit_slash', { vol: .30, throttle: 55 });
-        B.damage(u, t, u.st.atk * S.craft * power, { type: 'physical', melee: true, tag: 'Cardboard Claws' });
-        B.applyStatus(u, t, 'defdown', active ? 7 : 4); });
-    } else if (kind === 'cup') {
-      scrapsShowProp(u, B, SCRAPS_CRAFTS.cup, t); Sound.play('hit_blunt', { vol: .42, throttle: 70 });
-      B.enemiesOf(u).filter(e => B.distance(e, t) <= (active ? 190 : 125)).forEach(e =>
-        B.damage(u, e, u.st.atk * S.craft * power * (e === t ? 1 : .72), { type: 'physical', area: true, tag: 'Cup Flail' }));
-    } else {
-      scrapsShowProp(u, B, SCRAPS_CRAFTS.yarn, t); Sound.play('cloth', { vol: .24, throttle: 90 });
-      B.applyStatus(u, t, 'slow', active ? 6 : 3, { stacks: active ? 2 : 1 });
-      B.applyStatus(u, t, 'weaken', active ? 5 : 3);
-      B.applyStatus(u, t, 'frayed', active ? 6 : 3, { stacks: active ? 2 : 1 });
-    }
-  });
-}
-
-function scrapsUseMaterial(u, B, S, P, free) {
-  let keys = Object.keys(SCRAPS_MATERIALS).filter(k => k !== u.scrapsLastMaterial);
-  const key = pick(keys), mat = SCRAPS_MATERIALS[key];
-  u.scrapsLastMaterial = key;
-  u.scrapsMaterials = u.scrapsMaterials || new Set();
-  u.scrapsCraftPower = u.scrapsCraftPower || { cardboard: 0, cup: 0, yarn: 0 };
-  scrapsShowProp(u, B, mat); B.anim(u, 'cast', .44); B.fxConfetti(u.x, u.y - 50, 8);
-  Sound.play({ glue: 'pop2', scissors: 'swing_knife', crayons: 'sparkle', tape: 'cloth' }[key], { vol: .30, throttle: 180 });
-  if (key === 'glue') {
-    B.enemiesOf(u).sort((a, b) => B.distance(a, u) - B.distance(b, u)).slice(0, 3).forEach((e, i) => B.after(i * .07, () => {
-      B.fxProj(u, e, { kind: 'obj', img: 'glue' }, () => { B.damage(u, e, u.st.atk * S.ratio, { type: 'physical', area: true, tag: mat.name }); B.applyStatus(u, e, 'slow', P.debuff, { stacks: 2 }); });
-    }));
-  } else if (key === 'scissors') {
-    const t = B.highestStat(B.enemiesOf(u), 'def');
-    if (t) for (let i = 0; i < P.cuts; i++) B.after(i * .10, () => { if (!t.alive) return; B.fxSlash(u, t, { col: '#e9f2ff', ang: i % 2 ? 35 : -35, small: true });
-      B.damage(u, t, u.st.atk * S.cut, { type: 'physical', melee: true, armorPen: P.pen, tag: mat.name }); });
-  } else if (key === 'crayons') {
-    B.fxScribble(u.x + u.face * 45, u.y - 50); B.fxPaintStroke(u, ['#ff5fa8', '#5fd0ff', '#ffd166'], true);
-    B.after(.18, () => B.enemiesOf(u).forEach(e => { B.damage(u, e, u.st.atk * S.wave, { type: 'physical', area: true, tag: mat.name }); B.applyStatus(u, e, 'blind', P.debuff); }));
-  } else {
-    const t = B.nearest(u, B.enemiesOf(u));
-    if (t) { B.fxProj(u, t, { kind: 'obj', img: 'Tape' }, () => { B.applyStatus(u, t, 'root', P.root); B.after(.32, () => { if (!t.alive) return;
-      B.damage(u, t, u.st.atk * S.tape, { type: 'physical', melee: true, tag: mat.name }); B.fxConfetti(t.x, t.y - 55, 9); }); }); }
-  }
-  const craft = u.scrapsCraft || 'cardboard';
-  u.scrapsCraftPower[craft] += S.grow * (1 + (u.scrapsCraftGrowth || 0));
-  if (!u.scrapsMaterials.has(key)) {
-    u.scrapsMaterials.add(key);
-    if (u.scrapsRedAtk) { u.flat.atkP6 = u.scrapsMaterials.size * u.scrapsRedAtk; u.dirty = true; }
-  }
-  if (u.scrapsRed && u.scrapsMaterials.size === Object.keys(SCRAPS_MATERIALS).length && !u.scrapsInspired) {
-    u.scrapsInspired = true; u.rangeBonus = Math.max(72, u.scrapsSparkRange || 0); u.flat.critDmg6 = u.scrapsRedCrit; u.dirty = true;
-    B.applyStatus(u, u, 'inspire', 999); B.fxConfetti(u.x, u.y - 55, 34); B.fxAura(u, '#ffd166', 1.4);
-    Sound.play('cheer_big', { vol: .56 }); B.log(`<b>${u.name} is Inspired!</b>`);
-  }
-  if (!free) Sound.play('item_used', { vol: .42 });
-  return key;
+  B.fxConfetti(u.x, u.y - 52, 9);
+  B.fxScrapsCraftSwap(u, u.scrapsCraft);
+  B.log(`<b>${u.name}</b> makes ${SCRAPS_CRAFTS[u.scrapsCraft].name}.`);
 }
 
 defHero({
   id: 'Scraps', name: 'Scraps', folder: 'scraps', file: 'scraps', icon: 'Scraps',
   role: 'Damage', tier: 'SS', element: 'Craft',
-  blurb: 'An inexhaustible arts-and-crafts brawler who turns cardboard, cups, yarn and whatever else she finds into sustained pressure.',
-  base: { hp: 3740, atk: 405, def: 228, mag: 118, mdef: 205, spd: 122, acc: 205, eva: 112 },
-  hidden: { range: 235, aspd: 1.06, ms: 86, aggro: .92, crit: .13, critDmg: 1.65, healPow: 1, shieldPow: 1, cdr: .07, ccRes: .20, kbRes: .36, armorPen: .12, magPen: 0 },
-  growth: { hp: .087, atk: .105, def: .074, mag: .04, mdef: .069 },
+  blurb: 'An unstoppable, relentless paper-craft predator who grapples aggressively into the heart of battle, dragging an expanding Craft Circle that shreds armor, snags foes with razor ribbon, and detonates cascading paper shards.',
+  base: { hp: 3820, atk: 485, def: 235, mag: 118, mdef: 215, spd: 132, acc: 220, eva: 125 },
+  hidden: { range: 215, aspd: 1.25, ms: 78, aggro: .85, crit: .18, critDmg: 1.75, healPow: 1, shieldPow: 1, cdr: .12, ccRes: .35, kbRes: .45, armorPen: .20, magPen: 0 },
+  growth: { hp: .088, atk: .118, def: .075, mag: .04, mdef: .072 },
   move: { gait: 'skitter', bob: 6, freq: 2.9, lean: 12, squash: .09, idle: 'jitter', step: 'step_soft',
     particles: 'confetti', pcol: '#ffd166', trail: { on: true, col: '#ffd166', rate: .11 }, brake: .22, wobble: 9 },
-  basic: { name: 'Claws & Crafts', type: 'physical', ratio: 1.02, range: 235, sfx: 'swing_claw', hit: 'hit_slash',
-    wind: .17, reach: true, note: 'Alternates sharp claw swipes with the currently equipped improvised craft.',
+  basic: {
+    name: 'Relentless Paper Claws', type: 'physical', ratio: 1.15, range: 215, sfx: 'swing_claw', hit: 'hit_slash',
+    wind: .14, reach: true, note: 'Every third hit uses her equipped craft with savage force. Hitting Frayed foes builds Relentless Frenzy (+Attack Speed, +Move Speed; double-strikes at max stacks).',
     onHit: (u, t, B) => {
-      if (u.scrapsLastWasCraft) scrapsShowProp(u, B, SCRAPS_CRAFTS[u.scrapsCraft || 'cardboard'], t);
-      else B.fxSlash(u, t, { col: '#fff1c2', ang: -28, small: true });
-    } },
+      B.fxSlash(u, t, { col: '#fff1c2', ang: -28, small: true });
+      if (t && t.alive && t.hasStatus('frayed')) {
+        u._scrapsFrenzy = Math.min((u._scrapsFrenzy || 0) + 1, 6);
+        u.flat.aspdP = (u._scrapsFrenzy * 0.06);
+        u.flat.msP = (u._scrapsFrenzy * 0.04);
+        u.flat.atkP = (u.flat.atkP || 0) + 0.02;
+        u.dirty = true;
+        if (u._scrapsFrenzy >= 6) {
+          B.after(0.06, () => {
+            if (t.alive && u.alive) {
+              B.fxSlash(u, t, { col: '#ff9fbb', ang: 35, small: true });
+              B.damage(u, t, u.st.atk * 0.55, { type: 'physical', tag: 'Relentless Scissor Flurry' });
+            }
+          });
+        }
+      }
+    }
+  },
   skills: {
     W: {
       name: 'Crafty Grapple', type: 'Physical Damage', energy: 100,
-      v: { pass: .34, strike: .28, smash: .74, craft: .18, aspd: .035 }, p: { hits: 3, craftEvery: 4, stamina: 5 },
-      desc: (S, P) => `<span class="sk-pas">Basic Attacks build up to ${P.stamina} Stamina stacks, each granting <em>${pcn(S.aspd * 100)}</em> Attack Speed. Every ${P.craftEvery} attacks she finishes Cardboard Claws, a Cup Flail, or a Yarn Ball; attacks alternate between claws and the current craft. Yarn Balls leave 🧵 Frayed, making follow-up control easier. If Scraps misses an evasive target, she spots its movement and her attacks cannot be Dodged for several seconds.</span>
-        Active: grapples to the lowest-HP enemy while untargetable, deals <em>${pcn(S.pass * 100)}</em> Attack to every enemy crossed, then lands ${P.hits} rapid claw strikes and a <em>${pcn(S.smash * 100)}</em> craft smash before building something different.`,
+      v: { slam: 1.45, claw: 0.85, craft: 0.65 }, p: { radius: 215, safety: .55, fray: 6, every: 3 }, fixedP: ['every'],
+      desc: (S, P) => `<span class="sk-pas">Every ${P.every} Basic Attacks, Scraps strikes with her equipped craft: Cardboard pierces with heavy Armor Penetration and Frays, Cup flails surrounding foes while cracking shields, and Yarn deals damage, Frays, and heavily slows. Scraps' attacks cannot be Dodged by Frayed enemies.</span> Active: pulls herself toward an ally or into the fray with a high-velocity, invulnerable grapple. On landing, she slams her Craft Circle down for <em>${pcn(S.slam * 100)}</em> Attack, pulls enemies inward, and adds Frayed, then executes a rapid 3-hit scissor claw flurry for <em>${pcn(S.claw * 100)}</em> Attack. If any enemy dies within 3s, Scraps refunds 45 Energy and resets Whatever Works!`,
       passive: (u, B, S, P) => {
-        u.antiDodge = target => target && (target.hasStatus('frayed') || target.hasStatus('scraps_spotted') || B.t < (target._scrapsSpottedUntil || 0));
-        B.on(u, 'missed', ev => {
-          if (!ev.target || !ev.target.alive || ev.target.team === u.team) return;
-          ev.target._scrapsSpottedUntil = B.t + 6;
-          B.applyStatus(u, ev.target, 'scraps_spotted', 6);
-          B.fxFloatIcon(ev.target.x, ev.target.y - 92, '🧷', '#ffd166');
-        });
-        u.scrapsCraftPower = { cardboard: 0, cup: 0, yarn: 0 };
-        u.scrapsMaterials = new Set(); u.scrapsCraftBasics = 0;
-        scrapsFinishCraft(u, B, false);
+        u.scrapsCraftIndex = 0; u.scrapsCraft = 'cardboard'; u.scrapsBasicHits = 0;
+        u.scrapsRadius = 215;
+        u.antiDodge = t => !!(t && t.hasStatus('frayed'));
         B.on(u, 'basicHit', ev => {
-          const t = ev.target; if (!t || !t.alive) return;
-          u.scrapsStamina = Math.min(P.stamina, (u.scrapsStamina || 0) + 1);
-          u.scrapsStaminaUntil = B.t + 4; u.flat.aspdP6 = u.scrapsStamina * S.aspd; u.dirty = true;
-          u.scrapsLastWasCraft = !u.scrapsLastWasCraft;
-          if (u.scrapsLastWasCraft) scrapsCraftHit(u, t, B, S, false);
-          if (u.scrapsInspired) {
-            B.damage(u, t, u.st.atk * (u.scrapsRedExtra || .16), { type: 'physical', melee: true, tag: 'Inspired Craft' });
-            u.scrapsInspiredBasics = (u.scrapsInspiredBasics || 0) + 1;
-            if (u.scrapsInspiredBasics % 3 === 0) B.energy(u, u.scrapsRedEnergy || 12);
+          const t = ev.target; if (!t || !t.alive || ++u.scrapsBasicHits % P.every) return;
+          scrapsShowProp(u, B, SCRAPS_CRAFTS[u.scrapsCraft], t);
+          B.fxScrapsCraftSwap(t, u.scrapsCraft);
+          const mult = scrapsCastBoost(u, B);
+          if (u.scrapsCraft === 'cardboard') {
+            B.fxSlash(u, t, { col: '#d7b27a', ang: 30, big: true });
+            B.damage(u, t, u.st.atk * S.craft * 1.35 * mult, { type: 'physical', armorPen: .40, tag: 'Cardboard Claws' });
+            if (t.alive) scrapsFray(u, t, B, P.fray, 2);
+          } else if (u.scrapsCraft === 'cup') {
+            B.enemiesOf(u).filter(e => B.distance(e, t) <= 145).forEach(e => {
+              B.damage(u, e, u.st.atk * S.craft * mult * (e === t ? 1.15 : .85), { type: 'physical', area: true, tag: 'Cup Flail' });
+              if (e.shield) B.crackShield(e, e.shield * 0.35);
+            });
+          } else {
+            B.damage(u, t, u.st.atk * S.craft * mult, { type: 'physical', tag: 'Yarn Ball' });
+            if (t.alive) { scrapsFray(u, t, B, P.fray, 1); B.applyStatus(u, t, 'slow', 3.5); }
           }
-          if (++u.scrapsCraftBasics >= P.craftEvery) scrapsFinishCraft(u, B, true);
         });
-        B.every(u, .5, () => { if (u.scrapsStamina && B.t > u.scrapsStaminaUntil) { u.scrapsStamina = 0; u.flat.aspdP6 = 0; u.dirty = true; } });
       },
       cast: (u, B, S, P) => {
-        const t = B.enemiesOf(u).sort((a, b) => a.hpPct - b.hpPct)[0]; if (!t) return;
-        const from = u.x, lo = Math.min(from, t.x), hi = Math.max(from, t.x);
-        const crossed = B.enemiesOf(u).filter(e => e !== t && e.x >= lo && e.x <= hi);
-        u.scrapsGrappleSeq = (u.scrapsGrappleSeq || 0) + 1;
-        const crossMark = `${u.uid}:${u.scrapsGrappleSeq}`;
-        let bonus = u.scrapsInspired ? 1 + crossed.length * (u.scrapsRedPass || .12) : 1;
-        u.face = t.x >= u.x ? 1 : -1; u.scrapsClawTarget = t; u.scrapsLockedTarget = t; u.target = t;
-        B.anim(u, 'cast', .48); Sound.play('grapple', { vol: .56 }); B.fxNet(u, [t]); B.fxTargetLine(u, t, '#ffd166');
-        B.applyStatus(u, u, 'untargetable', .62);
-        const killed = { any: false };
-        B.dash(u, t.x - u.face * 42, .42, { depth: t.depth,
-          onMove: () => crossed.forEach(e => { if (e._scrapsCrossed === crossMark || !e.alive) return; e._scrapsCrossed = crossMark;
-            const was = e.alive; B.damage(u, e, u.st.atk * S.pass, { type: 'physical', melee: true, tag: 'Crafty Grapple' }); if (was && !e.alive) killed.any = true;
-            B.fxSlash(u, e, { col: '#ffd166', ang: 16, small: true }); }),
-          onEnd: () => {
-            if (!u.alive || !t.alive) { if (killed.any && u.scrapsInspired) scrapsUseMaterial(u, B, B.scaled(u, 'G'), u.def.skills.G.p, true); return; }
-            for (let i = 0; i < P.hits; i++) B.after(i * .09, () => { if (!t.alive) return; B.fxSlash(u, t, { col: '#fff', ang: i % 2 ? 38 : -38, small: true });
-              const was = t.alive; B.damage(u, t, u.st.atk * S.strike * bonus, { type: 'physical', melee: true, tag: 'Crafty Grapple' }); if (was && !t.alive) killed.any = true; });
-            B.after(P.hits * .09 + .06, () => { if (t.alive) { scrapsShowProp(u, B, SCRAPS_CRAFTS[u.scrapsCraft], t); const was = t.alive;
-              B.damage(u, t, u.st.atk * S.smash * scrapsCraftPower(u, u.scrapsCraft) * bonus, { type: 'physical', melee: true, tag: 'Crafty Grapple' });
-              scrapsCraftHit(u, t, B, S, true); if (was && !t.alive) killed.any = true; }
-              B.shake(9, .28); B.hitstop(75); scrapsFinishCraft(u, B, true);
-              if (killed.any && u.scrapsInspired) scrapsUseMaterial(u, B, B.scaled(u, 'G'), u.def.skills.G.p, true);
+        const allies = B.alliesOf(u).filter(a => a !== u && a.alive && !a.minion);
+        const lowAlly = B.lowestHp(allies);
+        const anchor = lowAlly || u;
+        const land = () => {
+          if (!u.alive) return;
+          B.fxScrapsCircle(u, P.radius, u.scrapsCraft, true);
+          B.fxRing(u.x, u.y - 40, P.radius * 2, '#ffd166', .55);
+          B.fxConfetti(u.x, u.y - 50, 24); Sound.play('hit_heavy', { vol: .55 });
+          const targets = scrapsNearby(u, B, P.radius);
+          targets.forEach(e => {
+            B.damage(u, e, u.st.atk * S.slam * scrapsCastBoost(u, B), { type: 'physical', area: true, tag: 'Crafty Grapple' });
+            if (e.alive) {
+              scrapsFray(u, e, B, P.fray, 2);
+              e.x = lerp(e.x, u.x, 0.25);
+            }
+          });
+          [0.08, 0.16, 0.24].forEach((delay, idx) => {
+            B.after(delay, () => {
+              if (!u.alive) return;
+              const curTargets = scrapsNearby(u, B, P.radius);
+              curTargets.forEach(e => {
+                if (!e.alive) return;
+                B.fxSlash(u, e, { col: idx % 2 ? '#fff1c2' : '#ff9fbb', ang: idx * 25 - 25, small: true });
+                B.damage(u, e, u.st.atk * (S.claw / 3) * scrapsCastBoost(u, B), { type: 'physical', area: true, tag: 'Crafty Grapple Claws' });
+              });
             });
-          }
-        });
+          });
+          const onVictimDown = () => {
+            if (!u.alive) return;
+            B.energy(u, 45);
+            if (u.cds) u.cds.G = 0;
+            B.fxFloatIcon(u.x, u.y - 105, '✂️ RELENTLESS RESET!', '#ffd166');
+            cleanup();
+          };
+          const cleanup = B.on(u, 'enemyDown', onVictimDown);
+          B.after(3.0, cleanup);
+        };
+        B.anim(u, 'cast', .42); scrapsShowProp(u, B, SCRAPS_CRAFTS[u.scrapsCraft]);
+        if (anchor === u || u.immovable || u.flags.noDash) { land(); return; }
+        u.face = anchor.x >= u.x ? 1 : -1;
+        B.fxTargetLine(u, anchor, '#ffd166'); Sound.play('grapple', { vol: .55 });
+        u.invuln = Math.max(u.invuln || 0, B.t + P.safety);
+        B.applyStatus(u, u, 'untargetable', P.safety);
+        B.dash(u, anchor.x + (u.face === 1 ? -34 : 34), .36, { depth: anchor.depth, arc: true, onEnd: land });
       }
     },
     G: {
-      name: 'Whatever Works', type: 'Physical Damage', cd: 8.5,
-      v: { ratio: .62, cut: .29, wave: .74, tape: 1.10, grow: .035 }, p: { cuts: 4, pen: .55, debuff: 5, root: 2.2 },
-      desc: (S, P) => `Uses Glitter Glue, Scissors, Crayons, or Tape, never the same twice in a row. Each attacks differently, from area Attack Speed reduction to ${P.cuts} Armor-piercing cuts, a formation-wide Accuracy debuff, or a Root. Yarn Balls also apply 🧵 Frayed. The material permanently adds <em>${pcn(S.grow * 100)}</em> Damage to the current craft for the wave.`,
-      ai: { prio: 57, cond: (u, B) => B.enemiesOf(u).length > 0 },
-      cast: (u, B, S, P) => { scrapsUseMaterial(u, B, S, P, false); }
+      name: 'Whatever Works', type: 'Physical Damage', cd: 6.5,
+      v: { cardboard: 1.75, cup: 1.25, yarn: 1.35 }, p: { radius: 245, fray: 6, slow: 4.0 },
+      desc: (S, P) => `Instantly cycles to the next craft (Cardboard Claws -> Cup Flail -> Yarn Ball) and grants Craft Adrenaline (+30% Attack Speed, +25% Move Speed for 4s). Cardboard Claws pierce ignoring 50% Armor with bonus damage against Frayed foes; the Cup Flail sweeps a wide arc dragging enemies inward and concussing them; the Yarn Ball deals heavy damage, Frays, and roots enemies.`,
+      ai: { prio: 62, cond: (u, B) => B.enemiesOf(u).length > 0 },
+      cast: (u, B, S, P) => {
+        scrapsSetCraft(u, B); B.anim(u, 'cast', .38);
+        B.applyStatus(u, u, 'speedup', 4.0);
+        u.flat.aspdP = (u.flat.aspdP || 0) + 0.30;
+        u.dirty = true;
+        B.after(4.0, () => { if (u.alive) { u.flat.aspdP = Math.max(0, (u.flat.aspdP || 0) - 0.30); u.dirty = true; } });
+        B.fxScrapsCircle(u, u.scrapsRadius || P.radius, u.scrapsCraft, !!u.scrapsRedDuration);
+        if (u.scrapsRedDuration) u.scrapsBurstUntil = B.t + u.scrapsRedDuration;
+        const nearby = scrapsNearby(u, B, P.radius);
+        const targets = nearby.length ? nearby : [B.nearest(u, B.enemiesOf(u))].filter(Boolean);
+        const mult = scrapsCastBoost(u, B);
+        if (u.scrapsCraft === 'cardboard') {
+          const t = B.lowestHp(targets); if (!t) return;
+          B.fxSlash(u, t, { col: '#d7b27a', ang: -36, big: true }); Sound.play('hit_slash', { vol: .55 });
+          B.damage(u, t, u.st.atk * S.cardboard * mult * (t.hasStatus('frayed') ? 1.4 : 1), { type: 'physical', armorPen: .50, tag: 'Cardboard Claws' });
+          if (t.alive) scrapsFray(u, t, B, P.fray, 2);
+        } else if (u.scrapsCraft === 'cup') {
+          Sound.play('hit_blunt', { vol: .55 }); B.fxRing(u.x, u.y - 40, P.radius * 2, '#ffa9c4', .45);
+          targets.forEach(e => {
+            B.damage(u, e, u.st.atk * S.cup * mult, { type: 'physical', area: true, tag: 'Cup Flail' });
+            if (e.alive) {
+              e.x = lerp(e.x, u.x, 0.20);
+              B.applyStatus(u, e, 'stun', 0.75);
+            }
+          });
+        } else {
+          Sound.play('cloth', { vol: .45 });
+          targets.forEach(e => {
+            B.damage(u, e, u.st.atk * S.yarn * mult, { type: 'physical', area: true, tag: 'Yarn Ball' });
+            if (e.alive) {
+              scrapsFray(u, e, B, P.fray, 1);
+              B.applyStatus(u, e, 'root', 2.0);
+              B.applyStatus(u, e, 'slow', P.slow);
+            }
+          });
+        }
+      }
     },
     B: {
-      name: 'Emotional Piece', type: 'Physical Damage', cd: 13,
-      v: { ratio: .72, taken: .52 }, p: { focus: 2.4, fury: 7, stun: 1.8 },
-      desc: (S, P) => `Works on a large artwork for ${P.focus}s, taking reduced Damage and ignoring Attack Speed reductions. Then charges through every enemy for <em>${pcn(S.ratio * 100)}</em> Attack plus <em>${pcn(S.taken * 100)}</em> of Damage received while working. If Crowd Controlled during the piece, enemies are Stunned. Finishing grants Attack and Critical Damage.`,
-      ai: { prio: 52, cond: (u, B) => B.enemiesOf(u).length > 0 },
+      name: 'Craft Class Crash', type: 'Physical Damage', cd: 8.5,
+      v: { burst: 1.05, follow: 0.65, frayBonus: 0.18 }, p: { radius: 275, fray: 6 },
+      desc: (S, P) => `Scraps spins into a manic hurricane of cut paper, scissors, and flying origami shurikens, striking all nearby enemies 3 times in rapid succession. Each wave deals <em>${pcn(S.burst * 100)}</em> Attack, gains <em>+${pcn(S.frayBonus * 100)}</em> damage per Frayed stack, refreshes Frayed, and shreds 12% enemy Armor. Scraps gains CC immunity and 25% damage reduction during the spin.`,
+      ai: { prio: 55, cond: (u, B) => B.enemiesOf(u).length > 0 },
       cast: (u, B, S, P) => {
-        u.scrapsArtDamage = 0; u.scrapsArtCC = false;
-        B.anim(u, 'cast', P.focus); B.applyStatus(u, u, 'artfocus', P.focus);
-        Sound.play('sparkle', { vol: .28 });
-        B.fxFloatObject(u.x, u.y - 92, 'canvas', '#ffd166'); B.fxScribble(u.x, u.y - 60); B.fxPaintCanvas(u, P.focus, ['#ff5fa8', '#5fd0ff', '#ffd166'], false);
-        const damageOff = B.on(u, 'damaged', ev => { if (u.hasStatus('artfocus')) u.scrapsArtDamage += ev.amount || 0; });
-        const ccOff = B.on(u, 'statusApplied', ev => { if (ev.unit === u && ev.id !== 'artfocus' && STATUS[ev.id] && STATUS[ev.id].cc && u.hasStatus('artfocus')) u.scrapsArtCC = true; });
-        const knockOff = B.on(u, 'knockedBack', () => { if (u.hasStatus('artfocus')) u.scrapsArtCC = true; });
-        B.after(P.focus, () => {
-          ccOff(); damageOff(); knockOff(); if (!u.alive) return;
-          const foes = B.enemiesOf(u), far = foes.slice().sort((a, b) => B.distance(b, u) - B.distance(a, u))[0]; if (!far) return;
-          const hit = new Set(), bonus = Math.min(u.scrapsArtDamage, u.max.hp * 1.25) * S.taken;
-          B.fxBigStroke(u, '#ffd166'); B.fxFloatObject(u.x, u.y - 96, 'canvas', '#ffd166'); Sound.play('sweep', { vol: .54 });
-          B.dash(u, far.x + u.face * 60, .46, { depth: far.depth, onMove: () => B.enemiesOf(u).forEach(e => { if (hit.has(e.uid) || B.distance(e, u) > 82) return; hit.add(e.uid);
-            B.damage(u, e, u.st.atk * S.ratio + bonus, { type: 'physical', melee: true, area: true, tag: 'Emotional Piece' });
-            if (u.scrapsArtCC) B.applyStatus(u, e, 'stun', P.stun); B.fxPaintMark(e.x, e.y - 5, ['#ff5fa8', '#5fd0ff', '#ffd166'], .55, true); }),
-            onEnd: () => { B.enemiesOf(u).forEach(e => { if (hit.has(e.uid)) return; B.damage(u, e, u.st.atk * S.ratio + bonus, { type: 'physical', area: true, tag: 'Emotional Piece' }); if (u.scrapsArtCC) B.applyStatus(u, e, 'stun', P.stun); });
-              B.applyStatus(u, u, 'artfury', P.fury); B.fxConfetti(u.x, u.y - 55, 24); B.shake(12, .35); }
+        B.anim(u, 'cast', .55); B.fxBigStroke(u, '#ffd166');
+        B.fxScribble(u.x, u.y - 60); Sound.play('sweep', { vol: .52 });
+        B.applyStatus(u, u, 'ccimmune', 1.0);
+        const radius = Math.max(P.radius, u.scrapsRadius || 0);
+        B.fxScrapsCircle(u, radius, u.scrapsCraft, true);
+        [0, 0.16, 0.32].forEach((delay, wave) => {
+          B.after(delay, () => {
+            if (!u.alive) return;
+            B.fxRing(u.x, u.y - 40, radius * 2, wave === 0 ? '#ffd166' : wave === 1 ? '#ff99bd' : '#ce78b4', .4);
+            scrapsNearby(u, B, radius).forEach(e => {
+              const stacks = e.statuses.find(s => s.id === 'frayed')?.stacks || 0;
+              const ratio = (wave === 0 ? S.burst : S.follow) * (1 + S.frayBonus * stacks) * scrapsCastBoost(u, B);
+              B.damage(u, e, u.st.atk * ratio, { type: 'physical', area: true, tag: 'Craft Class Crash' });
+              if (e.alive) {
+                scrapsFray(u, e, B, P.fray, 1);
+                B.applyStatus(u, e, 'defdown', 3.0);
+              }
+            });
           });
         });
       }
     },
     P: {
-      name: 'Sharp Around the Edges', type: 'Physical Damage / Attack Speed',
-      v: { ramp: .025, flurry: .22, low: .16, sparkHp: .022, sparkDef: .025, sparkRange: 10 }, p: { max: 6, swipes: 3 },
-      desc: (S, P) => `Consecutive Basic Attacks against one enemy gain up to ${P.max} stacks of <em>${pcn(S.ramp * 100)}</em> bonus Physical Damage. Each different craft effect also creates a Creative Spark, granting <em>${pcn(S.sparkHp * 100)}</em> Max HP, <em>${pcn(S.sparkDef * 100)}</em> Defense, and <em>${S.sparkRange}</em> Skill Range per stack. Crafty Grapple transfers the stacks to its target. Hard Crowd Control or Knockback primes ${P.swipes} retaliatory claw swipes, and below half HP Scraps gains <em>${pcn(S.low * 100)}</em> Attack Speed.`,
+      name: 'Craft Circle', type: 'Physical Damage / Attack Speed',
+      v: { tick: .32, allySpeed: .14, atk: .06 }, p: { radius: 215, max: 5, fray: 3.5 },
+      desc: (S, P) => `The Craft Circle around Scraps is an active shredder zone. Every second, enemies inside take <em>${pcn(S.tick * 100)}</em> Attack and become Frayed; nearby allies gain <em>${pcn(S.allySpeed * 100)}</em> Attack Speed. Cardboard lowers enemy Defense, the cup increases circle damage by 50% and pulls foes inward, and yarn heavily slows. Scraps gains <em>${pcn(S.atk * 100)}</em> Attack for each nearby enemy, up to ${P.max} (+${(S.atk * P.max * 100).toFixed(0)}% Attack). The circle follows her grapple.`,
       passive: (u, B, S, P) => {
-        u.scrapsSparkEffects = {};
-        u.scrapsSpark = 0;
-        B.on(u, 'basicHit', ev => {
-          const t = ev.target; if (!t || !t.alive) return;
-          if (u.scrapsClawTarget === t) u.scrapsClawStacks = Math.min(P.max, (u.scrapsClawStacks || 0) + 1);
-          else { u.scrapsClawTarget = t; u.scrapsClawStacks = 1; }
-          B.damage(u, t, u.st.atk * S.ramp * u.scrapsClawStacks, { type: 'physical', melee: true, tag: 'Sharp Around the Edges' });
-          if (u.scrapsRetaliate) { u.scrapsRetaliate = false; for (let i = 0; i < P.swipes; i++) B.after(.04 + i * .07, () => { if (!t.alive) return;
-            B.fxSlash(u, t, { col: '#ffcfad', ang: i % 2 ? 42 : -42, small: true }); B.damage(u, t, u.st.atk * S.flurry, { type: 'physical', melee: true, tag: 'Cornered Claws' }); }); }
+        u.scrapsBaseRadius = P.radius; u.scrapsRadius = P.radius;
+        B.every(u, 1, () => {
+          const radius = u.scrapsRadius || P.radius;
+          const foes = scrapsNearby(u, B, radius);
+          B.fxScrapsCircle(u, radius, u.scrapsCraft, B.t < (u.scrapsBurstUntil || 0));
+          const boost = Math.min(P.max, foes.length) * S.atk;
+          if (u.flat.atkPScraps !== boost) { u.flat.atkPScraps = boost; u.dirty = true; }
+          B.alliesOf(u).filter(a => B.distance(a, u) <= radius).forEach(a =>
+            B.applyStatus(u, a, 'scraps_craftbeat', 1.35, { val: S.allySpeed }));
+          foes.forEach(e => {
+            const modeDamage = u.scrapsCraft === 'cup' ? 1.5 : 1;
+            B.damage(u, e, u.st.atk * S.tick * modeDamage * scrapsCastBoost(u, B), { type: 'physical', area: true, tag: 'Craft Circle' });
+            if (!e.alive) return;
+            scrapsFray(u, e, B, P.fray, 1);
+            if (u.scrapsCraft === 'cardboard') B.applyStatus(u, e, 'defdown', 1.5);
+            if (u.scrapsCraft === 'cup') e.x = lerp(e.x, u.x, 0.15);
+            if (u.scrapsCraft === 'yarn') B.applyStatus(u, e, 'slow', 2.0);
+          });
         });
-        B.on(u, 'statusApplied', ev => {
-          if (ev.unit === u && STATUS[ev.id] && STATUS[ev.id].cc) u.scrapsRetaliate = true;
-          if (ev.src !== u || !ev.unit || ev.unit.team === u.team || !STATUS[ev.id] || STATUS[ev.id].kind !== 'debuff') return;
-          if (u.scrapsSparkEffects[ev.id] || u.scrapsSpark >= P.max) return;
-          u.scrapsSparkEffects[ev.id] = 1; u.scrapsSpark++;
-          u.flat.hpP8 = u.scrapsSpark * S.sparkHp;
-          u.flat.defP8 = u.scrapsSpark * S.sparkDef;
-          u.scrapsSparkRange = u.scrapsSpark * S.sparkRange;
-          u.rangeBonus = Math.max(u.rangeBonus || 0, u.scrapsSparkRange);
-          u.dirty = true; B.fxFloatIcon(u.x, u.y - 92, '✨', '#ffd166');
-        });
-        B.on(u, 'knockedBack', () => { u.scrapsRetaliate = true; });
-        B.on(u, 'enemyDown', e => { if (e && e._scrapsCraftedBy && e._scrapsCraftedBy[u.uid]) B.energy(u, 14); });
-        B.every(u, .4, () => { const on = u.hpPct < .5; if (on !== u.scrapsLow) { u.scrapsLow = on; u.flat.aspdP7 = on ? S.low : 0; u.dirty = true; } });
       }
     },
     R: {
-      name: 'Arts and Crafts', type: 'Physical Damage / Attack / Critical Damage',
-      v: { atk: .015, extra: .16 }, p: { crit: .35, energy: 12, pass: .12 },
-      desc: (S, P) => `The first use of each Whatever Works material permanently grants <em>${pcn(S.atk * 100)}</em> Attack. After all four, Scraps remains Inspired: Basics deal <em>${pcn(S.extra * 100)}</em> extra Physical Damage, every craft gains all three properties, Critical Damage rises ${pc(P.crit)}, and every third Basic accelerates Crafty Grapple. Its Damage rises ${pc(P.pass)} per enemy crossed; a Grapple defeat immediately triggers Whatever Works.`,
+      name: 'Every Piece Counts', type: 'Physical Damage / Craft Circle',
+      v: { burst: .30, finish: 1.10 }, p: { grow: 16, maxGrow: 96, duration: 4.0, radius: 180 },
+      desc: (S, P) => `Each skill cast permanently expands Craft Circle by ${P.grow}, up to ${P.maxGrow}. For ${P.duration}s afterward, Scraps enters Paper Frenzy: her craft hits and circle damage rise by <em>${pcn(S.burst * 100)}</em>. Whenever an enemy inside the circle is defeated, they burst into razor paper shards, dealing <em>${pcn(S.finish * 100)}</em> Attack to all nearby foes and spreading Frayed. Slain foes refund 25 Energy and extend Paper Frenzy by 2.5s.`,
       passive: (u, B, S, P) => {
-        u.scrapsRed = true; u.scrapsRedAtk = S.atk; u.scrapsRedExtra = S.extra;
-        u.scrapsRedCrit = P.crit; u.scrapsRedEnergy = P.energy; u.scrapsRedPass = P.pass;
+        u.scrapsBurstBonus = S.burst;
+        u.scrapsRedDuration = P.duration;
+        B.on(u, 'cast', () => {
+          const base = u.scrapsBaseRadius || 215;
+          u.scrapsRadius = Math.min(base + P.maxGrow, (u.scrapsRadius || base) + P.grow);
+          u.scrapsBurstUntil = B.t + P.duration;
+          B.fxAura(u, '#ffd166', .7);
+          B.fxScrapsCircle(u, u.scrapsRadius, u.scrapsCraft, true);
+        });
+        B.on(u, 'enemyDown', e => {
+          if (!e || B.distance(e, u) > (u.scrapsRadius || 215)) return;
+          B.fxScrapsShards(e, P.radius);
+          B.fxConfetti(e.x, e.y - 45, 18);
+          B.energy(u, 25);
+          u.scrapsBurstUntil = Math.max(u.scrapsBurstUntil || 0, B.t) + 2.5;
+          B.enemiesOf(u).filter(other => other !== e && B.distance(other, e) <= P.radius).forEach(other => {
+            B.damage(u, other, u.st.atk * S.finish, { type: 'physical', area: true, tag: 'Paper Shards' });
+            if (other.alive) scrapsFray(u, other, B, 5, 1);
+          });
+        });
       }
     }
   }
 });
 
 /* ============================================================ VEE
-   Tank / Support / Battlefield Director - A Tier */
+   Tank / Support / Battlefield Director - SS Tier */
 defHero({
   id: 'Vee', name: 'Vee', folder: 'Vee', file: 'Vee', icon: 'Vee',
-  role: 'Tank', tier: 'A', element: 'Broadcast',
-  blurb: 'Gardenview\'s host. She does not tank because she is tough; she tanks because she decides where the camera points.',
-  base: { hp: 5250, atk: 245, def: 325, mag: 295, mdef: 330, spd: 102, acc: 195, eva: 105 },
-  hidden: { range: 200, aspd: 0.92, ms: 68, aggro: 1.5, crit: .07, critDmg: 1.5, healPow: 1.15, shieldPow: 1.25, cdr: .06, ccRes: .25, kbRes: .6, armorPen: 0, magPen: .06 },
-  growth: { hp: .102, atk: .075, def: .095, mag: .086, mdef: .095 },
+  role: 'Tank', tier: 'SS', element: 'Broadcast',
+  blurb: 'Gardenview\'s prime-time host. Analytical, commanding, and in complete control of the studio floor, she does not merely tank—she directs the entire battlefield.',
+  base: { hp: 5850, atk: 260, def: 385, mag: 380, mdef: 390, spd: 120, acc: 220, eva: 110 },
+  hidden: { range: 240, aspd: 1.05, ms: 75, aggro: 1.8, crit: .10, critDmg: 1.6, healPow: 1.30, shieldPow: 1.40, cdr: .15, ccRes: .35, kbRes: .75, armorPen: 0, magPen: .12 },
+  growth: { hp: .120, atk: .080, def: .115, mag: .105, mdef: .115 },
   move: { gait: 'glide', bob: 3, freq: 1.6, lean: 4, squash: .03, idle: 'scan', step: 'step_metal',
     particles: 'static', pcol: '#7be0ff', trail: { on: true, col: '#7be0ff', rate: .14 }, brake: .2 },
-  basic: { name: 'Signal Jab', type: 'physical', ratio: 1.08, range: 210, sfx: 'swing_pole', hit: 'hit_blunt',
-    wind: .18, note: 'Sharp, professional, mildly threatening.',
-    onHit: (u, t, B) => { if (t.hasStatus('headline')) B.energy(u, 7); } },
+  basic: {
+    name: 'Broadcast Strike & Signal Pulse', type: 'magic', ratio: 1.25, range: 240, sfx: 'swing_pole', hit: 'hit_blunt',
+    wind: .16, note: 'Sharp executive wand strikes channeling static electricity. Alternates with a piercing static interference wave that slows enemy attack speed.',
+    onHit: (u, t, B) => {
+      if (t.hasStatus('headline')) {
+        B.energy(u, 10);
+        if (t.energy) t.energy = Math.max(0, t.energy - 8);
+      }
+      u._veeBasicHits = (u._veeBasicHits || 0) + 1;
+      if (u._veeBasicHits % 3 === 0) {
+        Sound.play('hit_shock', { vol: 0.45, throttle: 120 });
+        B.fxSparkle(t.x, t.y - 40, 12, '#7be0ff');
+        B.enemiesOf(u).forEach(e => {
+          if (B.distance(t, e) <= 180) {
+            B.damage(u, e, u.st.mag * 0.55, { type: 'magic', tag: 'Signal Pulse' });
+            B.applyStatus(u, e, 'slow', 3.0, { stacks: 2 });
+          }
+        });
+      }
+      if (u._live) {
+        Sound.play('beam_fire', { vol: 0.5, throttle: 150 });
+        B.enemiesOf(u).forEach(e => {
+          if (Math.abs(e.y - u.y) < 70) {
+            B.damage(u, e, u.st.mag * 0.50, { type: 'magic', tag: 'Live Broadcast Beam' });
+            B.fxSparkle(e.x, e.y - 40, 6, '#ff3366');
+          }
+        });
+      }
+    }
+  },
   skills: {
     W: {
       name: 'Spotlight On', type: 'Magic Damage', energy: 100,
-      v: { ratio: 1.45, heal: .08 }, p: { blind: 5, drain: .40, acc: .20, energy: 6 },
-      desc: (S, P) => `<span class="sk-pas">Vee tags the enemy contributing the most damage as the 📺 Headline. Allies gain <em>${pcn(P.acc * 100)}</em> Accuracy against it and <em>${Math.round(P.energy)}</em> Energy whenever it casts.</span>
-        Active: studio lights flood the field for <em>${pcn(S.ratio * 100)}</em> Magic. The Headline is interrupted, 🌑 Blinded for ${P.blind}s and loses <em>${pcn(P.drain * 100)}</em> Energy. If it falls while marked, the team heals <em>${pcn(S.heal * 100)}</em> Max HP and a new one is named.`,
+      v: { ratio: 2.45, heal: .20, shield: .25 },
+      p: { blind: 6.0, stun: 2.0, drain: .50, acc: .35, crit: .25, dmgBoost: .30, energy: 10, primeDur: 8.0 },
+      desc: (S, P) => `<span class="sk-pas">Vee broadcasts telemetry data across allied ranks, identifying the highest-damage enemy as the 📺 Headline every 2.5s. Allies gain <em>+${pcn(P.acc * 100)}</em> Accuracy, <em>+${pcn(P.crit * 100)}</em> Critical Chance, and deal <em>+${pcn(P.dmgBoost * 100)}</em> damage against it. Whenever the Headline acts or casts, allies gain <em>${Math.round(P.energy)}</em> Energy. When it falls, the team heals <em>${pcn(S.heal * 100)}</em> Max HP and dispels all debuffs.</span>
+        Active: blinding studio spotlights flood the field for <em>${pcn(S.ratio * 100)}</em> Magic Damage. The Headline is Interrupted, Stunned for ${P.stun}s, 🌑 Blinded for ${P.blind}s, and drained of <em>${pcn(P.drain * 100)}</em> Energy. All allies gain 🌟 <b>Prime Time</b> (+35% Attack Speed, +30% Skill Haste, +30% Headline Damage for ${P.primeDur}s) and a crystalline Broadcast Shield for <em>${pcn(S.shield * 100)}</em> of Vee's Max HP.`,
       passive: (u, B, S, P) => {
-        B.every(u, 3, () => {
+        B.every(u, 2.5, () => {
           const foes = B.enemiesOf(u); if (!foes.length) return;
           const top = foes.reduce((a, b) => (b.dmgDone || 0) > (a.dmgDone || 0) ? b : a);
           if (top.hasStatus('headline')) return;
           foes.forEach(f => B.removeStatus(f, 'headline'));
-          B.applyStatus(u, top, 'headline', 999); Sound.play('lock', { vol: .5 });
-          B.fxFloatIcon(top.x, top.y - 100, '📺');
+          B.applyStatus(u, top, 'headline', 999); Sound.play('lock', { vol: .55 });
+          B.fxFloatIcon(top.x, top.y - 100, '📺 HEADLINE', '#7be0ff');
         });
-        B.teamAura(u, m => { m.accP += P.acc; });
-        B.on(u, 'enemyCast', e => { if (e.hasStatus('headline')) B.alliesOf(u).forEach(a => B.energy(a, P.energy)); });
-        B.on(u, 'enemyDown', e => { if (e.hasStatus('headline'))
-          B.alliesOf(u).forEach(a => B.heal(u, a, u.max.hp * S.heal, { tag: 'ratings' })); });
+        B.teamAura(u, m => {
+          m.accP += P.acc;
+          m.crit += P.crit;
+        });
+        B.on(u, 'allyDamageDealt', ev => {
+          if (ev.tag === 'Executive Director') return;
+          if (ev.target && ev.target.hasStatus('headline')) {
+            ev.amount += ev.amount * P.dmgBoost;
+          }
+        });
+        B.on(u, 'enemyAction', e => {
+          if (e && e.hasStatus('headline')) B.alliesOf(u).forEach(a => B.energy(a, P.energy));
+        });
+        B.on(u, 'enemyCast', e => {
+          if (e && e.hasStatus('headline')) B.alliesOf(u).forEach(a => B.energy(a, P.energy));
+        });
+        B.on(u, 'enemyDown', e => {
+          if (!e || !e.hasStatus('headline')) return;
+          Sound.play('cheer', { vol: 0.6 });
+          B.alliesOf(u).forEach(a => {
+            B.heal(u, a, u.max.hp * S.heal, { tag: 'ratings' });
+            B.cleanse(a, 99);
+            B.fxSparkle(a.x, a.y - 40, 10, '#7be0ff');
+          });
+          const foes = B.enemiesOf(u).filter(f => f.alive && f !== e);
+          if (foes.length) {
+            const next = foes.reduce((a, b) => (b.dmgDone || 0) > (a.dmgDone || 0) ? b : a);
+            B.applyStatus(u, next, 'headline', 999);
+            B.fxFloatIcon(next.x, next.y - 100, '📺 HEADLINE', '#7be0ff');
+          }
+        });
       },
       cast: (u, B, S, P) => {
-        B.anim(u, 'cast', .68, 'veeSpotlight'); Sound.play('flash');
+        B.anim(u, 'cast', .75, 'veeSpotlight'); Sound.play('flash'); Sound.play('ult');
         const foes = B.enemiesOf(u), headline = foes.find(e => e.hasStatus('headline'));
         B.fxVeeSpotlight(u, foes, headline);
         B.after(.3, () => {
-          B.flash('#eaf7ff', .24, .55); B.shake(6, .3); Sound.play('ult');
+          B.flash('#eaf7ff', .28, .6); B.shake(8, .35);
           B.enemiesOf(u).forEach(e => {
             B.damage(u, e, u.st.mag * S.ratio, { type: 'magic', tag: 'Spotlight On' });
             if (e.hasStatus('headline')) {
-              B.interrupt(e); B.applyStatus(u, e, 'blind', P.blind);
-              e.energy = Math.max(0, e.energy * (1 - P.drain));
+              B.interrupt(e);
+              B.applyStatus(u, e, 'stun', P.stun);
+              B.applyStatus(u, e, 'blind', P.blind);
+              e.energy = Math.max(0, (e.energy || 0) * (1 - P.drain));
             }
+          });
+          B.alliesOf(u).forEach(a => {
+            B.applyStatus(u, a, 'haste', P.primeDur, { stacks: 2 });
+            B.shield(u, a, u.max.hp * S.shield, P.primeDur);
+            B.fxSparkle(a.x, a.y - 45, 12, '#ffe066');
+            B.fxFloatIcon(a.x, a.y - 95, '🌟 PRIME TIME', '#ffe066');
           });
         });
       }
     },
     G: {
-      name: 'Audience Support', type: 'Healing', cd: 11,
-      v: { heal: .14 }, p: { dur: 5, count: 3, fortify: 3 },
-      desc: (S, P) => `The crowd cheers. The ${P.count} weakest allies heal <em>${pcn(S.heal * 100)}</em> of Vee's Max HP over ${P.dur}s while gaining Defense. Overheal becomes a 🛡 Shield; already-shielded allies get Energy Generation instead.`,
-      ai: { prio: 58, cond: (u, B) => B.alliesOf(u).some(a => a.hpPct < .8) },
+      name: 'Audience Support', type: 'Healing / Shield', cd: 10,
+      v: { heal: .22, fortifyDef: .35 }, p: { dur: 5.0, overchargeDur: 5.0 },
+      desc: (S, P) => `Thunderous applause fills the arena! Cleanses up to 2 debuffs from all allies. The entire team recovers HP over ${P.dur}s (scaling with <em>${pcn(S.heal * 100)}</em> of Vee's Max HP and Magic) while gaining Studio Fortification (+35% Defense & Magic Defense). Overhealing becomes a 🛡️ Broadcast Shield; allies with active shields gain ⚡ <b>Overcharge</b> (+35% Energy Generation, +20% Cooldown Reduction).`,
+      ai: { prio: 65, cond: (u, B) => B.alliesOf(u).some(a => a.hpPct < .88 || (a.debuffs && a.debuffs.length)) },
       cast: (u, B, S, P) => {
-        B.anim(u, 'cast', .72, 'veeAudience'); Sound.play('cheer');
-        const chosen = B.alliesOf(u).sort((a, b) => a.hpPct - b.hpPct).slice(0, P.count);
-        B.fxVeeAudience(u, chosen);
-        chosen.forEach(a => {
-          B.applyStatus(u, a, 'fortify', P.dur, { stacks: P.fortify });
-          if (a.hasStatus('shield')) B.applyStatus(u, a, 'overcharge', P.dur);
-          B.applyStatus(u, a, 'regen', P.dur, { val: u.max.hp * S.heal / P.dur, overheal: 'shield' });
-          B.fxSparkle(a.x, a.y - 40, 10, '#7bd66a');
+        B.anim(u, 'cast', .74, 'veeAudience'); Sound.play('cheer', { vol: .75 }); Sound.play('cleanse', { vol: .4 });
+        const allies = B.alliesOf(u);
+        B.fxVeeAudience(u, allies);
+        allies.forEach(a => {
+          B.cleanse(a, 2);
+          B.applyStatus(u, a, 'fortify', P.dur, { stacks: 3 });
+          if (a.hasStatus('shield')) B.applyStatus(u, a, 'overcharge', P.overchargeDur);
+          B.applyStatus(u, a, 'regen', P.dur, { val: (u.max.hp * S.heal + u.st.mag * 0.8) / P.dur, overheal: 'shield' });
+          B.fxSparkle(a.x, a.y - 40, 10, '#7be0ff');
         });
       }
     },
     B: {
-      name: 'Commercial Break', type: 'Team Buff', cd: 14,
-      v: { heal: .06 }, p: { dur: 6, hasteStacks: 2 },
-      desc: (S, P) => `Vee cuts to ads for ${P.dur}s. Enemy cooldowns crawl, allies gain 💨 Haste, faster Energy and immunity to Energy drain. Ally skills cast during the break heal their caster for <em>${pcn(S.heal * 100)}</em> of Vee's Max HP.`,
-      ai: { prio: 42, cond: (u, B) => B.enemiesOf(u).length >= 2 },
+      name: 'Commercial Break', type: 'Team Buff / Stasis', cd: 13,
+      v: { heal: .10 }, p: { dur: 6.0, enRegen: 30, hasteStacks: 2 },
+      desc: (S, P) => `Vee cuts to commercial! Time dilates for ${P.dur}s: enemies suffer -50% cooldown recovery, -35% Attack Speed & Move Speed, and complete Energy lock. Allies gain 💨 <b>Super Haste</b> (+35% Move Speed, +30% Skill Haste), regenerate <em>${P.enRegen}</em> Energy, and become immune to Energy drain. Ally skills cast during the break trigger a sponsor spot restoring <em>${pcn(S.heal * 100)}</em> of Vee's Max HP and zapping nearby foes with static shock.`,
+      ai: { prio: 50, cond: (u, B) => B.enemiesOf(u).length >= 1 },
       cast: (u, B, S, P) => {
-        B.anim(u, 'cast', .78, 'veeCommercial'); Sound.play('ui_open'); B.tint('#1b2a55', .3, .5);
+        B.anim(u, 'cast', .78, 'veeCommercial'); Sound.play('ui_open'); B.tint('#1b2a55', .35, .6);
         const enemies = B.enemiesOf(u), allies = B.alliesOf(u);
         B.fxVeeCommercial(u, allies, enemies, P.dur);
-        enemies.forEach(e => B.applyStatus(u, e, 'drowsy', P.dur));
+        enemies.forEach(e => {
+          B.applyStatus(u, e, 'drowsy', P.dur);
+          B.applyStatus(u, e, 'slow', P.dur, { stacks: 2 });
+          e._energyLockedUntil = B.t + P.dur;
+        });
         allies.forEach(a => {
-          B.applyStatus(u, a, 'haste', P.dur, { stacks: P.hasteStacks });
+          B.applyStatus(u, a, 'haste', P.dur, { stacks: 3 });
           B.applyStatus(u, a, 'overcharge', P.dur);
+          B.energy(a, P.enRegen);
+          a._energyDrainImmuneUntil = B.t + P.dur;
         });
         u._breakUntil = B.t + P.dur;
-        B.on(u, 'allyCast', a => { if (B.t < (u._breakUntil || 0)) B.heal(u, a, u.max.hp * S.heal, { silent: true }); });
+        B.on(u, 'allyCast', a => {
+          if (B.t < (u._breakUntil || 0)) {
+            B.heal(u, a, u.max.hp * S.heal, { tag: 'Commercial Sponsor' });
+            Sound.play('hit_shock', { vol: .35, throttle: 150 });
+            B.enemiesOf(u).forEach(foe => {
+              if (B.distance(a, foe) <= 240) {
+                B.damage(u, foe, u.st.mag * 0.50, { type: 'magic', tag: 'Static Shock' });
+                B.fxSparkle(foe.x, foe.y - 40, 8, '#7be0ff');
+              }
+            });
+          }
+        });
       }
     },
     P: {
-      name: 'Studio Production', type: 'Defense / Magic Defense',
-      v: { def: .035, mdef: .025 }, p: { maxStacks: 10, redirect: .25, energy: 10, absorbP: .6 },
-      desc: (S, P) => `Each time an ally damages the 📺 Headline, Vee gains Production Value (max ${P.maxStacks}), worth <em>${pcn(S.def * 100)}</em> Defense and <em>${pcn((S.mdef || .025) * 100)}</em> Magic Defense each. She redirects up to <em>${pcn(P.redirect * 100)}</em> of nearby ally damage onto herself at reduced strength, granting them <em>${Math.round(P.energy)}</em> Energy. Stacks are only lost if Vee falls.`,
+      name: 'Studio Production', type: 'Defense / Redirection',
+      v: { def: .045, mdef: .045, dmgRed: .025 }, p: { maxStacks: 12, redirect: .35, absorbP: .50, energy: 12 },
+      desc: (S, P) => `Whenever an ally damages the 📺 Headline, or Vee shields/protects an ally, Vee gains 1 stack of 🎬 <b>Production Value</b> (max ${P.maxStacks}). Each stack grants Vee <em>+${(S.def * 100).toFixed(1)}%</em> Defense, <em>+${(S.mdef * 100).toFixed(1)}%</em> Magic Defense, and <em>+${(S.dmgRed * 100).toFixed(1)}%</em> Damage Reduction.
+        <b>Executive Redirection</b>: Vee redirects <em>${pcn(P.redirect * 100)}</em> of incoming damage from nearby allies onto herself, absorbing 50% of the redirected amount. Protected allies gain <em>${Math.round(P.energy)}</em> Energy and a reflective Static Barrier. At ${P.maxStacks} stacks, radiates an Executive Director Aura granting allies +20% True Damage against the Headline and Silence/Disable immunity.`,
       passive: (u, B, S, P) => {
-        u.prodMax = P.maxStacks; u.prodDef = S.def;
+        u.prodMax = P.maxStacks;
+        const addProd = () => {
+          u.prod = Math.min((u.prod || 0) + 1, P.maxStacks);
+          u.flat.defPProd = (u.prod || 0) * S.def;
+          u.flat.mdefPProd = (u.prod || 0) * S.mdef;
+          u.flat.dmgRedP = (u.prod || 0) * S.dmgRed;
+          u.dirty = true;
+        };
+
         B.on(u, 'allyDamageDealt', ev => {
-          if (ev.target && ev.target.hasStatus('headline')) {
-            u.prod = Math.min((u.prod || 0) + 1, P.maxStacks);
-            u.flat.defPProd = (u.prod || 0) * S.def;
-            u.flat.mdefPProd = (u.prod || 0) * (S.mdef || .025);
-            u.dirty = true;
+          if (ev.tag === 'Executive Director') return;
+          if (ev.target && ev.target.hasStatus('headline')) addProd();
+          if ((u.prod || 0) >= P.maxStacks && ev.target && ev.target.hasStatus('headline')) {
+            B.damage(u, ev.target, ev.amount * 0.20, { type: 'true', noDodge: true, tag: 'Executive Director' });
           }
         });
+        B.on(u, 'shieldDone', ev => {
+          if (ev.target && ev.target !== u) addProd();
+        });
+
         B.on(u, 'allyDamaged', ev => {
-          const prod = u.prod || 0;
-          if (prod < 4 || ev.unit === u || !u.alive) return;
-          if (B.distance(ev.unit, u) > 280) return;
-          const pct = prod >= P.maxStacks ? P.redirect : (P.redirect * (prod / P.maxStacks));
-          const moved = ev.amount * pct;
+          if (ev.unit === u || !u.alive || ev.redirected || ev.dot) return;
+          if (B.distance(ev.unit, u) > 320) return;
+          const moved = ev.amount * P.redirect;
           ev.amount -= moved;
           B.damage(ev.src, u, moved * P.absorbP, { type: 'true', redirected: true, noDodge: true, tag: 'redirect' });
-          if (u.alive) B.energy(ev.unit, P.energy);
+          if (u.alive) {
+            B.energy(ev.unit, P.energy);
+            B.shield(u, ev.unit, u.st.mag * 0.35, 3.5);
+          }
+        });
+
+        B.every(u, 1.0, () => {
+          if ((u.prod || 0) >= P.maxStacks) {
+            B.alliesOf(u).forEach(a => B.applyStatus(u, a, 'ccimmune', 1.2));
+          }
         });
       }
     },
     R: {
-      name: 'Season Finale', type: 'Battle Opener',
-      v: { exposeDmg: .18, def: .05, mag: .35 }, p: { needExposure: 6, liveDur: 12, energy: 22, cdr: 2.5 },
-      desc: (S, P) => `Enemies build Exposure by acting. At ${P.needExposure} they become the 📺 Headline: less damage, no hiding, less healing, and <em>${pcn(S.exposeDmg * 100)}</em> more damage taken. Each Headline defeated refreshes ally shields, restores <em>${Math.round(P.energy)}</em> Energy, and grants Vee <em>${pcn(S.def * 100)}</em> Defense permanently. Once per battle, if Vee is last alive she goes Live for ${P.liveDur}s with <em>${pcn(S.mag * 100)}</em> Magic Attack and every enemy is a Headline.`,
+      name: 'Season Finale', type: 'Battle Opener / Climax',
+      v: { exposeDmg: .25, def: .06, hp: .06, mag: .50 }, p: { needExposure: 5, liveDur: 14, energy: 35, cdr: 3.5, maxFinStacks: 5 },
+      desc: (S, P) => `Enemies build Exposure by acting. At ${P.needExposure} stacks they become permanently exposed as a 📺 Headline: -25% damage dealt, no dodging, -50% healing received, and <em>+${pcn(S.exposeDmg * 100)}</em> damage taken. Each Headline defeated triggers a Grand Finale: restores <em>${P.energy}</em> Energy to all allies, refreshes all shields, reduces cooldowns by ${P.cdr}s, and permanently grants Vee <em>+${pcn(S.hp * 100)}</em> Max HP and Defense (stacks up to ${P.maxFinStacks}x).
+        🔴 <b>LIVE BROADCAST</b>: Once per wave, if Vee drops below 35% HP or is solo, she goes Live for ${P.liveDur}s: heals 40% Max HP, gains CC immunity, +50% Magic Attack, +40% Attack Speed, +300 Range, piercing laser beam basics, and brands every enemy as a Headline!`,
       passive: (u, B, S, P) => {
         u.antiDodge = target => !!(target && (target.hasStatus('headline') || B.t < (target._veeOnAirUntil || 0)));
-        B.on(u, 'waveStart', () => { u._live = false; });
+        B.on(u, 'waveStart', () => { u._live = false; u._finStacks = 0; });
         B.on(u, 'enemyAction', e => {
+          if (!e.alive) return;
           e.exposure = (e.exposure || 0) + 1;
           if (e.exposure >= P.needExposure && !e.hasStatus('headline')) {
             e._veeOnAirUntil = B.t + 999;
-            B.applyStatus(u, e, 'headline', 999); B.applyStatus(u, e, 'grief', 999);
-            B.fxFloatIcon(e.x, e.y - 100, '📺'); Sound.play('gasp', { vol: .5 });
+            B.applyStatus(u, e, 'headline', 999);
+            B.applyStatus(u, e, 'grief', 999);
+            B.applyStatus(u, e, 'exposed', 999);
+            B.fxFloatIcon(e.x, e.y - 100, '📺 EXPOSED HEADLINE', '#7be0ff');
+            Sound.play('gasp', { vol: .55 });
           }
         });
         B.on(u, 'enemyDown', e => {
           if (!e.hasStatus('headline')) return;
-          B.alliesOf(u).forEach(a => { B.energy(a, P.energy); B.refreshShields(a); B.reduceCd(a, P.cdr); });
-          u.flat.defP2 = (u.flat.defP2 || 0) + S.def; u.dirty = true;
+          Sound.play('cheer', { vol: 0.65 }); Sound.play('get_rare', { vol: 0.5 });
+          B.alliesOf(u).forEach(a => {
+            B.energy(a, P.energy);
+            B.refreshShields(a);
+            B.reduceCd(a, P.cdr);
+            B.fxSparkle(a.x, a.y - 45, 10, '#ffd166');
+          });
+          u._finStacks = Math.min((u._finStacks || 0) + 1, P.maxFinStacks);
+          u.flat.hpPFinale = (u._finStacks || 0) * S.hp;
+          u.flat.defPFinale = (u._finStacks || 0) * S.def;
+          u.dirty = true;
+          B.fxFloatIcon(u.x, u.y - 110, `🌟 FINALE x${u._finStacks}`, '#ffd166');
         });
-        B.every(u, 1, () => {
+        B.every(u, 0.5, () => {
           if (u._live || !u.alive) return;
-          if (B.alliesOf(u).filter(a => a !== u && a.alive).length === 0) {
-            u._live = true; B.log('<b>LIVE BROADCAST</b>'); Sound.play('suddendeath');
-            B.tint('#ff2b6b', .3, 1.2); B.applyStatus(u, u, 'ccimmune', P.liveDur);
+          const solo = B.alliesOf(u).filter(a => a !== u && a.alive).length === 0;
+          if (u.hpPct <= 0.35 || solo) {
+            u._live = true;
+            B.log('<b>🔴 LIVE BROADCAST — PRIMETIME FINALE</b>');
+            Sound.play('suddendeath'); Sound.play('ult');
+            B.flash('#ff3366', .35, .8); B.shake(12, .6);
+            if (B.fxVeeLiveBroadcast) B.fxVeeLiveBroadcast(u.x, u.y);
+            B.heal(u, u, u.max.hp * 0.40, { tag: 'Live Broadcast' });
+            B.applyStatus(u, u, 'ccimmune', P.liveDur);
             B.applyStatus(u, u, 'spotlight', P.liveDur);
-            B.applyStatus(u, u, 'haste', P.liveDur, { stacks: 2 });
+            B.applyStatus(u, u, 'haste', P.liveDur, { stacks: 3 });
             u.flat.magP2 = (u.flat.magP2 || 0) + S.mag;
-            u.rangeBonus = 240; u.dirty = true;
-            B.enemiesOf(u).forEach(e => B.applyStatus(u, e, 'headline', P.liveDur));
+            u.flat.aspdP = (u.flat.aspdP || 0) + 0.40;
+            u.rangeBonus = 300;
+            u.dirty = true;
+            B.enemiesOf(u).forEach(e => {
+              B.applyStatus(u, e, 'headline', P.liveDur);
+              B.fxFloatIcon(e.x, e.y - 100, '📺 HEADLINE', '#ff3366');
+            });
           }
         });
       }
@@ -983,14 +1144,14 @@ defHero({
 });
 
 /* ============================================================ BOBETTE
-   Defensive Support / Survival Tank - B Tier */
+   Holiday survivalist and nearby-team support. */
 defHero({
   id: 'Bobette', name: 'Bobette', folder: 'Bobette', file: 'Bobette', icon: 'Bobette',
-  role: 'Tank', tier: 'B', element: 'Holiday',
-  blurb: 'Bobette Carolynne wraps presents for a living and treats her whole team like the fragile ones.',
-  base: { hp: 5600, atk: 232, def: 348, mag: 190, mdef: 292, spd: 90, acc: 162, eva: 82 },
-  hidden: { range: 190, aspd: .80, ms: 56, aggro: 1.9, crit: .05, critDmg: 1.5, healPow: 1.15, shieldPow: 1.50, cdr: .04, ccRes: .35, kbRes: .8, armorPen: 0, magPen: 0 },
-  growth: { hp: .112, atk: .068, def: .100, mag: .062, mdef: .090 },
+  role: 'Support', roleLabel: 'Holiday Guardian', position: 'Midline', tier: 'A', element: 'Holiday',
+  blurb: 'Bobette hides from danger in a gift box while her festive aura keeps nearby friends moving.',
+  base: { hp: 4680, atk: 216, def: 294, mag: 278, mdef: 292, spd: 105, acc: 170, eva: 112 },
+  hidden: { range: 190, aspd: .92, ms: 76, aggro: .86, crit: .05, critDmg: 1.5, healPow: 1.15, shieldPow: 1.30, cdr: .08, ccRes: .28, kbRes: .55, armorPen: 0, magPen: 0 },
+  growth: { hp: .095, atk: .064, def: .085, mag: .086, mdef: .090 },
   move: { gait: 'waddle', bob: 6, freq: 1.3, lean: 4, squash: .07, idle: 'settle', step: 'step_soft',
     particles: 'confetti', pcol: '#e8536b', trail: { on: false }, brake: .7, weight: 1.4 },
   basic: { name: 'Ribbon Swat', type: 'physical', ratio: 1.12, range: 190, sfx: 'swing_light', hit: 'hit_blunt', animStyle: 'bobetteRibbonSwat',
@@ -998,86 +1159,47 @@ defHero({
     onHit: (u, t, B) => { if (chance(.25)) B.applyStatus(u, t, 'wrapped', 4); } },
   skills: {
     W: {
-      name: 'Precious Packaging', type: 'Shield', energy: 100,
-      v: { shield: .24, heal: .28 }, p: { wrap: 3, slow: 4, kb: 130, root: 1.35, boost: 1.8 },
-      desc: (S, P) => `<span class="sk-pas">Taking a heavy hit grants 📦 Packed Protection, raising Bobette's Defense. At max stacks her next Shield is boosted by <em>${pcn((P.boost - 1) * 100)}</em>.</span>
-        Active: she wraps herself in a gift box for ${P.wrap}s, unable to act but taking greatly reduced damage and immune to crowd control. When it opens she heals <em>${pcn(S.heal * 100)}</em> Max HP, shields nearby allies for <em>${pcn(S.shield * 100)}</em> Max HP, and shoves enemies away 🐢 Slowed for ${P.slow}s (Rooted for ${P.root}s if already Wrapped).`,
-      passive: (u, B) => {
-        B.on(u, 'damaged', ev => {
-          if (ev.amount > u.max.hp * .06) {
-            // A full enemy squad can otherwise feed this stack on every
-            // simultaneous hit and make Twisted Bobette effectively
-            // unbreakable. Keep the player version at its authored cap, but
-            // give the enemy version a shorter defensive ramp.
-            const packed = u.getStatus('packed');
-            if (!u.twisted || !packed || packed.stacks < 3)
-              B.applyStatus(u, u, 'packed', 14, { stacks: 1 });
-            const p = u.getStatus('packed');
-            if (p && p.stacks >= 5) B.fxFloatIcon(u.x, u.y - 100, '📦');
-          }
-        });
-      },
+      name: 'Precious Packaging', type: 'Invulnerability / Shield', energy: 100,
+      v: { shield: .12 }, p: { wrap: 2.8, healPct: .16, shieldDur: 7, kb: 100 },
+      fixedP: ['wrap', 'healPct'],
+      desc: (S, P) => `Bobette ducks into a gift box for ${P.wrap}s. She cannot move or act, but is Invulnerable. When she opens the box, she recovers ${pcn(P.healPct * 100)} Max HP, knocks back nearby enemies and gives nearby allies a Shield worth up to <em>${pcn(Math.min(.35, S.shield) * 100)}</em> of her Max HP for ${P.shieldDur}s. Twisted Bobette stays boxed for a shorter time.`,
       cast: (u, B, S, P) => {
-        // Keep the enemy version's signature defensive package, but shorten
-        // its lockout so elite encounters cannot stall behind one long box.
-        const wrapDur = u.twisted ? Math.min(P.wrap, 2.15) : P.wrap;
+        // The real ability is invincible but stationary. The shorter combat
+        // window preserves that tradeoff without stalling elite encounters.
+        const wrapDur = u.twisted ? Math.min(P.wrap, 1.9) : P.wrap;
+        B.applyStatus(u, u, 'bobette_box', wrapDur);
+        if (!u.hasStatus('bobette_box')) return;
+        u.invuln = Math.max(u.invuln || 0, B.t + wrapDur);
         Sound.play('bobette_wrap', { vol: .58 }); B.anim(u, 'cast', .72, 'bobetteWrap'); B.fxBobetteSkill('wrap', u, { dur: wrapDur });
-        const packed = u.getStatus('packed');
-        const boost = packed && packed.stacks >= 5 ? P.boost : 1;
-        B.applyStatus(u, u, 'petrify', wrapDur);
-        B.applyStatus(u, u, 'ccimmune', wrapDur);
-        B.applyStatus(u, u, 'ward', wrapDur);
         B.fxRing(u.x, u.y - 30, 130, '#e8536b', .5);
-        // Box pulse: ring beats every 0.55s while inside to sell the "trapped" phase
-        let pulseT = 0;
-        const boxPulse = () => {
-          if (!u.alive || !u.hasStatus('petrify')) return;
-          pulseT += .55;
-          if (pulseT < wrapDur - .1) {
-            B.fxRing(u.x, u.y - 30, 90 + pulseT * 14, '#e8536b', .25);
-            B.after(.55, boxPulse);
-          }
-        };
-        B.after(.55, boxPulse);
         B.after(wrapDur, () => {
           if (!u.alive) return;
-          B.removeStatus(u, 'petrify'); B.removeStatus(u, 'packed');
+          B.removeStatus(u, 'bobette_box');
           B.anim(u, 'cast', .56, 'bobetteUnwrap'); Sound.play('bobette_present_pop', { vol: .66 }); B.fxBobetteSkill('open', u);
-          B.flash('#e8536b', .30, .25);
-          B.shake(18, .5);
-          B.fxConfetti(u.x, u.y - 50, 70);
-          B.fxRing(u.x, u.y - 30, 350, '#e8536b', .45);
-          B.heal(u, u, u.max.hp * S.heal, { tag: 'Precious Packaging' });
-          B.alliesOf(u).forEach(a => { if (B.distance(a, u) < 320) B.shield(u, a, u.max.hp * S.shield * boost, 9); });
+          B.fxConfetti(u.x, u.y - 50, 48);
+          B.fxRing(u.x, u.y - 30, 320, '#e8536b', .45);
+          B.heal(u, u, u.max.hp * P.healPct, { tag: 'Precious Packaging' });
+          B.alliesOf(u).forEach(a => { if (B.distance(a, u) <= 320) B.shield(u, a, u.max.hp * Math.min(u.twisted ? .12 : .35, S.shield), P.shieldDur); });
           B.enemiesOf(u).forEach(e => {
-            if (B.distance(e, u) > 300) return;
-            const alreadyWrapped = e.hasStatus('wrapped');
-            B.knockback(u, e, P.kb); B.applyStatus(u, e, 'slow', P.slow, { stacks: 2 });
-            if (alreadyWrapped) B.applyStatus(u, e, 'root', P.root);
+            if (B.distance(e, u) <= 220) B.knockback(u, e, P.kb);
           });
         });
       }
     },
     G: {
-      name: 'Holiday Spirit', type: 'Healing / Buff', cd: 11,
-      v: { shield: .10, perAlly: .12 }, p: { dur: 9, shieldDur: 6 },
-      desc: (S, P) => `The team gains 🎄 Festive Cheer for ${P.dur}s: Move Speed, Energy Generation and Healing Received all rise. Any ally who fires their ultimate while cheered gains a <em>${pcn(S.shield * 100)}</em> Max HP Shield (+<em>${pcn(S.perAlly * 100)}</em> per nearby ally) for ${P.shieldDur}s. The effect grows with each nearby ally.`,
-      ai: { prio: 56, cond: () => true },
-      cast: (u, B, S, P) => {
-        B.anim(u, 'cast', .64, 'bobetteCheer'); Sound.play('cheer'); B.fxBobetteSkill('cheer', u);
-        const near = B.alliesOf(u).filter(a => B.distance(a, u) < 340).length;
-        const scale = 1 + near * S.perAlly;
-        B.fxRing(u.x, u.y - 30, 340, '#e8536b', .5);
-        B.alliesOf(u).forEach(a => {
-          B.applyStatus(u, a, 'festivecheer', P.dur);
-          B.fxSparkle(a.x, a.y - 40, 8, '#e8536b');
-          B.fxFloatIcon(a.x, a.y - 100, '🎄');
-        });
-        u._cheerUntil = B.t + P.dur;
-        B.on(u, 'allyUltimate', a => {
-          if (B.t < (u._cheerUntil || 0) && a.hasStatus('festivecheer'))
-            B.shield(u, a, u.max.hp * S.shield * scale, P.shieldDur);
-        });
+      name: 'Festive Aura', type: 'Nearby Support',
+      v: { energy: .12 }, p: { radius: 305, linger: 5 }, fixedP: ['radius', 'linger'],
+      desc: (S, P) => `Bobette's festive aura gives allies within ${P.radius} range +25% Move Speed and <em>${pcn(Math.min(.5, S.energy) * 100)}</em> more Energy generation, representing her stamina recovery. The boost lingers for ${P.linger}s after they leave. Multiple Bobettes refresh the same boost rather than stacking it.`,
+      passive: (u, B, S, P) => {
+        const refresh = () => {
+          if (!u.alive) return;
+          B.alliesOf(u).forEach(a => {
+            if (B.distance(a, u) <= P.radius)
+              B.applyStatus(u, a, 'festivecheer', P.linger, { val: Math.min(.5, S.energy) });
+          });
+        };
+        refresh();
+        B.every(u, .5, refresh);
       }
     },
     B: {
@@ -1104,51 +1226,52 @@ defHero({
       }
     },
     P: {
-      name: 'Ornament Protection', type: 'Max HP / Defense',
-      v: { shield: .05 }, p: { max: 8, dur: 6 },
-      desc: (S, P) => `Whenever a nearby ally loses HP, Bobette gains 🔔 Festive Guard (max ${P.max}), raising Defense, Magic Defense and Shield Strength. At max stacks she shares it with nearby allies, and any Shield she receives also shields everyone carrying Festive Guard for <em>${pcn(S.shield * 100)}</em> of Bobette's Max HP for ${P.dur}s.`,
+      name: 'Ornament Protection', type: 'Shield / Defense',
+      v: { shield: .06 }, p: { guardDur: 7, shieldDur: 6, cooldown: 5 },
+      fixedP: ['cooldown'],
+      desc: (S, P) => `When a nearby ally takes a substantial hit, Bobette catches it with a Shield worth up to <em>${pcn(Math.min(.2, S.shield) * 100)}</em> of her Max HP and gives them 🔔 Festive Guard for ${P.guardDur}s. Each stack raises Defense and Magic Defense. She can protect each ally once every ${P.cooldown}s.`,
       passive: (u, B, S, P) => {
+        const protectedAt = new Map();
         B.on(u, 'allyDamaged', ev => {
-          if (ev.unit === u || !u.alive) return;
-          if (B.distance(ev.unit, u) > 320) return;
-          const guard = u.getStatus('festiveguard');
-          const guardMax = u.twisted ? 3 : P.max;
-          if (!u.twisted || !guard || guard.stacks < guardMax)
-            B.applyStatus(u, u, 'festiveguard', 999, { stacks: 1 });
-          const g = u.getStatus('festiveguard');
-          // Player Bobette shares the finished guard. Enemy Bobette should
-          // not turn every nearby Twisted into another defensive wall.
-          if (!u.twisted && g && g.stacks >= P.max) B.alliesOf(u).forEach(a => {
-            if (a !== u && B.distance(a, u) < 320) B.applyStatus(u, a, 'festiveguard', 8, { stacks: 2 });
-          });
-        });
-        B.on(u, 'statusApplied', ev => {
-          if (ev.id !== 'shield' || ev.unit !== u) return;
-          B.alliesOf(u).forEach(a => { if (a !== u && a.hasStatus('festiveguard')) B.shield(u, a, u.max.hp * S.shield, P.dur); });
+          const a = ev.unit;
+          if (!u.alive || !a || a === u || !ev.src || ev.src.team === u.team
+            || B.distance(a, u) > 320 || ev.amount < a.max.hp * .05
+            || B.t < (protectedAt.get(a) || 0)) return;
+          protectedAt.set(a, B.t + P.cooldown);
+          B.shield(u, a, u.max.hp * Math.min(u.twisted ? .09 : .2, S.shield), P.shieldDur);
+          B.applyStatus(u, a, 'festiveguard', P.guardDur, { stacks: 1 });
+          B.energy(u, 5);
+          B.fxFloatIcon(a.x, a.y - 100, '🔔', '#f5c860');
         });
       }
     },
     R: {
-      name: 'The Perfect Present', type: 'Battle Opener',
-      v: { revive: .30, def: .35, shieldPow: .40, healPow: .35 }, p: { wardDur: 5 },
-      desc: (S, P) => `Before battle the ally with the lowest Max HP receives 🎁 Holiday Favor: more Max HP, Damage Reduction and Healing Received. If they would be defeated the present opens instead and they survive at <em>${pcn(S.revive * 100)}</em> HP with ${P.wardDur}s protection. Afterwards Bobette gains <em>${pcn(S.def * 100)}</em> Defense, <em>${pcn(S.shieldPow * 100)}</em> Shield Strength and <em>${pcn(S.healPow * 100)}</em> Healing Power, but her own damage drops by a third.`,
+      name: 'The Perfect Present', type: 'Rescue / Shield',
+      v: { shield: .08 }, p: { revivePct: .18, wardDur: 3.5, shieldDur: 7 }, fixedP: ['revivePct'],
+      desc: (S, P) => `At the start of the fight, Bobette gives 🎁 Holiday Favor to the teammate with the lowest Max HP. It raises their Max HP and resilience. Once per wave, if that teammate would be defeated, the gift opens: they survive with ${pcn(P.revivePct * 100)} Max HP, gain a Shield worth up to <em>${pcn(Math.min(.35, S.shield) * 100)}</em> of Bobette's Max HP, and receive Ward for ${P.wardDur}s.`,
       passive: (u, B, S, P) => {
-        B.on(u, 'waveStart', () => { u._opened = false; });
-        B.after(.4, () => {
+        const favor = () => {
+          if (!u.alive) return;
+          u._bobetteFavorOpened = false;
           const t = B.alliesOf(u).filter(a => a !== u).sort((a, b) => a.max.hp - b.max.hp)[0] || u;
           u._favored = t;
-          B.applyStatus(u, t, 'holidayfavor', 999);
-          B.fxFloatIcon(t.x, t.y - 100, '🎁'); Sound.play('bobette_wrap', { vol: .42 }); B.fxBobetteSkill('favor', t);
-        });
+          B.applyStatus(u, t, 'bobette_favor', 999);
+          B.fxFloatIcon(t.x, t.y - 100, '🎁');
+          Sound.play('bobette_wrap', { vol: .42 }); B.fxBobetteSkill('favor', t);
+        };
+        B.after(.4, favor);
+        B.on(u, 'waveStart', () => B.after(.4, favor));
         B.on(u, 'allyLethal', ev => {
-          if (u._opened || ev.unit !== u._favored) return;
-          u._opened = true; ev.prevented = true;
-          ev.unit.hp = ev.unit.max.hp * (u.twisted ? Math.min(S.revive, .22) : S.revive);
-          B.applyStatus(u, ev.unit, 'ward', P.wardDur); B.applyStatus(u, ev.unit, 'ccimmune', P.wardDur);
+          if (!u.alive || u._bobetteFavorOpened || ev.prevented || ev.unit !== u._favored) return;
+          u._bobetteFavorOpened = true;
+          ev.prevented = true;
+          B.removeStatus(ev.unit, 'bobette_favor');
+          ev.unit.hp = Math.max(1, ev.unit.max.hp * P.revivePct);
+          B.shield(u, ev.unit, u.max.hp * Math.min(S.shield, .35), P.shieldDur);
+          B.applyStatus(u, ev.unit, 'ward', P.wardDur);
+          B.energy(u, 20);
           Sound.play('bobette_present_pop', { vol: .7 }); B.fxBobetteSkill('open', ev.unit); B.fxConfetti(ev.unit.x, ev.unit.y - 50, 50);
           B.log('<b>The Perfect Present opens.</b>');
-          u.flat.defP2 = S.def; u.flat.shieldPowP = S.shieldPow; u.flat.healPowP = S.healPow; u.flat.dmgDealt = -.33;
-          u.dirty = true;
         });
       }
     }
@@ -1935,116 +2058,203 @@ defHero({
 });
 
 /* ============================================================ GINGER
-   Healer / Buffer / Team Sustain - A Tier */
+   The Artisan Holiday Baker & Selfless Guardian Healer - DHBM Standards
+   Confectionery craftsmanship: Perfect Decoration mastery, Royal Icing
+   barriers, Peppermint Swirl healing hearths, and life-saving Last Bite treats. */
 function gingerDecoration(u, B, S, P, unit) {
   if (!unit || !unit.alive || unit === u) return;
   if (u._gingerMasterwork) return;
   u._gingerDecoAt = u._gingerDecoAt || {};
-  // Count one decoration per ally per support event, not once for every
-  // individual buff inside Decorated Treats.
   if (u._gingerDecoAt[unit.uid] === B.t) return;
   u._gingerDecoAt[unit.uid] = B.t;
-  u.deco = Math.min((u.deco || 0) + 1, P.max);
-  u.flat.healPowP = u.deco * S.per;
-  u.flat.energyGen = u.deco * S.per;
+  const max = P ? P.max || 8 : 8;
+  const per = S ? S.per || 0.065 : 0.065;
+  const cdrPer = S ? S.cdr || 0.025 : 0.025;
+  u.deco = Math.min((u.deco || 0) + 1, max);
+  u.flat.healPowP = u.deco * per;
+  u.flat.shieldPowP = u.deco * (per * 0.8);
+  u.flat.cdrP = u.deco * cdrPer;
+  u.flat.energyGen = u.deco * per;
   u.dirty = true;
+  if (u.deco >= max && !u._gingerAtMaxDeco) {
+    u._gingerAtMaxDeco = true;
+    Sound.play('sparkle', { vol: .42 });
+    B.fxFloatIcon(u.x, u.y - 105, '✨ MASTERWORK READY!', '#ffd166');
+    B.alliesOf(u).forEach(a => {
+      B.applyStatus(u, a, 'speedup', 4.0);
+    });
+  }
 }
 defHero({
   id: 'Ginger', name: 'Ginger', folder: 'Ginger', file: 'Ginger', icon: 'Ginger',
-  role: 'Support', tier: 'A', element: 'Bake',
-  blurb: 'Keeps her team alive through kindness and preparation, and gives away more of herself than she should.',
-  base: { hp: 4100, atk: 185, def: 232, mag: 350, mdef: 300, spd: 110, acc: 178, eva: 118 },
-  hidden: { range: 270, aspd: .96, ms: 70, aggro: .68, crit: .05, critDmg: 1.45, healPow: 1.56, shieldPow: 1.30, cdr: .10, ccRes: .22, kbRes: .34, armorPen: 0, magPen: .07 },
-  growth: { hp: .092, atk: .066, def: .082, mag: .096, mdef: .088 },
-  move: { gait: 'waddle', bob: 7, freq: 1.6, lean: 5, squash: .07, idle: 'breathe', step: 'step_soft',
-    particles: 'crumbs', pcol: '#ffb56b', trail: { on: false }, brake: .35 },
-  basic: { name: 'Icing Flick', type: 'magic', ratio: .96, range: 270, proj: 'food', pimg: 'Cherry', animStyle: 'gingerFlick',
-    sfx: 'whoosh', hit: 'hit_light', wind: .22, note: 'A flick of frosting, delivered with intent.',
-    onHit: (u, t, B) => { if (chance(.22)) B.applyStatus(u, t, 'messy', 4); } },
+  role: 'Support', tier: 'SS', element: 'Bake',
+  blurb: 'An observant and gentle gingerbread artisan whose delicate piping and selfless baking keep her friends standing when all hope seems lost. With her piping bag, royal icing barriers, and miraculous gingerbread confections, Ginger turns the chaos of battle into a masterwork of care.',
+  base: { hp: 4950, atk: 210, def: 285, mag: 420, mdef: 325, spd: 126, acc: 215, eva: 155 },
+  hidden: { range: 280, aspd: 1.05, ms: 82, aggro: .55, crit: .08, critDmg: 1.50, healPow: 1.65, shieldPow: 1.55, cdr: .18, ccRes: .30, kbRes: .45, armorPen: 0, magPen: .12 },
+  growth: { hp: .102, atk: .068, def: .088, mag: .112, mdef: .096 },
+  move: { gait: 'waddle', bob: 9, freq: 1.8, lean: 6, squash: .09, idle: 'breathe', step: 'step_soft',
+    particles: 'crumbs', pcol: '#ffb56b', trail: { on: true, col: '#ffe6c2', rate: .10 }, brake: .30 },
+  basic: {
+    name: 'Icing Flick', type: 'magic', ratio: 1.12, range: 280, proj: 'food', pimg: 'Cherry', animStyle: 'gingerFlick',
+    sfx: 'whoosh', hit: 'hit_magic', wind: .20,
+    note: 'Flicks delicate, sugar-spun frosting treats that deal Magic Damage. Generates 1 stack of Perfect Decoration. Every 2nd basic attack unleashes Peppermint Glisten, bouncing a restorative peppermint to the lowest-HP ally while applying Messy to the foe.',
+    onHit: (u, t, B) => {
+      if (!t || !t.alive) return;
+      gingerDecoration(u, B, { per: .065, cdr: .025 }, { max: 8 }, u);
+      u._gingerBasics = (u._gingerBasics || 0) + 1;
+      if (u._gingerBasics % 2 === 0) {
+        const ally = B.lowestHp(B.alliesOf(u)) || u;
+        if (ally && ally.alive) {
+          const healAmt = u.st.mag * 0.55;
+          B.heal(u, ally, healAmt, { tag: 'Peppermint Glisten' });
+          B.applyStatus(u, ally, 'speedup', 4.0);
+          B.energy(ally, 12);
+          B.fxProj(u, ally, { kind: 'food', img: 'Trinkets/GINGER_PeppermintIcing', col: '#ff7892' }, () => {
+            Sound.play('item_pop', { vol: .35, throttle: 120 });
+            B.fxFloatIcon(ally.x, ally.y - 95, '🍬 PEPPERMINT GLISTEN +12⚡', '#ff7892');
+            B.fxSparkle(ally.x, ally.y - 40, 8, '#ffd166');
+          });
+        }
+        B.applyStatus(u, t, 'messy', 4.5);
+      }
+    }
+  },
   skills: {
     W: {
-      name: 'Baked With Care!', type: 'Healing', energy: 100,
-      v: { heal: 2.08 }, p: { cost: .15, thr: .55, floor: .20 },
-      desc: (S, P) => `<span class="sk-pas">Every time an ally drops below ${pc(P.thr)} HP, Ginger gains 💭 Concern, strengthening her next heal by 15%.</span>
-        Active: she gives away one of her own Hearts, healing an ally <em>${pcn(S.heal * 100)}</em> Magic. At maximum Perfect Decoration, the next use heals the whole team and consumes the decorations. It costs <em>${pc(P.cost)}</em> of her own Max HP, and she will not cast it below ${pc(P.floor)} HP. If it saves an ally from defeat, both become 🫂 Encouraged.`,
+      name: 'Baked With Care!', type: 'Healing / Cleanse', energy: 100, cd: 4.0,
+      v: { heal: 2.85, shield: .45, dmg: 1.80 }, p: { cost: .10, floor: .15, dur: 8.0 },
+      desc: (S, P) => `<span class="sk-pas">Ginger's baking oven never runs dry. Whenever an ally drops below 50% HP, Ginger gains 💭 Concern (+25% Healing Power, +20% Shield Power, max 3 stacks). Caster consumes all Concern to empower this heal by an extra 20% per stack.</span>
+        Active: Ginger crafts a magnificent glowing Gingerbread Heart and links her vital warmth to all allies! Restores <em>${pcn(S.heal * 100)}</em> Magic HP to all allies, cleanses <b>ALL</b> crowd control and negative debuffs, and wraps them in a 🛡️ Royal Icing Barrier absorbing <em>${pcn(S.shield * 100)}</em> Max HP + Magic for ${P.dur}s. Critical allies (&lt;30% HP) become 🫂 <b>Encouraged</b> (+35% Attack Speed, +30% Move Speed, +20% Damage Boost, CC Immunity for 8s).
+        At maximum Perfect Decoration (8), this ascends to a 🌟 <b>Legendary Masterwork</b>: doubles the shield, unleashes a festive sugar burst dealing <em>${pcn(S.dmg * 100)}</em> Magic Damage and blinding all foes for 3s, and refunds 35 Energy to all allies! (Costs ${pc(P.cost)} HP, floor at ${pc(P.floor)} HP).`,
+      ai: { prio: 80, cond: (u, B) => B.alliesOf(u).some(a => a.hpPct < .75 || a.statuses.some(s => STATUS[s.id] && STATUS[s.id].kind === 'debuff')) },
       passive: (u, B) => {
         B.on(u, 'allyLow', a => {
-          if (a._concern && B.t - a._concern < 6) return;
-          a._concern = B.t; B.applyStatus(u, u, 'concern', 20, { stacks: 1 });
+          if (a._concern && B.t - a._concern < 5) return;
+          a._concern = B.t;
+          B.applyStatus(u, u, 'concern', 25, { stacks: 1, maxStacks: 3 });
+          Sound.play('whisper', { vol: .25 });
         });
       },
       cast: (u, B, S, P) => {
         if (u.hpPct < P.floor) return;
         const masterwork = (u.deco || 0) >= (u.decoMax || 8);
-        const targets = masterwork
-          ? B.alliesOf(u).filter(a => a.alive)
-          : [B.lowestHp(B.alliesOf(u).filter(a => a !== u)) || B.lowestHp(B.alliesOf(u))].filter(Boolean);
-        if (!targets.length) return;
-        const criticalTargets = targets.filter(t => t.hpPct < .3);
-        if (masterwork) { u.deco = 0; u._gingerMasterwork = true; }
-        B.anim(u, 'cast', .62, 'gingerHeart'); Sound.play('heal_soft', { vol: .38 });
-        B.after(.28, () => {
+        const concernStacks = u.countStatus ? u.countStatus('concern') : (u.hasStatus('concern') ? 1 : 0);
+        const concernMul = 1 + concernStacks * 0.20;
+        if (masterwork) { u.deco = 0; u._gingerAtMaxDeco = false; u._gingerMasterwork = true; }
+        B.anim(u, 'cast', .78, 'gingerHeart');
+        Sound.play('heal_soft', { vol: .55 });
+        Sound.play('cheer', { vol: .42 });
+        Sound.play('ult', { delay: 100 });
+        if (B.fxGingerHeartBurst) B.fxGingerHeartBurst(u.x, u.y - 45, masterwork ? 160 : 120);
+        else B.fxRing(u.x, u.y - 42, 140, '#ffb56b', .5);
+
+        B.after(.26, () => {
           B.damage(u, u, u.max.hp * P.cost, { type: 'true', selfharm: true, silent: true });
-          targets.forEach(t => {
-            B.heal(u, t, u.st.mag * S.heal, { tag: 'Baked With Care!' });
-            B.fxHeartLink(u, t); B.fxSparkle(t.x, t.y - 40, masterwork ? 14 : 10, '#ffb56b');
-            if (t.hpPct < .3 || criticalTargets.includes(t)) B.applyStatus(u, t, 'encouraged', 10);
+          const allies = B.alliesOf(u).filter(a => a.alive);
+          allies.forEach(t => {
+            const isCrit = t.hpPct < .35;
+            const healVal = u.st.mag * S.heal * concernMul * (masterwork ? 1.35 : 1);
+            B.heal(u, t, healVal, { tag: 'Baked With Care!' });
+            B.cleanse(t, 99);
+            const shieldVal = (u.max.hp * S.shield + u.st.mag * 0.40) * (masterwork ? 2.0 : 1.0);
+            B.shield(u, t, shieldVal, P.dur);
+            if (B.fxGingerRoyalIcing) B.fxGingerRoyalIcing(t.x, t.y - 40, 95, P.dur);
+            if (B.fxHeartLink) B.fxHeartLink(u, t);
+            B.fxSparkle(t.x, t.y - 40, masterwork ? 22 : 14, '#ffd166');
+            if (isCrit) {
+              B.applyStatus(u, t, 'encouraged', 8);
+              B.applyStatus(u, t, 'ccimmune', 4);
+              B.fxFloatIcon(t.x, t.y - 95, '🫂 ENCOURAGED!', '#ffd166');
+            }
           });
+          if (masterwork) {
+            B.enemiesOf(u).forEach(e => {
+              B.damage(u, e, u.st.mag * S.dmg, { type: 'magic', tag: 'Masterwork Festive Burst' });
+              B.applyStatus(u, e, 'blind', 3.0);
+              B.knockback(u, e, 25);
+            });
+            allies.forEach(a => B.energy(a, 35));
+            B.fxFloatIcon(u.x, u.y - 110, '🌟 MASTERWORK CONFECTION!', '#ffd166');
+          }
           B.removeStatus(u, 'concern');
-          if (criticalTargets.length) B.applyStatus(u, u, 'encouraged', 10);
+          B.applyStatus(u, u, 'encouraged', 8);
           u._gingerMasterwork = false;
         });
       }
     },
     G: {
-      name: 'Decorated Treats', type: 'Buff', cd: 10,
-      v: { shield: .68 }, p: { dur: 9 },
-      desc: (S, P) => `Cookies for everyone. Allies gain Sweet Support for ${P.dur}s: Attack Speed, cooldown recovery and Healing Received all rise. Each ally also receives Freshly Baked, which clears up to two negative statuses and adds Crowd Control Resistance. The weakest ally gets a <em>${pcn(S.shield * 100)}</em> Magic Shield; at maximum Perfect Decoration, every ally receives one.`,
-      ai: { prio: 56, cond: () => true },
+      name: 'Decorated Treats', type: 'Buff / Shield', cd: 9.5,
+      v: { shield: .85, haste: .25 }, p: { dur: 8.5 },
+      desc: (S, P) => `Ginger expertly pipes royal icing cookies for everyone! All allies gain 🍬 <b>Sweet Support</b> for ${P.dur}s (+25% Attack Speed, +20% Cooldown Reduction, and +35% Healing Received) and <b>Freshly Baked</b> (clears up to 2 debuffs, +35% Crowd Control Resistance, and +20% Armor/Magic Defense).
+        The 2 lowest-HP allies (or every ally if Ginger has 4+ Perfect Decoration stacks) receive a crystalline 🛡️ <b>Royal Icing Shield</b> equal to <em>${pcn(S.shield * 100)}</em> Magic. While shielded, 25% of all damage absorbed crumbles into healing crumbs, restoring health to the recipient!`,
+      ai: { prio: 65, cond: (u, B) => B.alliesOf(u).some(a => !a.hasStatus('sweetsupport') || a.hpPct < .90) },
       cast: (u, B, S, P) => {
-        const masterwork = (u.deco || 0) >= (u.decoMax || 8);
-        if (masterwork) { u.deco = 0; u._gingerMasterwork = true; }
-        B.anim(u, 'cast', .66, 'gingerCleansingTreats'); Sound.play('get_food'); Sound.play('cleanse', { vol: .30 }); Sound.play('cheer', { vol: .24 });
-        B.fxRing(u.x, u.y - 42, 118, '#fff1c7', .42);
+        const masterwork = (u.deco || 0) >= 4;
+        B.anim(u, 'cast', .68, 'gingerCleansingTreats');
+        Sound.play('get_food'); Sound.play('cleanse', { vol: .38 }); Sound.play('cheer', { vol: .28 });
+        if (B.fxGingerRoyalIcing) B.fxGingerRoyalIcing(u.x, u.y - 42, 125, P.dur);
+        else B.fxRing(u.x, u.y - 42, 125, '#fff1c7', .45);
+
         B.alliesOf(u).forEach(a => {
           B.applyStatus(u, a, 'sweetsupport', P.dur);
-          B.removeStatus(a, 'freshlybaked');
+          B.cleanse(a, 2);
           B.applyStatus(u, a, 'freshlybaked', P.dur);
-          B.fxSparkle(a.x, a.y - 40, 8, '#ffb56b');
+          B.fxSparkle(a.x, a.y - 40, 10, '#ffb56b');
         });
-        const recipients = masterwork ? B.alliesOf(u) : [B.lowestHp(B.alliesOf(u))].filter(Boolean);
-        recipients.forEach(a => B.shield(u, a, u.st.mag * S.shield, P.dur));
-        u._gingerMasterwork = false;
+
+        const recipients = masterwork
+          ? B.alliesOf(u)
+          : B.alliesOf(u).sort((a, b) => a.hpPct - b.hpPct).slice(0, 2);
+
+        recipients.forEach(a => {
+          const sVal = u.st.mag * S.shield;
+          B.shield(u, a, sVal, P.dur);
+          if (B.fxGingerRoyalIcing) B.fxGingerRoyalIcing(a.x, a.y - 40, 85, P.dur);
+          B.fxFloatIcon(a.x, a.y - 95, '🛡️ ROYAL ICING', '#ffeedb');
+        });
       }
     },
     B: {
-      name: 'Frosting Care', type: 'Healing / Cleanse', cd: 11,
-      v: { heal: .82, shield: .18 }, p: { dur: 8 },
-      desc: (S, P) => `Ginger sends decorated cookies to every ally, restoring <em>${pcn(S.heal * 100)}</em> Magic and applying Freshly Baked for ${P.dur}s. Freshly Baked cleanses up to two negative statuses and grants Crowd Control Resistance. The weakest ally also receives a <em>${pcn(S.shield * 100)}</em> Shield.`,
-      ai: { prio: 68, cond: (u, B) => B.alliesOf(u).some(a => a.hpPct < .92 || a.statuses.some(s => STATUS[s.id] && STATUS[s.id].kind === 'debuff')) },
+      name: 'Peppermint Swirl', type: 'Healing / Hearth', cd: 8.5,
+      v: { heal: 1.15, en: 24, regen: .22 }, p: { dur: 6.0 },
+      desc: (S, P) => `Ginger flings festive peppermint swirls across the allied ranks! Restores <em>${pcn(S.heal * 100)}</em> Magic HP to all allies, dispels 1 negative debuff, and restores <em>${Math.round(S.en)}</em> Energy.
+        Ignites a <b>Warm Bakery Hearth</b> across the allied zone for ${P.dur}s: allies inside regenerate <em>${pcn(S.regen * 100)}</em> Magic HP each second, gain +20% Tenacity, and take 15% reduced damage from enemy periodic and damage-over-time effects.`,
+      ai: { prio: 72, cond: (u, B) => B.alliesOf(u).some(a => a.hpPct < .92 || (a.energy || 0) < 60) },
       cast: (u, B, S, P) => {
-        B.anim(u, 'cast', .66, 'gingerCleansingTreats'); Sound.play('get_food'); Sound.play('cleanse', { vol: .30 });
-        B.fxRing(u.x, u.y - 42, 118, '#fff1c7', .42);
-        B.alliesOf(u).forEach((a, i) => B.after(i * .045, () => {
+        B.anim(u, 'cast', .66, 'gingerPeppermint');
+        Sound.play('get_food'); Sound.play('sparkle', { vol: .42 }); Sound.play('cleanse', { vol: .28 });
+        if (B.fxGingerPeppermintHearth) B.fxGingerPeppermintHearth(u.x, u.y, P.dur);
+        else B.fxRing(u.x, u.y - 40, 130, '#ff7892', .4);
+
+        B.alliesOf(u).forEach((a, i) => B.after(i * .04, () => {
           if (!a.alive || !u.alive) return;
-          B.fxProj(u, a, { kind: 'food', img: 'Honey', col: '#ffb56b' }, () => {
-            B.heal(u, a, u.st.mag * S.heal, { tag: 'Frosting Care' });
-            B.removeStatus(a, 'freshlybaked');
-            B.applyStatus(u, a, 'freshlybaked', P.dur);
-            B.fxSparkle(a.x, a.y - 40, 12, '#fff1c7');
+          B.fxProj(u, a, { kind: 'food', img: 'Trinkets/GINGER_PeppermintIcing', col: '#ff7892' }, () => {
+            B.heal(u, a, u.st.mag * S.heal, { tag: 'Peppermint Swirl' });
+            B.cleanse(a, 1);
+            B.energy(a, S.en);
+            B.applyStatus(u, a, 'tenacity', P.dur);
+            B.fxSparkle(a.x, a.y - 40, 14, '#ffeedb');
+            B.fxFloatIcon(a.x, a.y - 95, `🍬 +${Math.round(S.en)}⚡`, '#ff7892');
           });
         }));
-        const w = B.lowestHp(B.alliesOf(u));
-        if (w) B.shield(u, w, u.st.mag * S.shield, P.dur);
+
+        B.every(u, 1.0, () => {
+          B.alliesOf(u).forEach(a => {
+            if (a.alive) B.heal(u, a, u.st.mag * S.regen, { tag: 'Warm Bakery Hearth', silent: true });
+          });
+        }, Math.floor(P.dur));
       }
     },
     P: {
-      name: 'Little Improvements', type: 'Passive',
-      v: { per: .055 }, p: { max: 8 },
-      desc: (S, P) => `Every heal Ginger lands or ally she buffs grants Perfect Decoration (max ${P.max}), worth <em>${pcn(S.per * 100)}</em> Healing Power and Energy Generation each. At max stacks her next healing or buff skill becomes a Masterwork and gives its extra support to the entire team.`,
+      name: 'Little Improvements', type: 'Passive / Masterwork',
+      v: { per: .065, cdr: .025 }, p: { max: 8 },
+      desc: (S, P) => `Every heal Ginger lands, shield she bestows, or buff she applies grants 1 stack of 🍪 <b>Perfect Decoration</b> (max ${P.max}).
+        Each stack permanently grants Ginger <em>+${(S.per * 100).toFixed(1)}%</em> Healing Power, <em>+${(S.per * 80).toFixed(1)}%</em> Shield Power, and <em>+${(S.cdr * 100).toFixed(1)}%</em> Cooldown Reduction.
+        At maximum stacks (${P.max}), Ginger radiates an appetizing festive aroma (+15% Move Speed and +15% Energy Generation to all allies), and her next active skill becomes an empowered 🌟 <b>Masterwork Confection</b>!`,
       passive: (u, B, S, P) => {
         u.decoMax = P.max;
         B.on(u, 'healDone', ev => gingerDecoration(u, B, S, P, ev.target));
+        B.on(u, 'shieldDone', ev => gingerDecoration(u, B, S, P, ev.target));
         B.on(u, 'statusApplied', ev => {
           if (ev.src !== u || !ev.unit || ev.unit.team !== u.team || ev.unit === u || !STATUS[ev.id] || STATUS[ev.id].kind !== 'buff') return;
           gingerDecoration(u, B, S, P, ev.unit);
@@ -2052,24 +2262,43 @@ defHero({
       }
     },
     R: {
-      name: 'A Recipe For Everyone', type: 'Battle Opener',
-      v: { hp: .14, heal: .95 }, p: { thr: .30 },
-      desc: (S, P) => `Before battle every ally gains <em>${pcn(S.hp * 100)}</em> Max HP and more Healing Received, and the weakest gets a Shield. Any ally falling below ${pc(P.thr)} HP is automatically given a Last Bite: <em>${pcn(S.heal * 100)}</em> Magic healing, up to two debuffs removed and a damage boost. Ginger then becomes 💪 Determined.`,
+      name: 'A Recipe For Everyone', type: 'Battle Opener / Rescue',
+      v: { hp: .20, heal: 1.45, shield: .95 }, p: { thr: .35 },
+      desc: (S, P) => `Ginger prepares a grand holiday banquet before combat begins: all allies permanently gain <em>+${pcn(S.hp * 100)}</em> Max HP and +25% Healing Received for the entire battle, and the lowest-HP ally opens with a 🛡️ <em>${pcn(S.shield * 100)}</em> Magic Gingerbread Shield.
+        Whenever any ally falls below ${pc(P.thr)} HP (once every 12s per ally), Ginger immediately bestows an emergency 🍪 <b>Last Bite</b>: restores <em>${pcn(S.heal * 100)}</em> Magic HP, cleanses all debuffs, and grants <b>Untargetable & Invulnerable for 1.8s</b>. The saved ally and Ginger both become 💪 <b>Determined</b> (+30% Attack, +30% Magic, +25% Move Speed for 10s), and Ginger gains full Energy!`,
       passive: (u, B, S, P) => {
-        B.after(.3, () => {
-          B.anim(u, 'cast', .76, 'gingerPrep'); Sound.play('get_food', { vol: .7 });
-          B.alliesOf(u).forEach(a => { a.flat.hpP2 = S.hp; a.dirty = true; B.applyStatus(u, a, 'rally', 999); });
-          const w = B.lowestHp(B.alliesOf(u)); if (w) B.shield(u, w, u.st.mag * .78, 12);
+        B.after(.25, () => {
+          B.anim(u, 'cast', .78, 'gingerPrep'); Sound.play('get_food', { vol: .75 }); Sound.play('cheer', { vol: .35 });
+          B.alliesOf(u).forEach(a => {
+            a.flat.hpP2 = (a.flat.hpP2 || 0) + S.hp;
+            a.flat.healRecP = (a.flat.healRecP || 0) + 0.25;
+            a.dirty = true;
+            B.applyStatus(u, a, 'rally', 999);
+            B.fxSparkle(a.x, a.y - 40, 10, '#ffd166');
+          });
+          const w = B.lowestHp(B.alliesOf(u));
+          if (w) {
+            B.shield(u, w, u.st.mag * S.shield, 14);
+            B.fxFloatIcon(w.x, w.y - 95, '🍪 BANQUET SHIELD', '#ffd166');
+          }
         });
+
         B.on(u, 'allyLow', a => {
-          if (a.hpPct > P.thr) return;
-          if (a._lastBite && B.t - a._lastBite < 14) return;
+          if (!a.alive || a.hpPct > P.thr) return;
+          if (a._lastBite && B.t - a._lastBite < 12) return;
           a._lastBite = B.t;
-          B.anim(u, 'cast', .54, 'gingerLastBite');
+          B.anim(u, 'cast', .55, 'gingerLastBite');
+          if (B.fxGingerLastBite) B.fxGingerLastBite(a.x, a.y - 45);
+          else B.fxFloatIcon(a.x, a.y - 110, '🍪 EMERGENCY LAST BITE!', '#ff7892');
           B.heal(u, a, u.st.mag * S.heal, { tag: 'Last Bite' });
-          B.cleanse(a, 2); B.applyStatus(u, a, 'atkup', 8, { stacks: 2 });
+          B.cleanse(a, 99);
+          B.applyStatus(u, a, 'untargetable', 1.8);
+          B.applyStatus(u, a, 'ccimmune', 3.0);
+          B.applyStatus(u, a, 'determined', 10);
           B.applyStatus(u, u, 'determined', 10);
-          Sound.play('get_food'); Sound.play('heal_soft', { vol: .30, throttle: 500 }); B.fxFloatIcon(a.x, a.y - 90, '🍪');
+          B.energy(u, u.energyMax);
+          Sound.play('get_food'); Sound.play('heal_soft', { vol: .55, throttle: 200 }); Sound.play('cleanse', { vol: .45 });
+          B.fxSparkle(a.x, a.y - 40, 20, '#ffd166');
         });
       }
     }

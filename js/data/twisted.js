@@ -29,9 +29,8 @@ const ELITE_TWISTED = ['Sprout', 'Vee', 'Shelly', 'Bobette', 'Astro', 'Dandy', '
    few explicit overrides for the enemy-only heavyweights. */
 const TIER_DEBUT = { F: 1, D: 1, C: 1, B: 2, A: 5, S: 8, SS: 12 };
 const DEBUT_OVERRIDE = { Sprout: 14, Dandy: 12, Dyle: 11, Pebble: 10, Goob: 6, Waxwell: 9 };
-// Combat tier and acquisition rarity are separate systems. Bobette and Gourdy
-// are B-tier kits, but their Main Character status should not put them in the
-// first tutorial rooms beside Common Twisteds.
+// Combat tier and acquisition rarity are separate systems. Holiday Main
+// Characters should not appear in the first rooms beside Common Twisteds.
 const MAIN_CHARACTER_DEBUT = 10;
 
 function twistedDebut(id) {

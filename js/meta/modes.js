@@ -789,6 +789,22 @@ const Depths = {
     const wIds = rng.shuffle(WEAKLING_IDS).slice(0, weak);
 
     const foes = tIds.map((id, i) => normalizeBudsEnemy(this.harden(makeTwisted(id, lv + (i === 0 ? 4 : 0), kind), floor, rng)));
+    // A Holloway can replace one foe in a regular elite room from floor 12
+    // onward. Roll separately so the room scan and battle agree without
+    // changing the other seeded enemy and equipment rolls.
+    if (type === 'elite' && floor >= 12 && foes.length) {
+      const hollowayRng = seeded(`depth-holloway:${r.seed}:${floor}:${node}`);
+      if (hollowayRng.chance(.01)) {
+        const id = hollowayRng.pick(['MrsHolloway', 'MrHolloway']);
+        const replaceAt = id === 'MrHolloway'
+          ? Math.max(0, foes.findIndex(foe => ['Tank', 'Support'].includes(HEROES[foe.id].role)))
+          : 0;
+        const holloway = makeTwisted(id, lv + 4, 'elite', {
+          name: 'Elite ' + HEROES[id].name, twisted: false, artSrc: Art.hero(id)
+        });
+        foes[replaceAt] = this.harden(holloway, floor, hollowayRng);
+      }
+    }
     wIds.forEach(id => foes.push(normalizeBudsEnemy(this.harden(makeWeakling(id, lv), floor, rng))));
     return foes;
   },

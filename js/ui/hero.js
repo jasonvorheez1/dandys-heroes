@@ -419,12 +419,18 @@ const SHRIMPO_SKILL_PREVIEWS = {
 };
 
 const VEE_SKILL_PREVIEWS = {
+  basic: { veeMode: 'signal', ally: false, projectile: false, previewActions: [{ state: 'attack', dur: .34 }],
+    castCue: 'swing_pole', impactCue: 'hit_blunt', floatLabel: 'SIGNAL PULSE!' },
   W: { veeMode: 'spotlight', ally: false, projectile: false, previewActions: [{ state: 'cast', dur: .72 }],
     castCue: 'flash', impactCue: 'beam_fire', floatLabel: 'HEADLINE!' },
   G: { veeMode: 'audience', ally: true, projectile: false, previewActions: [{ state: 'cast', dur: .76 }],
     castCue: 'cheer', impactCue: 'sparkle', floatLabel: 'AUDIENCE BOOST!' },
   B: { veeMode: 'commercial', ally: false, projectile: false, previewNoDamage: true, previewType: 'TEAM CONTROL', previewActions: [{ state: 'cast', dur: .84 }],
-    castCue: 'ui_open', impactCue: 'ticktock', floatLabel: 'SLOWED!' }
+    castCue: 'ui_open', impactCue: 'ticktock', floatLabel: 'SLOWED!' },
+  P: { veeMode: 'production', ally: true, projectile: false, previewNoDamage: true, previewType: 'PASSIVE TRIGGER', previewActions: [{ state: 'cast', dur: .65 }],
+    castCue: 'lock', impactCue: 'shield', floatLabel: 'PRODUCTION VALUE!' },
+  R: { veeMode: 'finale', ally: false, projectile: false, previewType: 'LIVE BROADCAST', previewActions: [{ state: 'cast', dur: .88 }],
+    castCue: 'suddendeath', impactCue: 'ult', floatLabel: 'LIVE ON AIR!' }
 };
 
 const FLYTE_SKILL_PREVIEWS = {
@@ -545,12 +551,12 @@ const PEBBLE_SKILL_PREVIEWS = {
 };
 
 const SCRAPS_SKILL_PREVIEWS = {
-  basic: { scrapsMode: 'whatever', projectile: true, previewActions: [{ state: 'attack', dur: .30 }], castCue: 'throwsomething', impactCue: 'pop2', floatLabel: 'BUTTON TOSS' },
-  W: { scrapsMode: 'grapple', dashes: true, previewActions: [{ state: 'wind', dur: .32 }, { state: 'attack', dur: .46 }], castCue: 'throwsomething', impactCue: 'hit_heavy', floatLabel: 'CRAFTY GRAPPLE!' },
-  G: { scrapsMode: 'whatever', projectile: true, previewActions: [{ state: 'cast', dur: .62 }], castCue: 'throwsomething', impactCue: 'pop2', floatLabel: 'BUTTON TOSS' },
-  B: { scrapsMode: 'piece', previewActions: [{ state: 'cast', dur: .70 }], castCue: 'tw_sprout_skill', impactCue: 'hit_magic', floatLabel: 'EMOTIONAL PIECE' },
-  P: { scrapsMode: 'sharp', passive: true, previewActions: [{ state: 'idle', dur: .80 }], castCue: 'sparkle', floatLabel: 'SHARP EDGES' },
-  R: { scrapsMode: 'crafts', dashes: true, hitTimes: [.34, .46, .58, .70], previewActions: [{ state: 'attack', dur: .90 }], castCue: 'airhorn', impactCue: 'crit', floatLabel: 'ARTS & CRAFTS!' }
+  basic: { scrapsMode: 'claws', previewActions: [{ state: 'attack', dur: .30 }], castCue: 'swing_claw', impactCue: 'hit_slash', floatLabel: 'PAPER CLAWS' },
+  W: { scrapsMode: 'grapple', ally: true, dashes: true, previewActions: [{ state: 'wind', dur: .30 }, { state: 'attack', dur: .42 }], castCue: 'grapple', impactCue: 'hit_heavy', floatLabel: 'CRAFTY GRAPPLE!' },
+  G: { scrapsMode: 'craft', previewActions: [{ state: 'cast', dur: .52 }], castCue: 'item_pickup', impactCue: 'hit_slash', floatLabel: 'WHATEVER WORKS' },
+  B: { scrapsMode: 'storm', hitTimes: [.50, .68], previewActions: [{ state: 'cast', dur: .58 }], castCue: 'sweep', impactCue: 'hit_slash', floatLabel: 'CRAFT CLASS CRASH' },
+  P: { scrapsMode: 'circle', passive: true, previewActions: [{ state: 'idle', dur: .80 }], castCue: 'sparkle', floatLabel: 'CRAFT CIRCLE' },
+  R: { scrapsMode: 'shards', passive: true, previewActions: [{ state: 'cast', dur: .70 }], castCue: 'cloth', impactCue: 'crit', floatLabel: 'EVERY PIECE COUNTS' }
 };
 
 const FLUTTER_SKILL_PREVIEWS = {
@@ -559,7 +565,24 @@ const FLUTTER_SKILL_PREVIEWS = {
   G: { flutterMode: 'sweep', previewActions: [{ state: 'cast', dur: .68 }], castCue: 'tornado_s', impactCue: 'whoosh', floatLabel: 'WINGBEAT SWEEP!' },
   B: { flutterMode: 'flutter', previewActions: [{ state: 'cast', dur: .65 }], castCue: 'whisper', impactCue: 'spectral', floatLabel: 'SILENT FLUTTER' },
   P: { flutterMode: 'catch', passive: true, previewActions: [{ state: 'idle', dur: .80 }], castCue: 'sparkle', floatLabel: 'HARD TO CATCH' },
-  R: { flutterMode: 'storm', hitTimes: [.36, .48, .60, .72], previewActions: [{ state: 'spin', dur: .92 }], castCue: 'tornado_s', impactCue: 'crit', floatLabel: 'STORM OF WINGS!' }
+};
+
+const GINGER_SKILL_PREVIEWS = {
+  basic: { gingerMode: 'flick', previewActions: [{ state: 'attack', dur: .32 }], projectile: true, castCue: 'whoosh', impactCue: 'hit_magic', floatLabel: 'ICING FLICK' },
+  W: { gingerMode: 'bakedWithCare', ally: true, previewActions: [{ state: 'cast', dur: .88 }], castCue: 'heal_soft', impactCue: 'cheer', forceCinematicFx: true, floatLabel: 'BAKED WITH CARE!' },
+  G: { gingerMode: 'decoratedTreats', ally: true, previewActions: [{ state: 'cast', dur: .75 }], castCue: 'get_food', impactCue: 'cleanse', floatLabel: 'ROYAL ICING!' },
+  B: { gingerMode: 'peppermintSwirl', ally: true, previewActions: [{ state: 'cast', dur: .68 }], castCue: 'get_food', impactCue: 'sparkle', floatLabel: 'PEPPERMINT SWIRL' },
+  P: { gingerMode: 'perfectDecoration', ally: true, passive: true, previewActions: [{ state: 'idle', dur: .80 }], castCue: 'sparkle', floatLabel: 'PERFECT DECORATION' },
+  R: { gingerMode: 'recipeForEveryone', ally: true, previewActions: [{ state: 'cast', dur: .90 }], castCue: 'cheer', impactCue: 'crit', forceCinematicFx: true, floatLabel: 'RECIPE FOR EVERYONE!' }
+};
+
+const SQUIRM_SKILL_PREVIEWS = {
+  basic: { squirmMode: 'nibble', dashes: false, previewActions: [{ state: 'attack', dur: .32 }], castCue: 'swing_light', impactCue: 'hit_light', floatLabel: 'PANICKED NIBBLE!' },
+  W: { squirmMode: 'eat', ally: false, previewActions: [{ state: 'cast', dur: .86 }], castCue: 'get_food', impactCue: 'hit_heavy', forceCinematicFx: true, floatLabel: 'DISTRESSED DELICACY!' },
+  G: { squirmMode: 'curl', ally: true, previewActions: [{ state: 'cast', dur: .75 }], castCue: 'cloth', impactCue: 'shield', floatLabel: "PLEASE DON'T HURT ME!" },
+  B: { squirmMode: 'flail', ally: false, dashes: true, hitTimes: [.26, .36, .46, .56, .66, .76], previewActions: [{ state: 'spin', dur: .84 }], castCue: 'whoosh', impactCue: 'hit_slash', floatLabel: 'NERVOUS FLAILING!' },
+  P: { squirmMode: 'erudition', ally: true, passive: true, previewActions: [{ state: 'idle', dur: .80 }], castCue: 'sparkle', impactCue: null, previewType: 'PASSIVE ERUDITION', floatLabel: 'BOOKWORM ARCHIVE' },
+  R: { squirmMode: 'biblioPanic', ally: false, previewActions: [{ state: 'cast', dur: .92 }], castCue: 'ult', impactCue: 'crit', forceCinematicFx: true, previewType: 'BIBLIO-PANIC CLIMAX', floatLabel: 'FULL BIBLIO-PANIC!' }
 };
 
 const RIBECCA_SKILL_PREVIEWS = {
@@ -1081,7 +1104,7 @@ const HeroPage = {
     cfg.skillName = skill.name;
     cfg.id = id;
     cfg.previewKey = key;
-    cfg.originalArt = Art.hero(id);
+    cfg.originalArt = id === 'Scraps' ? Art.battleHero(id) : Art.hero(id);
     cfg.actionArt = Art.skillHero(id, key) || (BATTLE_HERO_ART[id] ? Art.battleHero(id) : null);
     const gourdyPreview = id === 'Gourdy' && GOURDY_SKILL_PREVIEWS[key];
     const qomGourdyPreview = id === 'QOMGourdy' && QOM_GOURDY_SKILL_PREVIEWS[key];
@@ -1112,7 +1135,9 @@ const HeroPage = {
     const delilahPreview = id === 'Delilah' && DELILAH_SKILL_PREVIEWS[key];
     const shellyPreview = id === 'Shelly' && SHELLY_SKILL_PREVIEWS[key];
     const conniePreview = id === 'Connie' && CONNIE_SKILL_PREVIEWS[key];
-    const bespokePreview = gourdyPreview || qomGourdyPreview || qomEclipsePreview || qomRibeccaPreview || qomSoulvesterPreview || qomConniePreview || toodlesPreview || rodgerPreview || shrimpoPreview || veePreview || flytePreview || sproutPreview || bassiePreview || waxwellPreview || phantasiaPreview || rudiePreview || tishaPreview || dandyPreview || pebblePreview || scrapsPreview || flutterPreview || ribeccaPreview || astroPreview || collabPreview || mrsHollowayPreview || mrHollowayPreview || delilahPreview || shellyPreview || conniePreview;
+    const gingerPreview = id === 'Ginger' && (typeof GINGER_SKILL_PREVIEWS !== 'undefined' ? GINGER_SKILL_PREVIEWS[key] : null);
+    const squirmPreview = id === 'Squirm' && (typeof SQUIRM_SKILL_PREVIEWS !== 'undefined' ? SQUIRM_SKILL_PREVIEWS[key] : null);
+    const bespokePreview = gourdyPreview || qomGourdyPreview || qomEclipsePreview || qomRibeccaPreview || qomSoulvesterPreview || qomConniePreview || toodlesPreview || rodgerPreview || shrimpoPreview || veePreview || flytePreview || sproutPreview || bassiePreview || waxwellPreview || phantasiaPreview || rudiePreview || tishaPreview || dandyPreview || pebblePreview || scrapsPreview || flutterPreview || ribeccaPreview || astroPreview || collabPreview || mrsHollowayPreview || mrHollowayPreview || delilahPreview || shellyPreview || conniePreview || gingerPreview || squirmPreview;
     if (bespokePreview) Object.assign(cfg, bespokePreview);
     if (cfg.basic) {
       const hash = id.split('').reduce((n, c) => n + c.charCodeAt(0), 0);
@@ -1177,7 +1202,7 @@ const HeroPage = {
     // status sequence. Collaboration atlases and signature Heroes already
     // carry their own effects; the old role-based fallback was the source of
     // the conspicuous placeholder smoke/rings in this preview.
-    cfg.cinematicFx = (!!cfg.forceCinematicFx || !!HERO_CINEMATICS[id]) && !base.noSequence && !base.signature && !cfg.actorAtlases && !cfg.sproutMode && !cfg.bassieMode && !cfg.waxMode && !cfg.dandyMode && !cfg.pebbleMode && !cfg.scrapsMode && !cfg.flutterMode && !cfg.ribeccaMode && !cfg.astroMode && !cfg.milkMode && !cfg.vanillaMode && !cfg.khMode;
+    cfg.cinematicFx = (!!cfg.forceCinematicFx || !!HERO_CINEMATICS[id]) && !base.noSequence && !base.signature && !cfg.actorAtlases && !cfg.sproutMode && !cfg.bassieMode && !cfg.waxMode && !cfg.dandyMode && !cfg.pebbleMode && !cfg.scrapsMode && !cfg.flutterMode && !cfg.ribeccaMode && !cfg.astroMode && !cfg.milkMode && !cfg.vanillaMode && !cfg.khMode && !cfg.gingerMode;
     const maps = ['rainbow-rooms','art-floor','library-floor','vee-floor','greenhouse'];
     const map = maps[Math.abs(id.split('').reduce((n, c) => n + c.charCodeAt(0), 0)) % maps.length];
     const targetId = cfg.ally ? (Save.ownedIds().find(x => x !== id) || id) : null;
@@ -1195,13 +1220,13 @@ const HeroPage = {
     if (cfg.shrimpoMode) cfg.propSrc = '';
     if (cfg.veeMode) cfg.propSrc = '';
     if (cfg.flyteMode) cfg.propSrc = '';
-    if (cfg.scrapsMode === 'whatever' && !cfg.projectileSrc) cfg.projectileSrc = Art.item('Trinkets/SCRAPS_Crayonset');
+    if (cfg.gingerMode) cfg.propSrc = '';
     if (cfg.astroMode === 'stars' && !cfg.projectileSrc) cfg.projectileSrc = ASSET + 'VFX/particle/star_01.png';
-    if (cfg.sproutMode || cfg.bassieMode || cfg.waxMode || cfg.rudieMode || cfg.dandyMode || cfg.pebbleMode || cfg.scrapsMode || cfg.flutterMode || cfg.ribeccaMode || cfg.astroMode || cfg.milkMode || cfg.vanillaMode || cfg.khMode) {
+    if (cfg.sproutMode || cfg.bassieMode || cfg.waxMode || cfg.rudieMode || cfg.dandyMode || cfg.pebbleMode || cfg.scrapsMode || cfg.flutterMode || cfg.ribeccaMode || cfg.astroMode || cfg.milkMode || cfg.vanillaMode || cfg.khMode || cfg.gingerMode) {
       if (!cfg.projectile) cfg.projectileSrc = '';
       cfg.propSrc = '';
     }
-    const actorW = clamp(78 * (d.scale || 1), 78, 138);
+    const actorW = id === 'Scraps' && !Art.skin(id) ? 104 : clamp(78 * (d.scale || 1), 78, 138);
     const targetDef = targetId ? HEROES[targetId] : null;
     cfg.actorW = actorW;
     cfg.targetW = targetDef ? clamp(54 * (targetDef.scale || 1), 62, 104) : 68;
@@ -1211,7 +1236,7 @@ const HeroPage = {
     if (cfg.simulation.actions.length) cfg.actions = cfg.simulation.actions;
     if (cfg.simulation.hitTimes.length) cfg.hitTimes = cfg.simulation.hitTimes;
     const fighter = (who, heroId, ally, atlases, width) => {
-      const art = heroId ? Art.hero(heroId) : Art.weakling('Sponge');
+      const art = heroId ? (who === 'actor' ? cfg.originalArt : Art.hero(heroId)) : Art.weakling('Sponge');
       const name = heroId ? HEROES[heroId].name : 'Training Sponge';
       const carriedSword = heroId === 'Soulvester'
         ? `<img class="preview-carried-sword" src="${ASSET}uploads/image-31.png" alt="" aria-hidden="true">` : '';
@@ -1276,7 +1301,7 @@ const HeroPage = {
       ${flytePassId ? `<img class="preview-flyte-pass-ally" src="${Art.hero(flytePassId)}" alt="">` : ''}
       <div class="preview-flyte-callout"></div><div class="preview-flyte-buff-callout">HASTE!</div></div>` : '';
     const sproutSprites = cfg.sproutMode ? `<div class="preview-sprout-layer sprout-${cfg.sproutMode}">
-      ${Array.from({ length: 5 }, (_, i) => `<img class="preview-sprout-treat sprout-treat-${i}" src="${Art.item(i % 2 ? 'Brownie' : 'Proteinbar')}" alt="">`).join('')}
+      ${Array.from({ length: 5 }, (_, i) => `<img class="preview-sprout-treat sprout-treat-${i}" src="${Art.item(['Brownie', 'Bread', 'Proteinbar', 'Trinkets/SPROUT_SavoryCharm', 'Brownie'][i % 5])}" alt="">`).join('')}
       <div class="preview-sprout-vines"><i></i><i></i><i></i><i></i></div>
       <div class="preview-sprout-heart"></div><div class="preview-sprout-shield"></div>
       <div class="preview-sprout-callout"></div></div>` : '';
@@ -1310,7 +1335,10 @@ const HeroPage = {
       <div class="preview-pebble-speed"><i></i><i></i><i></i><i></i></div>
       <div class="preview-pebble-callout"></div></div>` : '';
     const scrapsSprites = cfg.scrapsMode ? `<div class="preview-scraps-layer scraps-${cfg.scrapsMode}">
-      <div class="preview-scraps-scissors"><i></i><i></i></div>
+      <div class="preview-scraps-circle"></div>
+      <div class="preview-scraps-thread"></div>
+      <div class="preview-scraps-craft"></div>
+      <div class="preview-scraps-claws"><i></i><i></i><i></i></div>
       <div class="preview-scraps-confetti">${Array.from({ length: 8 }, (_, i) => `<i style="--confetti-col:${['#ff4081','#ffd740','#69f0ae','#40c4ff'][i % 4]}"></i>`).join('')}</div>
       <div class="preview-scraps-patch"></div>
       <div class="preview-scraps-callout"></div></div>` : '';
@@ -1323,8 +1351,11 @@ const HeroPage = {
       <div class="preview-ribecca-notes"><i>♪</i><i>♫</i><i>♩</i><i>♬</i></div>
       <div class="preview-ribecca-callout"></div></div>` : '';
     const astroSprites = cfg.astroMode ? `<div class="preview-astro-layer astro-${cfg.astroMode}">
+      <div class="preview-astro-moon"></div>
+      <img class="preview-astro-pillow" src="${Art.item('Trinkets/ASTRO_Starpillow')}" alt="">
       <div class="preview-astro-ring"></div>
-      <div class="preview-astro-stars">${Array.from({ length: 5 }, () => '<i></i>').join('')}</div>
+      <div class="preview-astro-stars">${Array.from({ length: 7 }, () => '<i></i>').join('')}</div>
+      <div class="preview-astro-sleep"><i>💤</i><i>🌙</i><i>⭐</i></div>
       <div class="preview-astro-callout"></div></div>` : '';
     const milkSprites = cfg.milkMode ? `<div class="preview-milk-layer milk-${cfg.milkMode}">
       <div class="preview-milk-strings">${Array.from({ length: 5 }, (_, i) => `<i style="left:${18 + i * 16}%"></i>`).join('')}</div>
@@ -1341,6 +1372,19 @@ const HeroPage = {
       <div class="preview-kh-sparks">${Array.from({ length: 3 }, () => `<img src="${ASSET}VFX/particle/spark_02.png" alt="">`).join('')}</div>
       <img class="preview-kh-thunder" src="${ASSET}VFX/particle/spark_03.png" alt="">
       <div class="preview-kh-callout"></div></div>` : '';
+    const gingerSprites = cfg.gingerMode ? `<div class="preview-ginger-layer ginger-${cfg.gingerMode}">
+      <div class="preview-ginger-heart"></div>
+      <img class="preview-ginger-cookie" src="${Art.item('Trinkets/GINGER_PeppermintIcing')}" alt="">
+      <div class="preview-ginger-icing"></div>
+      <div class="preview-ginger-sparkles">${Array.from({ length: 6 }, () => '<i></i>').join('')}</div>
+      <div class="preview-ginger-callout"></div></div>` : '';
+    const squirmSprites = cfg.squirmMode ? `<div class="preview-squirm-layer squirm-${cfg.squirmMode}">
+      <img class="preview-squirm-book" src="${Art.object('Book')}" alt="">
+      <img class="preview-squirm-stressball" src="${Art.item('Trinkets/SQUIRM_Stressball')}" alt="">
+      <div class="preview-squirm-cocoon"></div>
+      <div class="preview-squirm-pages">${Array.from({ length: 6 }, () => '<i></i>').join('')}</div>
+      <div class="preview-squirm-slashes">${Array.from({ length: 6 }, () => '<i></i>').join('')}</div>
+      <div class="preview-squirm-callout"></div></div>` : '';
     const stage = el('div', 'skill-preview-stage live-preview' + (cfg.passive ? ' passive' : '') + (cfg.ultimate ? ' ultimate' : '')
       + (cfg.id === 'Brightney' ? ` brightney-preview brightney-preview-${String(cfg.previewKey).toLowerCase()}` : '')
       + (cfg.id === 'Blot' ? ` blot-preview blot-preview-${String(cfg.previewKey).toLowerCase()}` : '')
@@ -1358,6 +1402,8 @@ const HeroPage = {
       + (cfg.milkMode ? ` milk-preview-${cfg.milkMode}` : '')
       + (cfg.vanillaMode ? ` vanilla-preview-${cfg.vanillaMode}` : '')
       + (cfg.khMode ? ` kh-preview-${cfg.khMode}` : '')
+      + (cfg.gingerMode ? ` ginger-preview-${cfg.gingerMode}` : '')
+      + (cfg.squirmMode ? ` squirm-preview-${cfg.squirmMode}` : '')
       + ` preview-kind-${cfg.visualKind}`);
     stage.style.cssText += `--preview-color:${cfg.col};background-image:linear-gradient(180deg,#07101359,#071013b8),url("${bgForMap(map)}")`;
     const previewType = cfg.previewType || (cfg.basic ? (cfg.attackKind === 'ranged' ? 'RANGED BASIC' : cfg.attackKind === 'melee' ? 'MELEE BASIC' : 'REACH BASIC')
@@ -1405,6 +1451,8 @@ const HeroPage = {
       ${milkSprites}
       ${vanillaSprites}
       ${khSprites}
+      ${gingerSprites}
+      ${squirmSprites}
       <div class="preview-screen-flash"></div>
       <div class="preview-playhead"><i></i></div>`;
     stage._preview = cfg;
@@ -1451,8 +1499,8 @@ const HeroPage = {
     // These dimensions are stable for the life of a preview. Re-reading
     // clientWidth/clientHeight from every authored effect each frame can
     // force layout while the preview is already doing animation work.
-    stage._previewW = stage.clientWidth;
-    stage._previewH = stage.clientHeight;
+    stage._previewW = stage.clientWidth || 500;
+    stage._previewH = stage.clientHeight || 260;
     stage._previewSpeed = stage._previewSpeed || 1;
     if (cfg.gourdyMode === 'toss') cfg.gourdyOutcome = pick(['STUN!', 'SILENCE!', 'SLOW!', 'MANA DRAIN!']);
     const soundAt = (cue, delay, vol) => {
@@ -1666,6 +1714,9 @@ const HeroPage = {
         rot += Math.sin(p * Math.PI * (8 + charge * 16)) * charge * 7 - snap * 24;
         bob += Math.abs(Math.sin(p * Math.PI * 14)) * charge * 4 - snap * 10;
         sx += charge * .12 + snap * .20; sy -= charge * .10;
+      } else if (cfg.veeMode === 'signal') {
+        const jab = Math.sin(clamp((p - .08) / .36, 0, 1) * Math.PI);
+        bob -= jab * 4; rot += jab * 14; sx += jab * .12; sy -= jab * .04;
       } else if (cfg.veeMode === 'spotlight') {
         const direct = Math.sin(clamp((p - .07) / .58, 0, 1) * Math.PI);
         bob -= direct * 7; rot -= direct * 5; sx += direct * .07; sy += direct * .04;
@@ -1676,6 +1727,12 @@ const HeroPage = {
       } else if (cfg.veeMode === 'commercial') {
         const cut = Math.sin(clamp((p - .06) / .68, 0, 1) * Math.PI), snap = Math.sin(clamp((p - .25) / .25, 0, 1) * Math.PI);
         bob -= cut * 6; rot += snap * 8 - cut * 3; sx += snap * .08; sy += cut * .05;
+      } else if (cfg.veeMode === 'production') {
+        const prod = Math.sin(clamp((p - .06) / .55, 0, 1) * Math.PI);
+        bob -= prod * 6; rot -= prod * 8; sx += prod * .09; sy += prod * .06;
+      } else if (cfg.veeMode === 'finale') {
+        const broadcast = Math.sin(clamp((p - .05) / .75, 0, 1) * Math.PI), pulse = Math.sin(p * Math.PI * 8);
+        bob -= broadcast * 14 + pulse * 2; rot += Math.sin(p * Math.PI * 3) * broadcast * 6; sx += broadcast * .14; sy += broadcast * .10;
       } else if (cfg.flyteMode === 'gust') {
         const lift = Math.sin(clamp((p - .05) / .72, 0, 1) * Math.PI);
         bob -= lift * 18 + Math.sin(p * Math.PI * 6) * lift * 3;
@@ -1760,9 +1817,10 @@ const HeroPage = {
       } else if (cfg.pebbleMode === 'goodboy') {
         const roll = clamp((p - .10) / .70, 0, 1);
         rot = roll * 360; bob -= Math.sin(roll * Math.PI) * 14; sx += .10;
-      } else if (cfg.scrapsMode === 'crafts' || cfg.scrapsMode === 'grapple') {
+      } else if (cfg.scrapsMode === 'grapple' || cfg.scrapsMode === 'storm' || cfg.scrapsMode === 'shards') {
         const spring = Math.sin(clamp((p - .10) / .45, 0, 1) * Math.PI);
-        bob -= spring * 14; rot -= spring * 18; sx += spring * .15;
+        bob -= spring * (cfg.scrapsMode === 'grapple' ? 14 : 9);
+        rot -= spring * (cfg.scrapsMode === 'storm' ? 24 : 14); sx += spring * .15;
       } else if (cfg.flutterMode === 'dash' || cfg.flutterMode === 'sweep') {
         const flutterLift = Math.sin(clamp((p - .06) / .68, 0, 1) * Math.PI);
         bob -= flutterLift * 20 + Math.sin(p * Math.PI * 8) * flutterLift * 4;
@@ -1770,6 +1828,12 @@ const HeroPage = {
       } else if (cfg.flutterMode === 'storm') {
         const spinP = clamp((p - .12) / .72, 0, 1);
         rot = spinP * 720; bob -= Math.sin(spinP * Math.PI) * 22;
+      } else if (cfg.gingerMode === 'bakedWithCare' || cfg.gingerMode === 'recipeForEveryone') {
+        const bakeHop = Math.sin(clamp((p - .08) / .68, 0, 1) * Math.PI);
+        bob -= bakeHop * 15; rot += Math.sin(p * Math.PI * 4) * bakeHop * 5; sx += bakeHop * .10; sy += bakeHop * .06;
+      } else if (cfg.gingerMode === 'flick' || cfg.gingerMode === 'peppermintSwirl' || cfg.gingerMode === 'decoratedTreats') {
+        const flickSnap = Math.sin(clamp((p - .10) / .40, 0, 1) * Math.PI);
+        bob -= flickSnap * 8; rot -= flickSnap * 12; sx += flickSnap * .12;
       } else if (cfg.ribeccaMode === 'undead' || cfg.ribeccaMode === 'bones') {
         const rattle = Math.sin(p * Math.PI * 14) * Math.sin(clamp((p - .10) / .65, 0, 1) * Math.PI);
         bob += rattle * 5; rot += rattle * 12; sx += Math.abs(rattle) * .12;
@@ -1786,6 +1850,26 @@ const HeroPage = {
       } else if (cfg.khMode === 'finisher' || cfg.khMode === 'limit' || cfg.khMode === 'break') {
         const strikeHop = Math.sin(clamp((p - .08) / .30, 0, 1) * Math.PI);
         bob -= strikeHop * 14; rot -= strikeHop * 20; sx += strikeHop * .16;
+      } else if (cfg.squirmMode === 'nibble') {
+        const jitter = Math.sin(p * Math.PI * 18) * Math.sin(clamp((p - .10) / .45, 0, 1) * Math.PI);
+        bob += jitter * 4; rot += jitter * 10; sx += Math.abs(jitter) * .12;
+      } else if (cfg.squirmMode === 'eat') {
+        const chew = Math.sin(p * Math.PI * 12) * Math.sin(clamp((p - .12) / .55, 0, 1) * Math.PI);
+        const feastSwell = Math.sin(clamp((p - .15) / .60, 0, 1) * Math.PI);
+        bob -= feastSwell * 8 + chew * 3; rot += Math.sin(p * Math.PI * 4) * 4; sx += feastSwell * .18; sy -= feastSwell * .06;
+      } else if (cfg.squirmMode === 'curl') {
+        const curlP = Math.sin(clamp((p - .10) / .60, 0, 1) * Math.PI);
+        bob += curlP * 6; rot += Math.sin(p * Math.PI * 16) * curlP * 8; sx -= curlP * .15; sy += curlP * .10;
+      } else if (cfg.squirmMode === 'flail') {
+        const flailSpin = clamp((p - .12) / .68, 0, 1);
+        rot = flailSpin * 720; bob -= Math.sin(flailSpin * Math.PI) * 16; sx += Math.sin(p * Math.PI * 8) * .14;
+      } else if (cfg.squirmMode === 'erudition') {
+        const auraP = Math.sin(clamp((p - .08) / .72, 0, 1) * Math.PI);
+        bob -= auraP * 10; rot += Math.sin(p * Math.PI * 3) * auraP * 4; sx += auraP * .08; sy += auraP * .08;
+      } else if (cfg.squirmMode === 'biblioPanic') {
+        const panicJitter = Math.sin(p * Math.PI * 24) * Math.sin(clamp((p - .08) / .76, 0, 1) * Math.PI);
+        const swell = Math.sin(clamp((p - .10) / .72, 0, 1) * Math.PI);
+        bob -= swell * 18 + panicJitter * 5; rot += panicJitter * 14; sx += swell * .22; sy += swell * .15;
       }
       actor.style.transform = `translate3d(${advance * travel}px,${bob}px,0) rotate(${rot}deg) scale(${sx},${sy})`;
 
@@ -1900,7 +1984,7 @@ const HeroPage = {
       prop.style.opacity = showProp ? String(Math.sin(actionP * Math.PI)) : '0';
       prop.style.transform = `translateY(${-10 - Math.sin(actionP * Math.PI) * 16}px) rotate(${actionP * 85 - 20}deg)`;
 
-      const useGenericBurst = cfg.gourdyMode || cfg.qomGourdyMode || cfg.qomEclipseMode || cfg.qomRibeccaMode || cfg.qomSoulvesterMode || cfg.qomConnieMode || cfg.rodgerMode || cfg.shrimpoMode || cfg.veeMode || cfg.flyteMode || cfg.sproutMode || cfg.bassieMode || cfg.waxMode || cfg.visualKind === 'impact';
+      const useGenericBurst = cfg.gourdyMode || cfg.qomGourdyMode || cfg.qomEclipseMode || cfg.qomRibeccaMode || cfg.qomSoulvesterMode || cfg.qomConnieMode || cfg.rodgerMode || cfg.shrimpoMode || cfg.veeMode || cfg.flyteMode || cfg.sproutMode || cfg.bassieMode || cfg.waxMode || cfg.squirmMode || cfg.visualKind === 'impact';
       burst.style.opacity = useGenericBurst && !support && !noDamage && hitPulse ? String(hitPulse) : '0';
       burst.style.transform = `scale(${.45 + hitPulse * .9}) rotate(${(p - hitAt) * 110}deg)`;
       number.textContent = cfg.floatLabel || sim.label || (cfg.gourdyMode === 'toss' ? `-${fmt(displayNumber)}` : cfg.ally ? 'SHIELD' : cfg.passive ? 'READY' : `-${fmt(displayNumber)}`);
@@ -1928,6 +2012,8 @@ const HeroPage = {
       if (cfg.milkMode) this.drawMilkPreview(stage, cfg, p, hitAt);
       if (cfg.vanillaMode) this.drawVanillaPreview(stage, cfg, p, hitAt);
       if (cfg.khMode) this.drawKhPreview(stage, cfg, p, hitAt);
+      if (cfg.gingerMode) this.drawGingerPreview(stage, cfg, p, hitAt);
+      if (cfg.squirmMode) this.drawSquirmPreview(stage, cfg, p, hitAt);
       this.drawAuthoredPreviewFx(stage, cfg, p, hitAt, authoredFx);
       playhead.style.width = `${p * 100}%`;
       if (p < 1) this._previewRaf = requestAnimationFrame(tick);
@@ -1956,7 +2042,7 @@ const HeroPage = {
      combat calls, so a slash, area wave, projectile, and support cast no
      longer collapse into the same generic glow. */
   drawAuthoredPreviewFx(stage, cfg, p, hitAt, node) {
-    if (!node || cfg.gourdyMode || cfg.qomGourdyMode || cfg.qomEclipseMode || cfg.qomRibeccaMode || cfg.qomSoulvesterMode || cfg.qomConnieMode || cfg.rodgerMode || cfg.shrimpoMode || cfg.veeMode || cfg.flyteMode || cfg.sproutMode || cfg.bassieMode || cfg.waxMode || cfg.rudieMode || cfg.dandyMode || cfg.pebbleMode || cfg.scrapsMode || cfg.flutterMode || cfg.ribeccaMode || cfg.astroMode || cfg.milkMode || cfg.vanillaMode || cfg.khMode) return;
+    if (!node || cfg.gourdyMode || cfg.qomGourdyMode || cfg.qomEclipseMode || cfg.qomRibeccaMode || cfg.qomSoulvesterMode || cfg.qomConnieMode || cfg.rodgerMode || cfg.shrimpoMode || cfg.veeMode || cfg.flyteMode || cfg.sproutMode || cfg.bassieMode || cfg.waxMode || cfg.rudieMode || cfg.dandyMode || cfg.pebbleMode || cfg.scrapsMode || cfg.flutterMode || cfg.ribeccaMode || cfg.astroMode || cfg.milkMode || cfg.vanillaMode || cfg.khMode || cfg.gingerMode || cfg.squirmMode) return;
     const w = stage._previewW || stage.clientWidth, h = stage._previewH || stage.clientHeight;
     const hitPulse = Math.max(...(cfg.hitTimes || [hitAt]).map(at => clamp(1 - Math.abs(p - at) / .065, 0, 1)));
     const castPulse = Math.sin(clamp((p - .10) / .32, 0, 1) * Math.PI);
@@ -2486,7 +2572,21 @@ const HeroPage = {
     lights.forEach(n => { n.style.opacity = '0'; });
     signal.style.opacity = '0'; crowd.style.opacity = '0'; reticle.style.opacity = '0'; screen.style.opacity = '0';
 
-    if (cfg.veeMode === 'spotlight') {
+    if (cfg.veeMode === 'signal') {
+      const zap = clamp((p - .12) / .28, 0, 1), fade = clamp((.82 - p) / .12, 0, 1);
+      reticle.style.opacity = String(zap * fade);
+      reticle.style.transform = `translate3d(${w * .80}px,${h * .52}px,0) scale(${1.3 - zap * .3})`;
+      screen.style.opacity = String(zap * fade);
+      screen.style.transform = `translate3d(${w * .55}px,${h * .16}px,0) scale(${.68 + zap * .32})`;
+      $('small', screen).textContent = 'TELEMETRY'; $('b', screen).textContent = 'SIGNAL PULSE';
+      signal.style.opacity = String(zap * fade);
+      signal.style.transform = `translate3d(${w * (.35 + zap * .42)}px,${h * .52}px,0) rotate(6deg) scale(${.6 + zap * .5})`;
+      lights.forEach((node, i) => {
+        const q = clamp((p - (.15 + i * .04)) / .22, 0, 1);
+        node.style.opacity = String(q * fade * .7);
+        node.style.transform = `translate3d(${w * (.72 + (i - 1) * .06)}px,${h * (.48 + (i % 2) * .04)}px,0) rotate(${i * 20}deg) scale(${.3 + q * .5})`;
+      });
+    } else if (cfg.veeMode === 'spotlight') {
       const lock = clamp((p - .19) / .34, 0, 1), fade = clamp((.80 - p) / .12, 0, 1);
       lights.forEach((node, i) => {
         const q = clamp((p - (.20 + i * .035)) / .25, 0, 1);
@@ -2512,6 +2612,34 @@ const HeroPage = {
       screen.style.opacity = String(cheer * fade);
       screen.style.transform = `translate3d(${w * .59}px,${h * .16}px,0) rotate(${(1 - cheer) * 5}deg) scale(${.68 + cheer * .32})`;
       $('small', screen).textContent = 'LIVE AUDIENCE'; $('b', screen).textContent = 'APPLAUSE!';
+    } else if (cfg.veeMode === 'production') {
+      const prod = clamp((p - .12) / .32, 0, 1), fade = clamp((.86 - p) / .12, 0, 1);
+      screen.style.opacity = String(prod * fade);
+      screen.style.transform = `translate3d(${w * .52}px,${h * .16}px,0) scale(${.72 + prod * .28})`;
+      $('small', screen).textContent = 'PRODUCTION VALUE'; $('b', screen).textContent = '12x VALUE DIRECTED';
+      signal.style.opacity = String(prod * fade);
+      signal.style.transform = `translate3d(${w * .48}px,${h * .52}px,0) scale(${.8 + prod * .4})`;
+      lights.forEach((node, i) => {
+        const q = clamp((p - (.18 + i * .05)) / .25, 0, 1);
+        node.style.opacity = String(q * fade * .75);
+        node.style.transform = `translate3d(${w * (.42 + i * .18)}px,${h * (.52 + (i % 2) * .04)}px,0) rotate(${(i - 1) * 30}deg) scale(${.4 + q * .6})`;
+      });
+    } else if (cfg.veeMode === 'finale') {
+      const live = clamp((p - .10) / .35, 0, 1), fade = clamp((.90 - p) / .12, 0, 1);
+      screen.style.opacity = String(live * fade);
+      screen.style.transform = `translate3d(${w * .50}px,${h * .14}px,0) rotate(${(1 - live) * 6}deg) scale(${.75 + live * .35})`;
+      $('small', screen).textContent = '🔴 LIVE BROADCAST'; $('b', screen).textContent = 'PRIMETIME CLIMAX!';
+      reticle.style.opacity = String(live * fade);
+      reticle.style.transform = `translate3d(${w * .80}px,${h * .50}px,0) rotate(${live * 45}deg) scale(${1.4 - live * .3})`;
+      crowd.style.opacity = String(live * fade);
+      crowd.style.transform = `translate3d(${w * .49}px,${h * (.82 - live * .12)}px,0) scale(${.8 + live * .3})`;
+      signal.style.opacity = String(live * fade);
+      signal.style.transform = `translate3d(${w * .50}px,${h * .50}px,0) scale(${.7 + live * .6})`;
+      lights.forEach((node, i) => {
+        const q = clamp((p - (.15 + i * .05)) / .25, 0, 1);
+        node.style.opacity = String(q * fade);
+        node.style.transform = `translate3d(${w * (.25 + i * .25)}px,${h * (.45 + (i % 2) * .05)}px,0) rotate(${i * 35}deg) scale(${.5 + q * .8})`;
+      });
     } else {
       const cut = clamp((p - .15) / .25, 0, 1), fade = clamp((.88 - p) / .12, 0, 1);
       screen.style.opacity = String(cut * fade);
@@ -2690,48 +2818,68 @@ const HeroPage = {
   },
 
   drawScrapsPreview(stage, cfg, p, hitAt) {
-    const scissors = $('.preview-scraps-scissors', stage);
+    const circle = $('.preview-scraps-circle', stage);
+    const thread = $('.preview-scraps-thread', stage);
+    const craft = $('.preview-scraps-craft', stage);
+    const claws = $('.preview-scraps-claws', stage);
     const confetti = this.previewNodes(stage, '.preview-scraps-confetti i');
     const patch = $('.preview-scraps-patch', stage);
     const callout = $('.preview-scraps-callout', stage);
     if (!callout) return;
     const w = stage._previewW || stage.clientWidth, h = stage._previewH || stage.clientHeight;
-    const actorX = w * .23, targetX = w * (cfg.ally ? .78 : .80), targetY = h * .50;
+    const actorX = w * .23, targetX = w * .80, targetY = h * .53;
+    const mode = cfg.scrapsMode;
+    const pulse = clamp(1 - Math.abs(p - hitAt) / .18, 0, 1);
     const place = (node, x, y, rot, scale, opacity) => {
       if (!node) return;
       node.style.opacity = String(clamp(opacity, 0, 1));
       node.style.transform = `translate3d(${x}px,${y}px,0) rotate(${rot}deg) scale(${scale})`;
     };
-    if (scissors) scissors.style.opacity = '0';
-    if (patch) patch.style.opacity = '0';
-    confetti.forEach(n => { n.style.opacity = '0'; });
-
-    const pulse = clamp(1 - Math.abs(p - hitAt) / .15, 0, 1);
-    if (cfg.scrapsMode === 'crafts' || cfg.scrapsMode === 'grapple') {
-      if (p >= hitAt - 0.08 && p <= hitAt + 0.25) {
-        const snipP = clamp((p - (hitAt - 0.08)) / 0.25, 0, 1);
-        const snip = Math.sin(snipP * Math.PI);
-        scissors.style.opacity = String(snip);
-        scissors.style.transform = `translate3d(${targetX - 42}px,${targetY - 42}px,0) scale(${0.7 + snip * 0.5}) rotate(${-15 + snipP * 30}deg)`;
-      }
-      if (pulse > 0.1) {
-        confetti.forEach((n, i) => {
-          const a = (i / confetti.length) * Math.PI * 2;
-          const dist = pulse * 45;
-          place(n, targetX + Math.cos(a) * dist, targetY + Math.sin(a) * dist, (p * 500 + i * 45), 0.7 + pulse * 0.4, pulse);
-        });
-      }
-    } else if (cfg.scrapsMode === 'piece' || cfg.scrapsMode === 'sharp') {
-      const patchP = Math.sin(clamp((p - .10) / .65, 0, 1) * Math.PI);
-      if (patch) {
-        patch.style.opacity = String(patchP);
-        patch.style.transform = `translate3d(${targetX - 34}px,${targetY - 34}px,0) scale(${0.6 + patchP * 0.5}) rotate(${patchP * 12}deg)`;
-      }
+    const craftIndex = mode === 'craft' ? Math.min(2, Math.floor(p * 3))
+      : mode === 'circle' ? Math.min(2, Math.floor(p * 3)) : 0;
+    const craftIcons = ['📦', '🥤', '🧶'];
+    const craftColors = ['#f4ca7b', '#ff8fb4', '#d89bdb'];
+    const accent = craftColors[craftIndex];
+    if (craft) {
+      craft.textContent = craftIcons[craftIndex];
+      craft.style.setProperty('--scraps-accent', accent);
+      const reveal = mode === 'craft' || mode === 'circle' ? Math.sin(clamp((p - .06) / .84, 0, 1) * Math.PI) : 0;
+      place(craft, actorX - 17, h * .22 - reveal * 10, -10 + reveal * 13, .65 + reveal * .48, reveal);
     }
-
-    callout.textContent = cfg.floatLabel || 'ARTS & CRAFTS!';
-    callout.style.opacity = String(pulse);
-    callout.style.transform = `translate3d(${w * .60}px,${h * .18 - pulse * 12}px) rotate(${(1 - pulse) * -5}deg) scale(${.68 + pulse * .36})`;
+    if (circle) {
+      const visible = mode === 'grapple' ? pulse : mode === 'circle' ? .62 + Math.sin(p * Math.PI * 4) * .17
+        : mode === 'storm' || mode === 'shards' ? .25 + pulse * .60 : mode === 'craft' ? pulse * .48 : 0;
+      const size = Math.min(w * .60, 270);
+      const cx = mode === 'grapple' ? targetX : mode === 'storm' || mode === 'shards' ? w * .53 : actorX;
+      circle.style.width = `${size}px`; circle.style.height = `${size * .34}px`;
+      circle.style.setProperty('--scraps-accent', mode === 'circle' || mode === 'craft' ? accent : '#ff88ae');
+      place(circle, cx - size / 2, h * .70 - size * .17, 0,
+        mode === 'shards' ? .75 + p * .42 : .84 + pulse * .20, visible);
+    }
+    if (thread) {
+      const draw = mode === 'grapple' ? clamp((p - .10) / Math.max(.15, hitAt - .10), 0, 1) : 0;
+      thread.style.width = `${Math.max(0, targetX - actorX - 12)}px`;
+      thread.style.opacity = String(mode === 'grapple' ? draw * clamp((hitAt + .25 - p) / .2, 0, 1) : 0);
+      thread.style.transform = `translate3d(${actorX + 5}px,${targetY - 7}px,0) scaleX(${Math.max(.01, draw)})`;
+    }
+    if (claws) {
+      const snip = (mode === 'claws' || mode === 'grapple' || mode === 'storm') ? pulse : 0;
+      place(claws, targetX - 42, targetY - 42, -16 + p * 42, .62 + snip * .65, snip);
+    }
+    if (patch) {
+      const show = (mode === 'storm' || mode === 'shards') ? pulse : 0;
+      place(patch, targetX - 34, targetY - 34, -12 + p * 55, .45 + show * .85, show);
+    }
+    confetti.forEach((n, i) => {
+      const show = ['grapple', 'craft', 'storm', 'shards'].includes(mode) ? pulse : 0;
+      const a = i / confetti.length * Math.PI * 2 + p * 1.5;
+      const distance = (mode === 'shards' ? 63 : 43) * show;
+      place(n, targetX + Math.cos(a) * distance, targetY + Math.sin(a) * distance,
+        p * 400 + i * 46, .55 + show * .65, show);
+    });
+    callout.textContent = cfg.floatLabel || 'CRAFT CIRCLE';
+    callout.style.opacity = String(mode === 'circle' ? Math.max(pulse, .42) : pulse);
+    callout.style.transform = `translate3d(${w * .58}px,${h * .17 - pulse * 12}px) rotate(${(1 - pulse) * -5}deg) scale(${.68 + pulse * .36})`;
   },
 
   drawFlutterPreview(stage, cfg, p, hitAt) {
@@ -2806,8 +2954,11 @@ const HeroPage = {
   },
 
   drawAstroPreview(stage, cfg, p, hitAt) {
+    const moon = $('.preview-astro-moon', stage);
+    const pillow = $('.preview-astro-pillow', stage);
     const ring = $('.preview-astro-ring', stage);
     const stars = this.previewNodes(stage, '.preview-astro-stars i');
+    const sleep = this.previewNodes(stage, '.preview-astro-sleep i');
     const callout = $('.preview-astro-callout', stage);
     if (!callout) return;
     const w = stage._previewW || stage.clientWidth, h = stage._previewH || stage.clientHeight;
@@ -2817,26 +2968,61 @@ const HeroPage = {
       node.style.opacity = String(clamp(opacity, 0, 1));
       node.style.transform = `translate3d(${x}px,${y}px,0) rotate(${rot}deg) scale(${scale})`;
     };
+    if (moon) moon.style.opacity = '0';
+    if (pillow) pillow.style.opacity = '0';
     if (ring) ring.style.opacity = '0';
     stars.forEach(n => { n.style.opacity = '0'; });
+    sleep.forEach(n => { n.style.opacity = '0'; });
 
     const pulse = clamp(1 - Math.abs(p - hitAt) / .15, 0, 1);
-    if (ring) {
-      const ringP = Math.sin(clamp((p - .12) / .68, 0, 1) * Math.PI);
-      ring.style.opacity = String(ringP * 0.85);
-      ring.style.transform = `translate3d(${targetX - 58}px,${targetY - 58}px,0) rotate(${p * 90}deg) scale(${0.6 + ringP * 0.5})`;
-    }
 
-    stars.forEach((n, i) => {
-      const q = clamp((p - (.15 + i * 0.05)) / 0.35, 0, 1);
-      const starX = lerp(actorX + 30, targetX + 20, q);
-      const starY = h * (0.42 + (i - 2) * 0.04) - Math.sin(q * Math.PI) * 15;
-      place(n, starX, starY, -15, 0.5 + Math.sin(q * Math.PI) * 0.45, Math.sin(q * Math.PI));
-    });
+    if (cfg.astroMode === 'pulse' || cfg.astroMode === 'night') {
+      const q = Math.sin(clamp((p - .10) / .70, 0, 1) * Math.PI);
+      place(moon, actorX, h * .36 - q * 16, q * 25, .8 + q * .4, q);
+      if (ring) {
+        place(ring, targetX, targetY, p * 120, .6 + q * .6, q * .85);
+      }
+      stars.forEach((n, i) => {
+        const sq = clamp((p - (.14 + i * .05)) / .36, 0, 1);
+        place(n, lerp(actorX + 25, targetX, sq), h * (.40 + (i - 3) * .04) - Math.sin(sq * Math.PI) * 18,
+          -15, .5 + Math.sin(sq * Math.PI) * .5, Math.sin(sq * Math.PI));
+      });
+      place(pillow, targetX, targetY - 42 - pulse * 14, (1 - pulse) * -12, .65 + pulse * .45, pulse);
+    } else if (cfg.astroMode === 'slumber') {
+      const q = Math.sin(clamp((p - .10) / .72, 0, 1) * Math.PI);
+      place(moon, actorX, h * .38, 12, .75, q * .8);
+      if (ring) place(ring, targetX, targetY, p * 80, .7 + q * .4, q * .75);
+      sleep.forEach((n, i) => {
+        const a = (p * 4 + i * (Math.PI * 2 / 3));
+        place(n, targetX + Math.cos(a) * 36, targetY - 48 + Math.sin(a) * 12, Math.sin(a) * 15, .8 + q * .3, q);
+      });
+      place(pillow, targetX, targetY - 36, 6, .7 + q * .3, q * .9);
+    } else if (cfg.astroMode === 'rested') {
+      const q = Math.sin(clamp((p - .08) / .74, 0, 1) * Math.PI);
+      place(pillow, targetX, targetY - 40, (1 - q) * -8, .75 + q * .35, q);
+      if (ring) place(ring, targetX, targetY - 40, p * 60, .8 + q * .3, q * .65);
+      stars.slice(0, 4).forEach((n, i) => {
+        const a = p * 3 + i * (Math.PI / 2);
+        place(n, targetX + Math.cos(a) * 32, targetY - 40 + Math.sin(a) * 16, Math.sin(a) * 20, .45, q * .7);
+      });
+    } else {
+      // 'stars' mode
+      if (ring) {
+        const ringP = Math.sin(clamp((p - .12) / .68, 0, 1) * Math.PI);
+        place(ring, targetX, targetY, p * 90, .6 + ringP * .5, ringP * .85);
+      }
+      stars.forEach((n, i) => {
+        const q = clamp((p - (.15 + i * 0.05)) / 0.35, 0, 1);
+        const starX = lerp(actorX + 30, targetX + 20, q);
+        const starY = h * (0.42 + (i - 2) * 0.04) - Math.sin(q * Math.PI) * 15;
+        place(n, starX, starY, -15, 0.5 + Math.sin(q * Math.PI) * 0.45, Math.sin(q * Math.PI));
+      });
+      place(pillow, targetX, targetY - 46, -10, .6 + pulse * .4, pulse);
+    }
 
     callout.textContent = cfg.floatLabel || 'DREAM PULSE';
     callout.style.opacity = String(pulse);
-    callout.style.transform = `translate3d(${w * .60}px,${h * .18 - pulse * 12}px) rotate(${(1 - pulse) * -5}deg) scale(${.68 + pulse * .36})`;
+    callout.style.transform = `translate3d(${w * .60}px,${h * .18 - pulse * 12}px,0) rotate(${(1 - pulse) * -5}deg) scale(${.68 + pulse * .36})`;
   },
 
   drawMilkPreview(stage, cfg, p, hitAt) {
@@ -2965,6 +3151,231 @@ const HeroPage = {
     callout.textContent = cfg.floatLabel || 'KEYBLADE STRIKE';
     callout.style.opacity = String(pulse);
     callout.style.transform = `translate3d(${w * .60}px,${h * .18 - pulse * 12}px) rotate(${(1 - pulse) * -5}deg) scale(${.68 + pulse * .36})`;
+  },
+
+  drawGingerPreview(stage, cfg, p, hitAt) {
+    const heart = $('.preview-ginger-heart', stage);
+    const cookie = $('.preview-ginger-cookie', stage);
+    const icing = $('.preview-ginger-icing', stage);
+    const sparkles = this.previewNodes(stage, '.preview-ginger-sparkles i');
+    const callout = $('.preview-ginger-callout', stage);
+    if (!callout) return;
+    const w = stage._previewW || stage.clientWidth, h = stage._previewH || stage.clientHeight;
+    const actorX = w * .23, targetX = w * (cfg.ally ? .75 : .80), targetY = h * .50;
+    const place = (node, x, y, rot, scale, opacity) => {
+      if (!node) return;
+      node.style.opacity = String(clamp(opacity, 0, 1));
+      node.style.transform = `translate3d(${x}px,${y}px,0) rotate(${rot}deg) scale(${scale})`;
+    };
+    if (heart) heart.style.opacity = '0';
+    if (cookie) cookie.style.opacity = '0';
+    if (icing) icing.style.opacity = '0';
+    sparkles.forEach(n => { n.style.opacity = '0'; });
+
+    const pulse = clamp(1 - Math.abs(p - hitAt) / .15, 0, 1);
+    const mode = cfg.gingerMode || 'flick';
+
+    if (mode === 'flick') {
+      const flight = clamp((p - .10) / Math.max(.1, hitAt - .10), 0, 1);
+      const curX = lerp(actorX + 25, targetX, flight);
+      const curY = lerp(h * .46, targetY - 10, flight) - Math.sin(flight * Math.PI) * 35;
+      place(cookie, curX - 16, curY - 16, flight * 360, .6 + Math.sin(flight * Math.PI) * .35, flight < 1 ? 1 : (1 - (p - hitAt) / .2));
+      if (pulse > 0.05) {
+        sparkles.forEach((n, i) => {
+          const a = (i / sparkles.length) * Math.PI * 2;
+          const dist = pulse * 28;
+          place(n, targetX - 8 + Math.cos(a) * dist, targetY - 12 + Math.sin(a) * dist, p * 200, .5 + pulse * .4, pulse);
+        });
+      }
+    } else if (mode === 'bakedWithCare') {
+      const q = Math.sin(clamp((p - .08) / .76, 0, 1) * Math.PI);
+      place(heart, actorX - 22, h * .32 - q * 20, Math.sin(p * Math.PI * 3) * 8, .8 + q * .45, q);
+      if (icing) {
+        const ringP = Math.sin(clamp((p - .20) / .68, 0, 1) * Math.PI);
+        place(icing, targetX - 45, targetY - 45, p * 90, .7 + ringP * .55, ringP);
+      }
+      sparkles.forEach((n, i) => {
+        const a = (i / sparkles.length) * Math.PI * 2 + p * 2;
+        const dist = 32 + Math.sin(p * Math.PI * 2 + i) * 12;
+        place(n, targetX - 8 + Math.cos(a) * dist, targetY - 15 + Math.sin(a) * dist, p * 180, .6 + pulse * .4, q);
+      });
+      place(cookie, targetX - 18, targetY - 48 - pulse * 12, (1 - pulse) * -10, .7 + pulse * .4, pulse);
+    } else if (mode === 'decoratedTreats') {
+      const q = Math.sin(clamp((p - .10) / .74, 0, 1) * Math.PI);
+      if (icing) {
+        place(icing, targetX - 45, targetY - 45, p * 120, .8 + q * .4, q);
+      }
+      place(cookie, targetX - 18, targetY - 42 - q * 10, Math.sin(p * 4) * 12, .8 + q * .3, q);
+      sparkles.forEach((n, i) => {
+        const a = (i / sparkles.length) * Math.PI * 2 + p * 1.5;
+        const dist = 30 * q;
+        place(n, targetX - 8 + Math.cos(a) * dist, targetY - 18 + Math.sin(a) * dist, i * 60, .5 + q * .3, q);
+      });
+    } else if (mode === 'peppermintSwirl') {
+      const q = Math.sin(clamp((p - .08) / .72, 0, 1) * Math.PI);
+      const swirlFlight = clamp((p - .12) / .60, 0, 1);
+      const swX = lerp(actorX + 25, targetX, swirlFlight);
+      const swY = h * .52 - Math.sin(swirlFlight * Math.PI) * 28;
+      place(cookie, swX - 16, swY - 16, p * 540, .75 + Math.sin(swirlFlight * Math.PI) * .3, q);
+      if (heart) {
+        place(heart, targetX - 18, targetY - 44, 0, .6 + pulse * .4, pulse);
+      }
+      sparkles.forEach((n, i) => {
+        const a = (i / sparkles.length) * Math.PI * 2 + p * 2.5;
+        const dist = (22 + (i % 2) * 14) * q;
+        place(n, targetX - 8 + Math.cos(a) * dist, targetY - 10 + Math.sin(a) * (dist * .4), p * 240, .55 + q * .3, q);
+      });
+    } else if (mode === 'perfectDecoration') {
+      const q = Math.sin(clamp((p - .08) / .80, 0, 1) * Math.PI);
+      place(cookie, actorX - 16, h * .30 - q * 12, p * 180, .7 + q * .35, q);
+      if (heart) place(heart, actorX - 16, h * .52, 0, .7 + q * .3, q * .8);
+      sparkles.forEach((n, i) => {
+        const a = (i / sparkles.length) * Math.PI * 2 + p * 2;
+        const dist = 36 * q;
+        place(n, actorX - 8 + Math.cos(a) * dist, h * .42 + Math.sin(a) * 22, p * 200, .6, q);
+      });
+    } else if (mode === 'recipeForEveryone') {
+      const q = Math.sin(clamp((p - .08) / .76, 0, 1) * Math.PI);
+      place(heart, targetX - 22, targetY - 50 - q * 15, Math.sin(p * 3) * 6, .9 + q * .4, q);
+      if (icing) place(icing, targetX - 45, targetY - 45, p * 80, .85 + q * .45, q);
+      place(cookie, targetX - 18, targetY - 30, (1 - pulse) * -12, .8 + pulse * .5, pulse || q * .7);
+      sparkles.forEach((n, i) => {
+        const a = (i / sparkles.length) * Math.PI * 2 + p * 3;
+        const dist = 38 * q;
+        place(n, targetX - 8 + Math.cos(a) * dist, targetY - 20 + Math.sin(a) * dist, p * 300, .6 + q * .4, q);
+      });
+    }
+
+    callout.textContent = cfg.floatLabel || 'BAKED WITH CARE!';
+    callout.style.opacity = String(pulse);
+    callout.style.transform = `translate3d(${w * .60}px,${h * .18 - pulse * 12}px,0) rotate(${(1 - pulse) * -5}deg) scale(${.68 + pulse * .36})`;
+  },
+
+  drawSquirmPreview(stage, cfg, p, hitAt) {
+    const book = $('.preview-squirm-book', stage);
+    const stressball = $('.preview-squirm-stressball', stage);
+    const cocoon = $('.preview-squirm-cocoon', stage);
+    const pages = this.previewNodes(stage, '.preview-squirm-pages i');
+    const slashes = this.previewNodes(stage, '.preview-squirm-slashes i');
+    const callout = $('.preview-squirm-callout', stage);
+    if (!callout) return;
+    const w = stage._previewW || stage.clientWidth, h = stage._previewH || stage.clientHeight;
+    const actorX = w * .23, targetX = w * (cfg.ally ? .75 : .80), targetY = h * .50;
+    const place = (node, x, y, rot, scale, opacity) => {
+      if (!node) return;
+      node.style.opacity = String(clamp(opacity, 0, 1));
+      node.style.transform = `translate3d(${x}px,${y}px,0) rotate(${rot}deg) scale(${scale})`;
+    };
+    if (book) book.style.opacity = '0';
+    if (stressball) stressball.style.opacity = '0';
+    if (cocoon) cocoon.style.opacity = '0';
+    pages.forEach(n => { n.style.opacity = '0'; });
+    slashes.forEach(n => { n.style.opacity = '0'; });
+
+    const pulse = clamp(1 - Math.abs(p - hitAt) / .15, 0, 1);
+    const mode = cfg.squirmMode || 'nibble';
+
+    if (mode === 'nibble') {
+      const q = Math.sin(clamp((p - .08) / .55, 0, 1) * Math.PI);
+      const sbHop = Math.sin(p * Math.PI * 8) * 8 * q;
+      place(stressball, actorX - 22, h * .58 + sbHop, Math.sin(p * 12) * 15, .7 + q * .25, q);
+      slashes.slice(0, 3).forEach((n, i) => {
+        const at = .22 + i * .12;
+        const sPulse = clamp(1 - Math.abs(p - at) / .08, 0, 1);
+        place(n, targetX - 15 + i * 8, targetY - 10 + (i - 1) * 12, -30 + i * 35, .8 + sPulse * .5, sPulse);
+      });
+      pages.slice(0, 4).forEach((n, i) => {
+        const pageFly = clamp((p - (.25 + i * .08)) / .35, 0, 1);
+        if (pageFly > 0 && pageFly < 1) {
+          const pgX = targetX + Math.cos(i * 1.5) * pageFly * 35;
+          const pgY = targetY + Math.sin(i * 1.5) * pageFly * 25 - pageFly * 15;
+          place(n, pgX, pgY, p * 360, .6 + pageFly * .3, Math.sin(pageFly * Math.PI));
+        }
+      });
+    } else if (mode === 'eat') {
+      const eatP = clamp((p - .10) / .50, 0, 1);
+      const bookX = lerp(actorX + 38, actorX + 16, eatP);
+      const bookY = h * .48 - Math.sin(eatP * Math.PI) * 14;
+      const chewShake = Math.sin(p * Math.PI * 16) * 4 * (1 - eatP);
+      place(book, bookX, bookY + chewShake, -15 + eatP * 25, (1 - eatP * .6) * 1.1, clamp(1.4 - eatP * 1.2, 0, 1));
+      pages.slice(0, 5).forEach((n, i) => {
+        const pageIn = clamp((p - (.12 + i * .06)) / .32, 0, 1);
+        if (pageIn > 0 && pageIn < 1) {
+          const pgX = lerp(actorX + 50 + (i % 2) * 20, actorX + 12, pageIn);
+          const pgY = lerp(h * .40 + i * 8, h * .48, pageIn);
+          place(n, pgX, pgY, pageIn * 360, .7 - pageIn * .3, Math.sin(pageIn * Math.PI));
+        }
+      });
+      if (pulse > 0.05) {
+        slashes.slice(0, 4).forEach((n, i) => {
+          const a = (i / 4) * Math.PI * 2;
+          const dist = pulse * 42;
+          place(n, targetX + Math.cos(a) * dist, targetY + Math.sin(a) * dist, (a * 180 / Math.PI) + 90, .7 + pulse * .5, pulse);
+        });
+      }
+    } else if (mode === 'curl') {
+      const q = Math.sin(clamp((p - .08) / .75, 0, 1) * Math.PI);
+      place(cocoon, actorX, h * .52, p * 60, .75 + q * .45, q);
+      const sbPulse = Math.sin(clamp((p - .15) / .60, 0, 1) * Math.PI);
+      place(stressball, actorX, h * .50, Math.sin(p * 8) * 10, .8 + sbPulse * .3, sbPulse * .85);
+      if (pulse > 0.05) {
+        slashes.forEach((n, i) => {
+          const a = (i / slashes.length) * Math.PI * 2;
+          const dist = 28 + pulse * 34;
+          place(n, actorX + Math.cos(a) * dist, h * .52 + Math.sin(a) * dist, (a * 180 / Math.PI), .6 + pulse * .4, pulse);
+        });
+      }
+    } else if (mode === 'flail') {
+      const hitTimes = cfg.hitTimes || [hitAt];
+      hitTimes.forEach((at, i) => {
+        const sPulse = clamp(1 - Math.abs(p - at) / .07, 0, 1);
+        if (sPulse > 0.05 && slashes[i]) {
+          place(slashes[i], targetX - 20 + ((i % 3) - 1) * 16, targetY - 14 + (i * 6), -45 + i * 30, .7 + sPulse * .6, sPulse);
+        }
+      });
+      pages.forEach((n, i) => {
+        const rollT = clamp((p - (.15 + i * .07)) / .45, 0, 1);
+        if (rollT > 0 && rollT < 1) {
+          const pgX = lerp(actorX + 20, targetX - 10, rollT) + Math.sin(rollT * Math.PI * 2) * 18;
+          const pgY = h * .52 - Math.sin(rollT * Math.PI) * 26 + (i % 2) * 12;
+          place(n, pgX, pgY, rollT * 540, .65 + Math.sin(rollT * Math.PI) * .35, Math.sin(rollT * Math.PI));
+        }
+      });
+    } else if (mode === 'erudition') {
+      const q = Math.sin(clamp((p - .08) / .78, 0, 1) * Math.PI);
+      place(book, actorX, h * .32 - q * 10, Math.sin(p * 4) * 8, .85 + q * .35, q);
+      place(cocoon, actorX, h * .52, p * 45, .8 + q * .3, q * .65);
+      place(stressball, actorX - 22, h * .55, Math.sin(p * 6) * 12, .75 + q * .25, q * .9);
+      pages.forEach((n, i) => {
+        const a = (i / pages.length) * Math.PI * 2 + p * 2.5;
+        const dist = 36 + Math.sin(p * 3 + i) * 10;
+        place(n, actorX + Math.cos(a) * dist, h * .46 + Math.sin(a) * 20, p * 240, .55 + q * .3, q);
+      });
+    } else if (mode === 'biblioPanic') {
+      const q = Math.sin(clamp((p - .06) / .82, 0, 1) * Math.PI);
+      place(cocoon, actorX, h * .50, p * 120, 1 + q * .65, q);
+      place(book, actorX, h * .30 - q * 16, Math.sin(p * 18) * 15, 1 + q * .5, q);
+      const panicBallFlight = clamp((p - .25) / Math.max(.1, hitAt - .25), 0, 1);
+      const bX = lerp(actorX + 10, targetX, panicBallFlight);
+      const bY = lerp(h * .48, targetY, panicBallFlight) - Math.sin(panicBallFlight * Math.PI) * 40;
+      place(stressball, bX, bY, panicBallFlight * 720, .8 + Math.sin(panicBallFlight * Math.PI) * .4, clamp(1.2 - (p - hitAt) / .2, 0, 1));
+      pages.forEach((n, i) => {
+        const a = (i / pages.length) * Math.PI * 2 + p * 4.5;
+        const dist = 20 + q * 65;
+        place(n, actorX + Math.cos(a) * dist, h * .48 + Math.sin(a) * (dist * .6), p * 480 + i * 60, .7 + q * .5, q);
+      });
+      if (pulse > 0.05) {
+        slashes.forEach((n, i) => {
+          const a = (i / slashes.length) * Math.PI * 2;
+          const dist = pulse * 55;
+          place(n, targetX + Math.cos(a) * dist, targetY + Math.sin(a) * dist, (a * 180 / Math.PI) + 45, .8 + pulse * .6, pulse);
+        });
+      }
+    }
+
+    callout.textContent = cfg.floatLabel || 'PANICKED NIBBLE!';
+    callout.style.opacity = String(pulse || (mode === 'erudition' ? Math.sin(clamp((p - .08) / .78, 0, 1) * Math.PI) : 0));
+    callout.style.transform = `translate3d(${w * .60}px,${h * .18 - pulse * 12}px,0) rotate(${(1 - pulse) * -5}deg) scale(${.68 + pulse * .36})`;
   },
 
   drawPreviewAtlas(body, atlases, clip, elapsed, phase, logicalW) {

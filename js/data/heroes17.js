@@ -42,6 +42,10 @@ function flutterAddLift(u, B, stacks) {
   const max = u._flutterLiftMax || 5;
   B.applyStatus(u, u, 'lift', 999, { stacks: stacks || 1 });
   const now = u.getStatus('lift');
+  if (now && B.t >= (u._flutterLiftFxAt || 0)) {
+    u._flutterLiftFxAt = B.t + .25;
+    B.fxFlutterLift(u, now.stacks, max);
+  }
   if (!now || now.stacks < max || (before && before.stacks >= max)) return;
   B.fxFloatIcon(u.x, u.y - 112, 'LIFT MAX', '#d8fbff');
   if (u._flutterStormEnabled && B.t >= (u._flutterStormLock || 0)) {
@@ -54,6 +58,7 @@ function flutterOffBalance(u, B, target, dur) {
   if (!target || !target.alive) return;
   B.applyStatus(u, target, 'offbalance', dur || 5.5);
   B.fxFloatIcon(target.x, target.y - 88, '🥴', '#c9f6ff');
+  if (B.t >= (target._flutterDizzyAt || 0)) { target._flutterDizzyAt = B.t + 1.2; B.fxFlutterDizzy(target); }
 }
 
 function flutterPathHit(u, B, target, ratio, push, dur, tag, returning, offBonus) {

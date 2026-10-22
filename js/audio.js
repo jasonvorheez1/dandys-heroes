@@ -16,6 +16,9 @@ const MUSIC_TRACKS = {
   cookieShop: ASSET + 'uploads/crkshop.mp3',
   cookieMoonBattle: ASSET + 'uploads/CRKBBG3FIGHT.mp3',
   navigation: ASSET + 'uploads/navigationhome.mp3',
+  navigationClairDeLune: ASSET + 'uploads/navigationhome.mp3',
+  navigationChristmas: ASSET + 'uploads/the_perfect_christmas.mp3',
+  navigationLockedAway: ASSET + 'uploads/locked_away.mp3',
   battle: ASSET + 'uploads/normalbattle.mp3',
   arena: ASSET + 'uploads/_High_Quality__Shadow_of_the_Colossus_OST_13_-_Revived_Power.mp3',
   eventBattle: ASSET + 'uploads/EVenttwistedfight.mp3',
@@ -35,11 +38,23 @@ const MUSIC_TRACKS = {
   journal: ASSET + 'uploads/journal.mp3'
 };
 const MUSIC_VARIANTS = {
-  battle: [MUSIC_TRACKS.battle, ASSET + 'uploads/battletheme2.mp3']
+  battle: [MUSIC_TRACKS.battle, ASSET + 'uploads/battletheme2.mp3'],
+  navigation: [
+    MUSIC_TRACKS.navigationClairDeLune,
+    MUSIC_TRACKS.navigationChristmas,
+    MUSIC_TRACKS.navigationLockedAway
+  ]
 };
 // Per-track trims keep unusually loud supplied scores in the same range while
 // still allowing the user's Music setting to control every track.
-const MUSIC_TRACK_TRIMS = { arena: .39, apexTrial: .455, collabEvent: .58, qomBattle: .66 };
+const MUSIC_TRACK_TRIMS = {
+  arena: .39,
+  apexTrial: .455,
+  collabEvent: .58,
+  qomBattle: .66,
+  navigationChristmas: .82,
+  navigationLockedAway: .72
+};
 /* Cue names in this set resolve against SFXDIR2 instead of SFXDIR - kept as
    its own small table so CUE (below) doesn't have to carry a per-file dir. */
 const CUE2 = {
@@ -961,12 +976,46 @@ const Music = {
   fadeToken: 0,
   lastTrack: {},
   lastKey: null,
+  menuMode: 'random',
   // Keep the score present, but leave a little more room for effects and
   // character cues that otherwise disappear into phone-speaker playback.
   volume: MUSIC_DEFAULT_VOLUME,
 
-  targetVolume(key) {
-    return clamp(this.volume * (MUSIC_TRACK_TRIMS[key] == null ? 1 : MUSIC_TRACK_TRIMS[key]), 0, 1);
+  getMenuMode() {
+    if (typeof Save !== 'undefined' && Save.data && Save.data.opt && Save.data.opt.menuMusic) {
+      return Save.data.opt.menuMusic;
+    }
+    return this.menuMode || 'random';
+  },
+
+  setMenuMode(mode, opt) {
+    opt = opt || {};
+    this.menuMode = mode || 'random';
+    if (!opt.skipSave && typeof Save !== 'undefined' && Save.data && Save.data.opt) {
+      Save.data.opt.menuMusic = this.menuMode;
+      Save.write();
+    }
+    if (this.current === 'navigation') {
+      this.play('navigation', { force: true });
+    }
+    return this.menuMode;
+  },
+
+  targetVolume(key, src) {
+    let trim = 1;
+    if (key === 'navigation') {
+      const activeSrc = src || (this.audio && this.audio.src) || this.lastTrack[key] || '';
+      if (activeSrc.includes('locked_away') || activeSrc.includes('Locked%20Away') || activeSrc.includes('Locked Away')) {
+        trim = MUSIC_TRACK_TRIMS.navigationLockedAway || 0.72;
+      } else if (activeSrc.includes('christmas') || activeSrc.includes('Christmas')) {
+        trim = MUSIC_TRACK_TRIMS.navigationChristmas || 0.82;
+      } else if (MUSIC_TRACK_TRIMS[key] != null) {
+        trim = MUSIC_TRACK_TRIMS[key];
+      }
+    } else if (MUSIC_TRACK_TRIMS[key] != null) {
+      trim = MUSIC_TRACK_TRIMS[key];
+    }
+    return clamp(this.volume * trim, 0, 1);
   },
 
   setVolume(value, opt) {
@@ -977,7 +1026,7 @@ const Music = {
       Save.write();
     }
     if (this.audio && this.current) {
-      const target = this.targetVolume(this.current);
+      const target = this.targetVolume(this.current, this.audio.src);
       this.audio._musicTargetVolume = target;
       const token = ++this.fadeToken;
       this._fade(this.audio, this.audio.volume, target, 180, token);
@@ -985,32 +1034,66 @@ const Music = {
     return this.volume;
   },
 
-  play(key) {
+  play(key, opt) {
+    opt = opt || {};
     const base = MUSIC_TRACKS[key];
     if (!base || !Sound.on) { if (!base) this.stop(); return; }
-    const targetVolume = this.targetVolume(key);
-    if (this.current === key && this.audio && !this.audio.paused) {
-      // Screen redraws (tabs, purchases, and clock updates) can all call
-      // Music.screen(). Do not start another rAF fade for the same target.
-      if (this.audio._musicTargetVolume === targetVolume) return;
-      this.audio._musicTargetVolume = targetVolume;
-      const token = ++this.fadeToken;
-      this._fade(this.audio, this.audio.volume, targetVolume, 240, token);
-      return;
+
+    let choices;
+    if (key === 'navigation') {
+      const mode = this.getMenuMode();
+      if (mode === 'christmas') {
+        choices = [MUSIC_TRACKS.navigationChristmas];
+      } else if (mode === 'lockedAway') {
+        choices = [MUSIC_TRACKS.navigationLockedAway];
+      } else if (mode === 'clair') {
+        choices = [MUSIC_TRACKS.navigationClairDeLune];
+      } else {
+        // 'random' (shuffles Clair de Lune, The Perfect Christmas, Locked Away)
+        choices = MUSIC_VARIANTS.navigation || [
+          MUSIC_TRACKS.navigationClairDeLune,
+          MUSIC_TRACKS.navigationChristmas,
+          MUSIC_TRACKS.navigationLockedAway
+        ];
+      }
+    } else {
+      choices = MUSIC_VARIANTS[key] || [base];
     }
 
-    const choices = MUSIC_VARIANTS[key] || [base];
     const available = choices.length > 1 && this.lastTrack[key]
       ? choices.filter(src => src !== this.lastTrack[key])
       : choices;
     const src = available[Math.floor(Math.random() * available.length)] || choices[0];
+    const targetVolume = this.targetVolume(key, src);
+
+    if (this.current === key && this.audio && !this.audio.paused && !opt.force) {
+      // If we're playing the exact track already, do not start another transition
+      const activeSrc = this.audio.src || '';
+      const srcEnding = src.replace(/^\.\//, '');
+      if (this.lastTrack[key] === src || activeSrc.endsWith(srcEnding)) {
+        if (this.audio._musicTargetVolume === targetVolume) return;
+        this.audio._musicTargetVolume = targetVolume;
+        const token = ++this.fadeToken;
+        this._fade(this.audio, this.audio.volume, targetVolume, 240, token);
+        return;
+      }
+    }
+
     this.lastTrack[key] = src;
     this.lastKey = key;
 
     const old = this.audio;
     const token = ++this.fadeToken;
     const next = new Audio(src);
-    next.loop = true;
+    const isRandomMenu = (key === 'navigation' && this.getMenuMode() === 'random');
+    next.loop = !isRandomMenu;
+    if (isRandomMenu) {
+      next.onended = () => {
+        if (this.current === 'navigation' && this.getMenuMode() === 'random') {
+          this.play('navigation', { force: true });
+        }
+      };
+    }
     next.preload = 'auto';
     next.volume = 0;
     next._musicTargetVolume = targetVolume;

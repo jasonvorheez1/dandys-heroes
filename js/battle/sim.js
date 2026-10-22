@@ -74,7 +74,7 @@ function orderedBattleStatuses(statuses) {
    richer bespoke sequences, so they are intentionally omitted here. */
 const HERO_CINEMATICS = {
   Astro:      { cast: 'BlessedEffect', impact: 'SleepEffect', col: '#b9a4ff', s1: 'magiccircle', s2: 'sparkle' },
-  Scraps:     { signature: 'scraps', col: '#ffd166', s1: 'cloth', s2: 'hit_slash' },
+  Scraps:     { signature: 'scraps', ally: key => key === 'W', col: '#ffd166', s1: 'cloth', s2: 'cloth' },
   Cosmo:      { cast: 'HealEffect', impact: 'BlessedEffect', prop: { kind: 'item', img: 'Brownie' }, ally: true, col: '#ffd7a0', s1: 'get_food', s2: 'heal_soft' },
   Cocoa:      { signature: 'cocoa', ally: key => key !== 'B', col: '#c98a5a', s1: 'get_food', s2: 'sparkle' },
   Bobette:    { noSequence: true, col: '#e8536b' },
@@ -428,7 +428,6 @@ class Unit {
     for (const k in this.flat) { const bk = baseKey(k); if (bk in m) m[bk] += this.flat[k]; }
     // team auras
     (this.B ? this.B.auras : []).forEach(a => { if (a.team === this.team) a.fn(m, this); });
-    const preStatusAspd = m.aspdP;
     // statuses
     const buffAmplifier = (this.hasStatus('cookie_cream_blessing') ? .15 : 0)
       + (this.hasStatus('vanilla_gentle') ? .15 : 0);
@@ -443,10 +442,6 @@ class Unit {
     // into a near-zero damage state after the final phase. Keep the intended
     // fantasy while guaranteeing a visible damage floor for the event boss.
     if (this.twisted && this.id === 'Dandy') m.dmgTaken = Math.max(m.dmgTaken, -.58);
-    // Emotional Piece is deliberate, uninterrupted handwork: slows can still
-    // affect movement after it ends, but cannot drag Scraps' Attack Speed below
-    // its normal value while the piece is being completed.
-    if (this.hasStatus('artfocus')) m.aspdP = Math.max(preStatusAspd, m.aspdP);
     // class / subclass are applied as flat at spawn, already in this.flat
 
     const b = this.baseStats;
@@ -550,7 +545,7 @@ class Battle {
   /* ---------- setup ---------- */
   start(playerSpecs, enemySpecs, meta) {
     this.meta = meta || {};
-    this.offscreen = !!this.opt.offscreen;
+    this.offscreen = !!(this.opt && this.opt.offscreen) || !!(this.meta && this.meta.offscreen);
     if (this.offscreen) {
       // simulateOffscreen supplies detached FX hosts. Keep the battle marked
       // off-screen so combat timing and rendering never touch the live arena.
@@ -1491,15 +1486,24 @@ class Battle {
          ${typeof QOM_METER !== 'undefined' && QOM_METER[u.id] ? `<div class="qom-meter" style="bottom:${w * 1.32 + u.plate - 25}px"></div>` : ''}`;
     if (u.id === 'ShadowMilkCookie' && !u.minion)
       n.innerHTML += `<img class="cookie-eye" src="${ASSET}uploads/shadow_milk_effectBigeye.png" alt="" aria-hidden="true" style="bottom:${w * 1.1}px">`;
-    if (u.id === 'TigerLilyCookie' && !u.minion)
-      n.innerHTML += '<div class="cookie-butter-tiger" aria-hidden="true"></div>';
     this.el.units.appendChild(n);
+    if (u.id === 'TigerLilyCookie' && !u.minion) {
+      const tigerNode = el('div', 'cookie-butter-tiger' + (u.team === TEAM_E ? ' foe' : ''));
+      tigerNode.innerHTML = `
+        <div class="butter-tiger-shadow" aria-hidden="true"></div>
+        <div class="butter-tiger-body" aria-hidden="true">
+          <img src="${ASSET}uploads/buttertiger.png" alt="" aria-hidden="true">
+        </div>`;
+      this.el.units.appendChild(tigerNode);
+      u.cookieButterTigerEl = tigerNode;
+      u.cookieButterTigerBodyEl = $('.butter-tiger-body', tigerNode);
+    }
     u.el = n; u.bodyEl = $('.body', n); u.imgEl = natural ? $('.natural-sprite', n) : $('img', n);
     u.swordEl = $('.soulvester-carried-sword', n);
     u.hpEl = $('.hpmini i', n); u.shEl = $('.hpmini b', n); u.stsEl = $('.stats', n);
     u.qomMeterEl = $('.qom-meter', n);
     u.cookieEyeEl = $('.cookie-eye', n);
-    u.cookieButterTigerEl = $('.cookie-butter-tiger', n);
+    if (!u.cookieButterTigerEl) u.cookieButterTigerEl = $('.cookie-butter-tiger', n);
     u.bodyW = w;
     u.naturalSprite = natural;
     u.naturalAtlases = naturalAtlases;
@@ -1769,6 +1773,7 @@ class Battle {
     }
     for (let i = this.intervals.length - 1; i >= 0; i--) {
       const I = this.intervals[i];
+      if (!I) { this.intervals.splice(i, 1); continue; }
       if (I.owner && !I.owner.alive) {
         if (I.owner._vanillaPendingRevive) continue;
         this.intervals.splice(i, 1); continue;
@@ -2123,12 +2128,6 @@ class Battle {
     // for her ordinary attacks until that prey is defeated.
     if (u.id === 'Eclipse' && u.eclipseFocusTarget && u.eclipseFocusTarget.alive
       && foes.includes(u.eclipseFocusTarget) && this.isTargetable(u.eclipseFocusTarget)) return u.eclipseFocusTarget;
-    // Fixated enemies can only direct their ordinary attacks at Glisten while
-    // his attention trap is active. This sits before generic taunt handling so
-    // the signature control effect is not quietly overridden by another tank.
-    const fixation = u.statuses.find(s => s.id === 'fixated' && s.src && s.src.team !== u.team
-      && s.src.alive && foes.includes(s.src) && this.isTargetable(s.src));
-    if (fixation) return fixation.src;
     // A taunt from a unit that just entered a dash, bubble, stealth, or other
     // untargetable state must stop controlling aggro immediately. Otherwise
     // the attacker keeps walking at an invisible target until the status ends.
@@ -2137,8 +2136,6 @@ class Battle {
       .sort((a, b) => (b.t || 0) - (a.t || 0));
     if (taunts.length) return taunts[0].src;
     if (u.flags.charmed) { const al = this.alliesOf(u).filter(a => a !== u); if (al.length) return pick(al); }
-    if (u.id === 'Scraps' && u.scrapsLockedTarget && u.scrapsLockedTarget.alive && foes.includes(u.scrapsLockedTarget))
-      return u.scrapsLockedTarget;
     if (u.forcedTarget && u.forcedTarget.alive && foes.includes(u.forcedTarget)) return u.forcedTarget;
     if (u.id === 'TigerLilyCookie') {
       const prey = foes.find(f => this.isTargetable(f) && f.statuses.some(s => s.id === 'cookie_tiger_prey' && s.src === u));
@@ -2228,10 +2225,6 @@ class Battle {
           return null;
         }
         let hitP = clamp(src.st.acc / (src.st.acc + tgt.st.eva * 1.15), .35, 1);
-        // Mirror Audience makes its marked enemy noticeably less reliable
-        // when attacking Glisten, without changing that enemy's global stats.
-        if (src.statuses && src.statuses.some(s => s.id === 'glisten_audience' && s.src === tgt))
-          hitP = clamp(hitP - .22, .35, 1);
         // Clear View is deliberately positional: it should help allies hit
         // through Tisha's cloud, not give them free accuracy everywhere.
         if (src.hasStatus && tgt.hasStatus && src.hasStatus('cleanfocus') && tgt.hasStatus('dustcloud'))
@@ -2304,10 +2297,11 @@ class Battle {
     ev.amount = dmg;
 
     // shields absorb first
-    if (!opt.pierceAll) {
+    if (!opt.pierceAll && !opt.bypassShield) {
       for (let i = tgt.shields.length - 1; i >= 0 && dmg > 0; i--) {
         const sh = tgt.shields[i];
-        if (sh.redirect && sh.redirect.to && sh.redirect.to.alive) {
+        if (!sh || sh.amt <= 0) continue;
+        if (!ev.redirected && sh.redirect && sh.redirect.to && sh.redirect.to !== tgt && sh.redirect.to.alive) {
           const moved = dmg * sh.redirect.pct; dmg -= moved;
           this.damage(src, sh.redirect.to, moved, { type: 'true', redirected: true, tag: 'shieldlink' });
         }
@@ -2422,6 +2416,14 @@ class Battle {
         if (deathFxIndex === 0) FX.shake(6, .25);
       }, deathFxIndex * 28);
       if (isCookie && u.dialogueEl) { u.dialogueEl.remove(); u.dialogueEl = null; }
+      if (u.cookieButterTigerEl) {
+        const tigerNode = u.cookieButterTigerEl;
+        tigerNode.style.transition = 'opacity .35s ease-out';
+        tigerNode.style.opacity = '0';
+        setTimeout(() => { if (tigerNode.parentNode) tigerNode.remove(); }, 380);
+        u.cookieButterTigerEl = null;
+        u.cookieButterTigerBodyEl = null;
+      }
       u.el.classList.add('dead');
       u.el.style.transition = isCookie ? (Accessibility.enabled() ? 'opacity .25s' : 'transform .9s ease-in, opacity .2s .7s') : isUnknownWorld ? 'opacity .08s, transform .16s cubic-bezier(.1,1.5,.2,1)' : isCollab ? 'opacity .42s, transform .42s' : 'opacity .14s .04s, transform .2s cubic-bezier(.3,0,.8,.2)';
       u.el.style.opacity = 0;
@@ -2518,7 +2520,7 @@ class Battle {
     opt = opt || {};
     if (!tgt || !tgt.alive) return;
     const amt = amount * (src ? src.st.shieldPow : 1);
-    if (amt <= 0) return;
+    if (!Number.isFinite(amt) || amt <= 0) return;
     // A shield is represented by both a shield record and a positive status.
     // Ask the status gate first, before mutating the record, so Buff Sealed
     // and Teagan’s Fatigue cannot leave behind an invisible working shield.
@@ -3354,12 +3356,12 @@ class Battle {
   fxQomBasic(u, target, type) {
     if (!this.offscreen && u && target) FX.qomBasic(u.id, u.x, u.y, target.x, target.y, type);
   }
-  fxGlistenMirror(x, y, s, face, opt) { FX.glistenMirror(x, y, s, face, opt); }
-  fxSparkle(x, y, n, c) { FX.sparkle(x, y, n, c); }
-  fxFloatIcon(x, y, ch, c) { FX.floatIcon(x, y, ch, c); }
-  fxFloatItem(x, y, img) { FX.floatItem(x, y, img); }
-  fxFloatObject(x, y, img, col) { FX.floatObject(x, y, img, col); }
-  fxTargetLine(from, to, col) { FX.targetLine(from, to, col); }
+  fxGlistenMirror(x, y, s, face, opt) { if (!this.offscreen) FX.glistenMirror(x, y, s, face, opt); }
+  fxSparkle(x, y, n, c) { if (!this.offscreen) FX.sparkle(x, y, n, c); }
+  fxFloatIcon(x, y, ch, c) { if (!this.offscreen) FX.floatIcon(x, y, ch, c); }
+  fxFloatItem(x, y, img) { if (!this.offscreen) FX.floatItem(x, y, img); }
+  fxFloatObject(x, y, img, col) { if (!this.offscreen) FX.floatObject(x, y, img, col); }
+  fxTargetLine(from, to, col) { if (!this.offscreen) FX.targetLine(from, to, col); }
   fxSpiralBurst(x, y, s, opt) { if (!this.offscreen) { if (FX.mrsHollowaySpiralExplosion) FX.mrsHollowaySpiralExplosion(x, y, s, opt); else FX.hollowaySpiral(x, y, s, opt); } }
   fxAutumnBurst(x, y, s, opt) { if (!this.offscreen) { if (FX.mrHollowayEarthCrash) FX.mrHollowayEarthCrash(x, y, s); else FX.hollowayAutumn(x, y, s, opt); } }
   fxMrsHollowayExplosion(x, y, s, opt) { if (!this.offscreen && FX.mrsHollowaySpiralExplosion) FX.mrsHollowaySpiralExplosion(x, y, s, opt); }
@@ -3377,7 +3379,14 @@ class Battle {
   fxShellyInspiration(x, y, dur) { if (!this.offscreen && FX.shellyInspirationWhistle) FX.shellyInspirationWhistle(x, y, dur); }
   fxShellyAmber(x, y, dur) { if (!this.offscreen && FX.shellyAmberStasis) FX.shellyAmberStasis(x, y, dur); }
   fxCandyBurst(x, y, n) { if (!this.offscreen) FX.candyBurst(x, y, n); }
+  fxGingerHeartBurst(x, y, s, opt) { if (!this.offscreen && FX.gingerHeartBurst) FX.gingerHeartBurst(x, y, s, opt); }
+  fxGingerRoyalIcing(x, y, s, dur) { if (!this.offscreen && FX.gingerRoyalIcing) FX.gingerRoyalIcing(x, y, s, dur); }
+  fxGingerPeppermintHearth(x, y, dur) { if (!this.offscreen && FX.gingerPeppermintHearth) FX.gingerPeppermintHearth(x, y, dur); }
+  fxGingerLastBite(x, y) { if (!this.offscreen && FX.gingerLastBite) FX.gingerLastBite(x, y); }
+  fxVeeLiveBroadcast(x, y) { if (!this.offscreen && FX.veeLiveBroadcast) FX.veeLiveBroadcast(x, y); }
+  fxSquirmBiblioPanic(x, y) { if (!this.offscreen && FX.squirmBiblioPanic) FX.squirmBiblioPanic(x, y); }
   unitFxAnchor(u) {
+    if (!u) return { x: this.W ? this.W / 2 : 280, y: (this.ground || 300) - 45, size: 75 };
     const scale = u.depth != null ? 1 - u.depth * DEPTH_SCALE_FALL : 1;
     const x = u.depth != null ? this.W / 2 + (u.x - this.W / 2) * (1 - u.depth * DEPTH_XCOMPRESS) : u.x;
     const aspect = u.imgEl && u.imgEl.naturalWidth ? u.imgEl.naturalHeight / u.imgEl.naturalWidth : 1.32;
@@ -3458,15 +3467,26 @@ class Battle {
     }
     FX.rudieSkill(kind, a.x, a.y, o);
   }
+  fxScrapsCircle(u, radius, craft, powered) {
+    if (u) FX.scrapsCircle(u.x, u.y - 6, radius, craft, powered);
+  }
+  fxScrapsShards(e, radius) { if (e) FX.scrapsShards(e.x, e.y - 6, radius); }
+  fxScrapsCraftSwap(u, craft) { if (u) FX.scrapsCraftSwap(u.x, u.y - 6, craft); }
   heroSequence(u, key, castId) {
     const c = HERO_CINEMATICS[u.id];
     if (!c || c.noSequence) return;
     const allyTarget = typeof c.ally === 'function' ? c.ally(key) : c.ally;
-    const target = allyTarget ? (u.id === 'Poppy' ? u : this.lowestHp(this.alliesOf(u)))
+    const target = allyTarget ? (u.id === 'Poppy' ? u : u.id === 'Scraps'
+      ? (this.lowestHp(this.alliesOf(u).filter(a => a !== u && !a.minion)) || u)
+      : this.lowestHp(this.alliesOf(u)))
       : (u.target && u.target.alive ? u.target : this.bestTarget(u));
     const castA = this.unitFxAnchor(u);
+    const scrapsCraft = u.id === 'Scraps' && key === 'G'
+      ? ['cardboard', 'cup', 'yarn'][((u.scrapsCraftIndex || 0) + 1) % 3] : u.scrapsCraft;
+    const scrapsTarget = u.id === 'Scraps' && target ? this.unitFxAnchor(target) : null;
     if (c.signature) FX.heroSignature(c.signature, 'cast', castA.x, castA.y,
-      { size: castA.size * (key === 'W' ? 1.12 : .92), face: u.face, ultimate: key === 'W' });
+      { size: castA.size * (key === 'W' ? 1.12 : .92), face: u.face, ultimate: key === 'W',
+        key, craft: scrapsCraft, targetX: scrapsTarget?.x, targetY: scrapsTarget?.y });
     else this.fxStatusOn(u, c.cast, { sizeMul: key === 'W' ? 1.08 : .90 });
     if (c.prop) FX.castProp(u.x + u.face * 22, u.y, c.prop, c.col, key === 'W' ? .56 : .42);
     Sound.play(c.s1, { vol: key === 'W' ? .38 : .22, throttle: 140 });
@@ -3475,7 +3495,8 @@ class Battle {
       if (c.signature) {
         const hitA = this.unitFxAnchor(target);
         FX.heroSignature(c.signature, 'impact', hitA.x, hitA.y,
-          { size: hitA.size * (key === 'W' ? 1.08 : .86), face: u.face, ultimate: key === 'W' });
+          { size: hitA.size * (key === 'W' ? 1.08 : .86), face: u.face, ultimate: key === 'W',
+            key, craft: scrapsCraft });
       } else {
         this.fxStatusOn(target, c.impact, { sizeMul: key === 'W' ? 1.02 : .82 });
         FX.ring(target.x, target.y - 40, key === 'W' ? 120 : 82, c.col, .36);
@@ -3546,6 +3567,8 @@ class Battle {
   fxFlutterIntercept(target) { if (target) FX.flutterIntercept(target); }
   fxFlutterFlyby(u) { if (u) FX.flutterFlyby(u); }
   fxFlutterSilent(a, b) { FX.flutterSilent(a, b); }
+  fxFlutterLift(u, stacks, max) { if (u) FX.flutterLift(u, stacks, max); }
+  fxFlutterDizzy(target) { if (target) FX.flutterDizzy(target); }
   fxTishaLines(lines, dur, permanent) { FX.tishaLines(lines, this.ground, dur || 1, permanent); }
   fxTishaSweep(u, target, wide) {
     const toX = target ? target.x : (u.face > 0 ? this.rightWall - 18 : this.leftWall + 18);
@@ -3578,6 +3601,10 @@ class Battle {
   fxSproutSkill(kind, u, target, targets, opt) {
     if (!u) return;
     FX.sproutSkill(kind, u.x, u.y, Object.assign({ face: u.face, target, targets }, opt || {}));
+  }
+  fxAstroSkill(kind, u, target, targets, opt) {
+    if (!u) return;
+    FX.astroSkill(kind, u.x, u.y, Object.assign({ face: u.face, target, targets }, opt || {}));
   }
   fxBassieSkill(kind, u, opt) {
     if (!u) return;
@@ -4673,11 +4700,102 @@ class Battle {
       let cookieTigerPose = null;
       if (u.id === 'TigerLilyCookie') {
         const mounted = u.hasStatus('cookie_tiger_mounted');
-        if (u.cookieButterTigerEl) u.cookieButterTigerEl.style.display = mounted ? 'none' : '';
         const acting = this.t < (u._tigerSkillUntil || 0) || u.casting || (u.animT > 0 && (u.animState === 'attack' || u.animState === 'wind' || u.animState === 'cast'));
         cookieTigerPose = mounted ? acting ? 'mountedSkill' : u.moving || u.dashUntil > this.t ? 'mountedRun' : 'mountedIdle'
           : acting ? 'skill' : u.moving || u.dashUntil > this.t ? 'run' : 'idle';
         wantedArt = ASSET + COOKIE_TIGER_ANIMS[cookieTigerPose];
+        if (u.cookieButterTigerEl) {
+          if (!u.alive || mounted) {
+            u.cookieButterTigerEl.style.display = 'none';
+          } else {
+            u.cookieButterTigerEl.style.display = '';
+            const tigerFace = u.face || 1;
+            const isSwiping = this.t < (u._tigerSwipeUntil || 0);
+            const isPouncing = this.t < (u._tigerPounceUntil || 0);
+
+            let targetX = u.x - tigerFace * 50;
+            let targetDepth = Math.max(0, Math.min(1, (u.depth != null ? u.depth : 0.5) + 0.025));
+
+            if (isPouncing && u._tigerPounceTarget && u._tigerPounceTarget.alive) {
+              targetX = u._tigerPounceTarget.x - tigerFace * 24;
+              if (u._tigerPounceTarget.depth != null) targetDepth = u._tigerPounceTarget.depth;
+            } else if (isSwiping && u._tigerSwipeTarget && u._tigerSwipeTarget.alive) {
+              targetX = u._tigerSwipeTarget.x - tigerFace * 36;
+              if (u._tigerSwipeTarget.depth != null) targetDepth = u._tigerSwipeTarget.depth;
+            }
+
+            if (u._tigerX == null) {
+              u._tigerX = targetX;
+              u._tigerDepth = targetDepth;
+              u._tigerFacing = tigerFace;
+            }
+
+            const followSpeed = (isPouncing || isSwiping) ? 14 : (u.moving ? 8.5 : 6);
+            const followFactor = Math.min(1, Math.max(0.04, (dt || 0.016) * followSpeed));
+            u._tigerX += (targetX - u._tigerX) * followFactor;
+            u._tigerDepth += (targetDepth - u._tigerDepth) * Math.min(1, (dt || 0.016) * 7);
+
+            const moveDiff = targetX - u._tigerX;
+            if (Math.abs(moveDiff) > 4) {
+              u._tigerFacing = moveDiff > 0 ? 1 : -1;
+            } else {
+              u._tigerFacing = tigerFace;
+            }
+
+            const tDepth = clamp(u._tigerDepth, 0, 1);
+            const cx = this.W / 2;
+            const tigerScreenX = cx + (u._tigerX - cx) * (1 - tDepth * DEPTH_XCOMPRESS);
+            const tigerGroundY = this.ground - tDepth * this.depthSpan;
+            const tigerDepthScale = 1 - tDepth * DEPTH_SCALE_FALL;
+
+            let arcY = 0;
+            if (isPouncing) {
+              const pounceDur = 0.58;
+              const prog = 1 - Math.max(0, (u._tigerPounceUntil - this.t) / pounceDur);
+              arcY = -Math.sin(prog * Math.PI) * 38;
+            } else if (Math.abs(moveDiff) > 3 || u.moving) {
+              arcY = -Math.abs(Math.sin(this.t * 11)) * 4.5;
+            } else {
+              arcY = Math.sin(this.t * 3.2) * 1.5;
+            }
+
+            const tigerScreenY = tigerGroundY + arcY;
+            const tigerZ = 220 - Math.round(tDepth * 160) - 2;
+
+            if (u._renderTigerZ !== tigerZ) {
+              u._renderTigerZ = tigerZ;
+              u.cookieButterTigerEl.style.zIndex = tigerZ;
+            }
+
+            const tigerTransform = `translate(${tigerScreenX.toFixed(1)}px,${tigerScreenY.toFixed(1)}px) scale(${tigerDepthScale.toFixed(3)})`;
+            if (u._renderTigerTransform !== tigerTransform) {
+              u._renderTigerTransform = tigerTransform;
+              u.cookieButterTigerEl.style.transform = tigerTransform;
+            }
+
+            if (u.cookieButterTigerBodyEl) {
+              const bodyTransform = `scaleX(${u._tigerFacing < 0 ? -1 : 1})`;
+              if (u._renderTigerBody !== bodyTransform) {
+                u._renderTigerBody = bodyTransform;
+                u.cookieButterTigerBodyEl.style.transform = bodyTransform;
+              }
+            }
+
+            if (u._tigerSwipingClass !== isSwiping) {
+              u._tigerSwipingClass = isSwiping;
+              u.cookieButterTigerEl.classList.toggle('swiping', isSwiping);
+            }
+            if (u._tigerPouncingClass !== isPouncing) {
+              u._tigerPouncingClass = isPouncing;
+              u.cookieButterTigerEl.classList.toggle('pouncing', isPouncing);
+            }
+
+            if (u._introOpacity != null && u._tigerRenderOpacity !== u._introOpacity) {
+              u._tigerRenderOpacity = u._introOpacity;
+              u.cookieButterTigerEl.style.opacity = u._introOpacity;
+            }
+          }
+        }
       }
       if (u.cookieEyeEl && u._cookieEyeRendered !== !!u._cookieEyeDeceit) {
         u._cookieEyeRendered = !!u._cookieEyeDeceit;

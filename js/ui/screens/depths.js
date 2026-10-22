@@ -18,13 +18,13 @@ const DW_TOON_STATS = {
   Eggson:     { extraction: 4, skill: 4, speed: 2, stamina: 2, stealth: 3, role: 'Methodical Extractor' },
   Dyle:       { extraction: 4, skill: 3, speed: 2, stamina: 3, stealth: 2, role: 'Heavy Extractor' },
   Gigi:       { extraction: 3, skill: 4, speed: 3, stamina: 3, stealth: 4, role: 'Lucky Gambler' },
-  Glisten:    { extraction: 3, skill: 4, speed: 3, stamina: 3, stealth: 2, role: 'Perfectionist' },
+  Glisten:    { extraction: 5, skill: 2, speed: 3, stamina: 3, stealth: 2, role: 'Mirror Extractor' },
   Teagan:     { extraction: 3, skill: 4, speed: 3, stamina: 3, stealth: 3, role: 'Patient Tea Host' },
   Astro:      { extraction: 3, skill: 3, speed: 3, stamina: 4, stealth: 4, role: 'Dream Support' },
   Dandy:      { extraction: 3, skill: 3, speed: 3, stamina: 3, stealth: 3, role: 'Star Host' },
   Coal:       { extraction: 3, skill: 3, speed: 3, stamina: 3, stealth: 3, role: 'Steady Worker' },
   Cocoa:      { extraction: 3, skill: 3, speed: 3, stamina: 3, stealth: 3, role: 'Sweet Runner' },
-  Bobette:    { extraction: 3, skill: 3, speed: 3, stamina: 3, stealth: 3, role: 'Precision Crafter' },
+  Bobette:    { extraction: 2, skill: 4, speed: 3, stamina: 5, stealth: 2, role: 'Holiday Survivalist' },
   Ginger:     { extraction: 3, skill: 3, speed: 3, stamina: 3, stealth: 3, role: 'Festive Runner' },
   Brusha:     { extraction: 3, skill: 3, speed: 3, stamina: 3, stealth: 3, role: 'Painter' },
   Looey:      { extraction: 3, skill: 3, speed: 3, stamina: 3, stealth: 3, role: 'Juggler' },
@@ -32,13 +32,13 @@ const DW_TOON_STATS = {
   Gourdy:     { extraction: 3, skill: 3, speed: 3, stamina: 3, stealth: 3, role: 'Candy Sprinter' },
   Eclipse:    { extraction: 3, skill: 3, speed: 3, stamina: 3, stealth: 3, role: 'Solar/Lunar Operator' },
   Soulvester: { extraction: 3, skill: 3, speed: 3, stamina: 3, stealth: 3, role: 'Knight Runner' },
-  Finn:       { extraction: 3, skill: 3, speed: 4, stamina: 3, stealth: 2, role: 'Swift Swimmer' },
+  Finn:       { extraction: 3, skill: 4, speed: 3, stamina: 2, stealth: 3, role: 'Quick Catch' },
   Yatta:      { extraction: 3, skill: 3, speed: 4, stamina: 3, stealth: 3, role: 'Party Sprinter' },
   Flyte:      { extraction: 3, skill: 3, speed: 4, stamina: 3, stealth: 4, role: 'Sky Flyer' },
   Flutter:    { extraction: 2, skill: 3, speed: 4, stamina: 3, stealth: 3, role: 'Winged Scout' },
   Poppy:      { extraction: 2, skill: 3, speed: 5, stamina: 4, stealth: 3, role: 'Champion Sprinter' },
   Goob:       { extraction: 2, skill: 3, speed: 5, stamina: 4, stealth: 2, role: 'Speed Hugger' },
-  Scraps:     { extraction: 2, skill: 3, speed: 4, stamina: 4, stealth: 3, role: 'Agile Crafter' },
+  Scraps:     { extraction: 3, skill: 2, speed: 2, stamina: 5, stealth: 3, role: 'Crafty Survivalist' },
   Toodles:    { extraction: 2, skill: 2, speed: 4, stamina: 3, stealth: 4, role: 'Nimble Toddler' },
   Blot:       { extraction: 2, skill: 3, speed: 4, stamina: 4, stealth: 2, role: 'Inky Rusher' },
   Rudie:      { extraction: 2, skill: 2, speed: 4, stamina: 4, stealth: 3, role: 'Charging Rusher' },
@@ -473,7 +473,7 @@ Object.assign(Screens, {
     }
     page.classList.add('leaving');
     Sound.play('ui_back');
-    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const reduced = typeof Accessibility !== 'undefined' ? Accessibility.enabled() : (typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches);
     setTimeout(() => {
       this._endlessLeaving = false;
       this.go(destination, { skipDepthExit: true, silent: true });

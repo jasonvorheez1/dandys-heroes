@@ -75,7 +75,7 @@ HEROES.TigerLilyCookie.skills={
   desc:(S,P)=>`Butter Tiger swipes nearby foes for ${Math.round(S.swipe*100)}% Attack damage every ${P.swipeEvery.toFixed(1)}s while Tiger Lily fights on foot. Every third spear hit builds Hunting Instinct. Mount and charge through the enemy line for ${Math.round(S.ratio*100)}% Attack damage and a ${P.stun.toFixed(1)}s Stun. Mounted for ${P.mount.toFixed(1)}s: +40% Attack Speed, +35% Movement Speed, 25% Damage Reduction, knockback immunity, and close-range claw/spear attacks. At five Instinct, add a hit, extend the first Stun, and charge again before dismounting. Red rarity extends the ride and can trigger Apex Predator.`,
   passive(u,B,S,P){u._tigerSpearHits=0;u._tigerCharges=0;u._tigerMarkedKills=0;u._tigerApexUsed=false;u._tigerApexActive=false;
    B.on(u,'dealDamage',ev=>{if(ev.crit&&tigerHasOwnStatus(u,ev.target,'cookie_tiger_prey'))tigerInstinct(u,B);});
-   B.every(u,P.swipeEvery,()=>{if(!u.alive||tigerMounted(u))return;const t=B.nearest(u,tigerFoes(u,B).filter(e=>B.distance(u,e)<=180));if(t){tigerHit(u,B,t,S.swipe,'Butter Tiger Swipe',{area:true});tigerFx(B,t,55);Sound.play('cookie_tiger_pounce',{vol:.24,throttle:500});}});
+   B.every(u,P.swipeEvery,()=>{if(!u.alive||tigerMounted(u))return;const t=B.nearest(u,tigerFoes(u,B).filter(e=>B.distance(u,e)<=180));if(t){u._tigerSwipeUntil=B.t+.42;u._tigerSwipeTarget=t;tigerHit(u,B,t,S.swipe,'Butter Tiger Swipe',{area:true});tigerFx(B,t,55);Sound.play('cookie_tiger_pounce',{vol:.24,throttle:500});}});
   },
   cast(u,B,S,P){const instinct=u.getStatus('cookie_tiger_instinct')?.stacks||0,empowered=instinct>=P.instinct;
    if(empowered)B.removeStatus(u,'cookie_tiger_instinct');
@@ -104,7 +104,7 @@ HEROES.TigerLilyCookie.skills={
    });};
    if(mounted)B.dash(u,t.x-u.face*26,.24,{depth:t.depth});pounce(t,S.ratio);
    if(mounted)B.after(.38,()=>{if(!u.alive)return;const back=tigerFoes(u,B).sort((a,b)=>u.face*(b.x-a.x))[0];if(back){B.dash(u,back.x+u.face*35,.24,{depth:back.depth});pounce(back,S.ratio*.62);}B.applyStatus(u,u,'cookie_tiger_evasion',5,{val:P.evasion});});
-   else{B.dash(u,u.x-u.face*80,.26,{depth:u.depth});B.applyStatus(u,u,'cookie_tiger_evasion',5,{val:P.evasion});}
+   else{u._tigerPounceUntil=B.t+.58;u._tigerPounceTarget=t;B.dash(u,u.x-u.face*80,.26,{depth:u.depth});B.applyStatus(u,u,'cookie_tiger_evasion',5,{val:P.evasion});}
   }},
  P:{name:'Wild Instinct',type:'Physical Damage / Critical Chance / Control',v:{},p:{crit:.20,accuracy:.12,mark:8,bonus:.25,dodge:.20,heal:.018},
   desc:(S,P)=>`Gains ${Math.round(P.crit*100)}% Critical Hit chance and ${Math.round(P.accuracy*100)}% Accuracy. Attackers receive Predator's Mark for ${P.mark.toFixed(1)}s and take ${Math.round(P.bonus*100)}% more damage from Tiger Lily. Defeating a marked foe throws a follow-up spear at the weakest foe and builds Instinct. Mounted spear and claw hits heal Tiger Lily for ${+(P.heal*100).toFixed(1)}% Max HP, and marked foes attack slower. Dodging grants ${Math.round(P.dodge*100)}% Attack Speed for 6s.`,

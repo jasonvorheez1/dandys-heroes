@@ -157,7 +157,7 @@ ginger.skills={
    B.on(u,'dealDamage',e=>{if(e.target&&e.target.hpPct>.5)e.amount*=1+S.highHp;});
    B.on(u,'cast',ev=>{
     if(ev.key==='W'||ev.key==='B'){
-     B.shield(u,u,u.max.hp*S.shield,P.dur);
+     B.shield(u,u,u.max.hp*P.shield,P.dur);
      B.fxFloatIcon(u.x,u.y-105,'🛡️ COURAGE SHIELD','#ffce77');
     }
    });

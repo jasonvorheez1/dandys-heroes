@@ -1827,4 +1827,177 @@ defCampaign({
   ]
 });
 
+defCampaign({
+  id: 'glisten_goob', badge: 'glisten_goob', a: 'Glisten', b: 'Goob',
+  recLevel: friendshipRecLevel('Glisten', 'Goob'),
+  title: 'Handle with Care',
+  guests: ['Scraps', 'Poppy'],
+  stages: [
+    { name: 'Mind the Glass', cast: ['Glisten', 'Goob'], lines: [
+      { who: 'Narrator', text: 'The battle ends with a final brilliant flash. Glisten immediately produces a silk handkerchief to inspect his reflection.' },
+      { who: 'Glisten', text: 'Not a single smudge. Immaculate. An artist at work, as usual.' },
+      { who: 'Goob', text: '*bounding over with stretchy arms spread wide* GLISTEN! You were so shiny! Group hug!' },
+      { who: 'Glisten', text: '*teleports three feet backward in sheer panic* Halt! Stop right there! Do not touch the merchandise!' },
+      { who: 'Goob', text: '*blinks, arms slowly drooping* Aw... not even a little squeeze?' },
+      { who: 'Glisten', text: 'Do you have any idea how easily polished glass picks up sticky paw prints?! It takes hours to achieve this pristine luster!' },
+      { who: 'Goob', text: 'My paws aren’t sticky! They’re fluffy!' },
+      { who: 'Glisten', text: 'Fluff contains static, and static attracts lint. Case closed!' }
+    ]},
+    { name: 'Fragile Perfection', cast: ['Glisten', 'Goob'], lines: [
+      { who: 'Narrator', text: 'Further down the hall, the team pauses near a shattered window frame.' },
+      { who: 'Goob', text: 'Glisten? Are you scared of getting dirty?' },
+      { who: 'Glisten', text: 'Dirty? Please. Dirt can be washed off. I am afraid of being ruined.' },
+      { who: 'Goob', text: '*tilts head curiously* Ruined?' },
+      { who: 'Glisten', text: '*touches his golden rim gently* One deep crack across my face... and that’s it. Seven years of bad luck for whoever broke me, but an eternity of horror for ME.' },
+      { who: 'Narrator', text: 'Goob looks at Glisten’s reflection, noticing the faint tremble in his grip.' },
+      { who: 'Goob', text: 'You’re very fragile, aren’t you?' },
+      { who: 'Glisten', text: '*sniffs defensively* I am delicate. There is an enormous aesthetic difference.' }
+    ]},
+    { name: 'Yarn & Velvet', cast: ['Goob', 'Scraps', 'Poppy'], guests: ['Scraps', 'Poppy'], lines: [
+      { who: 'Narrator', text: 'While Glisten stands guard in the corridor, Goob rummages frantically through a supply closet with Scraps and Poppy.' },
+      { who: 'Scraps', text: 'If you’re making what I think you’re making, you’ll need dense interlocking loops. Mirrors have hard corners!' },
+      { who: 'Poppy', text: 'Here! Pink velvet scrap fabric and extra-cushioned polyester batting! It absorbs heavy shock!' },
+      { who: 'Goob', text: 'It has to be the softest thing in the whole world! So Glisten never gets scratched, even when he jumps through mirrors!' },
+      { who: 'Scraps', text: '*rapidly stitching with yarn* Double-layered hem with elastic ribbing. It’ll slide right over his handle and lock tight!' },
+      { who: 'Poppy', text: 'Add a little pom-pom on the base! For emotional support!' },
+      { who: 'Goob', text: 'YES! The biggest pom-pom we have!' }
+    ]},
+    { name: 'A Fluffy Offering', cast: ['Glisten', 'Goob'], lines: [
+      { who: 'Narrator', text: 'Goob skips proudly out of the supply room, holding a brightly colored, plush knitted sleeve behind his back.' },
+      { who: 'Glisten', text: 'Back already? I trust you haven’t brought any more lint near my—' },
+      { who: 'Goob', text: '*presents the plush mirror cozy with both hands* TA-DA! For you!' },
+      { who: 'Glisten', text: '*recoils in disbelief* What... what on earth is that atrocious neon pink sock?!' },
+      { who: 'Goob', text: 'It’s not a sock! It’s a mirror cozy! Slide it on your handle—see? Thick plush padding so your golden frame doesn’t crack!' },
+      { who: 'Glisten', text: 'A sweater?! For a mirror of my caliber?! The critics would crucify me!' },
+      { who: 'Goob', text: 'Just try it! Please? Feel how soft!' },
+      { who: 'Narrator', text: 'Glisten hesitantly slides his handle inside. His eyes widen at the sensation.' },
+      { who: 'Glisten', text: '...Oh. Oh my. It’s like holding a cloud wrapped in velvet.' }
+    ]},
+    { name: 'The Ambush', cast: ['Glisten', 'Goob', 'Poppy'], guests: ['Poppy'], lines: [
+      { who: 'Narrator', text: 'The corridor shudders as two hulking Twisteds smash through the wall, cornering Poppy.' },
+      { who: 'Poppy', text: 'LOOK OUT! They’re flanking from the blind spot!' },
+      { who: 'Narrator', text: 'Without hesitation, Glisten leaps through a mirror flare, appearing directly between Poppy and a crushing claw blow.' },
+      { who: 'Glisten', text: 'Reflection! Hands off my chorus line!' },
+      { who: 'Narrator', text: 'The heavy impact strikes Glisten’s cushioned handle. Instead of jarring his frame and leaving him dizzy, the plush cozy absorbs the shockwave completely.' },
+      { who: 'Glisten', text: '*stands upright, completely steady* ...Wait. I’m not dizzy? My equilibrium is... intact?!' },
+      { who: 'Goob', text: '*cheering from across the hall* SOFT LANDING! GET ’EM GLISTEN!' }
+    ]},
+    { name: 'Sweetness', cast: ['Glisten', 'Goob'], lines: [
+      { who: 'Narrator', text: 'The attackers dissolve into ichor. Glisten checks his mirror face in astonishment.' },
+      { who: 'Glisten', text: 'Not a hairline fracture. Not even a microscopic vibration flaw.' },
+      { who: 'Narrator', text: 'Goob trots up, beaming from ear to ear.' },
+      { who: 'Glisten', text: 'Goob... how does it feel to be so fluffy, my friend?' },
+      { who: 'Goob', text: 'Feels fluffy!' },
+      { who: 'Glisten', text: '*shakes head with a soft smile* Oh, you’re too silly! Too sweet!' },
+      { who: 'Goob', text: 'Hehehe- You’re sweet too!' },
+      { who: 'Glisten', text: '*straightens his collar with effortless poise* Ah... I know!' }
+    ]},
+    { name: 'Cushioned Counter', cast: ['Glisten', 'Goob', 'Scraps'], guests: ['Scraps'], lines: [
+      { who: 'Narrator', text: 'A ferocious elite Twisted lunges from the shadows, swinging an iron bar straight for Glisten’s head.' },
+      { who: 'Scraps', text: 'Glisten, DUCK!' },
+      { who: 'Glisten', text: 'Duck? Darling, I parry.' },
+      { who: 'Narrator', text: 'Glisten angles his mirror. The iron bar slams into the reinforced plush border. The impact compresses like a spring, violently rebounding with a deafening chime.' },
+      { who: 'Narrator', text: 'A shower of dazzling glitter and yarn pom-poms bursts outward, tangling the elite Twisted’s limbs in tight knots.' },
+      { who: 'Glisten', text: 'Now THAT is what I call a theatrical rebound! Did you see that sparkle, Scraps?!' },
+      { who: 'Scraps', text: '*laughing* I told you double-loop stitching could stop a freight train!' }
+    ]},
+    { name: 'Glitter & Fluff', cast: ['Glisten', 'Goob'], lines: [
+      { who: 'Narrator', text: 'The final wave is cleared. Quiet settles across the elevator floor.' },
+      { who: 'Goob', text: 'Do you wanna take it off now? So you can polish your handle again?' },
+      { who: 'Glisten', text: '*clutches the fluffy handle tighter* Take it off?! Are you mad?!' },
+      { who: 'Goob', text: 'Huh? But you said it was a pink sock!' },
+      { who: 'Glisten', text: 'I said it was bold. The pastel pink accentuates the gold trim splendidly. It is avant-garde. It is bespoke haute couture.' },
+      { who: 'Goob', text: '*giggles* That means you like it!' },
+      { who: 'Glisten', text: '*sighs gracefully* Yes, yes, I adore it. And... perhaps under strictly supervised circumstances...' },
+      { who: 'Goob', text: 'HUGS?!' },
+      { who: 'Glisten', text: 'One hug. Three seconds maximum. Do not touch the reflective surface.' },
+      { who: 'Narrator', text: 'Goob wraps him in the biggest, warmest, fluffiest hug in Toon history. Glisten does not pull away.' }
+    ]}
+  ]
+});
+
+defCampaign({
+  id: 'glisten_vee', badge: 'glisten_vee', a: 'Glisten', b: 'Vee',
+  recLevel: friendshipRecLevel('Glisten', 'Vee'),
+  title: 'Fighting Words',
+  guests: ['Rodger', 'Shelly'],
+  stages: [
+    { name: 'Studio Lighting', cast: ['Glisten', 'Vee'], lines: [
+      { who: 'Narrator', text: 'The team rests in an abandoned television studio set on floor six. Glisten is pacing in front of a dead broadcast camera.' },
+      { who: 'Glisten', text: 'Vee, darling, be honest. These overhead halogen bulbs are washing out my contours. A star of my stature requires warm three-point backlighting!' },
+      { who: 'Vee', text: '*adjusts her antenna with an audible mechanical buzz* What you require is a reality check.' },
+      { who: 'Glisten', text: 'You know, you couldn\'t make a good game show, even if you tried.' },
+      { who: 'Vee', text: 'My ratings were the highest in the facility before the blackout, mirror-boy. What was your peak viewer share? Zero?' },
+      { who: 'Glisten', text: 'Goodness Vee! Ouchie, owie, ow! Fighting words are out here right now.' },
+      { who: 'Vee', text: 'Yes, if "fighting" was just the truth.' }
+    ]},
+    { name: 'Glaring Error', cast: ['Glisten', 'Vee', 'Rodger'], guests: ['Rodger'], lines: [
+      { who: 'Narrator', text: 'An alert siren sounds as Twisted stalkers enter the studio soundstage.' },
+      { who: 'Rodger', text: 'Hostiles approaching from stage left. Vee, scan the perimeter!' },
+      { who: 'Vee', text: 'Initiating Camera Hijack—' },
+      { who: 'Narrator', text: 'Glisten strikes a dramatic pose, casting a brilliant beam of reflected light across the room.' },
+      { who: 'Narrator', text: 'The blinding glare bounces directly off Vee’s CRT screen, causing her sensors to fill with white noise and static.' },
+      { who: 'Vee', text: '*sparks fly from her top dials* BZZZZT! MY APERTURE! I am completely whitewashed!' },
+      { who: 'Glisten', text: 'Did you see my opening form?! Magnificent!' },
+      { who: 'Vee', text: 'I couldn’t see anything because you just flash-fried my optical sensors, you incandescent peacock!' }
+    ]},
+    { name: 'Broadcast Calibration', cast: ['Glisten', 'Vee'], lines: [
+      { who: 'Narrator', text: 'After dispatching the prowlers, Vee pulls out a soldering iron and an optical lens assembly.' },
+      { who: 'Vee', text: 'Stand still.' },
+      { who: 'Glisten', text: '*backs away nervously* What is that contraption?! Are you going to drill into my frame?!' },
+      { who: 'Vee', text: 'If I wanted to drill into you, I wouldn’t use a polarized optical filter. Hold still before I make Rodger sit on you.' },
+      { who: 'Narrator', text: 'Vee clips a sleek, circular studio broadcast filter directly over Glisten’s perimeter bevel. It hums with a faint cyan glow.' },
+      { who: 'Glisten', text: '*blinks* ...Is this going to ruin my complexion on camera?' },
+      { who: 'Vee', text: 'It’s going to focus your uncontrolled glare into a concentrated broadcast beam instead of blinding your own production crew.' }
+    ]},
+    { name: 'Live On Air', cast: ['Glisten', 'Vee', 'Shelly'], guests: ['Shelly'], lines: [
+      { who: 'Narrator', text: 'A massive wave of armored Twisteds charges through the soundstage double doors.' },
+      { who: 'Shelly', text: 'There are too many! We need target suppression on their backline mage!' },
+      { who: 'Vee', text: 'Broadcasting live in three... two... ONE! Glisten, take your mark!' },
+      { who: 'Glisten', text: 'With PLEASURE!' },
+      { who: 'Narrator', text: 'Glisten steps into Vee’s studio beam. Instead of scattering randomly, the polarized lens compresses the reflection into a piercing cyan spotlight that locks onto the enemy mage.' },
+      { who: 'Narrator', text: 'The target is branded with a glowing red "LIVE" reticle, staggering under the intense exposure.' },
+      { who: 'Vee', text: 'TARGET EXPOSED! Focus fire on the Headline!' },
+      { who: 'Shelly', text: 'Their defense is completely shredded! Amazing shot!' }
+    ]},
+    { name: 'Prime Time Close-Up', cast: ['Glisten', 'Vee'], lines: [
+      { who: 'Narrator', text: 'The enemy mage desperately attempts to channel a shadow spell, but Glisten steps forward.' },
+      { who: 'Glisten', text: 'Time for your close-up, darling! Cameras rolling!' },
+      { who: 'Narrator', text: 'Glisten unleashes Prismatic Close-Up. Vee’s overhead transmitter chimes as a high-voltage broadcast laser strikes down through the studio rafters.' },
+      { who: 'Narrator', text: 'The beam erupts into an electromagnetic pulse, shocking the entire Twisted pack and siphoning energy straight into Vee and Glisten.' },
+      { who: 'Glisten', text: 'A STANDING OVATION! Did you catch that angle, Vee?! Tell me you captured my good side!' },
+      { who: 'Vee', text: '*checking waveform monitors* Audio peaked by 12 decibels. Lighting was slightly oversaturated. ...Execution was acceptable.' }
+    ]},
+    { name: 'The Critic', cast: ['Glisten', 'Vee', 'Rodger'], guests: ['Rodger'], lines: [
+      { who: 'Narrator', text: 'The studio falls silent as the smoke clears.' },
+      { who: 'Glisten', text: 'Acceptable?! That was Emmy-worthy! That was primetime royalty!' },
+      { who: 'Rodger', text: 'Statistically speaking, the enemy’s defensive cohesion dropped by over forty percent within two seconds of illumination.' },
+      { who: 'Glisten', text: 'See?! The detective understands true star power!' },
+      { who: 'Vee', text: 'Star power doesn’t mean anything without a director pointing the camera, Glisten.' },
+      { who: 'Glisten', text: 'And a camera is merely a metal box without a star worth watching!' },
+      { who: 'Rodger', text: 'Fascinating. An unstoppable ego meets an immovable critic.' }
+    ]},
+    { name: 'Season Finale', cast: ['Glisten', 'Vee'], lines: [
+      { who: 'Narrator', text: 'An enormous Twisted Boss emerges onto the center stage, roaring with static interference.' },
+      { who: 'Vee', text: 'Final commercial break is over! This is the Season Finale!' },
+      { who: 'Narrator', text: 'The Twisted slams a colossal fist down. Glisten leaps in, catching the shockwave directly in his broadcast lens.' },
+      { who: 'Glisten', text: 'Perfect Reflection! Broadcast THIS across the network!' },
+      { who: 'Narrator', text: 'A deafening TV static blast erupts from Glisten’s lens, dispelling the Boss’s shields and silencing its roar in an instant.' },
+      { who: 'Vee', text: '*eyes flashing bright red* PRIMETIME CLIMAX! SHUT DOWN THE BROADCAST!' },
+      { who: 'Narrator', text: 'Together, their combined spotlight and laser volley obliterates the monstrosity into harmless pixels.' }
+    ]},
+    { name: 'Sign-Off', cast: ['Glisten', 'Vee'], lines: [
+      { who: 'Narrator', text: 'The studio broadcast lights hum gently as the elevator hums to life.' },
+      { who: 'Glisten', text: '*admiring his reflection in Vee’s dark glass CRT monitor* You know, Vee... your screen makes a remarkably flattering vanity mirror.' },
+      { who: 'Vee', text: 'Touch my glass and I will rewire your handle to an electrical socket.' },
+      { who: 'Glisten', text: '*chuckles smoothly* Temper, temper! But you must admit... we have sensational chemistry.' },
+      { who: 'Vee', text: '*pauses, antenna clicking into resting position* ...Our audience metrics did not decline. In fact, retention was ninety-four percent.' },
+      { who: 'Glisten', text: 'Was that a compliment? From THE Vee?!' },
+      { who: 'Vee', text: 'It was a statistical readout. Now get in the elevator before I deduct your appearance fee.' },
+      { who: 'Glisten', text: '*flourishes as he enters* Never fear, director. The star is always ready for season two.' }
+    ]}
+  ]
+});
+
+
 

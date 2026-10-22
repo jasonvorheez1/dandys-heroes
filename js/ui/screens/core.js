@@ -741,27 +741,62 @@ const Screens = {
     audioGrid.appendChild(musicPanel);
     body.appendChild(audioGrid);
 
+    const menuMusicPanel = el('div', 'settings-menu-music-panel');
+    menuMusicPanel.innerHTML = '<div class="settings-control-heading"><div><b>Menu Music Track</b><small>Select which theme plays in menus, or let them randomize automatically.</small></div></div>';
+    const menuMusicRow = el('div', 'settings-music-row');
+    const menuMusicTracks = [
+      { id: 'random', label: '🎲 Random / Shuffle', desc: 'Randomizes menu tracks' },
+      { id: 'clair', label: '🌙 Clair de Lune', desc: 'Classic menu melody' },
+      { id: 'christmas', label: '🎄 The Perfect Christmas', desc: 'Radio broadcast' },
+      { id: 'lockedAway', label: '🔒 Locked Away', desc: "CG5 x Dandy's World" }
+    ];
+    const menuMusicButtons = [];
+    const syncMenuMusic = () => {
+      const activeMode = typeof Music.getMenuMode === 'function' ? Music.getMenuMode() : (Save.data.opt.menuMusic || 'random');
+      menuMusicButtons.forEach(btn => {
+        const isSelected = btn.dataset.mode === activeMode;
+        btn.classList.toggle('active', isSelected);
+        btn.setAttribute('aria-pressed', String(isSelected));
+      });
+    };
+    menuMusicTracks.forEach(t => {
+      const btn = el('button', 'settings-preset settings-music-btn', `<b>${t.label}</b><small>${t.desc}</small>`);
+      btn.type = 'button';
+      btn.dataset.mode = t.id;
+      btn.onclick = () => {
+        if (typeof Music.setMenuMode === 'function') Music.setMenuMode(t.id);
+        else {
+          Save.data.opt.menuMusic = t.id;
+          Save.write();
+        }
+        syncMenuMusic();
+      };
+      menuMusicButtons.push(btn);
+      menuMusicRow.appendChild(btn);
+    });
+    syncMenuMusic();
+    menuMusicPanel.appendChild(menuMusicRow);
+    body.appendChild(menuMusicPanel);
+
     body.appendChild(el('div', 'settings-section-label', 'COMFORT & ACCESSIBILITY'));
     const reducedOn = Accessibility.enabled();
-    const systemReduced = Accessibility.systemEnabled() && Save.data.opt.reducedEffects !== true;
-    const reduced = el('button', 'settings-master-toggle settings-toggle', reducedOn ? `☑ Reduce Motion & Flashing: On${systemReduced ? ' (device)' : ''}` : '☐ Reduce Motion & Flashing: Off');
+    const systemDefault = Accessibility.systemEnabled() && (!Save.data || !Save.data.opt || typeof Save.data.opt.reducedEffects !== 'boolean');
+    const reduced = el('button', 'settings-master-toggle settings-toggle', reducedOn ? `☑ Reduce Motion & Flashing: On${systemDefault ? ' (device default)' : ''}` : '☐ Reduce Motion & Flashing: Off');
     reduced.type = 'button';
     reduced.setAttribute('aria-pressed', String(reducedOn));
     reduced.title = 'Reduces flashes, screen shake, zoom, hitstop, and decorative battle effects.';
     reduced.onclick = () => {
-      if (Save.data.opt.reducedEffects === true) {
+      if (reducedOn) {
         UI.closeModal();
         UI.confirm('Safety warning', 'Disabling Reduced Motion & Flashing may expose you to screen flashes, camera shake, zoom, and other motion effects. Continue only if this is safe for you.', () => {
           Accessibility.disable(); this.openSettings();
         });
-      } else if (systemReduced) {
-        UI.toast('Your device is enforcing reduced motion.');
       } else {
         Accessibility.enable(); UI.closeModal(); this.openSettings();
       }
     };
     body.appendChild(reduced);
-    body.appendChild(el('div', 'settings-note', 'Also follows your device’s reduced-motion preference.'));
+    body.appendChild(el('div', 'settings-note', 'Can be toggled here or inherited from your device’s preference.'));
 
     body.appendChild(el('div', 'settings-section-label', 'GRAPHICS')); 
     const graphicsPanel = el('div', 'settings-audio settings-control-card settings-quality-card');

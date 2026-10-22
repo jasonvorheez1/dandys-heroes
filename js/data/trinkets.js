@@ -372,9 +372,9 @@ defTrinket({ id: 'poppy_pinkbow', name: 'Pink Bow', owner: 'Poppy', file: 'POPPY
 
 defTrinket({ id: 'scraps_crayonset', name: 'Crayon Set', owner: 'Scraps', file: 'SCRAPS_Crayonset.png',
   desc: 'Missing the blue one.',
-  stat: r => `+${(r * 2).toFixed(0)}% Attack Speed`,
-  effect: 'Materials improve the current craft more each time Whatever Works is used.',
-  apply(u, B, r) { u.flat.aspdP = (u.flat.aspdP || 0) + r * .02; u.scrapsCraftGrowth = r * .10; u.dirty = true; } });
+  stat: r => `+${(r * 1.6).toFixed(1)}% Attack Speed`,
+  effect: 'Basic Attacks paint a random weakness; every few hits grant Sharp Inspiration.',
+  apply(u, B, r) { u.flat.aspdP = (u.flat.aspdP || 0) + r * .016; u.dirty = true; } });
 
 defTrinket({ id: 'shelly_participation', name: 'Participation Reward', owner: 'Shelly', file: 'SHELLY_ParticipationReward.png',
   desc: 'Everybody got one. She kept hers.',

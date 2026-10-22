@@ -231,6 +231,8 @@ const UI = {
       ? 'Unlocked at 4★ through the ⚙ Toontown Cogs Pack after clearing Big Wig.'
       : id === 'Dandy'
         ? 'Found in Main Character Crates and special Dandy encounters.'
+      : id === 'MrsHolloway' || id === 'MrHolloway'
+        ? "Recruited through Draw Gourdy's Parents. They can also appear as rare elite enemies in the Depths."
       : o.rank === OBTAIN.Lethal.rank
         ? 'Earn shards from the dedicated Lethal boss encounters.'
         : `Found in ${crates}.`;

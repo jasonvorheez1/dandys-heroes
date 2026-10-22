@@ -412,7 +412,8 @@ const HERO_OBTAIN = {
   // Collaboration visitors use their own acquisition rules and never enter crates.
   GingerBrave: 'Collab', GingerBright: 'Collab', ShadowMilkCookie: 'Collab', CreamPuffCookie: 'Collab', TigerLilyCookie: 'Collab', PureVanillaCookie: 'Collab', Sora: 'Collab', Riku: 'Collab', Kairi: 'Collab', Goofy: 'Collab', Phantasia: 'Collab',
   CheerbearShelly: 'Collab', BedtimeAstro: 'Collab', WishBearGigi: 'Collab',
-  QOMGourdy: 'Event', QOMEclipse: 'Event', QOMSoulvester: 'Event', QOMRibecca: 'Event', QOMConnie: 'Event'
+  QOMGourdy: 'Event', QOMEclipse: 'Event', QOMSoulvester: 'Event', QOMRibecca: 'Event', QOMConnie: 'Event',
+  MrsHolloway: 'Event', MrHolloway: 'Event'
 };
 
 const KINGDOM_HEARTS_HERO_IDS = new Set(['Sora', 'Riku', 'Kairi', 'Goofy']);

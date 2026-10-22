@@ -847,12 +847,6 @@ if (typeof SPECIAL_HERO_ICONS !== 'undefined') {
   SPECIAL_HERO_ICONS.MrHolloway = 'icons/MrHolloway.png';
 }
 
-// Obtainment
-if (typeof HERO_OBTAIN !== 'undefined') {
-  HERO_OBTAIN.MrsHolloway = 'Event';
-  HERO_OBTAIN.MrHolloway = 'Event';
-}
-
 // Tags
 if (typeof HERO_GENDER !== 'undefined') {
   HERO_GENDER.MrsHolloway = 'Female';

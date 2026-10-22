@@ -6,7 +6,7 @@
 
 const ROSTER_AREA_TUNES = {
   Bassie: 'B', Boxten: 'G', Brightney: 'B', Brusha: 'B', Cocoa: 'B', Connie: 'B',
-  Dyle: 'B', Eclipse: 'G', Finn: 'B', Ginger: 'B',
+  Dyle: 'B', Eclipse: 'G', Ginger: 'B',
   Gourdy: 'B', Looey: 'B', Pebble: 'B', Poppy: 'B', Ribecca: 'B', Rodger: 'B', Shelly: 'B', Shrimpo: 'G',
   Toodles: 'B', Yatta: 'B'
 };

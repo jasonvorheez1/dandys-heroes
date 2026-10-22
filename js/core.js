@@ -21,8 +21,10 @@ const Accessibility = {
     return typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches;
   },
   enabled() {
-    const saved = typeof Save !== 'undefined' && Save.data && Save.data.opt && Save.data.opt.reducedEffects === true;
-    return !!(saved || this.systemEnabled());
+    if (typeof Save !== 'undefined' && Save.data && Save.data.opt && typeof Save.data.opt.reducedEffects === 'boolean') {
+      return Save.data.opt.reducedEffects;
+    }
+    return this.systemEnabled();
   },
   sync() {
     const on = this.enabled();
@@ -66,7 +68,7 @@ const Accessibility = {
     row.append(yes, unsure, no); body.appendChild(row);
     const finish = on => {
       Save.data.seen.accessibilityPrompt = true;
-      if (on) Save.data.opt.reducedEffects = true;
+      if (Save.data.opt) Save.data.opt.reducedEffects = !!on;
       Save.write(); Accessibility.sync(); UI.closeModal();
     };
     yes.onclick = () => finish(true);
@@ -499,7 +501,9 @@ const Preload = {
       Shrimpo: ['item:Trinkets/SHRIMPO_Brick'],
       Soulvester: ['raw:uploads/image-31.png'],
       Vee: ['item:Trinkets/VEE_Veemote','raw:VFX/particle/spotlight_02.png','raw:VFX/particle/spotlight_04.png','raw:VFX/particle/spotlight_06.png'],
-      Tisha: ['item:Trinkets/TISHA_Featherduster']
+      Tisha: ['item:Trinkets/TISHA_Featherduster'],
+      Sprout: ['item:Brownie', 'item:Bread', 'item:Proteinbar', 'item:Trinkets/SPROUT_SavoryCharm'],
+      Astro: ['item:Trinkets/ASTRO_Starpillow']
     }[id] || [];
     props.forEach(p => {
       const [kind, name] = p.split(':');

@@ -227,7 +227,7 @@ Object.assign(Screens, {
     const page = $('.collection-page');
     if (page) page.classList.add('collection-leaving');
     Sound.play('hero_roster_exit', { vol: .54, priority: true });
-    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const reduced = typeof Accessibility !== 'undefined' ? Accessibility.enabled() : (typeof matchMedia === 'function' && matchMedia('(prefers-reduced-motion: reduce)').matches);
     clearTimeout(this._rosterExitTimer);
     this._rosterExitTimer = setTimeout(() => {
       this._rosterLeaving = false;
