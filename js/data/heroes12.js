@@ -92,7 +92,7 @@ function tishaSortFormation(u, B, S, P) {
     planned.push({ e, dest });
   });
 
-  B.fxTishaSweep(u, null, true); Sound.play('tisha_formation_signal', { vol: .34, throttle: 180 });
+  B.fxTishaSweep(u, null, true); Sound.play('tisha_formation_signal', { vol: .34, throttle: 180 }); Sound.play('swing_pole', { vol: .14, delay: .1, throttle: 180 });
   planned.forEach(({ e, dest }, i) => B.after(i * .045, () => {
     if (!u.alive || !e.alive) return;
     // Repositioning is the point of the formation sweep. Cancel a skill that
@@ -179,6 +179,7 @@ defHero({
       cast: (u, B, S, P) => {
         const lines = tishaLines(u, B); B.anim(u, 'cast', .72); B.fxTishaLines(lines, 1.3, true); B.fxTishaSweep(u, null, true);
         Sound.play('tisha_wind', { vol: .18, throttle: 300 });
+        Sound.play('sparkle', { vol: .16, delay: .22, throttle: 300 });
         Sound.play('tisha_duster_sweep', { vol: .22, delay: .12, throttle: 300 });
         B.alliesOf(u).forEach(a => {
           B.applyStatus(u, a, 'cleanstep', 4);

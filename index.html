@@ -2,10 +2,14 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Dandy's Heroes</title>
+<script src="js/mobile-frame.js"></script>
 <link rel="icon" href="uploads/ichor.png" type="image/png">
+<link rel="preload" as="image" href="uploads/launcher-room.webp">
+<link rel="preload" as="image" href="uploads/Dandysheroes-2.webp">
 <link rel="stylesheet" href="css/game.css">
+<link rel="stylesheet" href="css/shelly-fx.css">
 <link rel="stylesheet" href="css/home-fixes.css">
 <link rel="stylesheet" href="css/home-hub-v2.css">
 <link rel="stylesheet" href="css/mode-unlocks.css">
@@ -27,11 +31,11 @@
 <link rel="stylesheet" href="css/unknown-world.css">
 <link rel="stylesheet" href="css/unknown-world-v2.css">
 <link rel="stylesheet" href="css/pass.css">
-<link rel="stylesheet" href="css/mobile-fixes.css">
 <link rel="stylesheet" href="css/launcher.css">
 <link rel="stylesheet" href="css/save-slots.css">
 <link rel="stylesheet" href="css/buds-expanded.css">
 <link rel="stylesheet" href="css/inventory.css">
+<link rel="stylesheet" href="css/trinket-picker.css">
 <link rel="stylesheet" href="css/journal.css">
 <link rel="stylesheet" href="css/profile.css">
 <link rel="stylesheet" href="css/lab.css">
@@ -43,52 +47,60 @@
 <link rel="stylesheet" href="css/home-reference.css">
 <link rel="stylesheet" href="css/bobette-packaging.css">
 <link rel="stylesheet" href="css/arena-live.css">
+<link rel="stylesheet" href="css/arena-overhaul.css">
 <link rel="stylesheet" href="css/crates.css">
 <link rel="stylesheet" href="css/cookie-run.css">
 <link rel="stylesheet" href="css/events-overhaul.css">
 <link rel="stylesheet" href="css/draw-parents.css">
+<link rel="stylesheet" href="css/leaderboard.css">
+<link rel="stylesheet" href="css/home-party.css">
+<link rel="stylesheet" href="css/mobile-fixes.css">
+<link rel="stylesheet" href="css/battle-mutations.css">
+<link rel="stylesheet" href="css/event-interiors.css">
+<link rel="stylesheet" href="css/live-preview.css">
+<link rel="stylesheet" href="css/hero-screen.css">
+<link rel="stylesheet" href="css/tisha-fx.css">
+<link rel="stylesheet" href="css/astro-fx.css">
+<link rel="stylesheet" href="css/sprout-fx.css">
+<link rel="stylesheet" href="css/vee-fx.css">
+<link rel="stylesheet" href="css/cocoa-fx.css">
+<link rel="stylesheet" href="css/poppy-fx.css">
+<link rel="stylesheet" href="css/boxten-fx.css">
+<link rel="stylesheet" href="css/ribecca-fx.css">
+<link rel="stylesheet" href="css/yatta-fx.css">
+<link rel="stylesheet" href="css/ff7.css">
 </head>
 <body>
 
 <div id="boot">
   <div class="boot-inner">
     <div class="boot-logo">DANDY'S<span>HEROES</span></div>
-    <div class="boot-bar"><i id="bootFill"></i></div>
   </div>
 </div>
 
 <div id="launcher" hidden>
   <div class="launcher-backdrop" aria-hidden="true"></div>
-  <div class="launcher-vignette" aria-hidden="true"></div>
   <div class="launcher-card">
-    <div class="launcher-console">
-      <div class="launcher-topline"><span>GARDENVIEW</span><i>BACK ROOM</i></div>
-      <div class="launcher-brand" aria-label="Dandy's Heroes">
-        <img class="launcher-logo" src="uploads/Dandysheroes-2.png" alt="Dandy's Heroes">
-      </div>
-      <div class="launcher-divider" aria-hidden="true"><i></i><i></i></div>
-      <div class="launcher-actions">
-        <button id="launcherPlay" class="launcher-play" type="button">
-          <span class="launcher-play-icon">▶</span>
-          <span class="launcher-play-copy"><b>PLAY</b><small>CONTINUE</small></span>
-          <strong>↵</strong>
-        </button>
-        <div class="launcher-secondary">
-          <button id="launcherSettings" class="launcher-settings" type="button" aria-expanded="false"><span>⚙</span> SETTINGS</button>
-          <small>Sound, saves, and preferences</small>
-        </div>
-      </div>
+    <img class="launcher-logo" src="uploads/Dandysheroes-2.webp" alt="Dandy's Heroes" fetchpriority="high">
+    <div class="launcher-actions">
+      <button id="launcherPlay" class="launcher-play" type="button">Play</button>
+      <button id="launcherSettings" class="launcher-settings" type="button">Settings</button>
     </div>
   </div>
 </div>
 
 <div id="loadScreen" hidden aria-live="polite" aria-busy="true">
+  <div class="load-curtain load-curtain-left" aria-hidden="true"></div>
+  <div class="load-curtain load-curtain-right" aria-hidden="true"></div>
+  <div class="load-stage-stars" aria-hidden="true"><i>✦</i><i>✦</i><i>✧</i><i>✦</i></div>
   <div class="load-screen-inner">
+    <div class="load-mascot"><img src="uploads/dandyhimself.webp" alt="" draggable="false"><span>ON IN A MOMENT!</span></div>
     <div class="load-screen-kicker" id="loadKicker">NOW LOADING</div>
     <div class="load-screen-title" id="loadTitle">Preparing the stage</div>
     <div class="load-screen-cast" id="loadCast"></div>
-    <div class="load-screen-bar"><i id="loadFill"></i></div>
+    <div class="load-screen-bar" id="loadProgress" role="progressbar" aria-label="Loading scene assets" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-describedby="loadMsg"><i id="loadFill"></i></div>
     <div class="load-screen-row"><span id="loadMsg">Gathering props</span><b id="loadPct">0%</b></div>
+    <div class="load-screen-count" id="loadCount" aria-live="polite">Waiting for props</div>
   </div>
 </div>
 
@@ -139,9 +151,10 @@
       <div id="waveInfo"><i>📍</i><span id="waveText"></span></div>
       <div id="hudTimer"><i>⏱</i><span id="hudTimerText">3:00</span></div>
       <div id="hudBtns">
-        <button id="btnSpeed"><i>1x</i></button>
-        <button id="btnAuto"><i>▶</i></button>
-        <button id="btnQuit"><i>✕</i></button>
+        <button id="btnSpeed" type="button" aria-label="Battle speed" title="Battle speed"><i>1x</i></button>
+        <button id="btnAuto" type="button" aria-label="Auto skills on" aria-pressed="true" title="Auto White skills"><i>AUTO</i></button>
+        <button id="btnPause" type="button" aria-label="Pause battle" title="Pause battle"><i>⏸</i></button>
+        <button id="btnQuit" type="button" aria-label="Leave battle" title="Leave battle"><i>✕</i></button>
       </div>
     </div>
     <div id="logBox"></div>
@@ -185,6 +198,7 @@
 <script src="js/data/heroes16.js"></script>
 <script src="js/data/heroes_holloway.js"></script>
 <script src="js/data/hero_visibility.js"></script>
+<script src="js/data/hero_counters.js"></script>
 <script src="js/data/weaklings.js"></script>
 <script src="js/data/cookie-run.js"></script>
 <script src="js/data/cookie-milk.js"></script>
@@ -192,32 +206,46 @@
 <script src="js/data/cookie-tiger.js"></script>
 <script src="js/data/cookie-vanilla.js"></script>
 <script src="js/data/cookie-bright.js"></script>
+<script src="js/data/ff7-heroes.js"></script>
+<script src="js/data/ff7-expansion.js"></script>
+<script src="js/data/ff7-story.js"></script>
 <script src="js/data/trinkets.js"></script>
+<script src="js/data/ff7-materia.js"></script>
 <script src="js/data/badges.js"></script>
 <script src="js/data/badges_extra.js"></script>
+<script src="js/data/badges_scraps_poppy.js"></script>
+<script src="js/data/badges_rudie_scraps.js"></script>
 <script src="js/data/badges_flutter.js"></script>
 <script src="js/data/badges_ribecca.js"></script>
 <script src="js/data/cookie-badges.js"></script>
+<script src="js/data/badges_bigwig.js"></script>
 <script src="js/data/content.js"></script>
 <script src="js/data/skill_dialogue.js"></script>
 <script src="js/data/tags.js"></script>
 <script src="js/data/banter.js"></script>
 <script src="js/data/campaigns.js"></script>
 <script src="js/data/campaigns_extra.js"></script>
+<script src="js/data/campaigns_scraps_poppy.js"></script>
+<script src="js/data/campaigns_rudie_scraps.js"></script>
 <script src="js/data/campaigns_ribecca.js"></script>
 <script src="js/data/campaigns_flutter.js"></script>
 <script src="js/data/gossip.js"></script>
 <script src="js/data/depthcards.js"></script>
+<script src="js/data/battle-mutations.js"></script>
 <script src="js/battle/fx.js"></script>
+<script src="js/battle/fx-toons.js"></script>
 <script src="js/battle/sim.js"></script>
 <script src="js/battle/ai.js"></script>
 <script src="js/battle/render.js"></script>
+<script src="js/battle/ff7-victory.js"></script>
+<script src="js/ui/live-preview.js"></script>
 <script src="js/meta/save.js"></script>
 <script src="js/meta/achievements.js"></script>
 <script src="js/meta/progress.js"></script>
 <script src="js/meta/gacha.js"></script>
 <script src="js/meta/modes.js"></script>
 <script src="js/meta/cookie-run.js"></script>
+<script src="js/meta/ff7.js"></script>
 <script src="js/ui/ui.js"></script>
 <script src="js/ui/tutorial.js"></script>
 <script src="js/ui/mastery.js"></script>
@@ -232,6 +260,7 @@
 <script src="js/ui/screens/arena-live.js"></script>
 <script src="js/ui/screens/raid.js"></script>
 <script src="js/ui/screens/cookie-run.js"></script>
+<script src="js/ui/screens/ff7.js"></script>
 <script src="js/ui/screens/draw-parents.js"></script>
 <script src="js/ui/screens/trials.js"></script>
 <script src="js/ui/screens/friendship.js"></script>
@@ -240,6 +269,7 @@
 <script src="js/ui/screens/lab.js"></script>
 <script src="js/ui/hero.js"></script>
 <script src="js/websim.js"></script>
+<script src="js/ui/screens/leaderboard.js"></script>
 <script src="js/main.js"></script>
 </body>
 </html>

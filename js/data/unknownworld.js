@@ -16,6 +16,20 @@ const UNKNOWN_WORLD_DIALOGUE = [
   'See, words can hurt you.',
   'Did you catch my meaning?'
 ];
+/* Machines with their own voice (Big Wig talks like the Toontown court he came
+   from). Anything not listed uses the shared office chatter above. */
+const UNKNOWN_WORLD_DIALOGUE_BY_ID = {
+  BigWig: [
+    'Order in the court!',
+    'This court is now in session.',
+    'Objection! Overruled.',
+    "I'll make this brief.",
+    'The defendant will rise.',
+    'Case closed.',
+    "You're in contempt of court!",
+    'Let the record show...'
+  ]
+};
 const UNKNOWN_WORLD_SKILL_AUDIO = {
   'GladHander:W': 'cog_hot_air', 'GladHander:G': 'cog_demotion', 'GladHander:B': 'cog_fountain_pen',
   'LegalEagle:W': 'cog_jargon', 'LegalEagle:G': 'cog_mumbo_jumbo', 'LegalEagle:B': 'cog_evil_eye',
@@ -55,16 +69,16 @@ function unknownSkill(name, type, extra) {
   return Object.assign({ name, type, energy: 100 }, extra || {});
 }
 function hitTarget(u, B, list, stat) { return B.highestStat(B.enemiesOf(u), stat) || B.nearest(u, list || B.enemiesOf(u)); }
-function allRounder(id, name, file, move, skills, basic, tier) {
+function allRounder(id, name, file, move, skills, basic, tier, over) {
   const profile = LAWBOT_PROFILES[id] || {};
-  return defHero({
+  return defHero(Object.assign({
     id, name, folder: 'UnknownWorld', file, icon: id, role: 'All-Rounder', roleLabel: profile.roleLabel || 'All-Rounder', tier: tier || 'B',
     element: 'Office', unknownWorld: true, twistedOnly: id !== 'BigWig',
     blurb: profile.blurb || 'An encounter-only machine that recognizes your Toon as a familiar target.', base: unknownStats(), hidden: unknownHidden(),
     growth: { hp: .086, atk: .074, def: .078, mag: .081, mdef: .079 }, move: unknownMove(move, profile.color),
     basic: basic || { name: 'Paperwork', type: 'physical', ratio: .84, range: 115, sfx: 'unknown_machine_attack', hit: 'hit', wind: .32 },
     skills
-  });
+  }, over || {}));
 }
 
 allRounder('GladHander', 'Glad Hander', 'image-38.png', 'march', {
@@ -164,25 +178,94 @@ allRounder('PencilPusher', 'Pencil Pusher', 'pencilpusher.png', 'trudge', {
 });
 
 allRounder('BigWig', 'Big Wig', 'Bigwig.png', 'trudge', {
-  W: unknownSkill('Throw Book', 'Normal Damage', { v: { ratio: 2.12 }, p: { convicted: 9 },
-    desc: (S, P) => `<span class="sk-pas">Big Wig gains 9 Power when another unit debuffs an enemy, and 6 Power whenever an enemy casts below 12 Power.</span> Active: hits the highest-Power enemy for <em>${pcn(S.ratio * 100)}</em> Normal Damage, removes 1 buff, and applies Convicted for ${P.convicted}s.`,
-    passive: (u, B, S) => { B.on(u, 'statusApplied', ev => { if (ev.src && ev.src !== u && ev.unit && ev.unit.team !== u.team && STATUS[ev.id] && STATUS[ev.id].kind === 'debuff') B.energy(u, 9); }); B.on(u, 'enemyCast', enemy => { if (enemy && enemy.energy < 12) B.energy(u, 6); }); },
-    cast: (u, B, S, P) => { const t = B.highestEnergy(B.enemiesOf(u)); if (!t) return; B.anim(u, 'cast', .52); B.after(.34, () => { B.dispel(t, 1); B.damage(u, t, u.st.atk * S.ratio, { type: 'physical', tag: 'Throw Book' }); B.applyStatus(u, t, 'convicted', P.convicted); }); }
+  W: unknownSkill('Throw Book', 'Normal Damage', { v: { ratio: 1.78, splash: .55 }, p: { convicted: 8, radius: 130 },
+    desc: (S, P) => `<span class="sk-pas">Big Wig gains 8 Power when an ally debuffs an enemy, and 5 Power when an enemy casts while below 12 Power (at most once every 1.2s).</span> Active: hurls the Law Book at the highest-Power enemy for <em>${pcn(S.ratio * 100)}</em> Normal Damage, removes 1 buff, and applies Convicted for ${P.convicted}s. Enemies beside the target take <em>${pcn(S.splash * 100)}</em> of that Damage.`,
+    passive: (u, B, S) => {
+      u._wigPowerAt = -9;
+      const gain = n => { if (B.t - u._wigPowerAt < 1.2) return; u._wigPowerAt = B.t; B.energy(u, n); };
+      B.on(u, 'statusApplied', ev => { if (ev.src && ev.src !== u && ev.unit && ev.unit.team !== u.team && STATUS[ev.id] && STATUS[ev.id].kind === 'debuff') gain(8); });
+      B.on(u, 'enemyCast', enemy => { if (enemy && enemy.energy < 12) gain(5); });
+    },
+    cast: (u, B, S, P) => {
+      const t = B.highestEnergy(B.enemiesOf(u)); if (!t) return;
+      B.anim(u, 'cast', .52); B.unknownWorldDialogue(u, { force: true, text: 'Order in the court!' }); B.fxBigWig('book', u, { target: t });
+      B.after(.4, () => {
+        if (!u.alive || !t.alive) return;
+        B.dispel(t, 1);
+        B.damage(u, t, u.st.atk * S.ratio, { type: 'physical', tag: 'Throw Book' });
+        B.applyStatus(u, t, 'convicted', P.convicted);
+        B.enemiesOf(u).filter(e => e !== t && B.distance(e, t) <= P.radius).forEach(e =>
+          B.damage(u, e, u.st.atk * S.ratio * S.splash, { type: 'physical', area: true, tag: 'Throw Book' }));
+        B.fxBigWig('bookHit', u, { target: t });
+      });
+    }
   }),
-  G: unknownSkill('Quash', 'Magic Damage', { cd: 9, v: { ratio: .98 }, p: { silence: 3, sap: 6 },
-    desc: (S, P) => `Slams a court order into every enemy for <em>${pcn(S.ratio * 100)}</em> Magic Damage and Silences them for ${P.silence}s. Already-debuffed enemies are Sapped for ${P.sap}s after the Silence.`,
-    cast: (u, B, S, P) => { const foes = B.enemiesOf(u); B.anim(u, 'cast', .5); B.after(.3, () => foes.forEach(t => { const had = t.statuses.some(s => STATUS[s.id] && STATUS[s.id].kind === 'debuff'); B.damage(u, t, u.st.mag * S.ratio, { type: 'magic', area: true, tag: 'Quash' }); B.applyStatus(u, t, 'silence', P.silence); if (had) B.after(P.silence, () => { if (t.alive) B.applyStatus(u, t, 'sap', P.sap); }); })); }
+  G: unknownSkill('Quash', 'Magic Damage', { cd: 11, v: { ratio: .86 }, p: { silence: 2, sap: 5, targets: 3 },
+    desc: (S, P) => `Stamps a court order on the ${P.targets} highest-Power enemies for <em>${pcn(S.ratio * 100)}</em> Magic Damage each and Silences them for ${P.silence}s. Enemies that were already debuffed are Sapped for ${P.sap}s once the Silence ends.`,
+    cast: (u, B, S, P) => {
+      const foes = B.enemiesOf(u).slice().sort((a, b) => b.energy - a.energy).slice(0, P.targets); if (!foes.length) return;
+      B.anim(u, 'cast', .5); B.unknownWorldDialogue(u, { force: true, text: 'Overruled!' });
+      B.fxBigWig('stampCast', u);
+      B.after(.34, () => foes.forEach((t, i) => B.after(i * .09, () => {
+        if (!u.alive || !t.alive) return;
+        const had = t.statuses.some(s => STATUS[s.id] && STATUS[s.id].kind === 'debuff');
+        B.fxBigWig('stamp', u, { target: t });
+        B.damage(u, t, u.st.mag * S.ratio, { type: 'magic', area: true, tag: 'Quash' });
+        B.applyStatus(u, t, 'silence', P.silence);
+        if (had) B.after(P.silence, () => { if (t.alive) B.applyStatus(u, t, 'sap', P.sap); });
+      })));
+    }
   }),
-  B: unknownSkill('Power Trip', 'Magic Damage', { cd: 10, v: { ratio: .94 }, p: { slow: 6 },
-    desc: (S, P) => `Deals <em>${pcn(S.ratio * 100)}</em> Magic Damage to every enemy and lowers Speed and Attack Speed for ${P.slow}s. Removes 1 buff from the most-buffed enemy and grants Big Wig a <em>7%</em> max-HP Shield per enemy hit.`,
-    cast: (u, B, S, P) => { const foes = B.enemiesOf(u); B.anim(u, 'cast', .46); B.after(.28, () => { foes.forEach(t => { B.damage(u, t, u.st.mag * S.ratio, { type: 'magic', area: true, tag: 'Power Trip' }); B.applyStatus(u, t, 'slow', P.slow); B.applyStatus(u, t, 'armslow', P.slow); }); const buffTarget = foes.slice().sort((a, b) => b.statuses.filter(s => STATUS[s.id] && STATUS[s.id].kind === 'buff').length - a.statuses.filter(s => STATUS[s.id] && STATUS[s.id].kind === 'buff').length)[0]; if (buffTarget) B.dispel(buffTarget, 1); B.shield(u, u, u.max.hp * (.07 * foes.length), 5); }); }
+  B: unknownSkill('Power Trip', 'Magic Damage', { cd: 12, v: { ratio: .72, shield: .04 }, p: { slow: 5, cap: .16 },
+    desc: (S, P) => `Slams the bench, dealing <em>${pcn(S.ratio * 100)}</em> Magic Damage to every enemy and lowering their Speed and Attack Speed for ${P.slow}s. Removes 1 buff from the most-buffed enemy and grants Big Wig a Shield of <em>${pcn(S.shield * 100)}</em> max HP per enemy hit (up to ${pcn(P.cap * 100)}).`,
+    cast: (u, B, S, P) => {
+      const foes = B.enemiesOf(u); if (!foes.length) return;
+      B.anim(u, 'cast', .46); B.unknownWorldDialogue(u, { force: true, text: 'Objection!' }); B.fxBigWig('trip', u);
+      B.after(.3, () => {
+        foes.forEach(t => { B.damage(u, t, u.st.mag * S.ratio, { type: 'magic', area: true, tag: 'Power Trip' }); B.applyStatus(u, t, 'slow', P.slow); B.applyStatus(u, t, 'armslow', P.slow); });
+        const buffs = e => e.statuses.filter(s => STATUS[s.id] && STATUS[s.id].kind === 'buff').length;
+        const buffTarget = foes.slice().sort((a, b) => buffs(b) - buffs(a))[0];
+        if (buffTarget && buffs(buffTarget)) B.dispel(buffTarget, 1);
+        B.shield(u, u, u.max.hp * Math.min(P.cap, S.shield * foes.length), 5);
+        B.fxBigWig('tripHit', u);
+      });
+    }
   }),
   P: unknownSkill('Finger Wag', 'Passive', { p: { hits: 3, dur: 5 },
-    desc: (S, P) => `Every ${Math.round(P.hits)} basic attacks, hits the highest-Attack enemy for <em>70%</em> Normal Damage and lowers their Attack by <em>25%</em> for ${P.dur}s. Convicted targets are also Blinded and Sapped.`,
-    passive: (u, B, S, P) => { u._bigWigHits = 0; B.on(u, 'basicHit', () => { u._bigWigHits++; if (u._bigWigHits < P.hits) return; u._bigWigHits = 0; const t = B.highestStat(B.enemiesOf(u), 'atk'); if (!t) return; Sound.play('cog_glower_power', { vol: .26, throttle: 850 }); B.damage(u, t, u.st.atk * .70, { type: 'physical', tag: 'Finger Wag' }); B.applyStatus(u, t, 'attackdown', P.dur, { val: .25 }); if (t.hasStatus('convicted')) { B.applyStatus(u, t, 'blind', P.dur); B.applyStatus(u, t, 'sap', P.dur); } }); }
+    desc: (S, P) => `Every ${Math.round(P.hits)} basic attacks, scolds the highest-Attack enemy for <em>70%</em> Normal Damage and lowers their Attack by <em>20%</em> for ${P.dur}s. Convicted targets are also Blinded.`,
+    passive: (u, B, S, P) => {
+      u._bigWigHits = 0;
+      B.on(u, 'basicHit', () => {
+        u._bigWigHits++; if (u._bigWigHits < P.hits) return; u._bigWigHits = 0;
+        const t = B.highestStat(B.enemiesOf(u), 'atk'); if (!t) return;
+        Sound.play('cog_glower_power', { vol: .26, throttle: 850 }); B.fxBigWig('wag', u, { target: t });
+        B.damage(u, t, u.st.atk * .70, { type: 'physical', tag: 'Finger Wag' });
+        B.applyStatus(u, t, 'attackdown', P.dur, { val: .20 });
+        if (t.hasStatus('convicted')) B.applyStatus(u, t, 'blind', P.dur);
+      });
+    }
   }),
   R: unknownSkill('Court Is in Session', 'Passive', {
-    desc: (S, P) => `Every debuffed enemy grants Big Wig <em>10%</em> Defense, <em>10%</em> Magic Defense, and <em>5%</em> Skill Haste. If an enemy is Silenced, Sapped, or below 8 Power, Big Wig heals <em>7%</em> max HP every 2.7s and extends Convicted on the highest-Power Convicted enemy by 2.2s.`,
-    passive: (u, B, S, P) => { u._courtDebuffs = 0; u._courtHealAt = -99; B.every(u, .55, () => { const foes = B.enemiesOf(u); const count = foes.filter(e => e.statuses.some(s => STATUS[s.id] && STATUS[s.id].kind === 'debuff')).length; if (count !== u._courtDebuffs) { u._courtDebuffs = count; u.flat.defP98 = count * .10; u.flat.mdefP98 = count * .10; u.flat.cdr98 = count * .05; u.dirty = true; } const controlled = foes.some(e => e.hasStatus('silence') || e.hasStatus('sap') || e.energy < 8); if (controlled && B.t - u._courtHealAt > 2.7) { u._courtHealAt = B.t; B.heal(u, u, u.max.hp * .07, { tag: 'Court Is in Session' }); const t = B.highestEnergy(foes); if (t && t.hasStatus('convicted')) { const s = t.getStatus('convicted'); s.t += 2.2; t.statusVersion++; } } }); }
+    desc: (S, P) => `Every debuffed enemy grants Big Wig <em>6%</em> Defense, <em>6%</em> Magic Defense, and <em>3%</em> Skill Haste (up to 5 enemies). While any enemy is Silenced, Sapped, or below 8 Power, Big Wig heals <em>5%</em> max HP every 3.5s and extends Convicted on the highest-Power Convicted enemy by 1.8s.`,
+    passive: (u, B, S, P) => {
+      u._courtDebuffs = 0; u._courtHealAt = -99;
+      B.every(u, .55, () => {
+        const foes = B.enemiesOf(u);
+        const count = Math.min(5, foes.filter(e => e.statuses.some(s => STATUS[s.id] && STATUS[s.id].kind === 'debuff')).length);
+        if (count !== u._courtDebuffs) { u._courtDebuffs = count; u.flat.defP98 = count * .06; u.flat.mdefP98 = count * .06; u.flat.cdr98 = count * .03; u.dirty = true; }
+        const controlled = foes.some(e => e.hasStatus('silence') || e.hasStatus('sap') || e.energy < 8);
+        if (controlled && B.t - u._courtHealAt > 3.5) {
+          u._courtHealAt = B.t; B.heal(u, u, u.max.hp * .05, { tag: 'Court Is in Session' });
+          const t = B.highestEnergy(foes.filter(e => e.hasStatus('convicted')));
+          if (t) { const s = t.getStatus('convicted'); s.t += 1.8; t.statusVersion++; }
+        }
+      });
+    }
   })
-}, { name: 'Paperwork', type: 'physical', ratio: .96, range: 125, sfx: 'unknown_machine_attack', hit: 'hit_heavy', wind: .38 }, 'SS');
+}, { name: 'Gavel Rap', type: 'physical', ratio: .98, range: 150, sfx: 'unknown_machine_attack', hit: 'hit_heavy', wind: .36 }, 'S', {
+  role: 'Control', roleLabel: 'High Court', position: 'Frontline',
+  blurb: 'The highest court machine. A slow, immovable judge who convicts the strongest enemy, silences casters, and grows harder to break for every enemy caught in a debuff.',
+  base: { hp: 6100, atk: 296, def: 296, mag: 334, mdef: 292, spd: 92, acc: 188, eva: 82 },
+  hidden: { range: 150, aspd: .9, ms: 58, aggro: 1.25, crit: .08, critDmg: 1.55, healPow: 1, shieldPow: 1.05, cdr: .04, ccRes: .34, kbRes: .5, armorPen: .04, magPen: .06 },
+  growth: { hp: .098, atk: .07, def: .088, mag: .08, mdef: .086 }
+});

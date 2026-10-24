@@ -23,7 +23,7 @@ const DandyCoach = {
         label: 'LEARN THE LOOP',
         title: 'Start with the simple routine',
         speech: 'Poppy and Boxten already know enough to get you through this floor. I will point out the room, the team, and the recovery button as they become useful.',
-        focus: 'Learn the room button, watch carried health, and let the automatic battle finish.',
+        focus: 'Watch Energy, learn Auto and manual White skills, then check carried health.',
         why: 'Damage and decisions carry from room to room, so a calm check before every door saves a run.'
       },
       2: {
@@ -85,7 +85,7 @@ const DandyCoach = {
           ? 'Review the team, then keep an eye on Boxten’s health. Your new buddy helps, but a fragile backliner still needs a safe room when the route offers one.'
           : 'Review the team before entering. Your three Buds are enough; the useful habit is checking who is healthy and what the next room asks for.',
       doText: 'Open Review Team & Enter, confirm the squad, then start the room.',
-      why: 'The formation screen is where you make your important decision. Battle itself runs automatically.',
+      why: 'Formation sets the opening positions. During battle, you can also choose when a charged White skill fires.',
       action: 'REVIEW TEAM & ENTER', target: '#endlessEnter', pointer: 'REVIEW THE TEAM', actionType: 'enter'
     };
     return {
@@ -94,7 +94,7 @@ const DandyCoach = {
         ? 'This is the hardest room on the floor. Make sure the team is healthy, then tap an enemy to inspect its gear before you commit.'
         : type === 'elite'
           ? 'Elite rooms hit harder and do not bring weak targets to soften the fight. A healthy team and a quick enemy inspection are worth the extra second.'
-          : 'The fight is automatic, but the preparation is yours. Look at the threat card, check carried health, and enter when the team is ready.',
+          : 'The Toons fight on their own, but you can time their White skills. Check the threat card and carried health before entering.',
       doText: 'Tap an enemy for details, review the squad, then enter the battle.',
       why: 'Knowing what is behind the door lets you choose recovery, formation, or courage on purpose.',
       action: 'REVIEW SQUAD', target: '#endlessTeam', pointer: 'REVIEW THE SQUAD', actionType: 'team'
@@ -106,7 +106,7 @@ const DandyCoach = {
     const stageInfo = this.stageInfo(stage, Save.data.buds && Save.data.buds.chosen);
     const advice = this.roomAdvice(stage, node, type, firstRoom);
     return `<section class="buds-menu-coach" aria-live="polite" data-dandy-target="${advice.target}" data-dandy-pointer="${advice.pointer}">
-      <img src="uploads/dandyhimself.png" alt="Dandy"><div class="buds-coach-copy">
+      <img src="uploads/dandyhimself.webp" alt="Dandy"><div class="buds-coach-copy">
         <small>DANDY'S BUDS · FLOOR ${stage}/3 · ROOM ${String(node + 1).padStart(2, '0')} / ${String(rooms).padStart(2, '0')}</small>
         <b>${stageInfo.label} · ${advice.title}</b>
         <span class="buds-coach-speech"><strong>DANDY SAYS</strong> ${advice.speech}</span>
@@ -118,7 +118,7 @@ const DandyCoach = {
   teamCard(stage, chosen) {
     const info = this.stageInfo(stage, chosen);
     const card = el('section', 'dandy-team-coach');
-    card.innerHTML = `<img src="uploads/dandyhimself.png" alt="Dandy"><div><small>DANDY'S SQUAD CHECK · FLOOR ${stage}/3</small><b>${info.title}</b><span>${info.speech}</span><em>${info.why}</em></div>`;
+    card.innerHTML = `<img src="uploads/dandyhimself.webp" alt="Dandy"><div><small>DANDY'S SQUAD CHECK · FLOOR ${stage}/3</small><b>${info.title}</b><span>${info.speech}</span><em>${info.why}</em></div>`;
     return card;
   },
 
@@ -170,7 +170,7 @@ const DandyCoach = {
       if (seenKey) this.rememberDialogue(seenKey);
       current++;
       coach.classList.remove('show');
-      coach.innerHTML = `<img src="uploads/dandyhimself.png" alt="Dandy"><div><small>DANDY'S COMBAT CHECK · ${current} · GAME PAUSED</small><b>${title}</b><p>${text}</p></div><button type="button">${label}</button>`;
+      coach.innerHTML = `<img src="uploads/dandyhimself.webp" alt="Dandy"><div><small>DANDY'S COMBAT CHECK · ${current} · GAME PAUSED</small><b>${title}</b><p>${text}</p></div><button type="button">${label}</button>`;
       requestAnimationFrame(() => coach.classList.add('show'));
       if (target) spotlight(target);
       B.paused = true;
@@ -189,19 +189,14 @@ const DandyCoach = {
 
     const newBuddy = HEROES[opt.heroName];
     const intro = opt.stage === 1
-      ? ['YOU’RE THE COACH', 'The Toons fight on their own. Your job is preparation: check the formation before the room, watch health during the fight, and use the speed or Auto controls when you want to follow the action.', '#hudBtns']
+      ? ['YOU’RE THE COACH', 'Basic attacks and Green and Blue skills happen automatically. AUTO uses charged White skills for you. The ⏸ button pauses the fight.', '#hudBtns']
       : opt.stage === 2
-        ? ['WATCH THE FORMATION', `${newBuddy ? `${newBuddy.name} is your trained ${newBuddy.role.toLowerCase()} buddy.` : 'Your new buddy is trained and in the lineup.'} Press Enter Battle when you are ready. Keep an eye on Boxten’s health, and use the next Safe Room before the team becomes fragile.`, '#allyDock']
-        : ['THE WHOLE ROUTINE', 'Your squad is set. Press Enter Battle when you are ready, watch the health bars, then use the route to choose recovery or rewards before the next fight.', '#allyDock'];
+        ? ['WATCH YOUR TEAM', `${newBuddy ? `${newBuddy.name} is your trained ${newBuddy.role.toLowerCase()} buddy.` : 'Your new buddy is in the lineup.'} Watch Boxten’s health. Stun stops actions, Silence stops skills, and Disarm stops basic attacks.`, '#allyDock']
+        : ['THE WHOLE ROUTINE', 'Watch health and Energy. Leave AUTO on for quick White skills, or turn it off and tap a glowing portrait when the moment is right.', '#allyDock'];
 
-    B.after(.35, () => say(intro[0], intro[1], intro[2], 'CONTINUE', `intro-stage-${opt.stage}`));
-    B.after(3.1, () => {
-      if (!castSeen) say('BATTLE IS AUTOMATIC', opt.stage === 1
-        ? 'Do not hunt for a skill button. White skills fire when Energy is full. Your useful choices are the team before the fight, the speed controls, and the next room.'
-        : 'You can watch without tapping every Toon. Let Energy fill, notice who is being pressured, and save your attention for the next room decision.', '#hudBtns', 'CONTINUE', 'automatic-battle');
-    });
-    B.after(6.3, () => {
-      if (!castSeen) say('ENERGY IS BUILDING', 'The bar under each Toon fills from fighting and taking hits. At full Energy, their White skill fires automatically.', '#allyDock', 'CONTINUE', 'energy-and-white-skill');
+    B.after(.35, () => say(intro[0], intro[1], intro[2], 'CONTINUE', `intro-stage-${opt.stage}-combat-v2`));
+    if (opt.stage === 1) B.after(4.2, () => {
+      if (!castSeen) say('TIME A WHITE SKILL', 'Energy fills under each portrait as a Toon fights or takes hits. Turn AUTO off to save a full bar, then tap a glowing portrait to use its White skill.', '#allyDock', 'CONTINUE', 'manual-white-skill-v2');
     });
 
     const allies = B.units.filter(u => u.team === TEAM_P && !u.minion);
@@ -209,7 +204,10 @@ const DandyCoach = {
       B.on(u, 'cast', ev => {
         if (castSeen || !ev || ev.key !== 'W') return;
         castSeen = true;
-        say('WHITE SKILL FIRED!', `${u.name} used ${u.def.skills.W.name}. You never need to tap a skill in battle; full Energy triggers the big move.`, '#allyDock', 'CONTINUE', 'white-skill-fired');
+        say(ev.manual ? 'NICE TIMING!' : 'WHITE SKILL FIRED!', ev.manual
+          ? `You chose when ${u.name} used ${u.def.skills.W.name}. White skills spend Energy; Green and Blue still run automatically.`
+          : `${u.name} used ${u.def.skills.W.name}. AUTO spent their Energy. Turn AUTO off to save the next White skill, then tap their glowing portrait to cast it.`,
+          '#allyDock', 'CONTINUE', 'white-skill-fired-combat-v2');
       });
       B.on(u, 'allyLow', ally => {
         if (lowSeen || !ally || ally.team !== TEAM_P) return;

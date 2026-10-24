@@ -140,6 +140,7 @@ Active: Leaps high into the enemy formation, knocks all foes back, and tears int
         if (full) B.heal(u, u, u.max.hp * S.heal);
       });
       Sound.play('qom_riff', { vol: .45 });
+      Sound.play('powerline_defeat', { vol: .5, throttle: 400 });
     }
   },
   B: {

@@ -15,6 +15,8 @@ const Save = {
   activityReady: false,
   activityAt: 0,
   recoveryNotice: '',
+  localSaveError: null,
+  autosaveTimer: null,
 
   fresh() {
     const week = currentWeek();
@@ -64,10 +66,10 @@ const Save = {
     STARTERS.forEach(id => {
       d.heroes[id] = this.newHero(id);
     });
-    // Cookie Run badges are gifts available from the start, even before the
-    // corresponding Cookie is recruited.
+    // Immediate badges are gifts available from the start, even before their
+    // owner is recruited.
     Object.keys(BADGES).forEach(bid => {
-      if (BADGES[bid].cookieRun) d.badges[bid] = { lvl: 1 };
+      if (BADGES[bid].cookieRun || BADGES[bid].immediate) d.badges[bid] = { lvl: 1 };
     });
     d.team = STARTERS.slice(0, 5);
     return d;
@@ -81,7 +83,9 @@ const Save = {
       cls: null, subcls: null, cls2: null, subcls2: null, classRanks: {}, subclassRanks: {}, costume: null, costumes: [],
       mastery: 0, battles: 0,
       trinkets: HEROES[id] && HEROES[id].noTrinket ? [] : [null, null], trinketMilestone: 0,
-      badge: COOKIE_HERO_IDS.includes(id) ? BADGE_IDS_FOR(id).find(bid => BADGES[bid].cookieRun) || null : null,
+      badge: COOKIE_HERO_IDS.includes(id)
+        ? BADGE_IDS_FOR(id).find(bid => BADGES[bid].cookieRun) || null
+        : BADGE_IDS_FOR(id).find(bid => BADGES[bid].immediate) || null,
       cookieSingleBadgeV1: COOKIE_HERO_IDS.includes(id) ? true : undefined
     };
   },
@@ -159,13 +163,17 @@ const Save = {
   },
   isMainSlot(id = this.activeSlot) { return id === SAVE_MAIN_SLOT_ID; },
   isTestSlot(id = this.activeSlot) { return id === SAVE_TEST_SLOT_ID; },
+  isTestSession() { return this.isTestSlot() || this.isTestData(); },
+  isAccountSave() { return this.isMainSlot() && !this.isTestData(); },
   isTestData(data = this.data) {
     if (!data || data._saveKind === 'full-test') return true;
     // Older builds did not stamp the fixture. Recognize its deliberately
     // extreme signature so an old leaked cloud row cannot overwrite Main Save
     // during the first startup after this fix.
     const r = data.res || {}, h = data.heroes || {}, roster = typeof PLAYABLE_IDS !== 'undefined' ? PLAYABLE_IDS : [];
-    return roster.length > 0 && roster.every(id => h[id])
+    const maxed = Object.values(h).filter(hero => hero && Number(hero.level) >= 700
+      && Number(hero.rarity) === 6 && Number(hero.rarityPlus) >= 30).length;
+    return (roster.length > 0 && roster.every(id => h[id]) || maxed >= 50)
       && Number(data.bestFloor) >= 120 && Number(r.ichor) >= 999999
       && Number(r.arenaCoin) >= 9999 && Number(r.main) >= 999
       && data.shop && Number(data.shop.level) >= 100;
@@ -197,6 +205,22 @@ const Save = {
         const backup = localStorage.getItem(this.backupKey(this.activeSlot));
         try { parsed = backup ? JSON.parse(backup) : null; } catch (_) { parsed = null; }
         if (this.validSave(parsed)) this.recoveryNotice = 'Recovered the last safe copy of your save.';
+      }
+      if (this.isMainSlot() && this.validSave(parsed) && this.isTestData(parsed)) {
+        // An older build could leave the fixture in Main Save. Recover a
+        // genuine local copy if one exists; otherwise cloud reconciliation
+        // can restore the account save from a fresh Main slot.
+        let recovered = null;
+        for (const key of [this.backupKey(this.activeSlot), SAVE_KEY]) {
+          try {
+            const candidate = JSON.parse(localStorage.getItem(key) || 'null');
+            if (this.validSave(candidate) && !this.isTestData(candidate)) { recovered = candidate; break; }
+          } catch (_) { /* try the next local copy */ }
+        }
+        parsed = recovered || this.fresh();
+        this.recoveryNotice = recovered
+          ? 'Separated an old Full Test Save from Main Save and recovered your local progress.'
+          : 'Separated an old Full Test Save from Main Save. Checking Websim for your account progress.';
       }
       if (this.validSave(parsed)) { this.data = parsed; this.migrate(); this.write({ skipCloud: true, touch: false }); }
       else { this.data = this.fresh(); this.recoveryNotice = 'Started a fresh save because the active save was unreadable.'; this.write({ skipCloud: true, touch: false }); }
@@ -251,10 +275,23 @@ const Save = {
       const hero = this.data.heroes[id];
       if (!hero || typeof hero !== 'object' || Array.isArray(hero)) delete this.data.heroes[id];
     });
-    // Grant all twelve Cookie keepsakes to existing saves immediately too.
+    // Preserve existing Full Test Save progress while adding late recruits.
+    if (this.isTestSlot() || this.data._saveKind === 'full-test') {
+      FF7_HERO_IDS.forEach(id => {
+        if (!this.data.heroes[id]) this.data.heroes[id] = this.testHero(id, this.data.mastery || 800, PLAYABLE_IDS.indexOf(id));
+      });
+    }
+    // Grant immediate keepsakes to existing saves as well as new ones.
     Object.keys(BADGES).forEach(bid => {
-      if (BADGES[bid].cookieRun && !this.data.badges[bid]) this.data.badges[bid] = { lvl: 1 };
+      if ((BADGES[bid].cookieRun || BADGES[bid].immediate) && !this.data.badges[bid]) this.data.badges[bid] = { lvl: 1 };
     });
+    // Equip one gift for players who recruited Big Wig before these badges
+    // existed. Remember the grant so a later manual unequip stays unequipped.
+    const bigWig = this.data.heroes.BigWig;
+    if (bigWig && !bigWig.instantBadgesGranted) {
+      if (!bigWig.badge) bigWig.badge = BADGE_IDS_FOR('BigWig').find(bid => BADGES[bid].immediate) || null;
+      bigWig.instantBadgesGranted = true;
+    }
     if (!this.data.achievements || typeof this.data.achievements !== 'object' || Array.isArray(this.data.achievements)) this.data.achievements = Object.assign({}, f.achievements);
     if (!Array.isArray(this.data.team)) this.data.team = [];
     if (!this.data.depth || typeof this.data.depth !== 'object' || Array.isArray(this.data.depth)) this.data.depth = null;
@@ -512,7 +549,7 @@ const Save = {
     // made while the account is still connecting. Cloud reconciliation uses
     // this value to distinguish a player's new progress from an old local
     // copy, so suppressing it during startup could make those edits vanish.
-    if (options.touch !== false) this.data._updatedAt = Date.now();
+    if (options.touch !== false) this.data._updatedAt = Math.max(Date.now(), (Number(this.data._updatedAt) || 0) + 1);
     try {
       const key = this.slotKey(this.activeSlot);
       const next = JSON.stringify(this.data);
@@ -523,14 +560,35 @@ const Save = {
       localStorage.setItem(key, next);
       const index = this.ensureSlotIndex();
       this.updateSlotInfo(index, this.data);
-      this.writeSlotIndex(index);
+      if (!this.writeSlotIndex(index)) throw new Error('save slot index could not be written');
+      this.localSaveError = null;
     }
-    catch (e) { console.warn('save failed', e); }
+    catch (e) { this.localSaveError = e; console.warn('save failed', e); }
     // The full test slot is intentionally offline and isolated from the
     // account cloud save as well as the player's normal local save.
     // Cloud storage is the account-bound copy of Main Save only. Other local
     // slots (especially Full Test Save) must never enter the cloud queue.
-    if (!options.skipCloud && this.isMainSlot() && typeof WebsimAccount !== 'undefined') WebsimAccount.noteLocalChange();
+    if (!options.skipCloud && this.isAccountSave() && typeof WebsimAccount !== 'undefined') WebsimAccount.noteLocalChange();
+  },
+
+  // Explicit writes cover normal actions. This catches state changed by a
+  // long-running scene or timer before the next action, on every local slot.
+  checkpoint() {
+    if (!this.data || this._batchWriteDepth) return false;
+    try {
+      if (localStorage.getItem(this.slotKey(this.activeSlot)) === JSON.stringify(this.data)) return false;
+    } catch (_) { /* write() records the storage failure for the save screen */ }
+    this.write();
+    return !this.localSaveError;
+  },
+
+  startAutosave() {
+    if (this.autosaveTimer) return;
+    this.autosaveTimer = setInterval(() => this.checkpoint(), 30000);
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'hidden') this.checkpoint();
+    });
+    window.addEventListener('pagehide', () => this.checkpoint());
   },
 
   batchWrite(fn) {
@@ -586,6 +644,10 @@ const Save = {
     try { parsed = JSON.parse(json); } catch (e) { return false; }
     const incoming = parsed && parsed.save && typeof parsed.save === 'object' ? parsed.save : parsed;
     if (!this.validSave(incoming)) return false;
+    // A downloaded fixture cannot be restored over Main Save or disguised as
+    // a normal slot. It may only be restored within its dedicated test slot.
+    if (this.isTestData(incoming) && (options.newSlot || !this.isTestSlot())) return false;
+    if (this.isTestSlot() && !this.isTestData(incoming)) return false;
     if (options.newSlot) {
       const index = this.ensureSlotIndex();
       if (index.slots.length >= SAVE_SLOT_LIMIT) return false;
@@ -608,6 +670,7 @@ const Save = {
   createSlot(name, copyCurrent = false) {
     const index = this.ensureSlotIndex();
     if (index.slots.length >= SAVE_SLOT_LIMIT) return false;
+    if (copyCurrent && this.isTestSession()) return false;
     const n = index.slots.length;
     const id = 'slot-' + Date.now().toString(36) + '-' + Math.random().toString(36).slice(2, 6);
     const source = copyCurrent && this.data ? JSON.parse(JSON.stringify(this.data)) : this.fresh();
@@ -642,6 +705,19 @@ const Save = {
     return true;
   },
 
+  testHero(id, level, index) {
+    const h = this.newHero(id);
+    h.level = level; h.stars = 5; h.rarity = 6; h.rarityPlus = 30;
+    h.skills = { W: SKILL_MAX_LEVEL, G: SKILL_MAX_LEVEL, B: SKILL_MAX_LEVEL, P: SKILL_MAX_LEVEL, R: SKILL_MAX_LEVEL };
+    h.shards = 500;
+    const classIds = Object.keys(CLASSES), subclassIds = Object.keys(SUBCLASSES);
+    h.cls = classIds[index % classIds.length];
+    h.subcls = subclassIds[index % subclassIds.length];
+    classIds.forEach(k => h.classRanks[k] = CLASS_MAX_RANK);
+    subclassIds.forEach(k => h.subclassRanks[k] = CLASS_MAX_RANK);
+    return h;
+  },
+
   /** A fully-stocked save for testing: every Hero owned near max progress,
       deep resources, and a spread of Trinkets (including duplicates/ranks so
       merge, equip and salvage all have something to work with). */
@@ -653,17 +729,8 @@ const Save = {
     d.mastery = Math.min(60 + PLAYABLE_IDS.length * 20, 800);
     d.masteryXp = 0;
     d.heroes = {};
-    const classIds = Object.keys(CLASSES), subclassIds = Object.keys(SUBCLASSES);
     PLAYABLE_IDS.forEach((id, i) => {
-      const h = this.newHero(id);
-      h.level = d.mastery; h.stars = 5; h.rarity = 6; h.rarityPlus = 30;
-      h.skills = { W: SKILL_MAX_LEVEL, G: SKILL_MAX_LEVEL, B: SKILL_MAX_LEVEL, P: SKILL_MAX_LEVEL, R: SKILL_MAX_LEVEL };
-      h.shards = 500;
-      h.cls = classIds[i % classIds.length];
-      h.subcls = subclassIds[i % subclassIds.length];
-      classIds.forEach(k => h.classRanks[k] = CLASS_MAX_RANK);
-      subclassIds.forEach(k => h.subclassRanks[k] = CLASS_MAX_RANK);
-      d.heroes[id] = h;
+      d.heroes[id] = this.testHero(id, d.mastery, i);
     });
     d.team = PLAYABLE_IDS.slice(0, 5);
     Object.keys(BADGES).forEach(bid => d.badges[bid] = { lvl: 3 });
@@ -708,8 +775,9 @@ const Save = {
     d.raid.phantasiaCoins = 99999; d.raid.unknownWorldGears = 99999; d.raid.qomPasses = 99999;
     if (typeof weeklyEvents === 'function') {
       weeklyEvents(week).forEach(e => {
-        d.raid.stages[e.id] = 8;
-        d.raid.clears[e.id] = Object.fromEntries(Array.from({ length: 8 }, (_, i) => [i, true]));
+        const stageCount = Array.isArray(e.stageLevels) ? e.stageLevels.length : 8;
+        d.raid.stages[e.id] = stageCount;
+        d.raid.clears[e.id] = Object.fromEntries(Array.from({ length: stageCount }, (_, i) => [i, true]));
       });
     }
     if (typeof ACHIEVEMENTS !== 'undefined') {
@@ -975,9 +1043,8 @@ const Save = {
     return res;
   },
 
-  /* ---------- Friendship Badges: earned from a Friendship Campaign, one per
-     Hero+friend pair. A Badge is unique (not owned in copies like a Trinket)
-     and levels up by spending the *friend's* shards, not the wearer's. */
+  /* ---------- Friendship Badges: campaign rewards or immediate keepsakes.
+     A Badge is unique and normally levels with the friend's shards. */
   ownsBadge(id) { return !!this.data.badges[id]; },
   badgeLvl(id) { const b = this.data.badges[id]; return b ? b.lvl : 0; },
   grantBadge(id) {
@@ -989,8 +1056,16 @@ const Save = {
   upgradeBadge(id) {
     const b = this.data.badges[id], def = BADGES[id];
     if (!b || !def || b.lvl >= BADGE_MAX_LVL) return false;
-    const friend = this.hero(def.friend);
     const cost = badgeUpgradeCost(b.lvl);
+    if (def.upgradeCurrency === 'unknownWorldGears') {
+      const raid = this.data.raid;
+      if (!raid || (raid.unknownWorldGears || 0) < cost) return false;
+      raid.unknownWorldGears -= cost;
+      b.lvl++;
+      this.write();
+      return true;
+    }
+    const friend = this.hero(def.friend);
     if (!friend || friend.shards < cost) return false;
     friend.shards -= cost;
     b.lvl++;

@@ -95,12 +95,11 @@ defBadge({
 
     // 50% True Damage on Off Rhythm Crits
     B.on(u, 'allyDamageDealt', ev => {
-      if (!ev || !ev.crit || !ev.target || ev.target.team === u.team || !ev.target.alive) return;
+      if (!ev || ev.chained || ev.tag === 'Patchwork Resonance' || !ev.crit || !ev.target || ev.target.team === u.team || !ev.target.alive) return;
       if (ev.target.hasStatus('offrhythm')) {
-        B.damage(u, ev.target, ev.amount * 0.50, { type: 'true', tag: 'Patchwork Resonance' });
+        B.damage(u, ev.target, ev.amount * 0.50, { type: 'true', chained: true, tag: 'Patchwork Resonance' });
         B.fxSparkle(ev.target.x, ev.target.y - 45, 6, '#c7a0ff');
       }
     });
   }
 });
-

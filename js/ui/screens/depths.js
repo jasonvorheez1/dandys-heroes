@@ -170,6 +170,7 @@ Object.assign(Screens, {
     const eventCount = L.nodes.filter(type => type === 'event').length;
     const activeType = L.nodes[r.node] || 'battle';
     const battleType = r.forceElite && activeType === 'battle' ? 'elite' : activeType;
+    const roomMutations = BattleMutations.forRun(r.floor, r.node, battleType);
     const activeInfo = NODE[battleType] || NODE[activeType] || NODE.battle;
     const isCombat = ['battle', 'elite', 'boss'].includes(battleType);
     const previewFoes = isCombat ? Depths.makeEnemies(r.floor, r.node, battleType) : [];
@@ -220,7 +221,7 @@ Object.assign(Screens, {
       ? ['1', 'Choose a run card', 'Then the elevator can move.']
       : isCombat
         ? canEnterCombat
-          ? ['1', 'Review your team, then enter', 'Battle runs automatically.']
+          ? ['1', 'Review your team, then enter', 'Toons fight; you can time White skills.']
           : ['!', 'Edit your team or recover', 'Swap in a healthy Toon, use a Safe Room, or redeploy.']
         : ['1', `Open the ${String(activeInfo.label || 'room').toLowerCase()}`, 'Follow the room prompt, then continue.'];
     const enterLabel = r.pendingDraft ? 'CHOOSE RUN CARD' : isCombat
@@ -269,6 +270,8 @@ Object.assign(Screens, {
           <span><small>RECOMMENDED</small><b>${fmt(recommendedPower)}</b></span>
           <em>${underRecommended ? 'UNDER POWER' : 'READY TO FIGHT'}</em>
         </div>` : ''}
+        ${roomMutations.length ? `<div class="endless-mutation-preview"><strong>BATTLE MUTATIONS</strong><div>${BattleMutations.cards(roomMutations, true)}</div></div>` : ''}
+        ${r.floor > 50 && isCombat && !roomMutations.length ? '<div class="endless-mutation-hint">Mutations appear in elite and boss rooms, and in patrols every fifth floor.</div>' : ''}
         <div class="endless-run-meter"><div><span>FLOOR ${r.floor} · ROOM ${r.node + 1}</span><b>${runPct}%</b></div>
           <i><em style="width:${runPct}%"></em></i></div>
         <div class="endless-command-actions"><button class="endless-enter${!canEnterCombat ? ' blocked' : ''}" id="endlessEnter">
@@ -585,6 +588,7 @@ Object.assign(Screens, {
         survivedLabel: `Floor ${r.floor}, Room ${node + 1}!`,
         bg: bgForFloor(r.floor, node),
         mods: r.clearMods ? [] : L.mods,
+        mutations: BattleMutations.forRun(r.floor, node, combatType).map(m => m.id),
         // The machine owns the pre-battle stage. A failed check hands the
         // same Battle instance to introWalk(), so the selected Toon leaves
         // the prop, jumps to their starting spot, and the fight begins.
@@ -862,10 +866,10 @@ Object.assign(Screens, {
     if (buds.state === 'paused') { this.resumeDandysBuds(); return; }
 
     const body = el('div', 'buds-welcome');
-    body.innerHTML = `<div class="buds-welcome-art"><span class="buds-welcome-sticker">GUIDED RUN</span><img src="uploads/dandyhimself.png" alt="Dandy"><i><img src="uploads/dandysbudicon.png" alt="Dandy's Buds"><b>3 FLOORS</b></i></div>
+    body.innerHTML = `<div class="buds-welcome-art"><span class="buds-welcome-sticker">GUIDED RUN</span><img src="uploads/dandyhimself.webp" alt="Dandy"><i><img src="uploads/dandysbudicon.png" alt="Dandy's Buds"><b>3 FLOORS</b></i></div>
       <small>WELCOME TO DANDY'S WORLD!</small><h2>DANDY'S BUDS</h2>
       <p>Learn the loop with Dandy beside you: clear three gentle floors, grow your starter team, and finish with rewards you can use right away.</p>
-      <div class="buds-dandy-brief"><b>DANDY'S PROMISE</b><span>I will always point to the next useful button. Battles run automatically; your job is to prepare, watch health, and choose the next room.</span></div>
+      <div class="buds-dandy-brief"><b>DANDY'S PROMISE</b><span>I will point to the next useful button. Toons fight on their own, and I will show you how to time their White skills.</span></div>
       <div class="buds-timeline"><span class="current"><i>1</i><b>LEARN</b><em>Rooms + battle flow</em></span><span><i>2</i><b>RECRUIT</b><em>Choose a third buddy</em></span><span><i>3</i><b>GROW</b><em>Trinket + final gift</em></span></div>
       <div class="buds-reward-strip"><small>WHAT YOU’LL GET</small><div><span><b>✦</b><em>New buddy</em></span><span><b>⌁</b><em>Starter Trinket</em></span><span><b>📦</b><em>Graduation gift</em></span></div></div>
       <div class="buds-help-note"><b>GOOD TO KNOW</b><span>Your regular Endless run is safely held while you learn and comes back after graduation.</span></div>`;
@@ -894,7 +898,7 @@ Object.assign(Screens, {
     const buds = Save.data.buds;
     if (!buds || buds.state !== 'chooseHero') return;
     const body = el('div', 'bud-crate');
-    body.innerHTML = `<div class="bud-crate-top"><div class="buds-modal-progress"><b class="done">1</b><i></i><b class="current">2</b><i></i><b>3</b></div><img class="bud-dandy" src="uploads/dandyhimself.png" alt="Dandy"><img class="bud-mark" src="uploads/dandysbudicon.png" alt="">
+    body.innerHTML = `<div class="bud-crate-top"><div class="buds-modal-progress"><b class="done">1</b><i></i><b class="current">2</b><i></i><b>3</b></div><img class="bud-dandy" src="uploads/dandyhimself.webp" alt="Dandy"><img class="bud-mark" src="uploads/dandysbudicon.png" alt="">
         <small>FLOOR 1 CLEARED!</small><h2>YOU'RE A BUD!</h2><p>Dandy picked out a new buddy for your team. Choose carefully!</p><div class="buds-dandy-brief"><b>DANDY SAYS</b><span>Rudie is a fast damage specialist. Tisha controls enemy formation and spacing. Both are good choices; choose the kind of help you want to practice.</span></div></div>
       <div class="bud-choice-row"></div><div class="bud-crate-foot">SELECT ONE TOON · THE OTHER CAN STILL BE RECRUITED LATER</div>`;
     const choices = $('.bud-choice-row', body);
@@ -940,7 +944,7 @@ Object.assign(Screens, {
     const buds = Save.data.buds;
     if (!buds || buds.state !== 'chooseTrinket') return;
     const body = el('div', 'bud-crate');
-    body.innerHTML = `<div class="bud-crate-top"><div class="buds-modal-progress"><b class="done">1</b><i></i><b class="done">2</b><i></i><b class="current">3</b></div><img class="bud-dandy" src="uploads/dandyhimself.png" alt="Dandy"><img class="bud-mark" src="uploads/dandysbudicon.png" alt="">
+    body.innerHTML = `<div class="bud-crate-top"><div class="buds-modal-progress"><b class="done">1</b><i></i><b class="done">2</b><i></i><b class="current">3</b></div><img class="bud-dandy" src="uploads/dandyhimself.webp" alt="Dandy"><img class="bud-mark" src="uploads/dandysbudicon.png" alt="">
         <small>FLOOR 2 CLEARED!</small><h2>YOUR FIRST TRINKET</h2><p>Pick one keepsake for the starter team. Dandy suggests equipping it from Inventory when you are ready.</p><div class="buds-dandy-brief"><b>DANDY SAYS</b><span>Choose the keepsake for the Toon you expect to keep using. You can inspect its effect in Inventory and change equipment later.</span></div></div>
       <div class="bud-choice-row"></div><div class="bud-crate-foot">SELECT ONE TRINKET · RANK 1</div>`;
     const choices = $('.bud-choice-row', body);
@@ -974,7 +978,7 @@ Object.assign(Screens, {
     const buds = Save.data.buds;
     if (!buds || buds.state !== 'chooseSupplies') return;
     const body = el('div', 'bud-crate');
-    body.innerHTML = `<div class="bud-crate-top"><div class="buds-modal-progress"><b class="done">1</b><i></i><b class="done">2</b><i></i><b class="done">3</b></div><img class="bud-dandy" src="uploads/dandyhimself.png" alt="Dandy"><img class="bud-mark" src="uploads/dandysbudicon.png" alt="">
+    body.innerHTML = `<div class="bud-crate-top"><div class="buds-modal-progress"><b class="done">1</b><i></i><b class="done">2</b><i></i><b class="done">3</b></div><img class="bud-dandy" src="uploads/dandyhimself.webp" alt="Dandy"><img class="bud-mark" src="uploads/dandysbudicon.png" alt="">
         <small>FLOOR 3 CLEARED!</small><h2>ONE LAST GIFT</h2><p>Choose what helps your new team most right now.</p><div class="buds-dandy-brief"><b>DANDY SAYS</b><span>Pick Training Supplies if you want to grow Heroes immediately. Pick the Crate Stash if you want more random recruits and materials to open later.</span></div></div>
       <div class="bud-choice-row"></div><div class="bud-crate-foot">SELECT ONE BUD BUNDLE</div>`;
     const choices = $('.bud-choice-row', body);
@@ -1006,7 +1010,7 @@ Object.assign(Screens, {
     }
     Save.write(); UI.refreshBar(true); Sound.play('get_rare'); FX.confetti(window.innerWidth / 2, window.innerHeight * .42, 58);
     const body = el('div', 'buds-graduation');
-    body.innerHTML = `<img src="uploads/dandysbudicon.png" alt=""><small>OFFICIAL DANDY'S BUD</small><h2>Lesson complete!</h2><p>${kind === 'materials' ? 'Your training supplies are ready for Poppy, Boxten, and your new buddy.' : 'Your crate stash is waiting in the Crates room.'} You’re officially one of Dandy’s Buds, a true buddy!</p><div class="buds-dandy-brief"><b>DANDY SAYS</b><span>Now the safety rails come off. The normal Depths will use the same rhythm: prepare the team, read the room, recover when needed, and let the Toons do their work.</span></div>`;
+    body.innerHTML = `<img src="uploads/dandysbudicon.png" alt=""><small>OFFICIAL DANDY'S BUD</small><h2>Lesson complete!</h2><p>${kind === 'materials' ? 'Your training supplies are ready for Poppy, Boxten, and your new buddy.' : 'Your crate stash is waiting in the Crates room.'} You’re officially one of Dandy’s Buds, a true buddy!</p><div class="buds-dandy-brief"><b>DANDY SAYS</b><span>The normal Depths use the same rhythm: prepare your team, read the room, time White skills when needed, and recover before the next fight.</span></div>`;
     const done = el('button', 'buds-start', 'LET’S GROW ›');
     done.onclick = () => { UI.closeModal(); this.go('home'); };
     body.appendChild(done);
@@ -1404,6 +1408,27 @@ Object.assign(Screens, {
       if (!Depths.rerollDraft()) { Sound.play('ui_err'); return; }
       Sound.play('ui_move'); this.openDepthDraft();
     };
+    if (r.pendingDraft > 5) {
+      const quickPick = el('button', 'btn depth-reroll depth-quick-pick', `QUICK PICK REST · ${r.pendingDraft}`);
+      quickPick.title = 'Automatically take the highest-rarity card offered in each remaining draft.';
+      quickPick.onclick = () => {
+        let picked = 0;
+        while (Depths.run().pendingDraft > 0) {
+          const options = Depths.draftOptions();
+          const id = options.slice().sort((a, b) => {
+            const rank = { common: 0, rare: 1, epic: 2 };
+            return (rank[DEPTH_CARDS[b].rarity] || 0) - (rank[DEPTH_CARDS[a].rarity] || 0);
+          })[0];
+          if (!id || !Depths.pickCard(id)) break;
+          picked++;
+        }
+        if (!picked) return;
+        UI.closeModal({ skipHook: true });
+        UI.toast(`${picked} remaining run card${picked === 1 ? '' : 's'} picked automatically`);
+        if (this._depthAfterDraft) this.finishDepthDraftStep(); else this.render();
+      };
+      foot.appendChild(quickPick);
+    }
     foot.appendChild(reroll); body.appendChild(foot);
     UI.modal('', body, {
       bare: true,

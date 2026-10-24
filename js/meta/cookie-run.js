@@ -11,12 +11,13 @@ const COOKIE_OBTAIN_ORDER = [
 const COOKIE_EVENT = {
  id:'cookie-run',title:'Cookie Run · Never Back Down!',label:'Cookie Run',kind:'cookie',isCookieRun:true,
  bossIds:['ShadowMilkCookie'],featuredIds:COOKIE_OBTAIN_ORDER.map(c=>c.id),tag:'COOKIE RUN COLLAB',minMastery:40,
- stageLevels:[70,100,150,220,320,450,600,760],
+ stageLevels:[70,100,150,220,320,450,600,760,770,780,790,800],
  blurb:'GingerBrave has fired up the oven! Stand with the Toons against poisoned ambushes, Berry Bishops and puppet reinforcements. Earn Cookie Cutters to bake Cookie rewards.'
 };
 const CookieRun={
  event:COOKIE_EVENT,
  cutterArt:'uploads/Cookie_cutter_featured.webp',
+ stageNames:['Oven Outskirts','Berry Court','Sugar Mirage','Crumbling Kitchen','Puppet Passage','Broken Oven','Moonlit Stage','Curtain Call','Scattered Crumbs','False Feast','Puppet Bakery','Last Batch'],
  shardPack:{amount:150,ichor:5000},
  shopOffers(){const offers={manual:{cost:1,res:'manual',amount:15},exp:{cost:1,res:'exp',amount:6000}};COOKIE_OBTAIN_ORDER.forEach(c=>{offers[c.id]={cost:c.shopCost,id:c.id,amount:this.shardPack.amount,ichor:this.shardPack.ichor};});return offers;},
  state(){
@@ -38,7 +39,19 @@ const CookieRun={
  ensureWave(specs,stage){return specs.some(s=>s.id==='GingerBrave')?specs:[Save.owns('GingerBrave')?playerSpec('GingerBrave'):this.loan(stage),...specs.slice(0,4)];},
  wave(wave,level){
   const stage=Math.max(0,COOKIE_EVENT.stageLevels.indexOf(level));
-  const ids=wave===1
+  const late=stage>=8;
+  const ids=late ? (wave===1
+   ? stage>=10
+    ? ['SkelecakeCook','PomegranateSnake','CookieScorpion','BerryBishop','PaperPuppetKnight','DangerInTheBox']
+    : ['SkelecakeCook','PomegranateSnake','BerryBishop','CookieScorpion','PaperPuppetKnight']
+   : wave===2
+    ? stage%2
+     ? ['CookieScorpion','PomegranateSnake','BerryBishop','BerryBishop','DangerInTheBox','PaperPuppetKnight']
+     : ['CookieScorpion','PomegranateSnake','BerryBishop','DangerInTheBox','DangerInTheBox','PaperPuppetKnight']
+    : stage>=10
+     ? ['PaperPuppetKnight','PaperPuppetKnight','BerryBishop','CookieScorpion','DangerInTheBox','PomegranateSnake']
+     : ['PaperPuppetKnight','BerryBishop','CookieScorpion','DangerInTheBox','PomegranateSnake'])
+   : wave===1
    ?['SkelecakeCook','PomegranateSnake','BerryBishop','DangerInTheBox','CookieScorpion']
    :wave===2
    ?['CookieScorpion','PomegranateSnake','BerryBishop','DangerInTheBox','SkelecakeCook','PaperPuppetKnight']
@@ -51,7 +64,7 @@ const CookieRun={
    skillLv:level,twisted:false,encounterOnly:true,artSrc:Art.hero(id),
    formationLine:id==='BerryBishop'?2:i%2,
    mult:{
-    hp:1.16+wave*.12+stage*.025,
+    hp:1.16+wave*.12+stage*.025+(late?.05:0),
     atk:.95+wave*.05+stage*.015,
     mag:1.00+wave*.05+stage*.015,
     def:1.04+wave*.035+stage*.012,
@@ -62,7 +75,7 @@ const CookieRun={
    id:'ShadowMilkCookie',level,rarity:5,rarityPlus:Math.min(18,2+stage*2),stars:5,skillLv:level,
    kind:'boss',twisted:false,encounterOnly:true,artSrc:Art.hero('ShadowMilkCookie'),formationLine:2,
    mult:{
-    hp:2.85+stage*.06,
+    hp:2.85+stage*.06+(late?.12:0),
     atk:1.08+stage*.012,
     mag:1.22+stage*.015,
     def:1.14+stage*.012,
@@ -71,7 +84,11 @@ const CookieRun={
   });
   return foes;
  },
- plan(){return [
+ plan(stage=0){if(stage>=8)return [
+ {wave:1,desc:'Scattered Crumbs · The late route adds Paper Puppet Knights to the opening ambush.',mods:['event_momentum']},
+ {wave:2,desc:'False Feast · Berry Bishops and surprise Boxes protect each other while Event Attrition cuts healing.',mods:['event_attrition']},
+ {wave:3,desc:'Last Batch · Shadow Milk returns with reinforced puppets under Boss Pressure. Break the support line before the Boxes burst.',mods:['event_attrition','event_boss_pressure']}
+ ];return [
  {wave:1,desc:'Oven Outskirts · Berry Bishops heal the lowest-HP ally. Opening Momentum helps your team break through.',mods:['event_momentum']},
  {wave:2,desc:'Sugar Mirage · Snakes hunt Tanks, while Scorpions rush Supports. Event Attrition reduces healing.',mods:['event_attrition']},
  {wave:3,desc:'Puppet Moon · Shadow Milk Cookie commands the stage under Boss Pressure. Boxes spread Corruption and release Paper Puppet Knights.',mods:['event_attrition','event_boss_pressure']}

@@ -1,0 +1,39 @@
+/* Hero-file skill preview: the real #battle arena is mounted inside the box.
+   It always lays out at a fixed 560x300 logical stage (combat ranges and
+   sprite sizes never change with the device). A 360-wide slice centred on the
+   action is scaled to the box width with --live-k / --live-x. */
+.live-preview-wrap{min-width:0}
+.skill-preview-live{--live-k:1;--live-x:0px;height:calc(300px * var(--live-k))!important;min-height:0!important;flex:none;
+  border-bottom-left-radius:0;border-bottom-right-radius:0;background:#000;cursor:pointer}
+.skill-preview-live:after{display:none}
+.skill-preview-live .live-arena{position:absolute;inset:0;overflow:hidden}
+#battle.live-preview{position:absolute!important;left:0!important;top:0!important;right:auto!important;bottom:auto!important;
+  width:560px!important;height:300px!important;max-width:none!important;margin:0!important;z-index:1;box-shadow:none;background:#000;
+  transform-origin:0 0;transform:translateX(var(--live-x,0px)) scale(var(--live-k,1))}
+#battle.live-preview #battleHud,
+#battle.live-preview #battleEnd,
+#battle.live-preview #mutationLive,
+#battle.live-preview .battle-status-detail,
+#battle.live-preview .nameplate{display:none!important}
+#battle.live-preview .unit.foe .body img{filter:saturate(.55) brightness(.92)}
+.live-bar{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:7px 9px;border:3px solid #080b0c;border-top:0;
+  border-radius:0 0 12px 12px;background:#0d1214;box-shadow:0 4px #0d1112}
+.live-bar span{display:flex;flex-direction:column;min-width:0;color:#f2f7f4;line-height:1.1}
+.live-bar b{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:10px;letter-spacing:.3px}
+.live-bar small{margin-top:3px;color:#a5f247;font-size:6px;font-weight:900;letter-spacing:1.2px}
+.live-bar .skill-preview-btns{display:flex;gap:5px;flex:none}
+.live-bar .preview-btn{min-width:30px;padding:6px 8px;border:2px solid #080b0c;border-radius:7px;color:#132014;background:#c5ef7b;font-size:10px;font-weight:900}
+.live-bar .preview-btn.active{background:#ffd166}
+
+/* Readability: the live arenas are mood-lit and dark; the previewer is not. */
+#battle.live-preview #bgLayer{filter:brightness(1.08) saturate(1.05) contrast(1)}
+#battle.live-preview #bgLayer:before,
+#battle.live-preview #bgLayer:after,
+#battle.live-preview #vignette,
+#battle.live-preview #stage:after,
+#battle.live-preview #floorLine:before,
+#battle.live-preview #floorLine:after{display:none!important}
+#battle.live-preview #floorLine{border-top:2px solid #ffffff59;
+  background:linear-gradient(180deg,#ffffff26,#0000002e 60%,#00000066);box-shadow:none}
+#battle.live-preview .unit .shadow{opacity:.65}
+#battle.live-preview .unit .hpmini{transform:scale(1.15)}

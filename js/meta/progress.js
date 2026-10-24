@@ -287,6 +287,20 @@ const Progress = {
     Sound.play('ui_ok'); Save.write();
     return true;
   },
+  /** Move an already worn copy into another slot in one save operation. */
+  moveTrinket(heroId, slot, uid) {
+    if (HEROES[heroId] && HEROES[heroId].noTrinket) return false;
+    const target = Save.hero(heroId), copy = Save.data.trinketInv[uid];
+    if (!target || !copy || !Array.isArray(target.trinkets) || slot < 0 || slot >= target.trinkets.length) return false;
+    const sourceId = Save.whoWears(uid);
+    if (!sourceId) return this.equipTrinket(heroId, slot, uid);
+    const source = Save.hero(sourceId), sourceSlot = source && source.trinkets.indexOf(uid);
+    if (sourceSlot == null || sourceSlot < 0 || (sourceId === heroId && sourceSlot === slot)) return false;
+    source.trinkets[sourceSlot] = null;
+    target.trinkets[slot] = uid;
+    Sound.play('ui_ok'); Save.write();
+    return true;
+  },
   unequipTrinket(heroId, slot) {
     if (HEROES[heroId] && HEROES[heroId].noTrinket) return false;
     const h = Save.hero(heroId);
@@ -315,7 +329,7 @@ const Progress = {
       ? rarityStatMultiplier(h.rarity, h.rarityPlus)
       : 1;
     const growth = d.growth || {}, base = d.base || {};
-    const value = k => (base[k] || 0) * statLevelMult(['spd', 'acc', 'eva'].includes(k) ? .012 : growth[k], lv) * star * rarity *
+    const value = k => (base[k] || 0) * (k === 'spd' ? 1 : statLevelMult(['acc', 'eva'].includes(k) ? .012 : growth[k], lv) * star * rarity) *
       (d.role === 'Tank' ? ({ hp: 1.16, def: 1.14, mdef: 1.14 }[k] || 1) : 1);
     // Durability is valuable, but it does not convert into pressure as
     // directly as Attack, Magic, or skill access. Tanks already receive a

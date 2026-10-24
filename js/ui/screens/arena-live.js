@@ -31,6 +31,7 @@ const ArenaLive = {
   defenseSnapshot: null,
 
   loadDefenses() {
+    if (Save.isTestSession()) return Promise.resolve();
     if (this.defenseRequest) return this.defenseRequest;
     this.defenseRequest = fetch('/api/arena/defenses')
       .then(response => response.ok ? response.json() : Promise.reject(new Error(`defenses ${response.status}`)))
@@ -50,12 +51,13 @@ const ArenaLive = {
   },
 
   publishDefense(ids) {
+    if (Save.isTestSession()) { UI.toast('Full Test Save cannot publish a defense.'); Sound.play('ui_err'); return; }
     const team = arenaLiveSnapshotTeam(ids);
     if (!team.length) { UI.toast('Choose at least one Hero for your defense.'); Sound.play('ui_err'); return; }
     return fetch('/api/arena/defense', {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: JSON.stringify({ team, arenaRank: Arena.today().rank })
+      body: JSON.stringify({ team, arenaRank: Arena.today().rank, saveKind: Save.data._saveKind || 'main' })
     }).then(async response => {
       const body = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(body.error || `defense ${response.status}`);
@@ -74,6 +76,7 @@ const ArenaLive = {
   },
 
   openDefenseEditor() {
+    if (Save.isTestSession()) return;
     if (typeof Screens === 'undefined' || !Screens.openTeamEditor) return;
     Screens.openTeamEditor(null, team => this.publishDefense(team), 'Set Defense Team', {
       persist: false,
@@ -135,6 +138,7 @@ const ArenaLive = {
   },
 
   mount(root) {
+    if (Save.isTestSession()) return;
     this.mounted = root;
     this.render();
     if (this.persistentDefenses === null) this.loadDefenses();
@@ -161,7 +165,7 @@ Object.assign(Screens, {
     const reward = { arenaCoin: 30, exp: 120 };
     this.arenaMatchIntro(opponent, chosenTeam, () => {
       BattleScreen.launch({
-        team, foes: defenderSpecs, music: 'arena',
+        team, foes: defenderSpecs, music: 'arenaBattle',
         meta: { title: `Saved PvP · ${defenderName}`, bg: 'uploads/arenabackground.png', floorLabel: 'SAVED DEFENSE · AI COMBAT', arenaPvP: true, skillStartEnergy: 18, enemySkillStartEnergy: 0 },
         rewards: () => reward,
         onDone: res => {

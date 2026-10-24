@@ -314,7 +314,7 @@ html.accessibility-reduced-effects .skill-preview-stage *{animation:none!importa
 
 /* Vee's studio package uses her real Veemote and spotlight sprites, backed
    by matte CRT graphics that stay readable without strobing the whole view. */
-.preview-vee-layer{position:absolute;z-index:14;inset:0;overflow:hidden;pointer-events:none}.preview-vee-remote,.preview-vee-light{position:absolute;left:0;top:0;object-fit:contain;opacity:0;will-change:transform,opacity}.preview-vee-remote{width:40px;height:40px;filter:drop-shadow(0 3px 2px #000c) drop-shadow(0 0 7px #73e664)}.preview-vee-light{width:68px;height:68px;mix-blend-mode:screen;filter:hue-rotate(88deg) saturate(1.5) drop-shadow(0 0 5px #7be0ff)}.preview-vee-screen{position:absolute;left:0;top:0;width:142px;min-height:66px;padding:8px 10px;border:4px solid #0f1a19;border-radius:9px;color:#dffff6;background:repeating-linear-gradient(0deg,#112524 0 4px,#17312f 4px 5px);box-shadow:inset 0 0 0 2px #7be0ff,0 4px #08100f,0 0 14px #7be0ff77;text-align:center;opacity:0;transform-origin:50% 50%;will-change:transform,opacity}.preview-vee-screen small,.preview-vee-screen b{display:block}.preview-vee-screen small{color:#79ef70;font:900 6px/1 monospace;letter-spacing:1.4px}.preview-vee-screen b{margin-top:5px;font:1000 9px/1.08 "Arial Black",sans-serif;letter-spacing:.4px}.preview-vee-screen span{display:flex;align-items:end;justify-content:center;gap:4px;height:17px;margin-top:5px}.preview-vee-screen span i{width:6px;height:35%;border-radius:2px 2px 0 0;background:#7be0ff;box-shadow:0 0 5px #7be0ff}.preview-vee-screen span i:nth-child(2){height:72%;background:#75e65f}.preview-vee-screen span i:nth-child(3){height:100%}.preview-vee-screen span i:nth-child(4){height:58%;background:#75e65f}.preview-vee-screen span i:nth-child(5){height:84%}.preview-vee-signal{position:absolute;left:-78px;top:-26px;width:156px;height:52px;opacity:0;will-change:transform,opacity}.preview-vee-signal i{position:absolute;inset:7px 0;border:4px solid #7be0ff;border-width:4px 0 0;border-radius:50%;filter:drop-shadow(0 0 4px #7be0ff)}.preview-vee-signal i:nth-child(2){inset:17px 23px;border-color:#75e65f}.preview-vee-signal i:nth-child(3){inset:27px 48px;border-color:#d7fff8}.preview-vee-crowd{position:absolute;left:-78px;top:-24px;width:156px;height:48px;display:flex;align-items:end;justify-content:center;gap:4px;opacity:0;will-change:transform,opacity}.preview-vee-crowd i{width:12px;height:23px;border:3px solid #0b1514;border-radius:7px 7px 3px 3px;background:hsl(calc(var(--crowd-i) * 34 + 92) 68% 62%);box-shadow:0 -8px 0 -2px hsl(calc(var(--crowd-i) * 34 + 92) 68% 72%),0 2px #0008;transform:translateY(calc((var(--crowd-i) % 3) * 4px))}.preview-vee-reticle{position:absolute;left:-45px;top:-45px;width:90px;height:90px;border:3px solid #7be0ff;border-radius:50%;box-shadow:inset 0 0 12px #7be0ff88,0 0 13px #7be0ff;opacity:0;will-change:transform,opacity}.preview-vee-reticle:before,.preview-vee-reticle:after{content:"";position:absolute;background:#dffcff;box-shadow:0 0 5px #7be0ff}.preview-vee-reticle:before{left:42px;top:-10px;width:3px;height:104px}.preview-vee-reticle:after{left:-10px;top:42px;width:104px;height:3px}.preview-vee-reticle i{position:absolute;width:12px;height:12px;border-color:#75e65f;border-style:solid}.preview-vee-reticle i:nth-child(1){left:9px;top:9px;border-width:3px 0 0 3px}.preview-vee-reticle i:nth-child(2){right:9px;top:9px;border-width:3px 3px 0 0}.preview-vee-reticle i:nth-child(3){left:9px;bottom:9px;border-width:0 0 3px 3px}.preview-vee-reticle i:nth-child(4){right:9px;bottom:9px;border-width:0 3px 3px 0}.vee-commercial .preview-vee-screen{width:174px;min-height:77px;border-color:#070e12;background:repeating-linear-gradient(0deg,#152443 0 5px,#1b3156 5px 6px);box-shadow:inset 0 0 0 2px #7be0ff,0 5px #070e12,0 0 18px #7be0ff88}.vee-commercial .preview-vee-screen b{font-size:11px;color:#fff1a1}.vee-audience .preview-vee-screen{box-shadow:inset 0 0 0 2px #75e65f,0 4px #08100f,0 0 14px #75e65f77}.vee-production .preview-vee-screen{box-shadow:inset 0 0 0 2px #ffe066,0 4px #100f08,0 0 15px #ffe06677}.vee-production .preview-vee-screen small{color:#ffd166}.vee-signal .preview-vee-screen{box-shadow:inset 0 0 0 2px #5eead4,0 4px #08100f,0 0 12px #5eead466}.vee-finale .preview-vee-screen{width:168px;min-height:74px;border-color:#3a0a14;background:repeating-linear-gradient(0deg,#2e0c15 0 4px,#3d101d 4px 5px);box-shadow:inset 0 0 0 2px #ff3366,0 4px #1a050a,0 0 18px #ff3366aa}.vee-finale .preview-vee-screen small{color:#ff5277}.vee-finale .preview-vee-screen b{color:#ffe8ed}.vee-finale .preview-vee-reticle{border-color:#ff3366;box-shadow:inset 0 0 14px #ff336688,0 0 16px #ff3366}
+.preview-vee-layer{position:absolute;z-index:14;inset:0;overflow:hidden;pointer-events:none}.preview-vee-remote,.preview-vee-light{position:absolute;left:0;top:0;object-fit:contain;opacity:0;will-change:transform,opacity}.preview-vee-remote{width:40px;height:40px;filter:drop-shadow(0 3px 2px #000c) drop-shadow(0 0 7px #73e664)}.preview-vee-light{width:68px;height:68px;mix-blend-mode:screen;filter:hue-rotate(88deg) saturate(1.5) drop-shadow(0 0 5px #6fe35a)}.preview-vee-screen{position:absolute;left:0;top:0;width:142px;min-height:66px;padding:8px 10px;border:4px solid #0f1a19;border-radius:9px;color:#dffff6;background:repeating-linear-gradient(0deg,#112524 0 4px,#17312f 4px 5px);box-shadow:inset 0 0 0 2px #6fe35a,0 4px #08100f,0 0 14px #6fe35a77;text-align:center;opacity:0;transform-origin:50% 50%;will-change:transform,opacity}.preview-vee-screen small,.preview-vee-screen b{display:block}.preview-vee-screen small{color:#79ef70;font:900 6px/1 monospace;letter-spacing:1.4px}.preview-vee-screen b{margin-top:5px;font:1000 9px/1.08 "Arial Black",sans-serif;letter-spacing:.4px}.preview-vee-screen span{display:flex;align-items:end;justify-content:center;gap:4px;height:17px;margin-top:5px}.preview-vee-screen span i{width:6px;height:35%;border-radius:2px 2px 0 0;background:#6fe35a;box-shadow:0 0 5px #6fe35a}.preview-vee-screen span i:nth-child(2){height:72%;background:#6fe35a}.preview-vee-screen span i:nth-child(3){height:100%}.preview-vee-screen span i:nth-child(4){height:58%;background:#6fe35a}.preview-vee-screen span i:nth-child(5){height:84%}.preview-vee-signal{position:absolute;left:-78px;top:-26px;width:156px;height:52px;opacity:0;will-change:transform,opacity}.preview-vee-signal i{position:absolute;inset:7px 0;border:4px solid #6fe35a;border-width:4px 0 0;border-radius:50%;filter:drop-shadow(0 0 4px #6fe35a)}.preview-vee-signal i:nth-child(2){inset:17px 23px;border-color:#6fe35a}.preview-vee-signal i:nth-child(3){inset:27px 48px;border-color:#d7fff8}.preview-vee-crowd{position:absolute;left:-78px;top:-24px;width:156px;height:48px;display:flex;align-items:end;justify-content:center;gap:4px;opacity:0;will-change:transform,opacity}.preview-vee-crowd i{width:12px;height:23px;border:3px solid #0b1514;border-radius:7px 7px 3px 3px;background:hsl(calc(var(--crowd-i) * 34 + 92) 68% 62%);box-shadow:0 -8px 0 -2px hsl(calc(var(--crowd-i) * 34 + 92) 68% 72%),0 2px #0008;transform:translateY(calc((var(--crowd-i) % 3) * 4px))}.preview-vee-reticle{position:absolute;left:-45px;top:-45px;width:90px;height:90px;border:3px solid #6fe35a;border-radius:50%;box-shadow:inset 0 0 12px #6fe35a88,0 0 13px #6fe35a;opacity:0;will-change:transform,opacity}.preview-vee-reticle:before,.preview-vee-reticle:after{content:"";position:absolute;background:#dffcff;box-shadow:0 0 5px #6fe35a}.preview-vee-reticle:before{left:42px;top:-10px;width:3px;height:104px}.preview-vee-reticle:after{left:-10px;top:42px;width:104px;height:3px}.preview-vee-reticle i{position:absolute;width:12px;height:12px;border-color:#6fe35a;border-style:solid}.preview-vee-reticle i:nth-child(1){left:9px;top:9px;border-width:3px 0 0 3px}.preview-vee-reticle i:nth-child(2){right:9px;top:9px;border-width:3px 3px 0 0}.preview-vee-reticle i:nth-child(3){left:9px;bottom:9px;border-width:0 0 3px 3px}.preview-vee-reticle i:nth-child(4){right:9px;bottom:9px;border-width:0 3px 3px 0}.vee-commercial .preview-vee-screen{width:174px;min-height:77px;border-color:#070e12;background:repeating-linear-gradient(0deg,#152443 0 5px,#1b3156 5px 6px);box-shadow:inset 0 0 0 2px #6fe35a,0 5px #070e12,0 0 18px #6fe35a88}.vee-commercial .preview-vee-screen b{font-size:11px;color:#fff1a1}.vee-audience .preview-vee-screen{box-shadow:inset 0 0 0 2px #6fe35a,0 4px #08100f,0 0 14px #6fe35a77}.vee-production .preview-vee-screen{box-shadow:inset 0 0 0 2px #ffe066,0 4px #100f08,0 0 15px #ffe06677}.vee-production .preview-vee-screen small{color:#ffd166}.vee-signal .preview-vee-screen{box-shadow:inset 0 0 0 2px #5eead4,0 4px #08100f,0 0 12px #5eead466}.vee-finale .preview-vee-screen{width:168px;min-height:74px;border-color:#3a0a14;background:repeating-linear-gradient(0deg,#2e0c15 0 4px,#3d101d 4px 5px);box-shadow:inset 0 0 0 2px #ff3366,0 4px #1a050a,0 0 18px #ff3366aa}.vee-finale .preview-vee-screen small{color:#ff5277}.vee-finale .preview-vee-screen b{color:#ffe8ed}.vee-finale .preview-vee-reticle{border-color:#ff3366;box-shadow:inset 0 0 14px #ff336688,0 0 16px #ff3366}
 
 /* Flyte's previews expose the actual positional mechanics: a floor Gust,
    a rescue dome with outward clearance, and a pass-through lane sweep. */
@@ -363,16 +363,16 @@ html.accessibility-reduced-effects .skill-preview-stage *{animation:none!importa
 /* Sprout's bakery & sanctuary package: freshly baked flying treats, curling strawberry sprout vines,
    warm loving heart, and golden protective dome. */
 .preview-sprout-layer{position:absolute;z-index:14;inset:0;overflow:hidden;pointer-events:none}
-.preview-sprout-treat{position:absolute;left:0;top:0;width:44px;height:44px;margin-left:-22px;margin-top:-22px;object-fit:contain;opacity:0;will-change:transform,opacity;filter:drop-shadow(0 3px 6px rgba(0,0,0,.65)) drop-shadow(0 0 10px #f4a26199)}
+.preview-sprout-treat{position:absolute;left:0;top:0;width:44px;height:44px;margin-left:-22px;margin-top:-22px;object-fit:contain;opacity:0;will-change:transform,opacity;filter:drop-shadow(0 3px 6px rgba(0,0,0,.65)) drop-shadow(0 0 10px #e0925f99)}
 .preview-sprout-vines{position:absolute;left:0;top:0;width:110px;height:110px;margin-left:-55px;margin-top:-55px;opacity:0;will-change:transform,opacity;pointer-events:none}
-.preview-sprout-vines i{position:absolute;width:42px;height:42px;border:3px solid #70e000;border-color:#80ed99 transparent transparent #70e000;border-radius:50%;box-shadow:0 0 12px #70e000aa,inset 0 0 8px #80ed9966}
+.preview-sprout-vines i{position:absolute;width:42px;height:42px;border:3px solid #6fb67f;border-color:#8fcf9a transparent transparent #6fb67f;border-radius:50%;box-shadow:0 0 12px #6fb67faa,inset 0 0 8px #8fcf9a66}
 .preview-sprout-vines i:nth-child(1){left:12px;top:10px;transform:rotate(-25deg)}
 .preview-sprout-vines i:nth-child(2){right:12px;top:14px;transform:rotate(50deg) scaleX(-1)}
 .preview-sprout-vines i:nth-child(3){left:16px;bottom:12px;transform:rotate(120deg)}
 .preview-sprout-vines i:nth-child(4){right:14px;bottom:10px;transform:rotate(-140deg) scaleX(-1)}
 .preview-sprout-heart{position:absolute;left:0;top:0;width:42px;height:42px;margin-left:-21px;margin-top:-21px;background:radial-gradient(circle at 35% 35%,#fff 0%,#ff758f 35%,#e63946 75%,#a4133c 100%);clip-path:polygon(50% 15%,66% 0,85% 0,100% 18%,100% 44%,50% 92%,0 44%,0 18%,15% 0,34% 0);box-shadow:0 0 18px #ff6b8bcc;filter:drop-shadow(0 3px 6px rgba(0,0,0,.5));opacity:0;will-change:transform,opacity}
-.preview-sprout-shield{position:absolute;left:0;top:0;width:96px;height:96px;margin-left:-48px;margin-top:-48px;border:3.5px solid #ffd166;border-radius:50% 50% 46% 46%;background:radial-gradient(ellipse at 50% 36%,rgba(255,242,207,.55) 0%,rgba(244,162,97,.22) 55%,transparent 74%);box-shadow:0 0 24px #ffd166cc,inset 0 0 16px #fff2cf88;opacity:0;will-change:transform,opacity}
-.preview-sprout-callout{position:absolute;left:0;top:0;min-width:76px;margin-left:-38px;margin-top:-16px;padding:5px 9px;border:3px solid #3d1308;border-radius:9px;color:#3d1308;background:linear-gradient(180deg,#fff7eb,#ffd166 45%,#f4a261);box-shadow:inset 0 1px #fff,0 3px #3d1308,0 0 16px #f4a261aa;font:1000 8.5px/1 "Arial Black",sans-serif;letter-spacing:.4px;text-align:center;opacity:0;transform-origin:50% 100%;will-change:transform,opacity}
+.preview-sprout-shield{position:absolute;left:0;top:0;width:96px;height:96px;margin-left:-48px;margin-top:-48px;border:2px solid #ffd166;border-radius:50% 50% 46% 46%;background:radial-gradient(ellipse at 50% 36%,rgba(255,242,207,.55) 0%,rgba(244,162,97,.22) 55%,transparent 74%);box-shadow:0 0 24px #ffd166cc,inset 0 0 16px #fff2cf88;opacity:0;will-change:transform,opacity}
+.preview-sprout-callout{position:absolute;left:0;top:0;min-width:76px;margin-left:-38px;margin-top:-16px;padding:5px 9px;border:3px solid #3d1308;border-radius:9px;color:#3d1308;background:linear-gradient(180deg,#fff7eb,#ffd166 45%,#e0925f);box-shadow:inset 0 1px #fff,0 3px #3d1308,0 0 16px #e0925faa;font:1000 8.5px/1 "Arial Black",sans-serif;letter-spacing:.4px;text-align:center;opacity:0;transform-origin:50% 100%;will-change:transform,opacity}
 
 /* Ribecca's acoustic package: concentric microphone shockwaves and dancing musical notes. */
 .preview-ribecca-layer{position:absolute;z-index:14;inset:0;overflow:hidden;pointer-events:none}
@@ -384,14 +384,14 @@ html.accessibility-reduced-effects .skill-preview-stage *{animation:none!importa
 /* Astro's celestial package: constellation rings, shooting stars, glowing lunar crescent,
    cosmic star pillow, and orbiting sleep runes. */
 .preview-astro-layer{position:absolute;z-index:14;inset:0;overflow:hidden;pointer-events:none}
-.preview-astro-moon{position:absolute;left:0;top:0;width:56px;height:56px;margin-left:-28px;margin-top:-28px;border-radius:50%;box-shadow:inset -10px 4px 0 0 #f0e6ff,0 0 24px #7c4dff;filter:drop-shadow(0 0 10px #b388ff);opacity:0;will-change:transform,opacity}
-.preview-astro-pillow{position:absolute;left:0;top:0;width:46px;height:46px;margin-left:-23px;margin-top:-23px;object-fit:contain;filter:drop-shadow(0 4px 10px rgba(0,0,0,.6)) drop-shadow(0 0 14px #b388ff);opacity:0;will-change:transform,opacity}
-.preview-astro-ring{position:absolute;left:0;top:0;width:120px;height:120px;margin-left:-60px;margin-top:-60px;border:3px dashed #b388ff;border-radius:50%;opacity:0;box-shadow:0 0 20px #7c4dff,inset 0 0 14px #b388ff;will-change:transform,opacity}
+.preview-astro-moon{position:absolute;left:0;top:0;width:56px;height:56px;margin-left:-28px;margin-top:-28px;border-radius:50%;box-shadow:inset -10px 4px 0 0 #f7e9b8,0 0 24px #4a45a8;filter:drop-shadow(0 0 10px #8d86e0);opacity:0;will-change:transform,opacity}
+.preview-astro-pillow{position:absolute;left:0;top:0;width:46px;height:46px;margin-left:-23px;margin-top:-23px;object-fit:contain;filter:drop-shadow(0 4px 10px rgba(0,0,0,.6)) drop-shadow(0 0 14px #8d86e0);opacity:0;will-change:transform,opacity}
+.preview-astro-ring{position:absolute;left:0;top:0;width:120px;height:120px;margin-left:-60px;margin-top:-60px;border:2px solid #8d86e0;border-radius:50%;opacity:0;box-shadow:0 0 20px #4a45a8,inset 0 0 14px #8d86e0;will-change:transform,opacity}
 .preview-astro-stars{position:absolute;inset:0}
-.preview-astro-stars i{position:absolute;left:0;top:0;width:36px;height:6px;border-radius:99px;background:linear-gradient(90deg,transparent,#fff 40%,#ffd166 75%,#b388ff);box-shadow:0 0 12px #7c4dff,0 0 4px #fff;opacity:0;will-change:transform,opacity}
+.preview-astro-stars i{position:absolute;left:0;top:0;width:36px;height:6px;border-radius:99px;background:linear-gradient(90deg,transparent,#fff 40%,#f7e9b8 75%,#8d86e0);box-shadow:0 0 12px #4a45a8,0 0 4px #fff;opacity:0;will-change:transform,opacity}
 .preview-astro-sleep{position:absolute;inset:0}
-.preview-astro-sleep i{position:absolute;left:0;top:0;font-size:18px;text-shadow:0 0 10px #b388ff,0 0 3px #fff;opacity:0;will-change:transform,opacity}
-.preview-astro-callout{position:absolute;left:0;top:0;min-width:82px;margin-left:-41px;margin-top:-16px;padding:5px 9px;border:3px solid #161026;border-radius:9px;color:#161026;background:linear-gradient(180deg,#f5eeff,#b388ff 45%,#7c4dff);box-shadow:inset 0 1px #fff,0 3px #161026,0 0 16px #7c4dffaa;font:1000 8.5px/1 "Arial Black",sans-serif;letter-spacing:.4px;text-align:center;opacity:0;transform-origin:50% 100%;will-change:transform,opacity}
+.preview-astro-sleep i{position:absolute;left:0;top:0;font-size:18px;text-shadow:0 0 10px #8d86e0,0 0 3px #fff;opacity:0;will-change:transform,opacity}
+.preview-astro-callout{position:absolute;left:0;top:0;min-width:82px;margin-left:-41px;margin-top:-16px;padding:5px 9px;border:3px solid #1e1b5e;border-radius:9px;color:#1e1b5e;background:linear-gradient(180deg,#f7e9b8,#cfd0ff 45%,#8d86e0);box-shadow:inset 0 1px #fff,0 3px #1e1b5e,0 0 16px #4a45a8aa;font:1000 8.5px/1 "Arial Black",sans-serif;letter-spacing:.4px;text-align:center;opacity:0;transform-origin:50% 100%;will-change:transform,opacity}
 
 /* Shadow Milk Cookie's deceit theatre: marionette puppet strings descending,
    cosmic Deceit Eye, and spinning deceit cards. */
@@ -689,42 +689,37 @@ html.accessibility-reduced-effects .skill-preview-stage *{animation:none!importa
   color: #2b1d05;
 }
 
-/* Stats Tab: Attribute Progress Bars & Values */
-.hero-stats-card {
-  padding: 10px 12px;
-}
-.hero-stat-row {
-  margin-bottom: 7px;
-  padding: 2px 4px;
-  border-radius: 5px;
-  transition: background .12s ease;
-}
-.hero-stat-row:hover {
-  background: rgba(255, 255, 255, 0.04);
-}
-.hero-stat-bar {
-  height: 4px;
-  margin-top: 3px;
-  border-radius: 3px;
-  background: rgba(0, 0, 0, 0.5);
-  border: 1px solid rgba(255, 255, 255, 0.08);
-  overflow: hidden;
-}
-.hero-stat-bar-fill {
-  display: block;
-  height: 100%;
-  border-radius: 3px;
-  background: linear-gradient(90deg, #5fb487, #a5f247);
-  box-shadow: 0 0 6px rgba(165, 242, 71, 0.4);
-}
-.hero-combat-val {
-  padding: 3px 5px;
-  border-radius: 4px;
-  transition: background .12s ease;
-}
-.hero-combat-val:hover {
-  background: rgba(255, 255, 255, 0.05);
-}
+/* Hero combat sheet */
+.hero-stats-sheet{max-width:740px;margin:auto}
+.hero-stats-sheet .card{margin-bottom:8px}
+.hero-stats-intro{padding:12px;background:linear-gradient(135deg,#3e5845,#253a34 65%,#202d2d)}
+.hero-stats-intro-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.hero-stats-intro-head b{color:#e7ffaf;font-size:13px;letter-spacing:1.2px}
+.hero-stats-intro-head span{color:#f0e7c2;font-size:9px;font-weight:900;text-align:right}
+.hero-stats-intro p,.hero-mitigation-card p{margin:7px 0 0;color:#c6d7cb;font-size:10px;line-height:1.4}
+.hero-stat-key{display:flex;gap:12px;margin-top:9px;color:#bfcfc4;font-size:9px;font-weight:900}
+.hero-stat-key span{display:flex;align-items:center;gap:5px}
+.hero-stat-key i{width:7px;height:7px;border-radius:50%}
+.hero-stat-key i.training{background:#a5f247}.hero-stat-key i.next{background:#83dcff}
+.hero-stats-card{padding:8px 11px}
+.hero-stats-card h3,.hero-mitigation-card h3{margin:0 0 4px;color:#d7f894;font-size:9px;font-weight:1000;letter-spacing:1.5px}
+.hero-stat-row{display:grid;grid-template-columns:27px minmax(0,1fr) auto;align-items:center;gap:7px;min-height:51px;padding:6px 2px;border-top:1px solid #d8f3e020}
+.hero-stat-icon{font-size:17px;text-align:center}
+.hero-stat-name b,.hero-stat-name small,.hero-stat-values strong,.hero-stat-values small{display:block}
+.hero-stat-name b{color:#f3faf4;font-size:11px}
+.hero-stat-name small,.hero-combat-val small{margin-top:2px;color:#acbeb5;font-size:9px;line-height:1.25}
+.hero-stat-values{min-width:84px;text-align:right}
+.hero-stat-values strong{color:#fff;font-size:16px;line-height:1.1;font-variant-numeric:tabular-nums}
+.hero-stat-gain{font-size:8px!important;font-weight:900;white-space:nowrap}
+.hero-stat-gain.training{color:#b7f978}.hero-stat-gain.next{color:#8ddfff}
+.hero-combat-val{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:43px;padding:6px 2px;border-top:1px solid #d8f3e020}
+.hero-combat-val span{min-width:0}.hero-combat-val b{display:block;color:#eef5ef;font-size:10px}
+.hero-combat-val strong{flex:none;color:#fff;font-size:14px;font-variant-numeric:tabular-nums}
+.hero-mitigation-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+.hero-mitigation-grid>div{display:flex;align-items:center;justify-content:space-between;gap:6px;padding:9px;border:1px solid #ffffff22;border-radius:7px;background:#162322}
+.hero-mitigation-grid small{color:#d1e2d5;font-size:9px;line-height:1.2}
+.hero-mitigation-grid b{color:#d6fb9d;font-size:16px}
+@media(max-width:390px){.hero-stats-intro-head{align-items:flex-start;flex-direction:column;gap:3px}.hero-stats-intro-head span{text-align:left}.hero-mitigation-grid{grid-template-columns:1fr}}
 
 /* Trinket & Badge Quick Equip/Unequip */
 .trinket-quick-off {

@@ -114,7 +114,7 @@ Object.assign(Screens, {
     windowBar.innerHTML = `
       <div class="event-window-left">
         <span class="event-live-pill"><i></i> WEEKLY LINEUP</span>
-        <span class="event-window-tip">Clear 8 stages per event · Replay unlocked stages anytime for farm rewards</span>
+        <span class="event-window-tip">Choose a stage, replay battles, and spend each event’s rewards</span>
       </div>
       <div class="event-window-right">
         <span>ROTATION RESETS IN</span>
@@ -125,9 +125,9 @@ Object.assign(Screens, {
     this._eventFilter = this._eventFilter || 'all';
     const filterRow = el('div', 'event-filters');
     const allCount = events.length;
-    const specialCount = events.filter(e => e.isCookieRun || e.isQOM || e.isPhantasia || e.isUnknownWorld || e.isCollab || e.isDrawParents).length;
-    const weeklyCount = events.filter(e => !e.isCookieRun && !e.isQOM && !e.isPhantasia && !e.isUnknownWorld && !e.isCollab && !e.isDrawParents).length;
-    const unclearedCount = events.filter(e => Raid.stageProgress(e.id) < Raid.STAGES).length;
+    const specialCount = events.filter(e => e.isFF7 || e.isCookieRun || e.isQOM || e.isPhantasia || e.isUnknownWorld || e.isCollab || e.isDrawParents).length;
+    const weeklyCount = events.filter(e => !e.isFF7 && !e.isCookieRun && !e.isQOM && !e.isPhantasia && !e.isUnknownWorld && !e.isCollab && !e.isDrawParents).length;
+    const unclearedCount = events.filter(e => Raid.stageProgress(e.id) < Raid.stageCount(e)).length;
 
     const filters = [
       { id: 'all', label: 'All Events', count: allCount },
@@ -150,9 +150,9 @@ Object.assign(Screens, {
     board.appendChild(filterRow);
 
     const filteredEvents = events.filter(e => {
-      if (this._eventFilter === 'special') return e.isCookieRun || e.isQOM || e.isPhantasia || e.isUnknownWorld || e.isCollab || e.isDrawParents;
-      if (this._eventFilter === 'weekly') return !e.isCookieRun && !e.isQOM && !e.isPhantasia && !e.isUnknownWorld && !e.isCollab && !e.isDrawParents;
-      if (this._eventFilter === 'uncleared') return Raid.stageProgress(e.id) < Raid.STAGES;
+      if (this._eventFilter === 'special') return e.isFF7 || e.isCookieRun || e.isQOM || e.isPhantasia || e.isUnknownWorld || e.isCollab || e.isDrawParents;
+      if (this._eventFilter === 'weekly') return !e.isFF7 && !e.isCookieRun && !e.isQOM && !e.isPhantasia && !e.isUnknownWorld && !e.isCollab && !e.isDrawParents;
+      if (this._eventFilter === 'uncleared') return Raid.stageProgress(e.id) < Raid.stageCount(e);
       return true;
     });
 
@@ -166,33 +166,35 @@ Object.assign(Screens, {
         const title = e.title || (boss ? boss.title : e.bossIds.length === 1 ? 'Twisted ' + HEROES[e.bossIds[0]].name : 'Converging Experiments');
         const targets = e.bossIds.map(id => 'Twisted ' + HEROES[id].name).join(' & ');
         const cleared = Raid.stageProgress(e.id);
+        const stageCount = Raid.stageCount(e);
         const nextStage = Raid.nextStage(e.id) + 1;
         const entryOpen = Raid.eventUnlocked(e);
         const isDelilah = e.bossIds.includes('Delilah');
         const unknownWorld = !!e.isUnknownWorld;
-        const isComplete = cleared >= Raid.STAGES;
+        const isComplete = cleared >= stageCount;
 
-        const banner = el('button', 'event-banner' + (isDelilah ? ' delilah' : '') + (e.isCollab ? ' collab' : '') + (e.isPhantasia ? ' phantasia' : '') + (e.isCookieRun ? ' cookie-banner' : '') + (e.isQOM ? ' qom' : '') + (unknownWorld ? ' unknown-world' : '') + (e.isDrawParents ? ' draw-parents-banner' : '') + (entryOpen ? '' : ' locked'));
+        const banner = el('button', 'event-banner' + (isDelilah ? ' delilah' : '') + (e.isCollab ? ' collab' : '') + (e.isPhantasia ? ' phantasia' : '') + (e.isCookieRun ? ' cookie-banner' : '') + (e.isFF7 ? ' ff7-banner-card' : '') + (e.isQOM ? ' qom' : '') + (unknownWorld ? ' unknown-world' : '') + (e.isDrawParents ? ' draw-parents-banner' : '') + (entryOpen ? '' : ' locked'));
         banner.style.setProperty('--event-hue', String([38, 272, 214, 322][i % 4]));
 
         const badgeHtml = e.isDrawParents ? `<span class="event-banner-badge ready">🎨 ${Math.round(DrawParents.state().progress)}% DRAWN</span>`
           : !entryOpen ? `<span class="event-banner-badge locked">🔒 MASTERY ${e.minMastery}</span>`
           : isComplete ? `<span class="event-banner-badge complete">★ CLEARED</span>`
-          : `<span class="event-banner-badge ready">STAGE ${nextStage}/8</span>`;
+          : `<span class="event-banner-badge ready">STAGE ${nextStage}/${stageCount}</span>`;
 
         banner.innerHTML = `
           ${badgeHtml}
-          <span class="event-crest">${e.isDrawParents ? '🎨' : e.isCookieRun ? '🍪' : e.isQOM ? '♫' : e.isPhantasia ? '🌠' : unknownWorld ? '⚙' : isDelilah ? '⌬' : e.isCollab ? '🔑' : '!'}</span>
-          <div class="event-art">${e.isDrawParents ? e.featuredIds.map(id => `<img src="${Art.hero(id)}" alt="${HEROES[id].name}">`).join('') : e.isCookieRun ? COOKIE_HERO_IDS.map(id => `<img src="${Art.hero(id)}" alt="${HEROES[id].name}">`).join('') : e.isQOM ? e.featuredIds.map(id => `<img src="${Art.hero(id)}" alt="${HEROES[id].name}">`).join('') : e.isPhantasia ? `<img src="${Art.hero('Phantasia')}" alt="Phantasia">` : unknownWorld ? e.featuredIds.map(id => `<img src="${UNKNOWN_WORLD_ART[id]}" alt="${HEROES[id].name}">`).join('') : e.bossIds.map(id => `<img src="${e.isCollab ? Art.hero(id) : Art.twisted(id)}" alt="${HEROES[id].name}">`).join('')}</div>
+          <span class="event-crest">${e.isFF7 ? '💎' : e.isDrawParents ? '🎨' : e.isCookieRun ? '🍪' : e.isQOM ? '♫' : e.isPhantasia ? '🌠' : unknownWorld ? '⚙' : isDelilah ? '⌬' : e.isCollab ? '🔑' : '!'}</span>
+          <div class="event-art">${e.isFF7 ? ['Tifa', 'Cloud', 'Barret', 'Sephiroth'].map(id => `<img src="${ASSET + FF7_VN_ART[id]}" alt="${HEROES[id].name}">`).join('') : e.isDrawParents ? e.featuredIds.map(id => `<img src="${Art.hero(id)}" alt="${HEROES[id].name}">`).join('') : e.isCookieRun ? COOKIE_HERO_IDS.map(id => `<img src="${Art.hero(id)}" alt="${HEROES[id].name}">`).join('') : e.isQOM ? e.featuredIds.map(id => `<img src="${Art.hero(id)}" alt="${HEROES[id].name}">`).join('') : e.isPhantasia ? `<img src="${Art.hero('Phantasia')}" alt="Phantasia">` : unknownWorld ? e.featuredIds.map(id => `<img src="${UNKNOWN_WORLD_ART[id]}" alt="${HEROES[id].name}">`).join('') : e.bossIds.map(id => `<img src="${e.isCollab ? Art.hero(id) : Art.twisted(id)}" alt="${HEROES[id].name}">`).join('')}</div>
           <div class="event-copy">
-            <small>${e.isDrawParents ? 'INTERACTIVE DRAWING EVENT' : e.isQOM ? 'THREE-SET CONCERT' : e.isPhantasia ? 'MID-GAME GRIND' : unknownWorld ? 'ENCOUNTER-ONLY INVASION' : e.isCollab ? '5:00 ENDURANCE' : 'THREE-WAVE EVENT'} · ${e.tag}</small>
+            <small>${e.isFF7 ? 'STORY SEQUENCE · EASY / HARD' : e.isDrawParents ? 'INTERACTIVE DRAWING EVENT' : e.isQOM ? 'THREE-SET CONCERT' : e.isPhantasia ? 'MID-GAME GRIND' : unknownWorld ? 'ENCOUNTER-ONLY INVASION' : e.isCollab ? '5:00 ENDURANCE' : 'THREE-WAVE EVENT'} · ${e.tag}</small>
             <strong>${title}</strong>
-            <em>${e.isDrawParents ? 'Use Scratch Tickets to draw Gourdy’s parents · Lockets, Shards, Full Recruits' : e.isCookieRun ? 'GingerBrave’s oven · battles · Cookie gacha' : e.isQOM ? 'Backstage Passes · five variants' : e.isPhantasia ? 'Wish Coins · Phantasia rewards' : unknownWorld ? 'Gears · superior Trinkets · not recruitable' : e.isCollab ? e.bossIds.map(id => HEROES[id].name).join(' & ') : targets}</em>
+            <em>${e.isFF7 ? 'Cloud · Tifa · Barret · Sephiroth · Materia' : e.isDrawParents ? 'Scratch Tickets · repeatable Mastery XP · Lockets, Shards, Recruits' : e.isCookieRun ? 'GingerBrave’s oven · battles · Cookie gacha' : e.isQOM ? 'Backstage Passes · five variants' : e.isPhantasia ? 'Wish Coins · Phantasia rewards' : unknownWorld ? 'Gears · superior Trinkets · not recruitable' : e.isCollab ? e.bossIds.map(id => HEROES[id].name).join(' & ') : targets}</em>
+            ${!e.isDrawParents && !e.isFF7 ? '<span class="event-banner-mutation">BATTLE MUTATIONS</span>' : ''}
           </div>
           ${unknownWorld ? '<div class="unknown-world-banner-strip"><b>⚙</b><span>FAMILIAR TARGETS DETECTED</span><i>3 WAVES</i></div>' : ''}
           <div class="event-meter">
-            <span>${e.isDrawParents ? `SKETCHBOOK · ${Math.round(DrawParents.state().progress)}% COMPLETE` : entryOpen ? `${cleared} / ${Raid.STAGES} CLEARED ${isComplete ? '· ALL BEATEN' : `· NEXT ${nextStage}`}` : `🔒 MASTERY ${e.minMastery}`}</span>
-            <i><u style="width:${e.isDrawParents ? DrawParents.state().progress : (cleared / Raid.STAGES * 100)}%"></u></i>
+            <span>${e.isDrawParents ? `SKETCHBOOK · ${Math.round(DrawParents.state().progress)}% COMPLETE` : entryOpen ? `${cleared} / ${stageCount} CLEARED ${isComplete ? '· ALL BEATEN' : `· NEXT ${nextStage}`}` : `🔒 MASTERY ${e.minMastery}`}</span>
+            <i><u style="width:${e.isDrawParents ? DrawParents.state().progress : (cleared / stageCount * 100)}%"></u></i>
           </div>`;
         banner.onclick = () => { Sound.play('choose'); this._raidDossier = e.id; this.render(); };
         list.appendChild(banner);
@@ -205,7 +207,9 @@ Object.assign(Screens, {
 
   raidDossier(s, ev) {
     if (ev.isDrawParents) { this.drawParents(s, ev); return; }
+    if (ev.isFF7) { this.ff7Event(s, ev); return; }
     if (ev.isCookieRun) { this.cookieRun(s, ev); return; }
+    const stageCount = Raid.stageCount(ev);
     const cleared = Raid.stageProgress(ev.id);
     this._raidStages = this._raidStages || {};
     let stage = this._raidStages[ev.id];
@@ -232,33 +236,38 @@ Object.assign(Screens, {
     const nextEv = allEvents[(evIndex + 1) % allEvents.length];
 
     const topbar = el('div', 'event-dossier-topbar');
-    const back = el('button', 'event-dossier-back-btn', '← Back to Event Board');
+    const back = el('button', 'event-dossier-back-btn', '← Events');
     back.onclick = () => { Sound.play('ui_back'); this._raidDossier = null; this.render(); };
 
     const pager = el('div', 'event-dossier-pager');
-    const prevBtn = el('button', 'event-dossier-pager-btn', '‹ Prev Event');
+    const prevBtn = el('button', 'event-dossier-pager-btn', '‹');
+    prevBtn.setAttribute('aria-label', `Previous event: ${prevEv.title || prevEv.label}`);
     prevBtn.title = `Switch to ${prevEv.title || prevEv.label}`;
     prevBtn.onclick = () => { Sound.play('ui_move'); this._raidDossier = prevEv.id; this.render(); };
 
-    const nextBtn = el('button', 'event-dossier-pager-btn', 'Next Event ›');
+    const nextBtn = el('button', 'event-dossier-pager-btn', '›');
+    nextBtn.setAttribute('aria-label', `Next event: ${nextEv.title || nextEv.label}`);
     nextBtn.title = `Switch to ${nextEv.title || nextEv.label}`;
     nextBtn.onclick = () => { Sound.play('ui_move'); this._raidDossier = nextEv.id; this.render(); };
 
     pager.append(prevBtn, nextBtn);
-    topbar.append(back, pager);
+    const context = el('div', 'event-dossier-context');
+    context.innerHTML = `<small>EVENT DOSSIER · ${ev.tag}</small><b>${title}</b>`;
+    topbar.append(back, context, pager);
     s.appendChild(topbar);
 
     const page = el('div', 'event-dossier' + (delilah ? ' delilah' : '') + (ev.isCollab ? ' collab' : '') + (phantasia ? ' phantasia' : '') + (ev.isQOM ? ' qom' : '') + (unknownWorld ? ' unknown-world' : ''));
     const hero = el('section', 'event-dossier-hero');
     hero.innerHTML = `${unknownWorld ? '<div class="unknown-world-dossier-stamp"><b>⚙ INTRUDER NOTICE</b><span>MACHINES HAVE LOCKED ON</span></div>' : ''}<div class="event-dossier-art">${ev.isQOM ? ev.featuredIds.map(id => `<img src="${Art.hero(id)}" alt="${HEROES[id].name}">`).join('') : phantasia ? `<img src="${Art.hero('Phantasia')}" alt="Phantasia">` : unknownWorld ? ev.featuredIds.map(id => `<img src="${UNKNOWN_WORLD_ART[id]}" alt="${HEROES[id].name}">`).join('') + (bigWigVisible ? `<img class="big-wig-art" src="${UNKNOWN_WORLD_ART.BigWig}" alt="Big Wig">` : '') : ev.bossIds.map(id => `<img src="${ev.isCollab ? Art.hero(id) : Art.twisted(id)}" alt="${HEROES[id].name}">`).join('')}</div>
       <div class="event-dossier-copy">
-        <small>${ev.tag} · STAGE ${stage + 1} OF ${Raid.STAGES}</small>
+        <small>${ev.tag} · STAGE ${stage + 1} OF ${stageCount}</small>
         <h1>${title}</h1>
         <p>${ev.blurb || (boss ? boss.intro : 'A dangerous weekly encounter.')}</p>
         <div class="event-dossier-pills">
           <span class="pill">Enemy Lv ${level}</span>
           <span class="pill">${entryOpen ? '✓' : '🔒'} Mastery ${ev.minMastery || 20}+</span>
           <span class="pill">${ev.isCollab ? '1 Endurance Battle' : '3 Waves'}</span>
+          <span class="pill">${BattleMutations.forEvent(ev, stage, 1).length} mutations</span>
           ${ev.isCollab ? '<span class="pill">⏱ 5:00 Limit</span>' : ''}
           ${phantasia ? '<span class="pill">🛍 Separate Shop</span>' : ''}
           ${unknownWorld ? '<span class="pill">⚙ Gear Workshop</span>' : ''}
@@ -289,6 +298,15 @@ Object.assign(Screens, {
         <small>${ev.isQOM ? 'Backstage Passes' : phantasia ? 'Wish Coins' : unknownWorld ? 'Gears' : 'Event Tokens'}</small>
       </div>`;
     page.appendChild(hero);
+
+    const activeMutations = BattleMutations.forEvent(ev, stage, 1);
+    const mutationStage = el('section', 'event-mutation-stage event-dossier-mutation-stage');
+    const openingLabel = ev.isCollab ? 'ENDURANCE BATTLE' : ev.isQOM ? 'OPENING SET' : 'WAVE 1';
+    const rotationCopy = ev.isCollab
+      ? 'These mutations last for the endurance battle.'
+      : `Mutations change each ${ev.isQOM ? 'set' : 'wave'}.`;
+    mutationStage.innerHTML = `<div class="event-mutation-stage-head"><div><small>STAGE ${stage + 1} · ${openingLabel}</small><h2>Battle mutations</h2><p>${rotationCopy}</p></div><strong>${activeMutations.length} ACTIVE</strong></div><div class="event-mutation-cards">${BattleMutations.cards(activeMutations)}</div>`;
+    page.appendChild(mutationStage);
 
     const teamIds = (Save.data.team || []).filter(Boolean);
     const teamDock = el('div', 'event-dossier-team');
@@ -325,7 +343,7 @@ Object.assign(Screens, {
     this.section(page, 'STAGES');
     const stageControls = el('div', 'event-stage-controls');
     stageControls.innerHTML = `
-      <span class="event-stage-controls-label">Selected: <b>Stage ${stage + 1}</b> of ${Raid.STAGES}</span>
+      <span class="event-stage-controls-label">Selected: <b>Stage ${stage + 1}</b> of ${stageCount}</span>
       <div class="event-stage-jump-btns">
         <button type="button" class="event-jump-btn jump-next">⚡ Next Uncleared</button>
         <button type="button" class="event-jump-btn jump-max">★ Max Stage</button>
@@ -339,14 +357,14 @@ Object.assign(Screens, {
     const jumpMax = $('.jump-max', stageControls);
     if (jumpMax) jumpMax.onclick = () => {
       Sound.play('choose');
-      this._raidStages[ev.id] = Raid.STAGES - 1;
+      this._raidStages[ev.id] = stageCount - 1;
       this.render();
     };
     page.appendChild(stageControls);
 
     const stages = el('div', 'event-stage-grid');
-    for (let i = 0; i < Raid.STAGES; i++) {
-      const done = Raid.stageCleared(ev.id, i), current = cleared < Raid.STAGES && i === Raid.nextStage(ev.id);
+    for (let i = 0; i < stageCount; i++) {
+      const done = Raid.stageCleared(ev.id, i), current = cleared < stageCount && i === Raid.nextStage(ev.id);
       const selected = i === stage;
       const unlocked = Raid.stageUnlocked(ev.id, i);
       const button = el('button', 'event-stage' + (done ? ' done' : '') + (current ? ' current' : '') + (selected ? ' selected' : '') + (!unlocked ? ' locked' : ''));
@@ -355,12 +373,22 @@ Object.assign(Screens, {
         factor: ev.isQOM ? 1.3 : ev.isCollab ? 1.25 : ev.isUnknownWorld ? 1.15 : 1.1
       });
       const stageUnderRecommended = teamPower < stageRecommended;
-      button.innerHTML = `<b>${i + 1}</b><small>LV ${Raid.stageLevel(i, ev)}</small><em class="stage-power-label${stageUnderRecommended ? ' under' : ''}">⚡ ${fmt(stageRecommended)}</em>`;
+      button.innerHTML = `<b>${i + 1}</b><small>LV ${Raid.stageLevel(i, ev)}</small><span class="stage-mutation-count">${BattleMutations.forEvent(ev, i, 1).length} MUTATIONS</span><em class="stage-power-label${stageUnderRecommended ? ' under' : ''}">⚡ ${fmt(stageRecommended)}</em>`;
       button.title = `Stage ${i + 1} · Enemy level ${Raid.stageLevel(i, ev)} · ${done ? 'Cleared (farmable)' : unlocked ? 'Available now' : 'Clear the previous stage first'}`;
       button.onclick = () => { Sound.play('choose'); this._raidStages[ev.id] = i; this.render(); };
       stages.appendChild(button);
     }
     page.appendChild(stages);
+
+    const mutationRoute = el('div', 'event-mutation-route' + (ev.isCollab ? ' solo' : ''));
+    mutationRoute.innerHTML = Array.from({ length: ev.isCollab ? 1 : 3 }, (_, i) => {
+      const wave = i + 1;
+      return `<div><small>${ev.isCollab ? 'ENDURANCE' : ev.isQOM ? 'SET ' + wave : 'WAVE ' + wave}</small><b>${BattleMutations.forEvent(ev, stage, wave).map(m => `${m.name} (${m.short})`).join(' · ')}</b></div>`;
+    }).join('');
+    page.appendChild(mutationRoute);
+    const guide = el('details', 'event-mutation-guide');
+    guide.innerHTML = `<summary>View all ${BattleMutations.catalog.length} battle mutations <span>⌄</span></summary><div class="event-mutation-cards">${BattleMutations.cards(BattleMutations.catalog)}</div>`;
+    page.appendChild(guide);
 
     if (ev.isPhantasia) this.phantasiaShopLink(page, ev);
     else if (ev.isUnknownWorld) this.unknownWorldShop(page, ev);
@@ -417,7 +445,57 @@ Object.assign(Screens, {
     fightBar.appendChild(tapeFight);
 
     page.appendChild(fightBar);
+
+    // Put the stage, squad and battle action together. The existing shops and
+    // encounter details retain their controls but live in dedicated views.
+    const heading = label => [...page.children].find(node => node.classList.contains('sec') && node.textContent === label);
+    const tabs = el('div', 'event-interior-tabs');
+    tabs.setAttribute('role', 'tablist');
+    tabs.setAttribute('aria-label', `${title} sections`);
+    const panels = {
+      battle: el('section', 'event-interior-panel event-interior-battle'),
+      mechanics: el('section', 'event-interior-panel event-interior-mechanics'),
+      rewards: el('section', 'event-interior-panel event-interior-rewards')
+    };
+    Object.entries(panels).forEach(([key, panel]) => {
+      panel.id = `event-${key}-panel`;
+      panel.setAttribute('role', 'tabpanel');
+      const tab = el('button', 'event-interior-tab', `<i>${key === 'battle' ? '⚔' : key === 'mechanics' ? '◈' : '✦'}</i><span>${key === 'battle' ? 'Battle' : key === 'mechanics' ? 'Mechanics' : 'Rewards'}</span>`);
+      tab.type = 'button';
+      tab.id = `event-${key}-tab`;
+      tab.setAttribute('role', 'tab');
+      tab.setAttribute('aria-controls', panel.id);
+      panel.setAttribute('aria-labelledby', tab.id);
+      tab.dataset.eventTab = key;
+      tabs.appendChild(tab);
+    });
+    const move = (panel, ...nodes) => nodes.filter(Boolean).forEach(node => panel.appendChild(node));
+    move(panels.battle, heading('STAGES'), stageControls, stages, teamDock, fightBar,
+      $('.event-dossier-mutation-stage', page), $('.event-mutation-route', page), $('.event-mutation-guide', page));
+    move(panels.mechanics, heading('ENCOUNTER ROUTE'), route,
+      heading('ACTIVE CONDITIONS'), conditions, heading('BOSS MECHANICS'), mechanics);
+    const rewardSummary = el('div', 'event-interior-reward-summary', `<div><small>STAGE ${stage + 1} CLEAR</small><b>${Raid.currencyIcon(ev)} ${fmt(Raid.tokenReward(ev, stage))}</b></div><div><small>AVAILABLE TO SPEND</small><b>${Raid.currencyIcon(ev)} ${fmt(Raid.currency(ev))}</b></div>`);
+    move(panels.rewards, rewardSummary, heading('EVENT SHOP') || heading('SHOP') || heading('GEAR WORKSHOP'),
+      $('.event-token-shop', page), $('.phantasia-shop-link', page), $('.unknown-world-workshop', page));
+    page.append(tabs, panels.battle, panels.mechanics, panels.rewards);
+    this._raidInteriorTabs = this._raidInteriorTabs || {};
+    const showTab = key => {
+      this._raidInteriorTabs[ev.id] = key;
+      $$('.event-interior-tab', tabs).forEach(button => {
+        const selected = button.dataset.eventTab === key;
+        button.classList.toggle('active', selected);
+        button.setAttribute('aria-selected', String(selected));
+      });
+      Object.entries(panels).forEach(([name, panel]) => { panel.hidden = name !== key; });
+      if (key === 'battle' && page.isConnected) {
+        const selectedStageButton = $('.event-stage.selected', stages);
+        if (selectedStageButton) stages.scrollLeft = Math.max(0,
+          selectedStageButton.offsetLeft - stages.offsetLeft - (stages.clientWidth - selectedStageButton.offsetWidth) / 2);
+      }
+    };
+    $$('.event-interior-tab', tabs).forEach(button => { button.onclick = () => { Sound.play('ui_move'); showTab(button.dataset.eventTab); }; });
     s.appendChild(page);
+    showTab(this._raidInteriorTabs[ev.id] || 'battle');
   },
 
   raidShop(page, ev) {
@@ -681,7 +759,7 @@ Object.assign(Screens, {
     if (!initial.length) { UI.toast('Set a team first'); Sound.play('ui_err'); return; }
 
     const level = Raid.stageLevel(stage, ev), serviceWeek = currentWeek();
-    const plan = Raid.wavePlan(ev);
+    const plan = Raid.wavePlan(ev, stage);
     const run = { wave: 1, team: initial };
     const rewards = Raid.stageRewards(ev, stage);
 
@@ -692,7 +770,8 @@ Object.assign(Screens, {
           title: `Collab Endurance · Stage ${stage + 1}`,
           floorLabel: `${ev.title} · Stage ${stage + 1}`,
           roomIdx: 1, roomTotal: 1, bg: ASSET + 'uploads/traversetown.png',
-          mods: ['event_collab_endurance'], timeLimit: 300, timeoutWin: true,
+          mods: ['event_collab_endurance'], mutations: BattleMutations.forEvent(ev, stage, 1).map(m => m.id),
+          timeLimit: 300, timeoutWin: true,
           survivedLabel: 'the five-minute Keyblade endurance test',
           encounteredLabel: 'Riku, Sora, and Kairi!', collabEntrance: true, collabTheme: true
         },
@@ -729,6 +808,7 @@ Object.assign(Screens, {
           title: `Event Stage ${stage + 1} · Wave ${wave}/3`,
           floorLabel: `${ev.title} · Stage ${stage + 1}`, roomIdx: wave, roomTotal: 3,
           bg, mods: info.mods, timeLimit: final ? 210 : 165, unknownWorld: !!ev.isUnknownWorld, qom: !!ev.isQOM,
+          mutations: BattleMutations.forEvent(ev, stage, wave).map(m => m.id),
           ...(ev.isUnknownWorld ? {
             // Machines should spend their kit during the fight, not after the
             // player has already cleared the room. Big Wig opens fully charged;

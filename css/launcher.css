@@ -1,121 +1,90 @@
-/* Gardenview back-room launcher: a warm, worn supply-room entrance
-   built from the supplied room reference and the game's paper-cutout identity. */
-#launcher{position:fixed;inset:0;z-index:950;display:grid;place-items:center;overflow:hidden;
-  padding:18px;background:#19104b;color:#fff;opacity:0;pointer-events:none;transition:opacity .28s ease}
-#launcher[hidden]{display:none}
-#launcher.visible{opacity:1;pointer-events:auto}
-.launcher-backdrop{position:absolute;inset:-2%;overflow:hidden;
-  background:
-    radial-gradient(circle at 12% 17%,#fff 0 1px,transparent 2px),
-    radial-gradient(circle at 22% 25%,#ffcf55 0 2px,transparent 4px),
-    radial-gradient(circle at 74% 15%,#fff 0 2px,transparent 4px),
-    radial-gradient(circle at 86% 25%,#88efff 0 2px,transparent 4px),
-    radial-gradient(circle at 50% 30%,#e988ff 0 2px,transparent 4px),
-    linear-gradient(180deg,#17104d66 0%,#34227e44 34%,#8453bc22 67%,#21194e99 100%),
-    url('../uploads/image-29.png') center/cover no-repeat;
-  transform:scale(1.025);animation:launcherBackdropIn .8s both ease-out}
-.launcher-backdrop:before{content:"";position:absolute;inset:-15%;
-  background:repeating-conic-gradient(from 0deg at 16% 20%,transparent 0 6deg,#fff8 7deg 8deg,transparent 9deg 16deg),
-    repeating-conic-gradient(from 10deg at 77% 16%,transparent 0 5deg,#c7f8ff99 6deg 7deg,transparent 8deg 14deg),
-    repeating-conic-gradient(from -18deg at 50% 9%,transparent 0 7deg,#ffbbf277 8deg 9deg,transparent 10deg 17deg);
-  mask-image:radial-gradient(ellipse at 16% 20%,#000 0 10%,transparent 31%),radial-gradient(ellipse at 77% 16%,#000 0 10%,transparent 31%),radial-gradient(ellipse at 50% 9%,#000 0 9%,transparent 27%);
-  opacity:.82;animation:launcherFireworks 7s ease-in-out infinite alternate}
-.launcher-backdrop:after{content:"";position:absolute;left:-10%;right:-10%;bottom:-4%;height:39%;
-  background:linear-gradient(180deg,#d7b3ff11,#120d3566),repeating-linear-gradient(90deg,#fff2 0 2px,transparent 2px 76px),repeating-linear-gradient(0deg,#fff2 0 2px,transparent 2px 54px);
-  transform:perspective(300px) rotateX(56deg);transform-origin:bottom;opacity:.7}
-.launcher-vignette{position:absolute;inset:0;z-index:1;background:
-  radial-gradient(ellipse at 50% 44%,transparent 25%,#150c3a25 62%,#08051d99 100%),
-  linear-gradient(180deg,#08051d33,transparent 38%,#09051d88);pointer-events:none}
-.launcher-card{position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;align-items:center;justify-content:space-between;
-  width:100%;padding:clamp(64px,11vh,112px) 18px max(20px,env(safe-area-inset-bottom,0px));
-  text-align:center;animation:launcherCardIn .5s .14s both cubic-bezier(.2,1.2,.4,1)}
-.launcher-brand{filter:drop-shadow(0 0 18px #fff8);animation:launcherBrandFloat 3.4s ease-in-out infinite}
-.launcher-logo{display:block;width:min(88vw,510px);height:auto;margin:8px 0 3px;object-fit:contain;filter:drop-shadow(0 5px 0 #17133f) drop-shadow(0 0 12px #fff8)}
-.launcher-brand>b{display:block;color:#ffb7ef;font:1000 clamp(11px,3.5vw,17px)/1 "Arial Black",sans-serif;letter-spacing:4px;text-shadow:0 2px #5f236f}
-.launcher-actions{display:grid;gap:9px;justify-items:center;width:100%}
-.launcher-play{display:flex;align-items:center;justify-content:center;gap:11px;width:min(82vw,330px);min-height:70px;
-  margin:0 auto;padding:12px 24px;border:4px solid #17102f;border-radius:18px;
-  background:linear-gradient(180deg,#fff7b0,#ffd24d 52%,#e99538);box-shadow:inset 0 2px #fff,0 6px #26133e,0 0 24px #ffdc6c99;
-  color:#26133e;font:1000 24px/1 "Arial Black",sans-serif;letter-spacing:1.5px;cursor:pointer;
-  transition:transform .14s,filter .14s,box-shadow .14s}
-.launcher-play span{font-size:21px}.launcher-play:hover{filter:brightness(1.08);transform:translateY(-2px);box-shadow:inset 0 2px #fff,0 8px #26133e,0 0 28px #ffdc6ccc}
-.launcher-play:active{transform:translateY(3px);box-shadow:inset 0 2px #fff,0 3px #26133e}
-.launcher-play:focus-visible,.launcher-settings:focus-visible{outline:3px solid #fff;outline-offset:4px}
-.launcher-settings{display:flex;align-items:center;justify-content:center;gap:7px;min-width:132px;padding:8px 12px;
-  border:2px solid #fff9;border-radius:9px;color:#fff;background:#160f38b8;box-shadow:inset 0 1px #fff5,0 3px #160d2e;
-  font:1000 9px/1 "Arial Black",sans-serif;letter-spacing:1.2px;cursor:pointer;transition:transform .12s,filter .12s}
-.launcher-settings span{font-size:14px}.launcher-settings:hover{filter:brightness(1.15)}.launcher-settings:active{transform:translateY(3px)}
-#launcher.leaving{opacity:0;pointer-events:none}
-@keyframes launcherBackdropIn{from{opacity:0;transform:scale(1.07)}}
-@keyframes launcherFireworks{from{transform:scale(.96) rotate(-1deg);opacity:.62}to{transform:scale(1.04) rotate(1deg);opacity:.9}}
-@keyframes launcherBrandFloat{0%,100%{transform:translateY(1px)}50%{transform:translateY(-5px)}}
-@keyframes launcherCardIn{from{opacity:0;transform:translateY(16px) scale(.96)}to{opacity:1;transform:translateY(0) scale(1)}}
-@media(max-width:420px){
-  #launcher{padding:12px}.launcher-card{padding-top:58px;bottom:0}.launcher-logo{width:min(90vw,390px)}
-  .launcher-play{min-height:62px;font-size:20px}.launcher-settings{padding:7px 10px}
+/* Title screen: the room and original game logo do the visual work. */
+#launcher {
+  position: fixed;
+  inset: 0;
+  z-index: 950;
+  overflow: hidden;
+  color: #f5e9ce;
+  background: #171411;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .2s ease;
 }
-@media(prefers-reduced-motion:reduce){.launcher-backdrop,.launcher-brand,.launcher-card{animation:none}.launcher-play,.launcher-settings{transition:none}}
-
-/* Centered title-card hierarchy: one place to look, one obvious next action. */
-.launcher-card{display:grid;place-items:center;padding:22px 16px max(22px,env(safe-area-inset-bottom,0px));text-align:center}
-.launcher-console{position:relative;width:min(100%,620px);padding:clamp(16px,3vw,28px);border:2px solid #fff5;border-radius:24px;background:linear-gradient(180deg,#1b1649d9,#100d2fcf);box-shadow:inset 0 1px #fff4,0 10px 0 #0b0924a8,0 0 45px #120c3d99;backdrop-filter:blur(8px)}
-.launcher-console:before,.launcher-console:after{content:"";position:absolute;width:42px;height:42px;border-color:#ffe17d99;pointer-events:none}.launcher-console:before{left:10px;top:10px;border-left:2px solid;border-top:2px solid;border-radius:9px 0 0}.launcher-console:after{right:10px;bottom:10px;border-right:2px solid;border-bottom:2px solid;border-radius:0 0 9px}
-.launcher-topline{display:flex;align-items:center;justify-content:space-between;margin-bottom:clamp(12px,2vw,20px);color:#c7bbef;font:900 7px/1 Arial,sans-serif;letter-spacing:1.7px}.launcher-topline i{color:#a8ec9b;font-style:normal;font-size:6px;letter-spacing:1px}
-.launcher-brand{filter:drop-shadow(0 0 16px #fff6);animation:launcherBrandFloat 3.4s ease-in-out infinite}.launcher-logo{width:min(82vw,430px);max-height:30vh;margin:0 auto 3px;filter:drop-shadow(0 5px 0 #17133f) drop-shadow(0 0 12px #fff8)}.launcher-brand>b{font-size:clamp(10px,2.3vw,15px);letter-spacing:3.5px}
-.launcher-divider{display:flex;align-items:center;gap:9px;margin:clamp(14px,2.5vw,22px) auto 10px;color:#ffe17d;font:900 6px/1 Arial,sans-serif;letter-spacing:1.5px}.launcher-divider i{height:1px;flex:1;background:linear-gradient(90deg,transparent,#ffe17d99)}.launcher-divider i:last-child{background:linear-gradient(90deg,#ffe17d99,transparent)}
-.launcher-play:focus-visible,.launcher-settings:focus-visible{outline:2px solid #fff;outline-offset:3px}
-.launcher-actions{display:grid;gap:10px;width:min(100%,390px);margin:0 auto}.launcher-play{display:grid;grid-template-columns:28px minmax(0,1fr) 22px;align-items:center;gap:9px;width:100%;min-height:70px;margin:0;padding:10px 17px;border-radius:15px;text-align:left}.launcher-play-icon{font-size:20px;text-align:center}.launcher-play-copy{display:grid;gap:3px}.launcher-play-copy b{font-size:23px;line-height:1}.launcher-play-copy small{color:#74511c;font:1000 6px/1 Arial,sans-serif;letter-spacing:1.1px}.launcher-play>strong{align-self:center;justify-self:end;color:#8f6921;font-size:18px}.launcher-secondary{display:flex;align-items:center;justify-content:center;gap:9px}.launcher-settings{min-width:125px;padding:8px 11px}.launcher-secondary>small{color:#aaa4c4;font:700 6px/1.2 Arial,sans-serif;text-align:left}
-@media(max-width:420px){#launcher{padding:10px}.launcher-card{padding:10px 9px max(14px,env(safe-area-inset-bottom,0px))}.launcher-console{padding:14px 12px 16px;border-radius:19px}.launcher-topline{margin-bottom:10px}.launcher-logo{width:min(84vw,350px);max-height:25vh}.launcher-divider{margin:11px auto 8px}.launcher-play{min-height:62px}.launcher-play-copy b{font-size:20px}.launcher-secondary>small{display:none}}
-
-/* Gardenview back-room launcher: worn, warm, and handmade instead of a
-   neon command console. The supplied room photo gives the door a real place
-   in the world while the paper/cardboard treatment keeps the game identity. */
-#launcher{background:#17120f;color:#f4e4c7}
-.launcher-backdrop{inset:0;transform:none;background:
-  linear-gradient(180deg,#08070699 0%,#100b08a8 52%,#1d100bd1 100%),
-  linear-gradient(90deg,#090807c7 0%,transparent 35%,#0d0907aa 100%),
-  url('../uploads/image-66.png') center/cover no-repeat;animation:none}
-.launcher-backdrop:before{inset:0;background:
-  linear-gradient(90deg,transparent 0 72%,#08060454 100%),
-  repeating-linear-gradient(0deg,transparent 0 5px,#0000000d 5px 6px);mask-image:none;opacity:.72;animation:none}
-.launcher-backdrop:after{left:0;right:0;bottom:0;height:30%;background:linear-gradient(180deg,transparent,#080604b8);transform:none;opacity:1}
-.launcher-vignette{background:radial-gradient(ellipse at 50% 42%,transparent 17%,#08060435 62%,#050403d9 100%),linear-gradient(180deg,#00000026,transparent 36%,#0000008a)}
-.launcher-card{padding:22px 16px max(22px,env(safe-area-inset-bottom,0px));animation:launcherCardIn .45s .08s both cubic-bezier(.2,1.1,.4,1)}
-.launcher-console{width:min(100%,560px);padding:clamp(18px,3vw,30px);border:3px solid #241811;border-radius:4px;background:
-  linear-gradient(180deg,#5a402ccc,#342419e8 82%),
-  repeating-linear-gradient(0deg,#fff0 0 5px,#21150d12 5px 6px);
-  box-shadow:inset 0 1px #ead2a533,0 7px 0 #100a07cc,0 15px 28px #000b;backdrop-filter:none}
-.launcher-console:before,.launcher-console:after{width:74px;height:18px;border:0;border-radius:1px;background:#d8bd63d9;box-shadow:0 2px 0 #2d1d12aa;opacity:.85}
-.launcher-console:before{left:-27px;top:24px;transform:rotate(-9deg)}
-.launcher-console:after{right:-27px;bottom:27px;transform:rotate(8deg)}
-.launcher-topline{margin-bottom:clamp(14px,2vw,22px);color:#e8c98d;font:900 8px/1 Georgia,serif;letter-spacing:1.4px;text-shadow:0 1px #140c08}
-.launcher-topline i{color:#c3d2a1;font:italic 700 8px/1 Georgia,serif;letter-spacing:.6px}
-.launcher-brand{filter:drop-shadow(0 3px 0 #1b100b);animation:none}
-.launcher-logo{width:min(82vw,430px);max-height:30vh;filter:drop-shadow(0 4px 0 #17100c) drop-shadow(0 0 5px #f0d79c33)}
-.launcher-brand>b{color:#f0d99e;font:900 clamp(10px,2.3vw,15px)/1 Georgia,serif;letter-spacing:2.4px;text-shadow:0 2px #3c2418}
-.launcher-divider{margin:clamp(15px,2.5vw,23px) auto 11px;color:#e5c477;font:900 7px/1 Georgia,serif;letter-spacing:1.5px}
-.launcher-divider i{background:linear-gradient(90deg,transparent,#e5c47799)}.launcher-divider i:last-child{background:linear-gradient(90deg,#e5c47799,transparent)}
-.launcher-play{border:3px solid #21150d;border-radius:3px;background:linear-gradient(180deg,#f0dc82,#c8a74f 52%,#9a7137);box-shadow:inset 0 2px #fff8,0 4px #160d08,0 0 0 1px #f3df8c33;color:#25170d;font-family:Georgia,serif;letter-spacing:1px;transition:transform .14s,filter .14s,box-shadow .14s}
-.launcher-play:hover{filter:brightness(1.08);transform:translateY(-2px);box-shadow:inset 0 2px #fff8,0 6px #160d08,0 0 0 1px #f3df8c55}
-.launcher-play:active{transform:translateY(3px);box-shadow:inset 0 2px #fff8,0 2px #160d08}
-.launcher-play-copy b{font:900 25px/1 Georgia,serif;letter-spacing:1px}.launcher-play-copy small{color:#4a2e18;font:900 7px/1 Georgia,serif;letter-spacing:1.1px}
-.launcher-play-icon{font-size:18px}.launcher-play>strong{color:#60421d;font:900 20px/1 Georgia,serif}
-.launcher-settings{border:2px solid #d9bd79aa;border-radius:2px;color:#f0dfb9;background:#25170fbb;box-shadow:inset 0 1px #fff2,0 3px #160b07;font:900 9px/1 Georgia,serif;letter-spacing:1px;transition:transform .12s,filter .12s}
-.launcher-settings:hover{filter:brightness(1.15)}.launcher-settings span{font-size:13px}.launcher-secondary>small{color:#d7c09b;font:700 8px/1.2 Georgia,serif}
-@media(max-width:420px){#launcher{padding:10px}.launcher-card{padding:10px 9px max(14px,env(safe-area-inset-bottom,0px))}.launcher-console{padding:15px 12px 17px}.launcher-logo{width:min(84vw,350px)}.launcher-play-copy b{font-size:22px}.launcher-secondary>small{display:none}}
-
-/* Final minimal pass: keep the room and logo, remove the prop-like UI trim. */
-.launcher-console{width:min(100%,470px);padding:20px clamp(16px,4vw,28px);border:1px solid #d5bd8b55;border-radius:6px;background:#291d16d9;box-shadow:0 7px 0 #100a07aa,0 13px 28px #0009}
-.launcher-console:before,.launcher-console:after{display:none}
-.launcher-topline{margin-bottom:18px;color:#ddc79d;font:700 8px/1 Arial,sans-serif;letter-spacing:1.8px}.launcher-topline i{color:#b5b29b;font:700 8px/1 Arial,sans-serif;letter-spacing:1.2px}
-.launcher-brand{filter:drop-shadow(0 3px 0 #17100c)}.launcher-logo{width:min(78vw,390px);max-height:27vh}
-
-/* Keep the revised two-line wordmark fully visible above the launcher actions. */
-.launcher-logo{width:min(82vw,420px);max-width:100%;height:auto;max-height:24vh;object-fit:contain;object-position:center}
-@media(max-width:420px){.launcher-logo{width:min(88vw,360px);max-height:23vh}}
-.launcher-divider{margin:19px auto 15px}.launcher-divider i{background:#d8bc8255!important}.launcher-divider i:last-child{display:none}
-.launcher-play{min-height:58px;padding:10px 16px;border:1px solid #1b100a;border-radius:4px;background:#d5b868;box-shadow:inset 0 1px #fff7,0 3px #160d08;color:#25170d;transition:filter .14s,transform .14s}
-.launcher-play:hover{transform:none;filter:brightness(1.08);box-shadow:inset 0 1px #fff7,0 3px #160d08}.launcher-play:active{transform:translateY(2px);box-shadow:inset 0 1px #fff7,0 1px #160d08}
-.launcher-play-copy b{font-size:22px}.launcher-play-copy small{font-size:7px}.launcher-play-icon{font-size:16px}.launcher-play>strong{font-size:17px}
-.launcher-settings{border:0;border-bottom:1px solid #d9bd7966;border-radius:0;padding:7px 4px;color:#ead9b5;background:transparent;box-shadow:none;font-size:9px}.launcher-settings:hover{filter:none;color:#fff1c9}.launcher-settings:active{transform:none}.launcher-secondary{gap:10px}.launcher-secondary>small{color:#cbbd9f;font-size:7px}
-.accessibility-first-run{display:grid;gap:12px;max-width:420px}.accessibility-first-run p{font-size:15px;line-height:1.4}.accessibility-first-run small{color:var(--dim);font-size:10px;line-height:1.45}.accessibility-first-run-actions{flex-wrap:wrap}.accessibility-first-run-actions .btn{min-width:0}
+#launcher[hidden] { display: none; }
+#launcher.visible { opacity: 1; pointer-events: auto; }
+#launcher.leaving { opacity: 0; pointer-events: none; }
+.launcher-backdrop {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, #08070655, #08070620 45%, #080706b8), url('../uploads/launcher-room.webp') 55% center / cover no-repeat;
+}
+.launcher-card {
+  position: relative;
+  display: flex;
+  min-height: 100vh;
+  min-height: 100dvh;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(50px, 11vh, 105px);
+  padding: 24px 20px max(24px, env(safe-area-inset-bottom));
+}
+.launcher-logo {
+  display: block;
+  width: min(78vw, 570px);
+  max-height: 35vh;
+  object-fit: contain;
+  filter: drop-shadow(0 8px 10px #050403bb);
+}
+.launcher-actions {
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  width: min(75vw, 270px);
+}
+.launcher-play {
+  width: 100%;
+  min-height: 60px;
+  border: 2px solid #1b1713;
+  border-radius: 5px;
+  background: #f1dfb9;
+  box-shadow: 0 4px 0 #100d0b;
+  color: #251d16;
+  font: 900 21px/1 Arial, sans-serif;
+  cursor: pointer;
+  transition: background .15s ease, transform .15s ease, box-shadow .15s ease;
+}
+.launcher-play:hover { background: #fff0cd; transform: translateY(-2px); box-shadow: 0 6px 0 #100d0b; }
+.launcher-play:active { transform: translateY(3px); box-shadow: 0 1px 0 #100d0b; }
+.launcher-play:disabled { cursor: wait; opacity: .8; }
+.launcher-settings {
+  padding: 7px 10px;
+  border: 0;
+  background: transparent;
+  color: #f5e9ce;
+  font: 700 14px/1 Arial, sans-serif;
+  text-decoration: underline;
+  text-decoration-color: #f5e9ce77;
+  text-underline-offset: 4px;
+  cursor: pointer;
+}
+.launcher-settings:hover { color: #fff; text-decoration-color: currentColor; }
+.launcher-play:focus-visible, .launcher-settings:focus-visible { outline: 3px solid #fff; outline-offset: 4px; }
+@media (max-width: 600px) {
+  .launcher-backdrop { background-position: 60% center; }
+  .launcher-logo { width: min(90vw, 460px); max-height: 32vh; }
+  .launcher-actions { width: min(68vw, 270px); }
+}
+@media (max-height: 540px) and (min-width: 650px) {
+  .launcher-card { flex-direction: row; gap: 6vw; }
+  .launcher-logo { width: min(50vw, 500px); max-height: 70vh; }
+  .launcher-actions { width: min(28vw, 240px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  #launcher, .launcher-play { transition: none; }
+}
+.accessibility-first-run { display: grid; gap: 12px; max-width: 420px; }
+.accessibility-first-run p { font-size: 15px; line-height: 1.4; }
+.accessibility-first-run small { color: var(--dim); font-size: 10px; line-height: 1.45; }
+.accessibility-first-run-actions { flex-wrap: wrap; }
+.accessibility-first-run-actions .btn { min-width: 0; }

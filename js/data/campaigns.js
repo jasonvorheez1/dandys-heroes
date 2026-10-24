@@ -1,8 +1,8 @@
 /* campaigns.js - Friendship Campaigns: short standalone stories, up to 8
    stages, between one Hero and the friend behind their Friendship Badge
-   (badges.js). Playable any time - enemy strength is rolled around the
-   `recLevel` hint rather than gated to it, so an underleveled team can try
-   and just have a harder time. Clearing every stage grants the Badge.
+   (badges.js). Each chapter has a rising recommended level. These are
+   difficulty hints rather than gates, so an underleveled team can still try.
+   Clearing every stage grants the Badge.
 
    Friendship dialogue plays on the battle screen after a chapter victory and
    before its results card. Voice reference: CHARACTER_VOICES.md at the project
@@ -12,17 +12,20 @@
 const CAMPAIGNS = {};
 function defCampaign(o) { CAMPAIGNS[o.id] = o; return o; }
 
-/* Friendship battles are story content, so owning both Toons still unlocks
-   them immediately. This is the recommended battle level, calculated from
-   obtainment difficulty rather than combat tier: the rarer of the pair sets
-   the floor, while the second rarity adds extra weight. Collaboration pairs
-   receive an additional late-game bump because they are event-limited. */
+/* Friendship stories unlock when both Toons are owned. Their opening level
+   follows obtainment difficulty, while later chapters climb toward the
+   game's level cap. Recommendations describe difficulty, not an entry gate. */
 function friendshipRecLevel(a, b) {
   const ra = obtainOf(a).rank, rb = obtainOf(b).rank;
   const high = Math.max(ra, rb), low = Math.min(ra, rb);
-  // Friendship itself opens at Mastery 45, so even an easy pair should not
-  // advertise a recommendation below the mode's entry point.
-  return 45 + high * 5 + low * 2 + (high >= OBTAIN.Collab.rank ? 8 : 0);
+  return 60 + high * 60 + low * 16 + (high >= OBTAIN.Collab.rank ? 10 : 0);
+}
+function friendshipStageLevel(camp, stageIdx) {
+  const count = Math.max(1, camp.stages.length);
+  const at = Math.max(0, Math.min(count - 1, Math.floor(Number(stageIdx) || 0)));
+  const progress = count === 1 ? 0 : at / (count - 1);
+  const climb = 78 + camp.recLevel * .16;
+  return Math.min(600, Math.round((camp.recLevel + Math.pow(progress, 1.15) * climb) / 5) * 5);
 }
 function friendshipObtainLabel(a, b) {
   return `${obtainOf(a).name} + ${obtainOf(b).name}`;
@@ -2365,5 +2368,3 @@ defCampaign({
     ]}
   ]
 });
-
-

@@ -759,44 +759,5 @@ const UI = {
     wrap.appendChild(actions); wrap.appendChild(toolbar); wrap.appendChild(rosterMeta); wrap.appendChild(roster);
     redraw();
     return { node: wrap, team: cur, get valid() { return cur.filter(Boolean).length > 0; } };
-  },
-
-  /* ---------- reward reveal ---------- */
-  showPulls(results, title) {
-    const body = el('div');
-    const newCount = results.filter(r => r.isNew).length;
-    const summary = el('div', 'pull-summary', `${results.length} reveal${results.length === 1 ? '' : 's'}${newCount ? ` · ${newCount} NEW Hero${newCount === 1 ? '' : 'es'}` : ''}`);
-    summary.setAttribute('role', 'status');
-    body.appendChild(summary);
-    const grid = el('div', 'grid4');
-    const fragment = document.createDocumentFragment();
-    results.forEach((r, i) => {
-      const rarity = (r.type === 'hero' || r.type === 'shards') && r.id ? obtainOf(r.id).rank : 0;
-      const c = el('div', 'pullcard pull-result' + (r.isNew ? ' new' : ''));
-      c.dataset.type = r.type || 'resource';
-      if (rarity) c.dataset.rarity = rarity;
-      c.style.animationDelay = (i * .05) + 's';
-      const bonus = r.bonus && typeof r.bonus === 'object'
-        ? Object.entries(r.bonus).filter(([key, value]) => RES[key] && Number(value) > 0)
-        : [];
-      const bonusMarkup = bonus.length ? `<div class="mini" style="color:var(--gold)">✦ SUPPLY CACHE · ${bonus.slice(0, 2).map(([key, value]) => RES[key].icon + fmt(value)).join(' ')}${bonus.length > 2 ? ' +' + (bonus.length - 2) : ''}</div>` : '';
-      if (r.type === 'hero' || r.type === 'shards') {
-        c.innerHTML = `<img src="${Art.icon(r.id)}" loading="eager" decoding="async" alt="${HEROES[r.id].name}">
-          <div class="mini b">${HEROES[r.id].name}</div>
-          <div class="mini" style="color:var(--gold)">◈ ${r.n}</div>
-          ${r.isNew ? '<div class="mini b" style="color:var(--gold)">NEW</div>' : ''}${bonusMarkup}`;
-      } else {
-        c.innerHTML = `<div style="font-size:32px;height:52px;display:grid;place-items:center">${RES[r.k].icon}</div>
-          <div class="mini b">${RES[r.k].name}</div><div class="mini" style="color:var(--gold)">+${fmt(r.n)}</div>${bonusMarkup}`;
-      }
-      fragment.appendChild(c);
-    });
-    grid.appendChild(fragment);
-    body.appendChild(grid);
-    const ok = el('button', 'btn pri wide', 'Nice');
-    ok.style.marginTop = '12px';
-    ok.onclick = () => { this.closeModal(); Screens.render(); };
-    body.appendChild(ok);
-    this.modal(title || 'Crate Results', body, { sticky: true });
   }
 };

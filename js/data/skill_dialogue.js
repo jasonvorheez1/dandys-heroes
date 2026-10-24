@@ -42,12 +42,12 @@ const HERO_WHITE_DIALOGUE = {
   Tisha: ['Gotta sweep!', 'Let\'s clean this up!', 'Watch your step, the floor\'s wet!'],
   Finn: ['Swim time!', 'Making waves!', 'Hang on!'],
   RnD: ['Lights, camera, action!', 'A dazzling finish!', 'Let\'s put on a show!'],
-  Teagan: ['Let\'s fix that.', 'Thank goodness.', 'That\'s more like it.'],
+  Teagan: ['A cup for you.', 'Let us take a moment.', 'There is always room for one more.'],
   Dandy: ['A splendid show!', 'Keep smiling, everyone!', 'Dandy\'s got this!'],
   MrsHolloway: ['Spirals remember...', 'Mother is here.', 'The spiral never unravels.', 'Sleep now in spectral dreams...'],
   MrHolloway: ['Stand behind me!', 'Harvest comes for all of us.', 'Not while I\'m still standing!', 'Firm as autumn roots!'],
   Glisten: ['Mirror, mirror, on the wall!', 'Simply magnificent!', 'Look at this reflection!'],
-  Flutter: ['Flutter away!', 'Gentle breeze, carry us!', 'Soft wings, take flight!'],
+  Flutter: ['..!', '!', '!!!', '!?!', '!!', '!?', '?!', '...!', '!!?'],
   Pebble: ['Bark! Ruff!', 'Woof woof!', '*protective growl*']
 };
 

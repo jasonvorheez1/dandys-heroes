@@ -28,6 +28,14 @@ const DrawParents = {
   _comboCount: 0,
   _comboTimer: null,
 
+  masteryXpPerStroke() {
+    return Math.round(60 + Math.max(1, Save.data.mastery || 1) * 0.4);
+  },
+
+  masterpieceMasteryBonus() {
+    return Math.round(Save.masteryNeed(Math.max(1, Save.data.mastery || 1)) * 0.5);
+  },
+
   state() {
     if (!Save.data) return { progress: 0, clicks: 0, lockets: 0, completedDrawings: 0 };
     if (!Save.data.drawParents) {
@@ -54,6 +62,8 @@ const DrawParents = {
     const st = this.state();
     const results = [];
     let completedNow = false;
+    const strokeMasteryXp = this.masteryXpPerStroke();
+    const masterpieceMasteryXp = this.masterpieceMasteryBonus();
 
     // Track combo streak for extra drawing fun
     this._comboCount = (this._comboCount || 0) + count;
@@ -119,8 +129,9 @@ const DrawParents = {
       }
     }
 
-    Save.write();
-    return { ok: true, results, completedNow, progress: st.progress, combo: this._comboCount };
+    const masteryXp = count * strokeMasteryXp + (completedNow ? masterpieceMasteryXp : 0);
+    Save.addMasteryXp(masteryXp);
+    return { ok: true, results, completedNow, progress: st.progress, combo: this._comboCount, masteryXp, masterpieceMasteryXp };
   },
 
   resetPaper() {
@@ -140,6 +151,8 @@ Object.assign(Screens, {
 
   drawParents(s) {
     const st = DrawParents.state();
+    const strokeMasteryXp = DrawParents.masteryXpPerStroke();
+    const masterpieceMasteryXp = DrawParents.masterpieceMasteryBonus();
     const page = el('div', 'draw-event-page');
 
     // 1. Header with authentic tickets balance
@@ -167,7 +180,12 @@ Object.assign(Screens, {
     `;
     page.appendChild(header);
 
+    const status = el('div', 'draw-event-status');
+    status.innerHTML = `<div><small>PORTRAIT PROGRESS</small><b>${Math.round(st.progress)}%</b></div><div><small>PORTRAITS FINISHED</small><b>${fmt(st.completedDrawings || 0)}</b></div><div><small>PER STROKE</small><b>+${fmt(strokeMasteryXp)} XP</b></div>`;
+    page.appendChild(status);
+
     $('.draw-back-btn', header).onclick = () => {
+      this._raidDossier = null;
       this.go('raid');
     };
 
@@ -302,10 +320,14 @@ Object.assign(Screens, {
       </div>
       <div class="draw-rate-row">
         <span>🎨 Finished Portrait Bonus</span>
-        <span class="draw-rate-val" style="background:rgba(16,185,129,0.25);color:#6ee7b7">At 100%</span>
+        <span class="draw-rate-val" style="background:rgba(16,185,129,0.25);color:#6ee7b7">+${fmt(masterpieceMasteryXp)} Mastery XP</span>
+      </div>
+      <div class="draw-rate-row">
+        <span>🏅 Every Stroke</span>
+        <span class="draw-rate-val" style="background:rgba(16,185,129,0.25);color:#6ee7b7">+${fmt(strokeMasteryXp)} Mastery XP</span>
       </div>
       <div style="margin-top:10px;font-size:11px;color:#caa5e8;line-height:1.4">
-        Every stroke advances the portrait on paper and rewards guaranteed bonus Black Ichor!
+        Every ticket grants Mastery XP. Finish portraits for another bonus; reset the paper to keep earning.
       </div>
     `;
     sidePanel.appendChild(ratesCard);
@@ -440,7 +462,7 @@ Object.assign(Screens, {
     if (outcome.completedNow) {
       Sound.play('fanfare', { vol: .95 });
       FX.confetti(window.innerWidth / 2, 260, 95);
-      UI.toast('🎉 MASTERPIECE FINISHED! Claimed Memory Locket + 50 Holloway Shards!');
+      UI.toast(`🎉 MASTERPIECE FINISHED! +${fmt(outcome.masterpieceMasteryXp)} Mastery XP, Memory Locket + 50 Holloway Shards!`);
       if (speechText) speechText.textContent = GOURDY_DRAW_LINES.complete;
     }
 

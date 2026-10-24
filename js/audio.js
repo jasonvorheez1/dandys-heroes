@@ -5,40 +5,44 @@ const SFXDIR = ASSET + 'SFX/Common/';
 const SFXDIR2 = ASSET + 'SFX/Dandysworldcommon/';
 const SFXDIR3 = ASSET + 'SFX/shop/';
 const SFXDIR4 = ASSET + 'SFX/Twisteds/';
-const SFXDIR5 = ASSET + 'uploads/';
-const SFXDIR7 = ASSET + 'sfx/';
+const SFXDIR5 = UPLOADS_CDN;
+const cueUrl = (dir, file) => dir === SFXDIR5 ? uploadUrl(file) : dir + file;
+const SFXDIR7 = ASSET + 'SFX/';
 const HANDHELD_AUDIO = typeof matchMedia === 'function' && matchMedia('(max-width: 700px)').matches;
 const MUSIC_DEFAULT_VOLUME = HANDHELD_AUDIO ? .24 : .28;
 
 /* Supplied score. Music lives on its own pair of Audio elements so a screen
    change can crossfade without competing with the short SFX voice pools. */
 const MUSIC_TRACKS = {
-  cookieShop: ASSET + 'uploads/crkshop.mp3',
-  cookieMoonBattle: ASSET + 'uploads/CRKBBG3FIGHT.mp3',
-  navigation: ASSET + 'uploads/navigationhome.mp3',
-  navigationClairDeLune: ASSET + 'uploads/navigationhome.mp3',
-  navigationChristmas: ASSET + 'uploads/the_perfect_christmas.mp3',
-  navigationLockedAway: ASSET + 'uploads/locked_away.mp3',
-  battle: ASSET + 'uploads/normalbattle.mp3',
-  arena: ASSET + 'uploads/_High_Quality__Shadow_of_the_Colossus_OST_13_-_Revived_Power.mp3',
-  eventBattle: ASSET + 'uploads/EVenttwistedfight.mp3',
-  qomBattle: ASSET + 'uploads/Queens_of_Mischief_BGM___Dandy_s_World.mp3',
-  collabMenu: ASSET + 'uploads/kingdomheartseventmusic-2.mp3',
-  collabEvent: ASSET + 'uploads/kingdomheartsbattlemusic.mp3',
-  delilahEvent: ASSET + 'uploads/viewingtwisteddelilahevent.ogg',
-  shop: ASSET + 'uploads/shop.ogg',
-  phantasiaShop: ASSET + 'uploads/A_Bossa_do_L_mure_-_Official_Toons_Universe_Soundtrack.mp3',
+  cookieShop: uploadUrl('crkshop.mp3'),
+  cookieMoonBattle: uploadUrl('CRKBBG3FIGHT.mp3'),
+  navigation: uploadUrl('navigationhome.mp3'),
+  navigationClairDeLune: uploadUrl('navigationhome.mp3'),
+  navigationChristmas: uploadUrl('the_perfect_christmas.mp3'),
+  navigationLockedAway: uploadUrl('locked_away.mp3'),
+  battle: uploadUrl('normalbattle.mp3'),
+  arena: uploadUrl('_High_Quality__Shadow_of_the_Colossus_OST_13_-_Revived_Power.mp3'),
+  arenaBattle: 'youtube:dNT-dEiwp8s',
+  arenaBattleFallback: uploadUrl('_High_Quality__Shadow_of_the_Colossus_OST_13_-_Revived_Power.mp3'),
+  eventBattle: uploadUrl('EVenttwistedfight.mp3'),
+  qomMenu: uploadUrl('Queens_of_Mischief_BGM___Dandy_s_World.mp3'),
+  qomBattle: uploadUrl('Queensofmischiefbattlemusic.mp3'),
+  collabMenu: uploadUrl('kingdomheartseventmusic-2.mp3'),
+  collabEvent: uploadUrl('kingdomheartsbattlemusic.mp3'),
+  delilahEvent: uploadUrl('viewingtwisteddelilahevent.ogg'),
+  shop: uploadUrl('shop.ogg'),
+  phantasiaShop: uploadUrl('A_Bossa_do_L_mure_-_Official_Toons_Universe_Soundtrack.mp3'),
   // The Unknown World event has no menu track. Its supplied score belongs to
   // the actual battle; Big Wig keeps the separate boss score.
   unknownWorldMenu: null,
-  unknownWorldBattle: ASSET + 'uploads/unknown-world-battle.mp3',
-  unknownWorldBossBattle: ASSET + 'uploads/unknown-world-boss-theme.mp3',
-  apexTrial: ASSET + 'uploads/ATLUS_Sound_Team_-_Battle-b2.mp3',
-  glossary: ASSET + 'uploads/glossary.mp3',
-  journal: ASSET + 'uploads/journal.mp3'
+  unknownWorldBattle: uploadUrl('unknown-world-battle.mp3'),
+  unknownWorldBossBattle: uploadUrl('unknown-world-boss-theme.mp3'),
+  apexTrial: uploadUrl('ATLUS_Sound_Team_-_Battle-b2.mp3'),
+  glossary: uploadUrl('glossary.mp3'),
+  journal: uploadUrl('journal.mp3')
 };
 const MUSIC_VARIANTS = {
-  battle: [MUSIC_TRACKS.battle, ASSET + 'uploads/battletheme2.mp3'],
+  battle: [MUSIC_TRACKS.battle, uploadUrl('battletheme2.mp3')],
   navigation: [
     MUSIC_TRACKS.navigationClairDeLune,
     MUSIC_TRACKS.navigationChristmas,
@@ -49,8 +53,11 @@ const MUSIC_VARIANTS = {
 // still allowing the user's Music setting to control every track.
 const MUSIC_TRACK_TRIMS = {
   arena: .39,
+  arenaBattle: .39,
+  arenaBattleFallback: .39,
   apexTrial: .455,
   collabEvent: .58,
+  qomMenu: .66,
   qomBattle: .66,
   navigationChristmas: .82,
   navigationLockedAway: .72
@@ -168,6 +175,20 @@ const CUE4 = {
    dialogue never piles up over itself during Sora's fast combo strings. */
 const CUE5 = {
   qom_hey: ['qomHEY.mp3'],
+  glass_break: ['glassbreak.mp3'],
+  male_scream: ['vocalsmalescream.mp3'],
+  orb_magic: ['orb.mp3'],
+  skill_impact: ['skillimpacthit.mp3'],
+  fist_up: ['fistup.mp3'],
+  yap_skill: ['yappinginaskill1.mp3'],
+  yap_attack: ['yappingattack.mp3'],
+  drum_hit: ['drumhit.mp3'],
+  swish_attack: ['swishattack.mp3', 'swishattack2.mp3'],
+  powerline_beat1: ['powerline_attack2_beat1.mp3'],
+  powerline_beat2: ['powerline_attack2_beat2.mp3'],
+  powerline_defeat: ['powerline_defeat_microphonics.mp3'],
+  crowd_aww: ['crowdawwww.mp3'],
+  laser_hit: ['laserhit.mp3'],
   toon_death: ['deathsound.mp3'],
   vee_ad_pop: ['Pop-Up-2.ogg'],
   keyblade_hit: ['keybladehit.wav', 'keybladehit2.wav'],
@@ -199,6 +220,18 @@ const CUE5 = {
 /* Main-hero recordings supplied from the original game. These are identity
    cues, not replacements for every skill's cast or impact sound. */
 const CUE6 = {
+  // Final Fantasy VII event recordings supplied for this project.
+  ff7_cursor_move: ['Cursor_-_Move_ff7.wav'],
+  ff7_cursor_accept: ['ff7_Cursor_-_Accept.wav'],
+  ff7_cursor_equip: ['Cursor_-_Equip_ff7.wav'],
+  ff7_purchase: ['Purchase.wav'],
+  ff7_barret_gun: ['barretgunfire.wav'],
+  ff7_ice: ['ice.wav'],
+  ff7_strong_hit: ['ff7stronghit.wav'],
+  ff7_sword_hit: ['ff7swordhit.wav'],
+  ff7_enemy_down: ['ff7enemydown.wav'],
+  ff7_slots_spin: ['slots.mp3'],
+  ff7_slots_stop: ['slotsstop.mp3'],
   // Supplied combat library. These named cues are shared by the combat engine,
   // so existing and future heroes pick them up without per-hero sound wiring.
   hit_blunt: ['impact_generic_1.wav'],
@@ -215,7 +248,7 @@ const CUE6 = {
   monster_10112_skill: ['m10112_skill1.wav'],
   cookie_darkmagic_ability: ['darkmagic_ability_normal.wav'],
   cookie_darkmagic_spread: ['darkmagic_spread_normal.wav'],
-  gigi_ability: ['Gigi_Ability.mp3.mp3'],
+  gigi_ability: ['Gigi_Ability.ogg'],
   flutter_white: ['flutterwhite.ogg'],
   flutter_wingbeat: ['flutterwhite.ogg'],
   // Supplied Ichor Machine recordings live in uploads/.
@@ -275,6 +308,22 @@ const CUE7 = {
   blot_ink_cast: ['blot-ink-cast.wav'],
   blot_mime_wall: ['blot-mime-wall.wav'],
   blot_ink_burst: ['blot-ink-burst.wav'],
+  connie_vanish: ['connie-vanish.wav'],
+  connie_return: ['connie-return.wav'],
+  connie_prank: ['connie-prank.wav'],
+  connie_phase: ['connie-phase.wav'],
+  connie_veil: ['connie-veil.wav'],
+  connie_fright: ['connie-fright.wav'],
+  scraps_grapple: ['scraps-grapple.wav'],
+  scraps_slam: ['scraps-slam.wav'],
+  scraps_snip: ['scraps-snip.wav'],
+  scraps_cup: ['scraps-cup.wav'],
+  scraps_yarn: ['scraps-yarn.wav'],
+  scraps_shred: ['scraps-shred.wav'],
+  scraps_swap: ['scraps-swap.wav'],
+  bigwig_gavel: ['bigwig-gavel.wav'],
+  bigwig_book: ['bigwig-book.wav'],
+  bigwig_stamp: ['bigwig-stamp.wav'],
   rudie_hoofstep: ['rudie-hoofstep-barrage.wav'],
   rudie_red_nose: ['rudie-red-nose-rush.wav'],
   tisha_duster_sweep: ['tisha-duster-sweep.wav'],
@@ -387,7 +436,7 @@ const SFX_FILE_GAIN = {
   'TwistedRNDWake.mp3.mp3': .45, 'TwistedRNDAttack.mp3.mp3': .40,
   'TwistedRNDActivate.mp3.mp3': .42, 'TwistedRNDSleep.mp3.mp3': .38,
   'TwistedBlotHandSpawn.mp3.mp3': 1.54, 'TwistedBlotHandDespawn.mp3.mp3': 2.96,
-  'GlistenUsingHisAbilityAudio.mp3.mp3': .82, 'Gigi_Ability.mp3.mp3': .75,
+  'GlistenUsingHisAbilityAudio.mp3.mp3': .82, 'Gigi_Ability.ogg': .75,
   'GamblingAbility.ogg': .85, 'flutterwhite.ogg': .78,
   'AstroActiveAbility.mp3.mp3': .85, 'Veeabilityaudio.mp3.mp3': .80,
   'ShellyAbility.mp3.mp3': .82, 'Gourdydialouge.mp3.mp3': 1.25
@@ -426,7 +475,7 @@ const CUE = {
   hit_grab: ['100_hit_grap_0.wav', '100_hit_grap_1.wav', '100_hit_grap_2.wav'],
   miss: ['ACT_SPELLIT_WHOOSH_1.wav', 'ACT_SPELLIT_WHOOSH_2.wav'],
   guard: ['snd_se_common_GuardOn.wav'],
-  guardbreak: ['snd_se_common_GuardBreak.wav'],
+  guardbreak: ['105_guard_slash_1.wav'],
   block: ['105_guard_slash_0.wav', '105_guard_slash_1.wav'],
   // elements
   fire: ['015_blaze_0.wav', '015_blaze_1.wav'],
@@ -466,11 +515,11 @@ const CUE = {
   brake: ['208_brake_normal.wav'],
   jump: ['ACT_JUMP1.wav', 'ACT_JUMP2.wav', 'ACT_JUMP3.wav'],
   land: ['snd_se_common_Landing_Soil.wav'],
-  down: ['209_down_normal_0.wav', '209_down_normal_1.wav'],
+  down: ['209_down_normal_0.wav'],
   // status / support
   heal: ['snd_se_common_LifeUp.wav'],
   buff: ['snd_se_common_GuardOn.wav'],
-  cleanse: ['snd_se_AllStar_Heal_Warp.wav'],
+  cleanse: ['snd_se_common_LifeUp.wav'],
   ult: ['303_tag_r_blazing_a.wav'],
   ult_ready: ['303_crushassault_flash.wav'],
   summon: ['persona_call.wav'],
@@ -509,7 +558,14 @@ const CUE = {
   coin: ['snd_se_common_coin.wav'],
   gacha: ['gacha_normal.wav'],
   get_item: ['403_result_get.wav'],
-  get_rare: ['snd_se_common_Get_Figure.wav'],
+  get_rare: ['403_result_get.wav'],
+  // Gigi's non-White cues: recycled capsule-machine, coin and chime recordings.
+  gigi_ticket: ['gacha_normal.wav'],
+  gigi_coin_toss: ['ACT_BOUNCEHI.wav'],
+  gigi_coin_hit: ['snd_se_common_coin.wav'],
+  gigi_house_call: ['400_tag_fukidasi.wav'],
+  gigi_clover: ['snd_se_common_coin.wav'],
+  gigi_land: ['ACT_BOUNCELO.wav'],
   get_food: ['snd_se_common_item_Get_Tabemono.wav'],
   cheer: ['snd_se_Audience_Kansei_m.wav'],
   cheer_big: ['snd_se_Audience_Kansei_l.wav'],
@@ -558,6 +614,14 @@ const IMPACT_SOUND_CUES = new Set(['hit_slash', 'hit_blunt', 'hit_light', 'hit_h
   'skill_hit_normal', 'skill_hit_strong', 'cookie_brave_skill_hit']);
 
 function soundMix(cue) {
+  if (cue.startsWith('ff7_cursor_')) return { bus: 'ui', gain: cue === 'ff7_cursor_move' ? .32 : .5, throttle: 70, perCue: 1, maxMs: 700, fadeMs: 100 };
+  if (cue === 'ff7_purchase') return { bus: 'ui', gain: .62, throttle: 180, perCue: 1, maxMs: 1200, fadeMs: 130 };
+  if (cue === 'ff7_enemy_down') return { bus: 'impact', gain: .72, throttle: 0, perCue: 3, maxMs: 1700, fadeMs: 180 };
+  if (cue === 'ff7_barret_gun') return { bus: 'impact', gain: .58, throttle: 80, perCue: 2, maxMs: 900, fadeMs: 100 };
+  if (cue === 'ff7_sword_hit' || cue === 'ff7_strong_hit') return { bus: 'impact', gain: .62, throttle: 50, perCue: 2, maxMs: 900, fadeMs: 100 };
+  if (cue === 'ff7_ice') return { bus: 'ability', gain: .62, throttle: 280, perCue: 1, maxMs: 1500, fadeMs: 180 };
+  if (cue === 'ff7_slots_spin') return { bus: 'ability', gain: .48, throttle: 900, perCue: 1, maxMs: 1450, fadeMs: 140 };
+  if (cue === 'ff7_slots_stop') return { bus: 'ui', gain: .45, throttle: 120, perCue: 2, maxMs: 600, fadeMs: 100 };
   if (cue === 'skill_hit_normal') return { bus: 'impact', gain: .42, throttle: 115, perCue: 2 };
   if (cue === 'skill_hit_strong') return { bus: 'impact', gain: .56, throttle: 175, perCue: 2 };
   if (cue === 'shield_cast') return { bus: 'ability', gain: .52, throttle: 180, perCue: 2 };
@@ -601,7 +665,9 @@ function soundMix(cue) {
     return { bus: 'ui', gain: cue.endsWith('_tick') ? .28 : .42, throttle: 80, perCue: 1, maxMs: 1400, fadeMs: 180 };
   if (cue === 'arena_crowd') return { bus: 'ambience', gain: .68, throttle: 850, perCue: 1, maxMs: 3600, fadeMs: 380 };
   if (cue === 'arena_gate') return { bus: 'impact', gain: .72, throttle: 450, perCue: 1, maxMs: 2600, fadeMs: 240 };
-  if (cue === 'gigi_ability') return { bus: 'ability', gain: .62, throttle: 600, perCue: 1, maxMs: 3800, fadeMs: 300 };
+  if (cue === 'gigi_ticket') return { bus: 'ui', gain: .5, throttle: 300, perCue: 2, maxMs: 1200, fadeMs: 150 };
+  if (cue.startsWith('gigi_') && cue !== 'gigi_ability') return { bus: 'ability', gain: .55, throttle: 250, perCue: 2, maxMs: 1400, fadeMs: 160 };
+  if (cue === 'gigi_ability') return { bus: 'ability', gain: 1, throttle: 600, perCue: 1, maxMs: 3800, fadeMs: 300 };
   if (/^(sora|riku|kairi|goofy|phantasia)_/.test(cue))
     return { bus: 'creature', gain: .66, throttle: cue.endsWith('_attack') ? 900 : 1350, perCue: 1, maxMs: 3200, fadeMs: 360 };
   if (cue === 'hero_glisten_ability') return { bus: 'ability', gain: .68, throttle: 700, perCue: 1, maxMs: 2600, fadeMs: 280 };
@@ -659,6 +725,7 @@ const Sound = {
   _last: {},
   _voices: [],
   _combatLoad: 0,
+  _sceneGeneration: 0,
 
   setCombatLoad(unitCount) {
     this._combatLoad = Number(unitCount) >= 10 ? 1 : 0;
@@ -672,7 +739,7 @@ const Sound = {
   },
 
   _get(file, dir) {
-    const key = (dir || SFXDIR) + file;
+    const key = cueUrl(dir || SFXDIR, file);
     if (!this.pool[key]) {
       const arr = [];
       for (let i = 0; i < this.poolSize; i++) {
@@ -731,7 +798,11 @@ const Sound = {
     const src = this._source(cue);
     if (!src) return false;
     if (opt.delay) {
-      setTimeout(() => this.play(cue, Object.assign({}, opt, { delay: 0 })), opt.delay);
+      const generation = this._sceneGeneration;
+      setTimeout(() => {
+        if (generation === this._sceneGeneration)
+          this.play(cue, Object.assign({}, opt, { delay: 0 }));
+      }, opt.delay);
       return true;
     }
 
@@ -749,7 +820,8 @@ const Sound = {
       if (voice.cue === cue) { sameCount++; if (!firstSame) firstSame = voice; }
       if (voice.bus === cfg.bus) { busCount++; if (!firstOnBus) firstOnBus = voice; }
     }
-    if (sameCount >= cfg.perCue || busCount >= bus.voices) {
+    const busLimit = this._combatLoad && cfg.bus === 'impact' ? Math.min(bus.voices, 3) : bus.voices;
+    if (sameCount >= cfg.perCue || busCount >= busLimit) {
       if (!opt.priority) return false;
       const victim = firstSame || firstOnBus;
       if (victim) {
@@ -774,11 +846,18 @@ const Sound = {
       const token = a._mixToken = (a._mixToken || 0) + 1;
       const p = a.play();
       this._voices.push({ audio: a, cue, bus: cfg.bus, at: now });
+      const duckForVoice = () => {
+        if (a._mixToken === token && typeof Music !== 'undefined' && cfg.bus === 'creature' &&
+            (opt.priority || /(_spot|_down|_talk|_speak|_start|_ko)$/.test(cue))) {
+          Music.duck(.72, Math.min(cfg.maxMs || 1600, 2000));
+        }
+      };
       if (cfg.maxMs) {
         const fade = Math.min(cfg.fadeMs || 220, cfg.maxMs * .45);
         setTimeout(() => this._fadeOut(a, token, fade), Math.max(0, cfg.maxMs - fade));
       }
-      if (p && p.catch) p.catch(() => {});
+      if (p && p.then) p.then(duckForVoice).catch(() => {});
+      else duckForVoice();
       return true;
     } catch (e) { return false; /* autoplay blocked until first gesture */ }
   },
@@ -855,16 +934,17 @@ const Sound = {
   },
   _playLoud(cue, src, cfg, opt) {
     const now = performance.now();
+    const generation = this._sceneGeneration;
     const throttle = opt.throttle == null ? cfg.throttle : Math.max(cfg.throttle, opt.throttle);
     if (this._last[cue] && now - this._last[cue] < throttle) return false;
     const ctx = this._audioCtx();
-    const url = src.dir + pick(src.files);
+    const url = cueUrl(src.dir, pick(src.files));
     if (!ctx) return false;
     this._last[cue] = now;
     if (ctx.state === 'suspended') ctx.resume().catch(() => {});
     const level = clamp(opt.vol == null ? 1 : opt.vol, 0, 1.4) * (HANDHELD_AUDIO ? 1.15 : 1);
     this._buffer(url).then(({ buffer, norm }) => {
-      if (!this.on || performance.now() - now > 900) return;
+      if (!this.on || generation !== this._sceneGeneration || performance.now() - now > 900) return;
       // Dialogue never stacks: a new line replaces the previous one.
       this._loudVoices.forEach(v => { try { v.gain.gain.setTargetAtTime(0, ctx.currentTime, .05); v.node.stop(ctx.currentTime + .2); } catch (e) {} });
       const node = ctx.createBufferSource(), gain = ctx.createGain();
@@ -887,6 +967,7 @@ const Sound = {
       this._loudVoices = [voice];
       node.onended = () => { this._loudVoices = this._loudVoices.filter(v => v !== voice); };
       node.start();
+      if (typeof Music !== 'undefined') Music.duck(.68, 1600);
     }).catch(() => {});
     return true;
   },
@@ -924,17 +1005,25 @@ const Sound = {
     cues.forEach(c => {
       const src = this._source(c);
       if (!src) return;
-      if (soundMix(c).loud) src.files.forEach(x => this._buffer(src.dir + x).catch(() => {}));
+      if (soundMix(c).loud) src.files.forEach(x => this._buffer(cueUrl(src.dir, x)).catch(() => {}));
       else src.files.forEach(x => this._get(x, src.dir));
     });
   },
 
   stopBuses(names) {
+    this._sceneGeneration++;
     const wanted = new Set(names || []);
     this._voices.forEach(v => {
       if (wanted.has(v.bus)) this._fadeOut(v.audio, v.audio._mixToken, 160);
     });
     this._voices = this._voices.filter(v => !wanted.has(v.bus));
+    if (wanted.has('creature') || wanted.has('ability')) {
+      this._loudVoices.forEach(v => {
+        try { v.gain.gain.setTargetAtTime(0, this._ctx.currentTime, .04); v.node.stop(this._ctx.currentTime + .18); }
+        catch (_) {}
+      });
+      this._loudVoices = [];
+    }
   },
 
   toggle() {
@@ -976,10 +1065,16 @@ const Music = {
   fadeToken: 0,
   lastTrack: {},
   lastKey: null,
+  youtubePlayer: null,
+  youtubeHost: null,
+  youtubeLoad: null,
   menuMode: 'random',
   // Keep the score present, but leave a little more room for effects and
   // character cues that otherwise disappear into phone-speaker playback.
   volume: MUSIC_DEFAULT_VOLUME,
+  duckLevel: 1,
+  duckUntil: 0,
+  duckTimer: null,
 
   getMenuMode() {
     if (typeof Save !== 'undefined' && Save.data && Save.data.opt && Save.data.opt.menuMusic) {
@@ -1015,7 +1110,39 @@ const Music = {
     } else if (MUSIC_TRACK_TRIMS[key] != null) {
       trim = MUSIC_TRACK_TRIMS[key];
     }
-    return clamp(this.volume * trim, 0, 1);
+    return clamp(this.volume * trim * this.duckLevel, 0, 1);
+  },
+
+  duck(level, duration) {
+    if (!Sound.on || !this.current || this.volume <= 0) return;
+    this.duckLevel = Math.min(this.duckLevel, clamp(level, .5, 1));
+    this.duckUntil = Math.max(this.duckUntil, performance.now() + duration);
+    this._applyGain(90);
+    clearTimeout(this.duckTimer);
+    this.duckTimer = setTimeout(() => {
+      this.clearDuck(true);
+    }, Math.max(0, this.duckUntil - performance.now()));
+  },
+
+  clearDuck(restore) {
+    clearTimeout(this.duckTimer);
+    this.duckTimer = null;
+    this.duckUntil = 0;
+    this.duckLevel = 1;
+    if (restore) this._applyGain(360);
+  },
+
+  _applyGain(ms) {
+    if (this.audio && this.current) {
+      const target = this.targetVolume(this.current, this.audio.src);
+      if (this.audio._musicTargetVolume !== target) {
+        this.audio._musicTargetVolume = target;
+        this._fade(this.audio, this.audio.volume, target, ms || 180);
+      }
+    }
+    if (this.current === 'arenaBattle' && this.youtubePlayer && this.youtubePlayer.setVolume) {
+      this.youtubePlayer.setVolume(Math.round(this.targetVolume('arenaBattle') * 100));
+    }
   },
 
   setVolume(value, opt) {
@@ -1025,19 +1152,109 @@ const Music = {
       Save.data.opt.musicVolume = this.volume;
       Save.write();
     }
-    if (this.audio && this.current) {
-      const target = this.targetVolume(this.current, this.audio.src);
-      this.audio._musicTargetVolume = target;
-      const token = ++this.fadeToken;
-      this._fade(this.audio, this.audio.volume, target, 180, token);
-    }
+    this._applyGain(180);
     return this.volume;
+  },
+
+  loadYouTubeApi() {
+    if (window.YT && window.YT.Player) return Promise.resolve(window.YT);
+    if (this.youtubeLoad) return this.youtubeLoad;
+    this.youtubeLoad = new Promise((resolve, reject) => {
+      const previousReady = window.onYouTubeIframeAPIReady;
+      window.onYouTubeIframeAPIReady = () => {
+        if (typeof previousReady === 'function') previousReady();
+        if (window.YT && window.YT.Player) resolve(window.YT);
+        else reject(new Error('YouTube player API unavailable'));
+      };
+      let script = document.querySelector('script[data-arena-youtube-api]');
+      if (!script) {
+        script = document.createElement('script');
+        script.src = 'https://www.youtube.com/iframe_api';
+        script.dataset.arenaYoutubeApi = 'true';
+        script.onerror = () => reject(new Error('Could not load YouTube player API'));
+        document.head.appendChild(script);
+      }
+    });
+    return this.youtubeLoad;
+  },
+
+  clearYouTube() {
+    if (this.youtubePlayer) {
+      try { this.youtubePlayer.destroy(); } catch (_) {}
+    }
+    this.youtubePlayer = null;
+    if (this.youtubeHost) this.youtubeHost.remove();
+    this.youtubeHost = null;
+  },
+
+  playArenaYoutube() {
+    const token = ++this.fadeToken;
+    const old = this.audio;
+    this.audio = null;
+    this.current = 'arenaBattle';
+    this.lastKey = 'arenaBattle';
+    if (old) this._fade(old, old.volume, 0, 360, token, true);
+    if (this.youtubePlayer && this.youtubePlayer.playVideo) {
+      this.youtubePlayer.setVolume(Math.round(this.targetVolume('arenaBattle') * 100));
+      this.youtubePlayer.playVideo();
+      return;
+    }
+    if (this.youtubeHost) return;
+    const host = document.createElement('div');
+    host.id = 'arena-youtube-theme';
+    host.setAttribute('aria-hidden', 'true');
+    host.style.cssText = 'position:fixed;left:-220px;top:-220px;width:200px;height:200px;overflow:hidden;opacity:0;pointer-events:none;';
+    document.body.appendChild(host);
+    this.youtubeHost = host;
+    this.loadYouTubeApi().then(YT => {
+      if (this.current !== 'arenaBattle' || this.youtubeHost !== host) return;
+      this.youtubePlayer = new YT.Player(host, {
+        width: '200', height: '200', videoId: 'dNT-dEiwp8s',
+        playerVars: { autoplay: 1, controls: 0, disablekb: 1, fs: 0, loop: 1, playlist: 'dNT-dEiwp8s', playsinline: 1, rel: 0 },
+        events: {
+          onReady: event => {
+            if (this.current !== 'arenaBattle') { this.clearYouTube(); return; }
+            event.target.setVolume(Math.round(this.targetVolume('arenaBattle') * 100));
+            event.target.playVideo();
+          },
+          onError: () => {
+            if (this.current !== 'arenaBattle') return;
+            this.clearYouTube();
+            this.play('arenaBattleFallback', { force: true });
+          },
+          onAutoplayBlocked: () => {
+            if (this.current !== 'arenaBattle') return;
+            this.clearYouTube();
+            this.play('arenaBattleFallback', { force: true });
+          }
+        }
+      });
+    }).catch(error => {
+      console.warn('[ArenaMusic] YouTube playback unavailable; using local arena theme.', error);
+      if (this.current !== 'arenaBattle') return;
+      this.clearYouTube();
+      this.play('arenaBattleFallback', { force: true });
+    });
   },
 
   play(key, opt) {
     opt = opt || {};
+    if (key === 'arenaBattle') {
+      if (!Sound.on) this.stop();
+      else this.playArenaYoutube();
+      return;
+    }
     const base = MUSIC_TRACKS[key];
     if (!base || !Sound.on) { if (!base) this.stop(); return; }
+    if (this.youtubePlayer || this.youtubeHost) this.clearYouTube();
+    // Repainting a screen should not reshuffle a track that is already
+    // playing. Random menu music advances only when it ends or the user
+    // explicitly changes the menu selection.
+    if (this.current === key && this.audio && !this.audio.paused && !opt.force) {
+      const target = this.targetVolume(key, this.audio.src);
+      if (this.audio._musicTargetVolume !== target) this._applyGain(240);
+      return;
+    }
 
     let choices;
     if (key === 'navigation') {
@@ -1065,19 +1282,6 @@ const Music = {
       : choices;
     const src = available[Math.floor(Math.random() * available.length)] || choices[0];
     const targetVolume = this.targetVolume(key, src);
-
-    if (this.current === key && this.audio && !this.audio.paused && !opt.force) {
-      // If we're playing the exact track already, do not start another transition
-      const activeSrc = this.audio.src || '';
-      const srcEnding = src.replace(/^\.\//, '');
-      if (this.lastTrack[key] === src || activeSrc.endsWith(srcEnding)) {
-        if (this.audio._musicTargetVolume === targetVolume) return;
-        this.audio._musicTargetVolume = targetVolume;
-        const token = ++this.fadeToken;
-        this._fade(this.audio, this.audio.volume, targetVolume, 240, token);
-        return;
-      }
-    }
 
     this.lastTrack[key] = src;
     this.lastKey = key;
@@ -1108,12 +1312,13 @@ const Music = {
 
   screen(name, opt) {
     opt = opt || {};
-    if (name === 'raid' && opt.cookieRun) this.play('cookieShop');
+    if (name === 'raid' && opt.ff7) this.play(opt.ff7);
+    else if (name === 'raid' && opt.cookieRun) this.play('cookieShop');
     else if (name === 'shop') this.play('shop');
     else if (name === 'phantasia-shop') this.play('phantasiaShop');
     else if (name === 'journal') this.play('journal');
     else if (name === 'glossary') this.play('glossary');
-    else if (name === 'raid' && opt.qomEvent) this.play('qomBattle');
+    else if (name === 'raid' && opt.qomEvent) this.play('qomMenu');
     else if (name === 'raid' && opt.collabMenu) this.play('collabMenu');
     else if (name === 'raid' && opt.delilahEvent) this.play('delilahEvent');
     else if (name === 'raid' && opt.unknownWorldMenu) this.play('unknownWorldMenu');
@@ -1122,6 +1327,8 @@ const Music = {
   },
 
   stop() {
+    this.clearYouTube();
+    this.clearDuck(false);
     const old = this.audio;
     if (!old) { this.current = null; return; }
     const token = ++this.fadeToken;
@@ -1131,11 +1338,13 @@ const Music = {
   },
 
   _fade(a, from, to, ms, token, pauseAtEnd) {
+    if (!a) return;
+    const fadeId = a._musicFadeId = (a._musicFadeId || 0) + 1;
     const started = performance.now();
     const tick = now => {
       /* A newer transition may replace the active track, but an outgoing
          element still needs to finish fading instead of being abandoned. */
-      if (!a || a.ended) return;
+      if (a.ended || a._musicFadeId !== fadeId) return;
       const p = clamp((now - started) / Math.max(60, ms), 0, 1);
       a.volume = clamp(from + (to - from) * (p * (2 - p)), 0, 1);
       if (p < 1) requestAnimationFrame(tick);

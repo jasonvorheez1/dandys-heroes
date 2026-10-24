@@ -78,3 +78,51 @@ Object.values(HEROES).forEach(hero => {
   const key = ROSTER_AREA_TUNES[hero.id];
   if (key) addAreaEcho(hero, key);
 });
+
+
+/* Tank counters. A handful of Heroes get a rider on one skill that fits its
+   moveset: Wound (-40% healing), Rend (a slice of the target's max HP, halved
+   against bosses) or Shield Break (strips part of a shield). Each applies once
+   per target per cast, so no single Hero can unravel a tank alone. */
+const COUNTER_TUNES = [
+  { id: 'Scraps',  key: 'G', rend: .025, note: 'Rends 2.5% of each target\'s Max HP.' },
+  { id: 'Rudie',   key: 'G', wound: 5,   note: 'Wounds hit enemies for 5s, cutting their healing received by 40%.' },
+  { id: 'Looey',   key: 'G', wound: 5,   note: 'Wounds hit enemies for 5s, cutting their healing received by 40%.' },
+  { id: 'Boxten',  key: 'G', wound: 5,   note: 'Wounds hit enemies for 5s, cutting their healing received by 40%.' },
+  { id: 'Shrimpo', key: 'W', rend: .03,  note: 'Rends 3% of each target\'s Max HP.' },
+  { id: 'Toodles', key: 'G', wound: 4, rend: .015, note: 'Wounds hit enemies for 4s and Rends 1.5% of their Max HP.' },
+  { id: 'Yatta',   key: 'W', breakShield: .4, note: 'Smashes 40% off any shield on enemies it hits.' },
+  { id: 'Brusha',  key: 'W', breakShield: .35, wound: 4, note: 'Paints over enemy shields, removing 35% of them, and Wounds for 4s.' }
+];
+
+function addCounter(hero, tune) {
+  const skill = hero && hero.skills && hero.skills[tune.key];
+  if (!skill || !skill.cast || skill._counter) return;
+  const original = skill.cast;
+  skill._counter = true;
+  skill.cast = (u, B, S, P) => {
+    u._ctr = { until: B.t + 1.8, seen: new Set() };
+    if (!u._ctrHooked) {
+      u._ctrHooked = true;
+      B.on(u, 'dealDamage', ev => {
+        const w = u._ctr, t = ev && ev.target;
+        if (!w || B.t > w.until || !t || !t.alive || t.team === u.team || ev.dot || ev.tag === 'Rend' || w.seen.has(t.uid)) return;
+        w.seen.add(t.uid);
+        if (tune.wound) B.applyStatus(u, t, 'wound', tune.wound);
+        if (tune.breakShield && t.shields && t.shields.length) {
+          t.shields.forEach(sh => { sh.amt *= 1 - tune.breakShield; });
+        }
+        if (tune.rend) B.damage(u, t, t.max.hp * tune.rend * (t.isBoss ? .5 : 1), { type: 'true', tag: 'Rend' });
+      });
+    }
+    original(u, B, S, P);
+  };
+  const note = ' ' + tune.note;
+  if (typeof skill.desc === 'string') skill.desc += note;
+  else if (typeof skill.desc === 'function') {
+    const desc = skill.desc;
+    skill.desc = (S, P) => desc(S, P) + note;
+  }
+}
+
+COUNTER_TUNES.forEach(t => addCounter(HEROES[t.id], t));

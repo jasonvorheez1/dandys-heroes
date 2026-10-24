@@ -1,76 +1,27 @@
-Role: Tank / Support / Battlefield Director
-Tier: SS Tier
+Role: Damage
+Position: Backline
+Damage Type: Magic
+Tier: SS
 
-Vee is the charismatic, commanding prime-time anchor of Gardenview. Analytical, competitive, and in complete control of the studio floor, she operates as the supreme battlefield director. Rather than serving as a passive damage sponge, Vee controls the pace, camera angles, and rules of engagement. By designating high-threat enemies as the Headline, granting continuous audience healing, dilating time during Commercial Breaks, and redirecting incoming allied damage through executive production shielding, she dictates every moment of combat. In dire straits, she flips the master switch to go LIVE BROADCAST, turning every foe into a Headline under blinding studio spotlights.
+Vee is a ranged magic attacker built to wear down Tanks. She puts the toughest Tank on camera as the Headline, or the enemy with the most Max HP when there is no Tank. Her beams chip Max HP, crack Shields, and build Signal Interference. Damaging the Headline builds Ratings for a short burst window. She has no team healing, shielding, or damage redirection.
 
-Spotlight On
+Basic Attack — Signal Beam
+Vee fires a quick magic beam. A hit on the Headline adds Signal Interference. Every third hit sends a second pulse through that enemy and into another target. The pulse deals extra damage based on the Headline's Max HP, with a lower cap against bosses. While Live, each Basic Attack fires an extra beam.
 
-White Skill (Ultimate)
-Damage Type: Magic Damage
+White — Spotlight On
+Passive: Vee designates the toughest living Tank as the Headline, or the enemy with the most Max HP when there is no Tank. The Headline takes 20% more damage. She changes targets if a tougher Tank arrives or the current Headline falls.
+Active: The first focused beam cracks 35% of the Headline's current Shield. Three beams hit the Headline, and the last spills onto the rest of the enemy team. Each focused hit adds Signal Interference.
 
-Passive: Vee is constantly broadcasting telemetry data across the allied ranks.
-Every 2.5 seconds, she identifies the highest-damage enemy as the 📺 Headline.
-Only one enemy may be the Headline at a time.
-All allies gain +35% Accuracy, +25% Critical Chance, and deal +30% bonus damage against the Headline.
-Whenever the Headline attacks or casts a skill, Vee records telemetry data, granting all allies 10 Energy.
-When the Headline falls, all allies heal for 20% Max HP, cleanse all debuffs, and Vee immediately designates a new Headline.
+Green — Audience Surge
+An applause cue becomes a magic blast across the enemy team. Vee cracks 25% of the Headline's remaining Shield before a second pulse hits it and adds Signal Interference.
 
-Active: Vee floods the battlefield with blinding studio spotlights.
-All enemies take heavy Magic Damage.
-The Headline is Interrupted, Stunned for 2.0s, Blinded for 6.0s, and stripped of 50% of their current Energy.
-All allies gain 🌟 Prime Time (+35% Attack Speed, +30% Skill Haste, +30% Damage Boost against Headline for 8s) and a crystalline On-Air Broadcast Shield equal to 25% of Vee's Max HP.
+Blue — Commercial Break
+Vee cuts the feed to static. Four waves damage every enemy and build Signal Interference. Each stack cuts Magic Defense by 8%; at three stacks, the target also receives 25% less healing. The final wave slows enemies.
 
-Audience Support
+Purple — Ratings Chase
+Direct damage to the Headline gives Vee one Ratings stack for 8 seconds, up to eight. Each stack grants 4% Magic Attack. At full Ratings, further direct hits fire an extra magic shot that also deals up to 2% of the target's Max HP. This Max HP damage is capped by Vee's Magic Attack; against bosses, it uses 0.8% Max HP and a lower cap. The shot has a short cooldown. Vee also gains 12% Magic Penetration.
 
-Green Skill
-Damage Type: Healing / Shield
+Red — Live Broadcast
+Once per wave, eight Ratings stacks put Vee Live for 8 seconds. She gains 30% Magic Attack and 25% Attack Speed, and every Basic Attack fires an extra beam. The changeover also sends five magic volleys across the enemy team.
 
-Vee calls for live audience participation as thunderous cheering applause floods the arena.
-Cleanses up to 2 debuffs from all allies.
-The entire team recovers HP over 5s (scaling with Vee's Max HP and Magic), while gaining Studio Fortification (+35% Defense & Magic Defense).
-Overhealing crumbles into a crystalline 🛡️ Broadcast Shield.
-Allies with active shields gain ⚡ Overcharge (+35% Energy Generation, +20% Cooldown Reduction).
-
-Commercial Break
-
-Blue Skill
-Damage Type: Team Buff / Enemy Stasis
-
-Vee cuts the broadcast to commercial! Time dilates across the studio floor for 6s.
-Enemy cooldowns crawl (-50% recovery speed), their Attack Speed and Move Speed drop by 35%, and their energy is completely locked (cannot gain Energy during the break).
-All allies gain 💨 Super Haste (+35% Move Speed, +30% Skill Haste), regenerate 30 Energy, and become immune to Energy drain.
-Whenever an ally casts a skill during Commercial Break, Vee broadcasts a sponsor spot that restores 10% of Vee's Max HP to the caster and zaps nearby enemies with static shock.
-
-Studio Production
-
-Purple Skill (Passive)
-Damage Type: Defense / Magic Defense / Redirection
-
-Vee's production crew is always five steps ahead.
-Whenever an ally damages the Headline, or whenever Vee shields or protects an ally, Vee gains 1 stack of 🎬 Production Value (max 12 stacks).
-Each stack permanently grants Vee +4.5% Defense, +4.5% Magic Defense, and +2.5% Damage Reduction.
-Executive Damage Redirection: Vee redirects 35% of all incoming damage from nearby allies onto herself, absorbing 50% of the redirected damage.
-Whenever Vee takes redirected damage, she immediately grants the protected ally 12 Energy and a reflective Static Barrier.
-At maximum stacks (12), Vee radiates an Executive Director Aura: all allies deal +20% True Damage to Headline enemies and are completely immune to Silences and Disables. Production Value is only lost if Vee falls.
-
-Season Finale
-
-Red Skill (Opener / Climax)
-Damage Type: Defense / Max HP / Live Broadcast
-
-The battlefield becomes Vee's broadcast studio.
-Enemies build Exposure whenever they attack, cast skills, or move. At 5 Exposure stacks, they are permanently exposed as a Headline:
-Deal 25% reduced damage, cannot dodge, cannot become invisible or untargetable, receive 50% reduced healing, and take 25% increased damage from all sources.
-Whenever a Headline enemy is defeated, Vee triggers a Grand Finale:
-Restores 35 Energy to every ally, refreshes all active Shields to full strength, reduces every ally's cooldowns by 3.5s, and permanently grants Vee +6% Max HP and +6% Defense (stacking up to 5 times).
-
-LIVE BROADCAST (Emergency Climax):
-Once per wave, if Vee falls below 35% HP or is the last ally standing, she enters 🔴 LIVE BROADCAST for 14 seconds:
-Cannot be interrupted or crowd-controlled.
-Heals 40% Max HP and gains +50% Magic Attack, +40% Attack Speed, and +300 Attack Range.
-Basic attacks become piercing long-range broadcast laser beams.
-Every surviving enemy is instantly branded as a 📺 Headline, triggering non-stop allied passive benefits and telemetry energy!
-
-Why SS Tier?
-
-Vee is the quintessential battlefield director: she bends the pacing, energy flow, and target prioritization of combat entirely to her team's favor. Combining unmatched damage redirection, team-wide crowd control stasis, continuous defensive shielding, and a game-winning emergency Live Broadcast transformation, Vee guarantees total arena dominance.
+The revised kit uses Vee's existing spotlight, audience, commercial, and live broadcast visuals. Its attack sounds reuse the game's beam, laser, static, impact, and Vee ability cues.

@@ -213,8 +213,8 @@ defHero({
       desc: (S, P) => `<span class="sk-pas">Gigi gains a Wheel tape every ${P.every}s (up to ${P.max}, or 4 with Hot Streak); her Basic Attacks can find extra tapes. Each spin grants a prize. When an enemy’s haunting or possession reaches an ally, Gigi clears it and grants a brief Ward; this can trigger every 5s. After two misses, the next spin is a Jackpot.</span>
         Active: spends all tapes, spinning once per tape. Repeated prizes combo for a stronger effect.`,
       passive: (u, B, S, P) => {
-        u.gigiTickets = 0; u.gigiMax = P.max; u.gigiMisses = 0; u.gigiLastPrize = null; u.gigiCombo = 0; u.gigiSeen = new Set(); u._gigiTicketAt = -99; u._gigiBonustapeAt = -99;
-        B.every(u, P.every, () => B.gigiTicket(u));
+        u.gigiTickets = 0; u.gigiMax = Math.max(u.gigiMax || 0, P.max); u.gigiMisses = 0; u.gigiLastPrize = null; u.gigiCombo = 0; u.gigiSeen = u.gigiSeen || new Set(); u._gigiTicketAt = -99; u._gigiBonustapeAt = -99;
+        B.every(u, P.every, () => { if (u.alive) B.gigiTicket(u, true); });
         B.on(u, 'basicHit', () => { if (B.t - u._gigiTicketAt >= 2.5) { u._gigiTicketAt = B.t; B.gigiTicket(u); } });
         B.on(u, 'statusApplied', ev => {
           if (!ev || !ev.unit || ev.unit.team !== u.team || ev.src?.team === u.team || B.t < (u._gigiHauntGuardAt || 0)) return;
@@ -224,6 +224,7 @@ defHero({
           B.applyStatus(u, ev.unit, 'ward', 2.5);
           B.energy(ev.unit, 8);
           B.fxFloatIcon(ev.unit.x, ev.unit.y - 88, '🍀', '#ffb0e0');
+          Sound.play('gigi_clover', { vol: .5, throttle: 600 });
         });
       },
       cast: (u, B, S) => { B.gigiSpin(u, S.mult); }
@@ -235,8 +236,9 @@ defHero({
       ai: { prio: 55, cond: () => true },
       cast: (u, B, S, P) => {
         const t = B.highestStat(B.enemiesOf(u), 'atk'); if (!t) return;
-        B.anim(u, 'cast', .62, 'gigiLoaded'); Sound.play('gigi_ability', { vol: .30, throttle: 700 });
+        B.anim(u, 'cast', .62, 'gigiLoaded'); Sound.play('gigi_coin_toss', { vol: .5, throttle: 500 });
         B.fxProj(u, t, { kind: 'orb', col: '#ffd166' }, () => {
+          Sound.play('gigi_coin_hit', { vol: .5, throttle: 300 });
           B.damage(u, t, u.st.mag * S.ratio, { type: 'magic', tag: 'Loaded Coin' });
           const wasJinxed = t.hasStatus('weaken'); B.applyStatus(u, t, 'weaken', P.dur, { stacks: 2 }); B.applyStatus(u, t, 'blind', P.dur);
           if (wasJinxed) B.gigiTicket(u);
@@ -250,7 +252,7 @@ defHero({
       ai: { prio: 45, cond: () => true },
       cast: (u, B, S, P) => {
         u.gigiHouseCall = true; u.gigiBoostNext = S.mult;
-        B.anim(u, 'cast', .82, 'gigiWheel'); Sound.play('gigi_ability', { vol: .38, priority: true });
+        B.anim(u, 'cast', .82, 'gigiWheel'); Sound.play('gigi_house_call', { vol: .55, priority: true });
         const allies = B.alliesOf(u); allies.forEach(a => { B.applyStatus(u, a, 'lucky', P.dur); B.applyStatus(u, a, 'haste', P.dur); });
         B.fxConfetti(u.x, u.y - 60, 18); B.gigiTicket(u);
       }
@@ -260,8 +262,9 @@ defHero({
       v: { chance: .25 }, p: { max: 4 },
       desc: (S, P) => `Wheel Tickets store up to ${P.max}. Basic Attacks have a <em>${pcn(S.chance * 100)}</em> chance to find an extra tape. A repeated prize doubles its effect; Jackpot resets the pity counter and empowers the whole team.`,
       passive: (u, B, S, P) => {
-        u.gigiMax = P.max; u.gigiBigChance = S.chance;
-        u.gigiSeen = new Set(); u.gigiHouseCall = false; u.gigiBoostNext = 1;
+        u.gigiMax = Math.max(u.gigiMax || 0, P.max); u.gigiBigChance = S.chance;
+        u.gigiSeen = u.gigiSeen || new Set(); u.gigiHouseCall = !!u.gigiHouseCall; u.gigiBoostNext = u.gigiBoostNext || 1;
+        if (u._gigiBonustapeAt === undefined) u._gigiBonustapeAt = -99;
         B.on(u, 'basicHit', () => { if (chance(S.chance) && B.t - u._gigiBonustapeAt > 1.8) { u._gigiBonustapeAt = B.t; B.gigiTicket(u); } });
       }
     },
@@ -270,7 +273,7 @@ defHero({
       v: { bonus: .12, shield: .12, en: 20 }, p: { need: 3 },
       desc: (S, P) => `Gigi starts with ${P.need} Wheel Tickets, and the wheel has a larger Jackpot slice. Every unique prize adds a permanent Fortune stack. Jackpots grant all allies a Casino Shield worth <em>${pcn(S.shield * 100)}</em> Max HP, ${Math.round(S.en)} Energy, a teamwide heal, and Attack boost!`,
       passive: (u, B, S, P) => {
-        u.gigiSeen = new Set(); u.gigiFortune = 0; u.gigiWheelBonus = S.bonus;
+        u.gigiSeen = u.gigiSeen || new Set(); u.gigiFortune = 0; u.gigiWheelBonus = S.bonus;
         B.after(.3, () => { for (let i = 0; i < P.need; i++) B.gigiTicket(u); });
         B.on(u, 'gigiPrize', prize => {
           if (prize.id === 'jackpot') {
@@ -590,7 +593,7 @@ defHero({
   growth: { hp: .088, atk: .102, def: .078, mag: .050, mdef: .072 },
   move: { gait: 'trudge', bob: 3, freq: 1.2, lean: 4, squash: .04, idle: 'tap', step: 'step',
     particles: 'dust', pcol: '#c9a35a', trail: { on: false }, brake: .6, weight: 1.2 },
-  basic: { name: 'Cane Tap', type: 'physical', ratio: 1.0, range: 200, sfx: 'swing_pole', hit: 'hit_blunt',
+  basic: { name: 'Cane Tap', type: 'physical', ratio: 1.0, range: 200, sfx: 'swish_attack', hit: 'hit_blunt',
     wind: .18, note: 'A firm, well-practiced tap. He has been doing this longer than most toons have been alive.' },
   skills: {
     W: {

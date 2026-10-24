@@ -144,7 +144,7 @@
   ];
 
   const PROFILE_ICON_STOCK = [
-    { id:'profile-icon-dandy', name:"Dandy's Signature", desc:'A shopkeeper portrait for your Dandy’s Heroes profile.', img:'./uploads/dandyhimself.png', cost:{ichor:1800}, profileIcon:'dandy', limit:1, say:"My own portrait? Oh! Well, if you insist... I suppose I do photograph rather well!" },
+    { id:'profile-icon-dandy', name:"Dandy's Signature", desc:'A shopkeeper portrait for your Dandy’s Heroes profile.', img:'./uploads/dandyhimself.webp', cost:{ichor:1800}, profileIcon:'dandy', limit:1, say:"My own portrait? Oh! Well, if you insist... I suppose I do photograph rather well!" },
     { id:'profile-icon-buds', name:"Dandy's Buds", desc:'The Buds mark for players who appreciate a guided beginning.', img:'./uploads/dandysbudicon.png', cost:{tape:24}, profileIcon:'buds', limit:1, say:"Dandy's Buds! A tidy little reminder that I did ask you to click it eventually!" },
     { id:'profile-icon-journal', name:'Journal Seal', desc:'A bright seal for players who keep their discoveries together.', emoji:'📖', cost:{notes:30}, profileIcon:'journal', limit:1, say:"A Journal Seal! Very official. Try not to lose it between all those achievement pages!" },
     { id:'profile-icon-ichor', name:'Ichor Crest', desc:'A Black Ichor crest for a profile with a little extra danger.', img:'./uploads/ichor.png', cost:{star:80}, profileIcon:'ichor', limit:1, say:"The Ichor Crest! Dramatic, isn't it? It makes even a perfectly sensible profile look dangerous!" }
@@ -754,13 +754,17 @@
     }).sort((a, b) => b.sort - a.sort).slice(0, 6);
 
     return selected.map(({ c, done, complete }, i) => {
+      // Pack pricing follows the pair's obtainment tier, not the campaign's
+      // combat recommendation, which now rises through late-game chapters.
+      const pairRanks = [obtainOf(c.a).rank, obtainOf(c.b).rank].sort((a, b) => b - a);
+      const packTier = 45 + pairRanks[0] * 5 + pairRanks[1] * 2 + (pairRanks[0] >= OBTAIN.Collab.rank ? 8 : 0);
       const shardAmount = 20 + c.stages.length * 4 + Math.floor(mastery / 18);
       const rewards = [
         { kind: 'shards', id: c.a, amount: shardAmount },
         { kind: 'shards', id: c.b, amount: shardAmount },
         { kind: 'resource', key: 'tape', amount: 24 + c.stages.length * 3 },
         { kind: 'resource', key: 'notes', amount: 18 + c.stages.length * 2 },
-        { kind: 'resource', key: 'star', amount: 12 + Math.floor(c.recLevel / 12) },
+        { kind: 'resource', key: 'star', amount: 12 + Math.floor(packTier / 12) },
         { kind: 'resource', key: 'raidTicket', amount: 1 }
       ];
       return packShell({
@@ -768,7 +772,7 @@
         name: HEROES[c.a].name + ' + ' + HEROES[c.b].name + ' Friendship Pack',
         desc: `${done}/${c.stages.length} chapters cleared · ${complete ? 'CAMPAIGN CLEAR CONFIRMED' : 'COMPLETE CAMPAIGN TO UNLOCK'} · ${packRewardText(rewards)}`,
         emoji: '🤝', packRewards: rewards,
-        cost: packCost(26000 + c.recLevel * 360, 1 + i * .045), limit: 1, packType: 'friendship',
+        cost: packCost(26000 + packTier * 360, 1 + i * .045), limit: 1, packType: 'friendship',
         locked: !complete, lockedLabel: 'LOCKED · COMPLETE ' + c.title.toUpperCase(),
         say: complete
           ? `${c.title} is complete! A Friendship Pack for ${HEROES[c.a].name} and ${HEROES[c.b].name}, with enough research to make the badge jealous.`

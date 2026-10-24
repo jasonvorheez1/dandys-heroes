@@ -100,8 +100,8 @@ Object.assign(Screens, {
     dpc.innerHTML = `<div class="scratch-preview-burst" style="background:#c070ed">🎨</div><div class="row">
       <img src="${Art.icon('MrsHolloway')}" alt="Mrs. Holloway" class="scratch-preview-hero">
       <img src="${Art.icon('MrHolloway')}" alt="Mr. Holloway" class="scratch-preview-hero">
-      <div class="grow" style="text-align:left"><small>SPECIAL EVENT · 50 🎟 / CLICK</small><div class="b">Draw Gourdy's Parents</div>
-      <div class="tiny muted">${Math.round(dpState.progress)}% sketched · 5% Memory Locket, 2% Shards, 0.1% Full Recruit!</div></div>
+      <div class="grow" style="text-align:left"><small>SPECIAL EVENT · 1 🎟 / STROKE</small><div class="b">Draw Gourdy's Parents</div>
+      <div class="tiny muted">${Math.round(dpState.progress)}% sketched · +${fmt(DrawParents.masteryXpPerStroke())} Mastery XP per stroke · portrait bonus!</div></div>
       <div class="scratch-ticket-count" style="color:#ffd8a8">🎟 <b>${Save.res('ticket')}</b></div></div>`;
     dpc.onclick = () => this.openDrawParents();
     s.appendChild(dpc);

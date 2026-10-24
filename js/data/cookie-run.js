@@ -70,7 +70,7 @@ function cookieDash(u,B,ultimate,ratio,P={}){
   if(!u.alive)return;
   B.anim(u,'attack',1.04);B.fxRing(u.x,u.y-25,190,'#ffcf73',.5);B.shake(7,.2);Sound.play('cookie_cane_slam',{vol:.65});
   cookieFoes(u,B).filter(t=>B.distance(u,t)<(P.radius||220)).forEach(t=>{
-   const hit=cookieHit(u,B,t,ratio*1.8,'Never Back Down!');
+   const hit=cookieHit(u,B,t,ratio*1.5,'Never Back Down!');
    if(hit&&t.alive){B.applyStatus(u,t,'stun',P.stun||1.2);B.knockback(u,t,P.kb||75);}
   });
   cookieBrave(u,B);
@@ -89,8 +89,8 @@ ginger.basic.onStart=u=>{if(u.rarity>=4){u._cookieBasics=(u._cookieBasics||0)+1;
 ginger.skills={
  W:{
   name:'Never Back Down!',type:'Physical Damage / Control',energy:100,
-  v:{ratio:2.1,shred:.25},p:{stun:1.5,kb:110,radius:240,victoryDur:6,victoryMove:.30,victoryAttackSpeed:.20},
-  desc:(S,P)=>`At the start of each wave, GingerBrave dashes through enemies, knocking them aside. Active: he charges through the enemy frontline, leaps, and lands an earth-shattering candy cane slam for <em>${pcn(S.ratio * 100)}</em> Physical Damage. The slam Stuns enemies for ${P.stun.toFixed(1)}s, knocks them back ${P.kb}px, and shreds their Armor by <em>${pcn(S.shred * 100)}</em> for 6s within ${P.radius}px. Scoring a knockout grants +${Math.round(P.victoryMove*100)}% Movement Speed and +${Math.round(P.victoryAttackSpeed*100)}% Attack Speed for ${P.victoryDur.toFixed(1)}s.`,
+  v:{ratio:1.8,shred:.20},p:{stun:1.3,kb:110,radius:220,victoryDur:6,victoryMove:.30,victoryAttackSpeed:.20},
+  desc:(S,P)=>`At the start of each wave, GingerBrave dashes through enemies, knocking them aside. Active: he charges through the enemy frontline, leaps, and lands a candy cane slam for <em>${pcn(S.ratio * 1.5 * 100)}</em> Physical Damage. The slam Stuns enemies for ${P.stun.toFixed(1)}s, knocks them back ${P.kb}px, and shreds their Armor by <em>${pcn(S.shred * 100)}</em> for 6s within ${P.radius}px. Scoring a knockout grants +${Math.round(P.victoryMove*100)}% Movement Speed and +${Math.round(P.victoryAttackSpeed*100)}% Attack Speed for ${P.victoryDur.toFixed(1)}s.`,
   passive:(u,B,S,P)=>{
    u._braveDashAt=-99;
    u._cookieVictoryMove=P.victoryMove;u._cookieVictoryAttackSpeed=P.victoryAttackSpeed;
@@ -114,8 +114,8 @@ ginger.skills={
  },
  G:{
   name:'Brave Strike',type:'Physical Damage / Control',cd:9,
-  v:{ratio:1.75},p:{radius:165,kb:90},
-  desc:(S,P)=>`Slams the closest enemy with his candy cane, striking all enemies within ${P.radius}px for <em>${pcn(S.ratio * 100)}</em> Physical Damage and knocking them back. If GingerBrave dashed in the last 5 seconds, he swings twice.`,
+  v:{ratio:1.45},p:{radius:165,kb:90},
+  desc:(S,P)=>`Slams the closest enemy with his candy cane for <em>${pcn(S.ratio * 1.25 * 100)}</em> Physical Damage, striking nearby enemies within ${P.radius}px for a smaller hit and knocking them back. If GingerBrave dashed in the last 5 seconds, he swings twice.`,
   cast:(u,B,S,P)=>{
    const t=B.nearest(u,cookieFoes(u,B));if(!t)return;
    const followup=B.t-u._braveDashAt<=5;B.anim(u,'attack',1.04);
@@ -123,7 +123,7 @@ ginger.skills={
    B.repeat(followup?2:1,.18,()=>{
     if(!u.alive)return;
     cookieFoes(u,B).filter(e=>e===t||B.distance(e,t)<P.radius).forEach(e=>{
-     const hit=cookieHit(u,B,e,S.ratio*(e===t?1.4:.75),'Brave Strike');
+     const hit=cookieHit(u,B,e,S.ratio*(e===t?1.25:.75),'Brave Strike');
      if(hit&&e.alive)B.knockback(u,e,e===t?P.kb:P.kb*.65);
     });
    });
@@ -137,7 +137,7 @@ ginger.skills={
  },
  P:{
   name:'OvenBreaker',type:'Physical Damage / Critical Chance',
-  v:{crit:.18,extra:.85,willCrit:.35},p:{willDur:10,hits:3},
+  v:{crit:.14,extra:.72,willCrit:.22},p:{willDur:8,hits:3},
   desc:(S,P)=>`GingerBrave's indomitable courage sharpens his strikes, granting <em>${pcn(S.crit * 100)}</em> Critical Hit chance. Every ${P.hits}rd Basic Attack lands an extra devastating cane blow for <em>${pcn(S.extra * 100)}</em> Physical Damage that bypasses shields. After casting Never Back Down!, GingerBrave gains <em>${pcn(S.willCrit * 100)}</em> Critical Hit chance and +20% Critical Damage for ${P.willDur.toFixed(1)}s.`,
   passive:(u,B,S,P)=>{
    u.flat.crit71=S.crit;u._cookieWillCrit=S.willCrit;u._cookieWillDur=P.willDur;u.dirty=true;
@@ -150,7 +150,7 @@ ginger.skills={
  },
  R:{
   name:'Overflowing Courage',type:'Physical Damage / Movement',
-  v:{atk:.20,highHp:.35,speed:.30,basic:.35},p:{dur:8,shield:.15},
+  v:{atk:.16,highHp:.20,speed:.30,basic:.25},p:{dur:8,shield:.12},
   desc:(S,P)=>`GingerBrave gains <em>${pcn(S.atk * 100)}</em> Attack and deals <em>${pcn(S.highHp * 100)}</em> more damage to enemies above half HP. Whenever GingerBrave dashes through enemies or casts Never Back Down!, he gains <em>${pcn(S.speed * 100)}</em> Movement Speed, <em>${pcn(S.basic * 100)}</em> Basic Attack damage, and a Pack Bravery Shield absorbing <em>${pcn(S.shield * 100)}</em> Max HP for ${P.dur.toFixed(1)}s.`,
   passive:(u,B,S,P)=>{
    u.flat.atkP71=S.atk;u._cookieOverflowSpeed=S.speed;u._cookieOverflowBasic=S.basic;u._cookieOverflowDur=P.dur;u.dirty=true;

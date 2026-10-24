@@ -85,9 +85,9 @@ defHero({
   base: { hp: 3480, atk: 150, def: 180, mag: 388, mdef: 315, spd: 108, acc: 178, eva: 122 },
   hidden: { range: 300, aspd: 0.96, ms: 72, aggro: 0.55, crit: .05, critDmg: 1.5, healPow: 1.35, shieldPow: 1.20, cdr: .04, ccRes: .15, kbRes: .35, armorPen: 0, magPen: .06 },
   growth: { hp: .088, atk: .07, def: .078, mag: .095, mdef: .090 },
-  move: { gait: 'float', bob: 9, freq: 1.1, lean: 3, squash: .02, hover: 16, idle: 'pulse', step: null,
-    particles: 'sparkle', pcol: '#b9a4ff', trail: { on: true, col: '#7c4dff', rate: .08 }, brake: .1 },
-  basic: { name: 'Lullaby Mote', type: 'magic', ratio: 1.08, range: 300, proj: 'orb', pcol: '#b9a4ff',
+  move: { gait: 'drowse', bob: 3, freq: .8, lean: 5, squash: .02, idle: 'nod', step: 'step',
+    particles: null, brake: .2 },
+  basic: { name: 'Lullaby Mote', type: 'magic', ratio: 1.08, range: 300, proj: 'orb', pcol: '#a9b6ff', animStyle: 'astroLullaby',
     sfx: 'whoosh', hit: 'hit_magic', wind: .28, note: 'A drifting mote that slows whatever it settles on.',
     onHit: (u, t, B) => {
       if (chance(.35) || t.hasStatus('drowsy')) {
@@ -109,21 +109,16 @@ defHero({
           B.heal(u, a, u.st.mag * S.heal * 0.35, { tag: 'dream' });
           B.applyStatus(u, a, 'ward', 3);
           B.fxAstroSkill('shield', u, a, null, { dur: 3 });
-          B.fxFloatItem(a.x, a.y - 88, 'Trinkets/ASTRO_Starpillow');
-          B.fxFloatIcon(a.x, a.y - 110, 'DREAM WARD', '#dcd0ff');
         });
       },
       cast: (u, B, S, P) => {
-        B.anim(u, 'cast', .55); Sound.play('hero_astro_ability');
-        B.after(.4, () => {
-          Sound.play('ult'); B.tint('#7a6bff', .35, .45); B.shake(7, .4);
+        B.anim(u, 'cast', .8, 'astroDreamPulse'); Sound.play('hero_astro_ability');
+        B.after(.5, () => {
+          Sound.play('ult'); B.tint('#2a2870', .32, .6); B.shake(3, .3);
           B.fxAstroSkill('pulse', u, null, B.alliesOf(u), { isAlly: true });
           B.fxAstroSkill('pulse', u, null, B.enemiesOf(u), { isAlly: false });
           B.alliesOf(u).forEach(a => {
             B.energy(a, P.en); B.heal(u, a, u.st.mag * S.heal, { tag: 'dream' }); B.cleanse(a, 3);
-            B.fxSparkle(a.x, a.y - 40, 14, '#dcd0ff');
-            B.fxFloatItem(a.x, a.y - 88, 'Trinkets/ASTRO_Starpillow');
-            B.fxFloatIcon(a.x, a.y - 110, 'RESTORED', '#b9a4ff');
           });
           B.enemiesOf(u).forEach(e => {
             B.damage(u, e, u.st.mag * S.ratio, { type: 'magic', tag: 'Dream Pulse' });
@@ -141,14 +136,14 @@ defHero({
       cast: (u, B, S, P) => {
         const t = B.highestEnergy(B.enemiesOf(u).filter(e => !e.hasStatus('sleep'))) || B.highestEnergy(B.enemiesOf(u));
         if (!t) return;
-        B.anim(u, 'cast', .4); Sound.play('dizzy');
-        B.after(.28, () => {
+        B.anim(u, 'cast', .55, 'astroSing'); Sound.play('dizzy');
+        B.after(.34, () => {
           if (!t.alive) return;
           B.fxAstroSkill('slumber', u, t);
           B.dispel(t, 3);
           t.energy = Math.max(0, t.energy * (1 - P.drain));
           B.damage(u, t, u.st.mag * S.ratio, { type: 'magic', tag: 'Slumber' });
-          B.applyStatus(u, t, 'sleep', P.sleep, { groggyDur: P.groggy });
+          B.applyStatus(u, t, 'sleep', P.sleep * (B.t < (u._nightUntil || 0) ? 1.4 : 1), { groggyDur: P.groggy });
           if (!t.hasStatus('sleep')) B.applyStatus(u, t, 'drowsy', 5);
         });
       }
@@ -159,17 +154,16 @@ defHero({
       desc: (S, P) => `${P.hits} stars fall on enemies for <em>${pcn(S.ratio * 100)}</em> Magic each. Stars home in on 🌙 Drowsy or 💤 Sleeping targets and hit <em>${pc(P.focusBonus)}</em> harder. Every impact heals the weakest ally.`,
       ai: { prio: 48, cond: () => true },
       cast: (u, B, S, P) => {
-        B.anim(u, 'cast', .5); Sound.play('magiccircle', { vol: .6 });
+        B.anim(u, 'cast', .7, 'astroWish'); Sound.play('magiccircle', { vol: .45 });
         B.repeat(P.hits, .12, () => {
           const foes = B.enemiesOf(u); if (!foes.length) return;
           const marked = foes.filter(e => e.hasStatus('drowsy') || e.hasStatus('sleep'));
           const t = marked.length ? pick(marked) : pick(foes);
           const bonus = marked.includes(t) ? (1 + P.focusBonus) : 1;
-          B.fxStarfall(t.x, t.y, () => {
-            Sound.play('hit_magic', { vol: .5, rate: rnd(.9, 1.2) });
+          B.fxAstroStar(t.x, t.y, () => {
+            Sound.play('hit_magic', { vol: .4, rate: rnd(.9, 1.2) });
             B.damage(u, t, u.st.mag * S.ratio * bonus, { type: 'magic', tag: 'Falling Stars' });
-            B.shake(2, .1);
-            const w = B.lowestHp(B.alliesOf(u));
+                        const w = B.lowestHp(B.alliesOf(u));
             if (w) {
               B.heal(u, w, u.st.mag * S.heal, { silent: true, tag: 'Falling Stars Heal' });
               B.fxSparkle(w.x, w.y - 45, 4, '#dcd0ff');
@@ -185,11 +179,11 @@ defHero({
       desc: (S) => `Allies gain <em>${pcn(S.heal * 100)}</em> Healing Received and <em>${pcn(S.en * 100)}</em> Energy Generation. At battle start and whenever an ally is topped to full HP, their next skill ignores <em>${pcn(S.pen * 100)}</em> Magic Defense.`,
       passive: (u, B, S) => {
         B.teamAura(u, m => { m.healRecv += S.heal; m.energyGen += S.en; });
+        B.every(u, 1.0, () => B.energy(u, 2));
         const armRest = (a) => {
           if (!a || !a.alive) return;
           a._astroPenActive = true;
-          B.fxFloatItem(a.x, a.y - 82, 'Trinkets/ASTRO_Starpillow');
-          B.fxFloatIcon(a.x, a.y - 104, 'WELL RESTED', '#dcd0ff');
+          B.fxAstroSkill('rested', u, a);
           if (!a._astroPenListener) {
             a._astroPenListener = true;
             B.on(a, 'dealDamage', ev => {
@@ -210,12 +204,17 @@ defHero({
       v: { shield: .60 }, p: { dur: 10, revive: .22 },
       desc: (S, P) => `Battle opens under a peaceful night for ${P.dur}s: allies regenerate, enemies are 🌙 Drowsy. Whenever Astro casts, his weakest ally gains a <em>${pcn(S.shield * 100)}</em> Magic Shield and ⚓ CC immunity. Once per ally, a lethal blow leaves them at <em>${pc(P.revive)}</em> HP and briefly 👻 Ethereal.`,
       passive: (u, B, S, P) => {
-        B.tint('#2b2160', .28, 2.2);
+        u._nightUntil = B.t + P.dur;
+        B.tint('#14123f', .4, 2.6);
+        if (typeof FX !== 'undefined' && FX.astroNightfall) FX.astroNightfall(P.dur);
         B.enemiesOf(u).forEach(e => {
           B.applyStatus(u, e, 'drowsy', P.dur);
+          B.applyStatus(u, e, 'astronight', P.dur);
           if (typeof FX !== 'undefined' && FX.astroDrowsy) FX.astroDrowsy(e);
         });
         B.alliesOf(u).forEach(a => B.applyStatus(u, a, 'regen', P.dur, { val: u.st.mag * .14 }));
+        let ticks = 0;
+        B.every(u, 1.0, () => { if (++ticks <= P.dur) B.alliesOf(u).forEach(a => B.energy(a, 3)); });
         B.on(u, 'cast', () => {
           const w = B.lowestHp(B.alliesOf(u)); if (!w) return;
           B.shield(u, w, u.st.mag * S.shield, 6); B.applyStatus(u, w, 'ccimmune', 3.5);
@@ -503,273 +502,196 @@ defHero({
 });
 
 /* ============================================================ VEE
-   Tank / Support / Battlefield Director - SS Tier */
+   Backline Magic Damage - SS Tier */
 defHero({
   id: 'Vee', name: 'Vee', folder: 'Vee', file: 'Vee', icon: 'Vee',
-  role: 'Tank', tier: 'SS', element: 'Broadcast',
-  blurb: 'Gardenview\'s prime-time host. Analytical, commanding, and in complete control of the studio floor, she does not merely tank—she directs the entire battlefield.',
-  base: { hp: 5850, atk: 260, def: 385, mag: 380, mdef: 390, spd: 120, acc: 220, eva: 110 },
-  hidden: { range: 240, aspd: 1.05, ms: 75, aggro: 1.8, crit: .10, critDmg: 1.6, healPow: 1.30, shieldPow: 1.40, cdr: .15, ccRes: .35, kbRes: .75, armorPen: 0, magPen: .12 },
-  growth: { hp: .120, atk: .080, def: .115, mag: .105, mdef: .115 },
-  move: { gait: 'glide', bob: 3, freq: 1.6, lean: 4, squash: .03, idle: 'scan', step: 'step_metal',
-    particles: 'static', pcol: '#7be0ff', trail: { on: true, col: '#7be0ff', rate: .14 }, brake: .2 },
+  role: 'Damage', roleLabel: 'Anti-Tank Magic Damage', position: 'Backline', tier: 'SS', element: 'Broadcast',
+  blurb: 'Gardenview host who keeps the toughest enemy on camera and wears down its shields and defenses.',
+  base: { hp: 4050, atk: 235, def: 245, mag: 475, mdef: 280, spd: 125, acc: 220, eva: 120 },
+  hidden: { range: 335, aspd: 1.22, ms: 78, aggro: .65, crit: .18, critDmg: 1.7, healPow: 1, shieldPow: 1, cdr: .08, ccRes: .15, kbRes: .30, armorPen: 0, magPen: .16 },
+  growth: { hp: .094, atk: .075, def: .088, mag: .135, mdef: .095 },
+  move: { gait: 'poise', bob: 2.5, freq: 1.1, lean: 3, squash: .02, idle: 'scan', step: 'step_metal',
+    particles: null, brake: .2 },
   basic: {
-    name: 'Broadcast Strike & Signal Pulse', type: 'magic', ratio: 1.25, range: 240, sfx: 'swing_pole', hit: 'hit_blunt',
-    wind: .16, note: 'Sharp executive wand strikes channeling static electricity. Alternates with a piercing static interference wave that slows enemy attack speed.',
+    name: 'Signal Beam', type: 'magic', ratio: 1.15, range: 335, sfx: 'beam_fire', hit: 'laser_hit',
+    wind: .16, animStyle: 'veeStrike',
+    note: 'A fast broadcast beam. Every third hit sends a pulse that deals extra Max HP damage to the Headline, capped against bosses.',
     onHit: (u, t, B) => {
-      if (t.hasStatus('headline')) {
-        B.energy(u, 10);
-        if (t.energy) t.energy = Math.max(0, t.energy - 8);
-      }
+      if (!t) return;
+      B.fxTargetLine({ x: u.x, y: u.y - 55 }, { x: t.x, y: t.y - 48 }, u.hasStatus('vee_live') ? '#ff3366' : '#6fe35a');
       u._veeBasicHits = (u._veeBasicHits || 0) + 1;
+      if (!t.alive) return;
+      if (t.hasStatus('headline')) B.applyStatus(u, t, 'vee_static', 6);
       if (u._veeBasicHits % 3 === 0) {
-        Sound.play('hit_shock', { vol: 0.45, throttle: 120 });
-        B.fxSparkle(t.x, t.y - 40, 12, '#7be0ff');
-        B.enemiesOf(u).forEach(e => {
-          if (B.distance(t, e) <= 180) {
-            B.damage(u, e, u.st.mag * 0.55, { type: 'magic', tag: 'Signal Pulse' });
-            B.applyStatus(u, e, 'slow', 3.0, { stacks: 2 });
-          }
-        });
+        Sound.play('shock', { vol: .38, throttle: 110 });
+        const hpBonus = t.hasStatus('headline')
+          ? Math.min(t.max.hp * (t.isBoss ? .004 : .012), u.st.mag * (t.isBoss ? .35 : .65)) : 0;
+        B.damage(u, t, u.st.mag * .65 + hpBonus, { type: 'magic', chained: true, tag: 'Signal Pulse' });
+        const other = B.enemiesOf(u).find(e => e !== t && e.alive);
+        if (other) B.damage(u, other, u.st.mag * .45, { type: 'magic', chained: true, tag: 'Signal Pulse' });
+        B.fxSparkle(t.x, t.y - 42, 10, '#6fe35a');
       }
-      if (u._live) {
-        Sound.play('beam_fire', { vol: 0.5, throttle: 150 });
-        B.enemiesOf(u).forEach(e => {
-          if (Math.abs(e.y - u.y) < 70) {
-            B.damage(u, e, u.st.mag * 0.50, { type: 'magic', tag: 'Live Broadcast Beam' });
-            B.fxSparkle(e.x, e.y - 40, 6, '#ff3366');
-          }
-        });
+      if (u._live && u.hasStatus('vee_live') && t.alive) {
+        B.damage(u, t, u.st.mag * .55, { type: 'magic', chained: true, tag: 'Live Beam' });
+        B.fxSparkle(t.x, t.y - 45, 7, '#ff3366');
       }
     }
   },
   skills: {
     W: {
       name: 'Spotlight On', type: 'Magic Damage', energy: 100,
-      v: { ratio: 2.45, heal: .20, shield: .25 },
-      p: { blind: 6.0, stun: 2.0, drain: .50, acc: .35, crit: .25, dmgBoost: .30, energy: 10, primeDur: 8.0 },
-      desc: (S, P) => `<span class="sk-pas">Vee broadcasts telemetry data across allied ranks, identifying the highest-damage enemy as the 📺 Headline every 2.5s. Allies gain <em>+${pcn(P.acc * 100)}</em> Accuracy, <em>+${pcn(P.crit * 100)}</em> Critical Chance, and deal <em>+${pcn(P.dmgBoost * 100)}</em> damage against it. Whenever the Headline acts or casts, allies gain <em>${Math.round(P.energy)}</em> Energy. When it falls, the team heals <em>${pcn(S.heal * 100)}</em> Max HP and dispels all debuffs.</span>
-        Active: blinding studio spotlights flood the field for <em>${pcn(S.ratio * 100)}</em> Magic Damage. The Headline is Interrupted, Stunned for ${P.stun}s, 🌑 Blinded for ${P.blind}s, and drained of <em>${pcn(P.drain * 100)}</em> Energy. All allies gain 🌟 <b>Prime Time</b> (+35% Attack Speed, +30% Skill Haste, +30% Headline Damage for ${P.primeDur}s) and a crystalline Broadcast Shield for <em>${pcn(S.shield * 100)}</em> of Vee's Max HP.`,
-      passive: (u, B, S, P) => {
-        B.every(u, 2.5, () => {
-          const foes = B.enemiesOf(u); if (!foes.length) return;
-          const top = foes.reduce((a, b) => (b.dmgDone || 0) > (a.dmgDone || 0) ? b : a);
-          if (top.hasStatus('headline')) return;
-          foes.forEach(f => B.removeStatus(f, 'headline'));
-          B.applyStatus(u, top, 'headline', 999); Sound.play('lock', { vol: .55 });
-          B.fxFloatIcon(top.x, top.y - 100, '📺 HEADLINE', '#7be0ff');
-        });
-        B.teamAura(u, m => {
-          m.accP += P.acc;
-          m.crit += P.crit;
-        });
-        B.on(u, 'allyDamageDealt', ev => {
-          if (ev.tag === 'Executive Director') return;
-          if (ev.target && ev.target.hasStatus('headline')) {
-            ev.amount += ev.amount * P.dmgBoost;
-          }
-        });
-        B.on(u, 'enemyAction', e => {
-          if (e && e.hasStatus('headline')) B.alliesOf(u).forEach(a => B.energy(a, P.energy));
-        });
-        B.on(u, 'enemyCast', e => {
-          if (e && e.hasStatus('headline')) B.alliesOf(u).forEach(a => B.energy(a, P.energy));
-        });
-        B.on(u, 'enemyDown', e => {
-          if (!e || !e.hasStatus('headline')) return;
-          Sound.play('cheer', { vol: 0.6 });
-          B.alliesOf(u).forEach(a => {
-            B.heal(u, a, u.max.hp * S.heal, { tag: 'ratings' });
-            B.cleanse(a, 99);
-            B.fxSparkle(a.x, a.y - 40, 10, '#7be0ff');
-          });
-          const foes = B.enemiesOf(u).filter(f => f.alive && f !== e);
-          if (foes.length) {
-            const next = foes.reduce((a, b) => (b.dmgDone || 0) > (a.dmgDone || 0) ? b : a);
-            B.applyStatus(u, next, 'headline', 999);
-            B.fxFloatIcon(next.x, next.y - 100, '📺 HEADLINE', '#7be0ff');
-          }
-        });
+      v: { ratio: 1.12, splash: .78 }, p: { hits: 3, gap: .15 },
+      desc: (S, P) => 'Passive: Vee keeps the toughest Tank on camera as the Headline, or the enemy with the most Max HP if there is no Tank. The Headline takes 20% more damage. Active: the first beam cracks 35% of its Shield, then three beams strike for ' + pcn(S.ratio * 100) + ' Magic Damage each. The final beam deals ' + pcn(S.splash * 100) + ' Magic Damage to other enemies. Each hit adds Signal Interference.',
+      passive: (u, B) => {
+        const pickHeadline = () => {
+          if (!u.alive) return;
+          const foes = B.enemiesOf(u).filter(e => e.alive);
+          if (!foes.length) return;
+          const durable = e => (e.role === 'Tank' ? 1e9 : 0) + (e.max ? e.max.hp : e.hp) + (e.shieldTotal || 0);
+          const target = foes.reduce((a, b) => durable(b) > durable(a) ? b : a);
+          const current = foes.find(e => { const mark = e.getStatus('headline'); return mark && mark.src === u; });
+          if (current === target) return;
+          if (current) B.removeStatus(current, 'headline');
+          B.applyStatus(u, target, 'headline', 999);
+          B.fxFloatIcon(target.x, target.y - 95, 'HEADLINE', '#6fe35a');
+          Sound.play('lock', { vol: .4, throttle: 250 });
+        };
+        B.after(.1, pickHeadline);
+        B.every(u, 1.5, pickHeadline);
+        B.on(u, 'enemyDown', e => { if (e && e.hasStatus('headline')) B.after(.05, pickHeadline); });
+        B.on(u, 'death', () => B.enemiesOf(u).forEach(e => {
+          const mark = e.getStatus('headline');
+          if (mark && mark.src === u) B.removeStatus(e, 'headline');
+        }));
       },
       cast: (u, B, S, P) => {
-        B.anim(u, 'cast', .75, 'veeSpotlight'); Sound.play('flash'); Sound.play('ult');
-        const foes = B.enemiesOf(u), headline = foes.find(e => e.hasStatus('headline'));
-        B.fxVeeSpotlight(u, foes, headline);
-        B.after(.3, () => {
-          B.flash('#eaf7ff', .28, .6); B.shake(8, .35);
-          B.enemiesOf(u).forEach(e => {
-            B.damage(u, e, u.st.mag * S.ratio, { type: 'magic', tag: 'Spotlight On' });
-            if (e.hasStatus('headline')) {
-              B.interrupt(e);
-              B.applyStatus(u, e, 'stun', P.stun);
-              B.applyStatus(u, e, 'blind', P.blind);
-              e.energy = Math.max(0, (e.energy || 0) * (1 - P.drain));
-            }
-          });
-          B.alliesOf(u).forEach(a => {
-            B.applyStatus(u, a, 'haste', P.primeDur, { stacks: 2 });
-            B.shield(u, a, u.max.hp * S.shield, P.primeDur);
-            B.fxSparkle(a.x, a.y - 45, 12, '#ffe066');
-            B.fxFloatIcon(a.x, a.y - 95, '🌟 PRIME TIME', '#ffe066');
-          });
-        });
+        B.anim(u, 'cast', .78, 'veeSpotlight');
+        Sound.play('beam_charge', { vol: .52 });
+        const foes = B.enemiesOf(u), focus = foes.find(e => e.hasStatus('headline')) || foes[0];
+        B.fxVeeSpotlight(u, foes, focus);
+        B.after(.22, () => B.repeat(P.hits, P.gap, i => {
+          if (!u.alive) return;
+          const targets = B.enemiesOf(u).filter(e => e.alive);
+          const t = targets.find(e => e.hasStatus('headline')) || targets[0];
+          if (!t) return;
+          Sound.play(i === P.hits - 1 ? 'shock_big' : 'laser_hit', { vol: .5, throttle: 80 });
+          if (i === 0) B.crackShield(u, t, .35, { color: '#6fe35a' });
+          B.damage(u, t, u.st.mag * S.ratio, { type: 'magic', tag: 'Spotlight On' });
+          if (t.alive) B.applyStatus(u, t, 'vee_static', 6);
+          if (i === P.hits - 1) {
+            targets.filter(e => e !== t).forEach(e => {
+              B.damage(u, e, u.st.mag * S.splash, { type: 'magic', area: true, tag: 'Spotlight Spill' });
+              if (e.alive) B.applyStatus(u, e, 'vee_static', 6);
+            });
+            B.flash('#eaf7ff', .2, .45);
+            B.shake(5, .24);
+          }
+        }));
       }
     },
     G: {
-      name: 'Audience Support', type: 'Healing / Shield', cd: 10,
-      v: { heal: .22, fortifyDef: .35 }, p: { dur: 5.0, overchargeDur: 5.0 },
-      desc: (S, P) => `Thunderous applause fills the arena! Cleanses up to 2 debuffs from all allies. The entire team recovers HP over ${P.dur}s (scaling with <em>${pcn(S.heal * 100)}</em> of Vee's Max HP and Magic) while gaining Studio Fortification (+35% Defense & Magic Defense). Overhealing becomes a 🛡️ Broadcast Shield; allies with active shields gain ⚡ <b>Overcharge</b> (+35% Energy Generation, +20% Cooldown Reduction).`,
-      ai: { prio: 65, cond: (u, B) => B.alliesOf(u).some(a => a.hpPct < .88 || (a.debuffs && a.debuffs.length)) },
+      name: 'Audience Surge', type: 'Magic Damage', cd: 9,
+      v: { blast: 1.45, encore: .65 }, p: { delay: .24 },
+      desc: (S, P) => 'Vee calls for applause, then sends a blast across the enemy team for ' + pcn(S.blast * 100) + ' Magic Damage. The Headline loses 25% of its Shield before a second pulse hits for ' + pcn(S.encore * 100) + ' Magic Damage and adds Signal Interference.',
+      ai: { prio: 56, cond: (u, B) => B.enemiesOf(u).length > 0 },
       cast: (u, B, S, P) => {
-        B.anim(u, 'cast', .74, 'veeAudience'); Sound.play('cheer', { vol: .75 }); Sound.play('cleanse', { vol: .4 });
-        const allies = B.alliesOf(u);
-        B.fxVeeAudience(u, allies);
-        allies.forEach(a => {
-          B.cleanse(a, 2);
-          B.applyStatus(u, a, 'fortify', P.dur, { stacks: 3 });
-          if (a.hasStatus('shield')) B.applyStatus(u, a, 'overcharge', P.overchargeDur);
-          B.applyStatus(u, a, 'regen', P.dur, { val: (u.max.hp * S.heal + u.st.mag * 0.8) / P.dur, overheal: 'shield' });
-          B.fxSparkle(a.x, a.y - 40, 10, '#7be0ff');
+        B.anim(u, 'cast', .72, 'veeAudience');
+        Sound.play('hero_vee_ability', { vol: .62, throttle: 500 });
+        B.fxVeeAudience(u, B.enemiesOf(u));
+        B.after(P.delay, () => {
+          if (!u.alive) return;
+          const foes = B.enemiesOf(u).filter(e => e.alive);
+          if (!foes.length) return;
+          Sound.play('skill_impact', { vol: .58 });
+          foes.forEach(e => {
+            B.damage(u, e, u.st.mag * S.blast, { type: 'magic', area: true, tag: 'Audience Surge' });
+            B.fxSparkle(e.x, e.y - 40, 8, '#6fe35a');
+          });
+          const t = foes.find(e => e.hasStatus('headline')) || foes[0];
+          if (t.alive) {
+            B.crackShield(u, t, .25, { color: '#6fe35a' });
+            B.damage(u, t, u.st.mag * S.encore, { type: 'magic', tag: 'Audience Encore' });
+            if (t.alive) B.applyStatus(u, t, 'vee_static', 6);
+          }
         });
       }
     },
     B: {
-      name: 'Commercial Break', type: 'Team Buff / Stasis', cd: 13,
-      v: { heal: .10 }, p: { dur: 6.0, enRegen: 30, hasteStacks: 2 },
-      desc: (S, P) => `Vee cuts to commercial! Time dilates for ${P.dur}s: enemies suffer -50% cooldown recovery, -35% Attack Speed & Move Speed, and complete Energy lock. Allies gain 💨 <b>Super Haste</b> (+35% Move Speed, +30% Skill Haste), regenerate <em>${P.enRegen}</em> Energy, and become immune to Energy drain. Ally skills cast during the break trigger a sponsor spot restoring <em>${pcn(S.heal * 100)}</em> of Vee's Max HP and zapping nearby foes with static shock.`,
-      ai: { prio: 50, cond: (u, B) => B.enemiesOf(u).length >= 1 },
+      name: 'Commercial Break', type: 'Magic Damage / Control', cd: 11,
+      v: { pulse: .62 }, p: { pulses: 4, gap: .25, slow: 3 },
+      desc: (S, P) => 'Vee cuts the feed to static. Four waves strike all enemies for ' + pcn(S.pulse * 100) + ' Magic Damage each, building Signal Interference. At three stacks, Interference cuts Magic Defense by 24% and healing received by 25%. The last wave slows enemies for ' + P.slow + ' seconds.',
+      ai: { prio: 50, cond: (u, B) => B.enemiesOf(u).length > 0 },
       cast: (u, B, S, P) => {
-        B.anim(u, 'cast', .78, 'veeCommercial'); Sound.play('ui_open'); B.tint('#1b2a55', .35, .6);
-        const enemies = B.enemiesOf(u), allies = B.alliesOf(u);
-        B.fxVeeCommercial(u, allies, enemies, P.dur);
-        enemies.forEach(e => {
-          B.applyStatus(u, e, 'drowsy', P.dur);
-          B.applyStatus(u, e, 'slow', P.dur, { stacks: 2 });
-          e._energyLockedUntil = B.t + P.dur;
-        });
-        allies.forEach(a => {
-          B.applyStatus(u, a, 'haste', P.dur, { stacks: 3 });
-          B.applyStatus(u, a, 'overcharge', P.dur);
-          B.energy(a, P.enRegen);
-          a._energyDrainImmuneUntil = B.t + P.dur;
-        });
-        u._breakUntil = B.t + P.dur;
-        B.on(u, 'allyCast', a => {
-          if (B.t < (u._breakUntil || 0)) {
-            B.heal(u, a, u.max.hp * S.heal, { tag: 'Commercial Sponsor' });
-            Sound.play('hit_shock', { vol: .35, throttle: 150 });
-            B.enemiesOf(u).forEach(foe => {
-              if (B.distance(a, foe) <= 240) {
-                B.damage(u, foe, u.st.mag * 0.50, { type: 'magic', tag: 'Static Shock' });
-                B.fxSparkle(foe.x, foe.y - 40, 8, '#7be0ff');
-              }
-            });
-          }
-        });
+        B.anim(u, 'cast', .78, 'veeCommercial');
+        Sound.play('orb_magic', { vol: .58 });
+        B.tint('#1b2a55', .3, .55);
+        B.fxVeeCommercial(u, B.alliesOf(u), B.enemiesOf(u));
+        B.after(.25, () => B.repeat(P.pulses, P.gap, i => {
+          if (!u.alive) return;
+          const foes = B.enemiesOf(u).filter(e => e.alive);
+          if (!foes.length) return;
+          Sound.play(i === P.pulses - 1 ? 'shock_big' : 'shock', { vol: .43, throttle: 90 });
+          foes.forEach(e => {
+            B.damage(u, e, u.st.mag * S.pulse, { type: 'magic', area: true, tag: 'Commercial Static' });
+            if (!e.alive) return;
+            B.applyStatus(u, e, 'vee_static', 6);
+            if (i === P.pulses - 1) B.applyStatus(u, e, 'slow', P.slow);
+          });
+          if (i === P.pulses - 1) B.shake(5, .22);
+        }));
       }
     },
     P: {
-      name: 'Studio Production', type: 'Defense / Redirection',
-      v: { def: .045, mdef: .045, dmgRed: .025 }, p: { maxStacks: 12, redirect: .35, absorbP: .50, energy: 12 },
-      desc: (S, P) => `Whenever an ally damages the 📺 Headline, or Vee shields/protects an ally, Vee gains 1 stack of 🎬 <b>Production Value</b> (max ${P.maxStacks}). Each stack grants Vee <em>+${(S.def * 100).toFixed(1)}%</em> Defense, <em>+${(S.mdef * 100).toFixed(1)}%</em> Magic Defense, and <em>+${(S.dmgRed * 100).toFixed(1)}%</em> Damage Reduction.
-        <b>Executive Redirection</b>: Vee redirects <em>${pcn(P.redirect * 100)}</em> of incoming damage from nearby allies onto herself, absorbing 50% of the redirected amount. Protected allies gain <em>${Math.round(P.energy)}</em> Energy and a reflective Static Barrier. At ${P.maxStacks} stacks, radiates an Executive Director Aura granting allies +20% True Damage against the Headline and Silence/Disable immunity.`,
+      name: 'Ratings Chase', type: 'Magic Damage / Scaling',
+      v: { encore: .55, hpCap: 1.4 }, p: { maxStacks: 8, dur: 8, procGap: .65, hpShare: .02, bossShare: .008, bossCap: .9 },
+      desc: (S, P) => 'Direct damage to the Headline gives Vee a Ratings stack, up to ' + P.maxStacks + '. Each adds 4% Magic Attack for ' + P.dur + ' seconds. At full Ratings, further direct hits fire an extra ' + pcn(S.encore * 100) + ' Magic Damage shot plus ' + pcn(P.hpShare * 100) + ' of target Max HP, capped at ' + pcn(S.hpCap * 100) + ' Magic Attack. Against bosses, the Max HP part is ' + pcn(P.bossShare * 100) + ' and capped at ' + pcn(P.bossCap * 100) + ' Magic Attack. This can trigger once every ' + P.procGap + ' seconds. Vee gains 12% Magic Penetration.',
       passive: (u, B, S, P) => {
-        u.prodMax = P.maxStacks;
-        const addProd = () => {
-          u.prod = Math.min((u.prod || 0) + 1, P.maxStacks);
-          u.flat.defPProd = (u.prod || 0) * S.def;
-          u.flat.mdefPProd = (u.prod || 0) * S.mdef;
-          u.flat.dmgRedP = (u.prod || 0) * S.dmgRed;
-          u.dirty = true;
-        };
-
-        B.on(u, 'allyDamageDealt', ev => {
-          if (ev.tag === 'Executive Director') return;
-          if (ev.target && ev.target.hasStatus('headline')) addProd();
-          if ((u.prod || 0) >= P.maxStacks && ev.target && ev.target.hasStatus('headline')) {
-            B.damage(u, ev.target, ev.amount * 0.20, { type: 'true', noDodge: true, tag: 'Executive Director' });
-          }
-        });
-        B.on(u, 'shieldDone', ev => {
-          if (ev.target && ev.target !== u) addProd();
-        });
-
-        B.on(u, 'allyDamaged', ev => {
-          if (ev.unit === u || !u.alive || ev.redirected || ev.dot) return;
-          if (B.distance(ev.unit, u) > 320) return;
-          const moved = ev.amount * P.redirect;
-          ev.amount -= moved;
-          B.damage(ev.src, u, moved * P.absorbP, { type: 'true', redirected: true, noDodge: true, tag: 'redirect' });
-          if (u.alive) {
-            B.energy(ev.unit, P.energy);
-            B.shield(u, ev.unit, u.st.mag * 0.35, 3.5);
-          }
-        });
-
-        B.every(u, 1.0, () => {
-          if ((u.prod || 0) >= P.maxStacks) {
-            B.alliesOf(u).forEach(a => B.applyStatus(u, a, 'ccimmune', 1.2));
-          }
+        u.flat.magPen = (u.flat.magPen || 0) + .12;
+        u.dirty = true;
+        B.on(u, 'dealDamage', ev => {
+          const t = ev.target;
+          if (!u.alive || !t || !t.alive || !t.hasStatus('headline') || ev.chained || ev.dot) return;
+          B.applyStatus(u, u, 'vee_ratings', P.dur);
+          const ratings = u.getStatus('vee_ratings');
+          if (!ratings || ratings.stacks < P.maxStacks || B.t < (u._veeEncoreAt || 0)) return;
+          u._veeEncoreAt = B.t + P.procGap;
+          B.after(0, () => {
+            if (!u.alive || !t.alive) return;
+            const hpBonus = Math.min(t.max.hp * (t.isBoss ? P.bossShare : P.hpShare),
+              u.st.mag * (t.isBoss ? P.bossCap : S.hpCap));
+            B.damage(u, t, u.st.mag * S.encore + hpBonus, { type: 'magic', chained: true, tag: 'Ratings Encore' });
+            B.fxSparkle(t.x, t.y - 50, 7, '#ffe066');
+            Sound.play('laser_hit', { vol: .37, throttle: 100 });
+          });
         });
       }
     },
     R: {
-      name: 'Season Finale', type: 'Battle Opener / Climax',
-      v: { exposeDmg: .25, def: .06, hp: .06, mag: .50 }, p: { needExposure: 5, liveDur: 14, energy: 35, cdr: 3.5, maxFinStacks: 5 },
-      desc: (S, P) => `Enemies build Exposure by acting. At ${P.needExposure} stacks they become permanently exposed as a 📺 Headline: -25% damage dealt, no dodging, -50% healing received, and <em>+${pcn(S.exposeDmg * 100)}</em> damage taken. Each Headline defeated triggers a Grand Finale: restores <em>${P.energy}</em> Energy to all allies, refreshes all shields, reduces cooldowns by ${P.cdr}s, and permanently grants Vee <em>+${pcn(S.hp * 100)}</em> Max HP and Defense (stacks up to ${P.maxFinStacks}x).
-        🔴 <b>LIVE BROADCAST</b>: Once per wave, if Vee drops below 35% HP or is solo, she goes Live for ${P.liveDur}s: heals 40% Max HP, gains CC immunity, +50% Magic Attack, +40% Attack Speed, +300 Range, piercing laser beam basics, and brands every enemy as a Headline!`,
+      name: 'Live Broadcast', type: 'Magic Damage / Burst',
+      v: { volley: .52 }, p: { need: 8, liveDur: 8, volleys: 5, gap: .2 },
+      desc: (S, P) => 'Once per wave, reaching ' + P.need + ' Ratings stacks puts Vee Live for ' + P.liveDur + ' seconds. She gains 30% Magic Attack, 25% Attack Speed, and an extra beam on every Basic Attack. Going Live fires ' + P.volleys + ' teamwide volleys, each dealing ' + pcn(S.volley * 100) + ' Magic Damage.',
       passive: (u, B, S, P) => {
-        u.antiDodge = target => !!(target && (target.hasStatus('headline') || B.t < (target._veeOnAirUntil || 0)));
-        B.on(u, 'waveStart', () => { u._live = false; u._finStacks = 0; });
-        B.on(u, 'enemyAction', e => {
-          if (!e.alive) return;
-          e.exposure = (e.exposure || 0) + 1;
-          if (e.exposure >= P.needExposure && !e.hasStatus('headline')) {
-            e._veeOnAirUntil = B.t + 999;
-            B.applyStatus(u, e, 'headline', 999);
-            B.applyStatus(u, e, 'grief', 999);
-            B.applyStatus(u, e, 'exposed', 999);
-            B.fxFloatIcon(e.x, e.y - 100, '📺 EXPOSED HEADLINE', '#7be0ff');
-            Sound.play('gasp', { vol: .55 });
-          }
-        });
-        B.on(u, 'enemyDown', e => {
-          if (!e.hasStatus('headline')) return;
-          Sound.play('cheer', { vol: 0.65 }); Sound.play('get_rare', { vol: 0.5 });
-          B.alliesOf(u).forEach(a => {
-            B.energy(a, P.energy);
-            B.refreshShields(a);
-            B.reduceCd(a, P.cdr);
-            B.fxSparkle(a.x, a.y - 45, 10, '#ffd166');
-          });
-          u._finStacks = Math.min((u._finStacks || 0) + 1, P.maxFinStacks);
-          u.flat.hpPFinale = (u._finStacks || 0) * S.hp;
-          u.flat.defPFinale = (u._finStacks || 0) * S.def;
-          u.dirty = true;
-          B.fxFloatIcon(u.x, u.y - 110, `🌟 FINALE x${u._finStacks}`, '#ffd166');
-        });
-        B.every(u, 0.5, () => {
-          if (u._live || !u.alive) return;
-          const solo = B.alliesOf(u).filter(a => a !== u && a.alive).length === 0;
-          if (u.hpPct <= 0.35 || solo) {
-            u._live = true;
-            B.log('<b>🔴 LIVE BROADCAST — PRIMETIME FINALE</b>');
-            Sound.play('suddendeath'); Sound.play('ult');
-            B.flash('#ff3366', .35, .8); B.shake(12, .6);
-            if (B.fxVeeLiveBroadcast) B.fxVeeLiveBroadcast(u.x, u.y);
-            B.heal(u, u, u.max.hp * 0.40, { tag: 'Live Broadcast' });
-            B.applyStatus(u, u, 'ccimmune', P.liveDur);
-            B.applyStatus(u, u, 'spotlight', P.liveDur);
-            B.applyStatus(u, u, 'haste', P.liveDur, { stacks: 3 });
-            u.flat.magP2 = (u.flat.magP2 || 0) + S.mag;
-            u.flat.aspdP = (u.flat.aspdP || 0) + 0.40;
-            u.rangeBonus = 300;
-            u.dirty = true;
-            B.enemiesOf(u).forEach(e => {
-              B.applyStatus(u, e, 'headline', P.liveDur);
-              B.fxFloatIcon(e.x, e.y - 100, '📺 HEADLINE', '#ff3366');
+        B.every(u, .25, () => {
+          if (!u.alive || u._liveUsed || ((u.getStatus('vee_ratings') || {}).stacks || 0) < P.need) return;
+          u._liveUsed = true;
+          u._live = true;
+          B.applyStatus(u, u, 'vee_live', P.liveDur);
+          B.anim(u, 'cast', .8, 'veeSpotlight');
+          if (B.fxVeeLiveBroadcast) B.fxVeeLiveBroadcast(u.x, u.y);
+          B.fxFloatIcon(u.x, u.y - 105, 'LIVE', '#ff3366');
+          Sound.play('hero_vee_ability', { vol: .75, throttle: 400 });
+          B.flash('#ff3366', .28, .55);
+          B.after(.22, () => B.repeat(P.volleys, P.gap, i => {
+            if (!u.alive) return;
+            const foes = B.enemiesOf(u).filter(e => e.alive);
+            if (!foes.length) return;
+            Sound.play(i === P.volleys - 1 ? 'shock_big' : 'beam_fire', { vol: .48, throttle: 90 });
+            foes.forEach(e => {
+              B.damage(u, e, u.st.mag * S.volley, { type: 'magic', area: true, tag: 'Live Volley' });
+              B.fxSparkle(e.x, e.y - 40, 6, '#ff3366');
             });
-          }
+          }));
+          B.after(P.liveDur, () => { u._live = false; });
         });
       }
     }
@@ -888,13 +810,13 @@ defHero({
   id: 'Cocoa', name: 'Cocoa', folder: 'Cocoa', file: 'Cocoa', icon: 'Cocoa',
   role: 'Support', tier: 'SS', element: 'Chocolate',
   blurb: 'An endlessly cheerful chocolate rabbit whose portable confectionery supplies ensure no ally ever runs out of stamina. Through expert BonBon crafting, Cocoa accelerates her team\'s tempo, distributes protective candy coatings, and turns combat into a sugar-fueled symphony.',
-  base: { hp: 4900, atk: 220, def: 300, mag: 415, mdef: 325, spd: 128, acc: 215, eva: 150 },
+  base: { hp: 4500, atk: 205, def: 270, mag: 390, mdef: 305, spd: 122, acc: 205, eva: 145 },
   hidden: { range: 280, aspd: 1.10, ms: 84, aggro: .55, crit: .10, critDmg: 1.55, healPow: 1.35, shieldPow: 1.55, cdr: .20, ccRes: .25, kbRes: .40, armorPen: 0, magPen: .12 },
   growth: { hp: .102, atk: .070, def: .090, mag: .110, mdef: .096 },
   move: { gait: 'hop', bob: 12, freq: 2.4, lean: 7, squash: .12, idle: 'bounce', step: 'bounce',
     particles: 'crumbs', pcol: '#c98a5a', trail: { on: true, col: '#f3d3a7', rate: .12 }, brake: .25 },
   basic: {
-    name: 'Candy Flick', type: 'magic', ratio: 1.15, range: 280, proj: 'orb', pcol: '#c98a5a',
+    name: 'Candy Flick', type: 'magic', ratio: 1.15, range: 280, proj: 'cocoawrap', pcol: '#c98a5a',
     sfx: 'whoosh', hit: 'hit_light', animStyle: 'cocoaBasicFlick', wind: .18,
     note: 'Flicks confection-infused treats that deal Magic Damage, recharge team Energy, and craft BonBons.',
     onHit: (u, t, B) => {
@@ -906,8 +828,8 @@ defHero({
           B.energy(ally, 16);
           B.applyStatus(u, ally, 'speedup', 2.5);
           B.bonbon(u, 1);
-          B.fxSparkle(ally.x, ally.y - 45, 6, '#f3d3a7');
-          B.fxFloatIcon(ally.x, ally.y - 95, '🍬 SWEET FLICK +16⚡', '#c98a5a');
+          B.fxCocoa('rush', ally);
+          B.fxFloatIcon(ally.x, ally.y - 95, '+16⚡', '#f3d3a7');
           Sound.play('item_pop', { vol: .35, throttle: 120 });
         }
       }
@@ -932,7 +854,7 @@ defHero({
           u.bonbons--;
           if (u.bonbonRefund && chance(u.bonbonRefund)) {
             u.bonbons = Math.min(u.bonbonMax || P.max, u.bonbons + 1);
-            B.fxFloatIcon(u.x, u.y - 95, '🍬 BONBON SAVED!', '#c98a5a');
+            B.fxCocoa('treat', u);
             Sound.play('item_pop', { vol: .3, throttle: 150 });
           }
           return true;
@@ -956,11 +878,12 @@ defHero({
           if (respectCooldown && Number.isFinite(a._bonCd) && B.t - a._bonCd < 3.5) return false;
           if (!u._cocoaConsumeBonbon()) return false;
           if (respectCooldown) a._bonCd = B.t;
-          u._cocoaApplyRush(a);
-          B.fxProj(u, a, { kind: 'orb', col: '#c98a5a' }, () => {
-            Sound.play('get_food', { vol: .45 });
-            B.fxFloatIcon(a.x, a.y - 85, '🍬 SUGAR RUSH!', '#c98a5a');
-            B.fxSparkle(a.x, a.y - 40, 8, '#f3d3a7');
+          // A lobbed, twist-wrapped sweet: the buff lands when they catch it.
+          B.fxArc(u, a, { kind: 'cocoawrap', size: 22 }, () => {
+            if (!a.alive) return;
+            u._cocoaApplyRush(a);
+            Sound.play('get_food', { vol: .45, throttle: 90 });
+            B.fxCocoa('rush', a);
           });
           return true;
         };
@@ -978,8 +901,9 @@ defHero({
         Sound.play('cheer');
         Sound.play('get_food', { vol: .42, throttle: 180 });
         B.tint('#c98a5a', .18, .5);
-        B.fxRing(u.x, u.y - 34, 95, '#e8b98a');
+        B.fxCocoa('feast', u);
         B.after(.28, () => {
+          if (!u.alive) return;
           B.alliesOf(u).forEach(a => {
             const wasRushing = a.hasStatus('sugarrush');
             u._cocoaApplyRush(a);
@@ -988,8 +912,7 @@ defHero({
               B.energy(a, S.en * 0.75);
               B.applyStatus(u, a, 'ccimmune', 2.0);
             }
-            B.fxSparkle(a.x, a.y - 40, 12, '#e8b98a');
-            B.fxFloatIcon(a.x, a.y - 90, '🍬 BONBON FEAST!', '#e8b98a');
+            B.fxCocoa('rush', a, { big: true });
           });
         });
       }
@@ -1009,10 +932,10 @@ defHero({
           if (a.hasStatus('shield')) {
             B.applyStatus(u, a, 'regen', P.dur, { val: (u.max.hp * S.heal) / P.dur });
             B.energy(a, 6);
-            B.fxFloatIcon(a.x, a.y - 95, '🍯 SWEET REGEN', '#f3d3a7');
+            B.fxCocoa('icing', a);
           } else {
             B.shield(u, a, amt, P.dur);
-            B.fxFloatIcon(a.x, a.y - 95, '🍫 CANDY SHIELD', '#f3d3a7');
+            B.fxCocoa('shell', a);
           }
         });
       },
@@ -1020,7 +943,7 @@ defHero({
         B.anim(u, 'cast', .68, 'cocoaShareCleanse');
         Sound.play('guard');
         Sound.play('cure_all', { vol: .42 });
-        B.fxRing(u.x, u.y - 34, 110, '#f3d3a7');
+        B.fxCocoa('cleanse', u);
         B.alliesOf(u).forEach(a => {
           B.cleanse(a, 2);
           B.applyStatus(u, a, 'bonbonblessing', P.dur);
@@ -1028,16 +951,16 @@ defHero({
           B.shield(u, a, amt, P.dur);
           if (a.hpPct < P.lowThr) {
             B.heal(u, a, u.max.hp * S.heal, { tag: 'Sharing is Caring' });
-            B.fxFloatIcon(a.x, a.y - 110, '💖 CARE HEAL', '#fff1c2');
           }
-          B.fxSparkle(a.x, a.y - 44, 10, '#fff1c2');
+          B.fxCocoa('shell', a, { w: 80 });
+          B.fxCocoa('cleanse', a);
         });
       }
     },
     B: {
       name: 'Sweet Surprise', type: 'Magic Damage', cd: 9.5,
       v: { ratio: 1.45, energyBonus: 5 }, p: { dur: 7.0 },
-      desc: (S, P) => `Cocoa tosses a hefty festive chocolate bomb into the densest cluster of enemies, detonating on impact for <em>${pcn(S.ratio * 100)}</em> Magic Damage and coating all foes within 340 range in molten chocolate for ${P.dur}s. The blast strips up to 2 removable buffs from each target and afflicts them with 🍯 Sticky (-30% Move Speed, -25% Attack Speed) and 🥱 Drowsy (-25% Cooldown Rate).
+      desc: (S, P) => `Cocoa tosses a hefty festive chocolate bomb into the densest cluster of enemies, detonating on impact for <em>${pcn(S.ratio * 100)}</em> Magic Damage and coating all foes within 340 range in molten chocolate for ${P.dur}s. The blast leaves them 🍯 Sticky (slowed) and 🥱 Drowsy (-25% Attack Speed and slower cooldowns).
         Allies who strike coated enemies restore <em>${Math.round(S.energyBonus)}</em> Energy and gain +20% Move Speed for 2s (up to once every 1.0s per ally).`,
       ai: { prio: 47, cond: () => true },
       cast: (u, B, S, P) => {
@@ -1045,18 +968,16 @@ defHero({
         Sound.play('throwsomething', { vol: .40 });
         Sound.play('bomb', { vol: .45, delay: 220 });
         B.after(.34, () => {
+          if (!u.alive) return;
           const cx = B.avgX(B.enemiesOf(u));
-          B.fxBoom(cx, B.ground - 60, 1.55, '#c98a5a');
-          B.shake(7, .25);
-          B.fxRing(cx, B.ground - 60, 160, '#c98a5a', .4);
+          FX.cocoaFx('splat', cx, B.ground - 4, { w: 190 });
+          B.shake(5, .22);
           B.enemiesOf(u).forEach(e => {
             if (Math.abs(e.x - cx) > 340) return;
             B.damage(u, e, u.st.mag * S.ratio, { type: 'magic', tag: 'Sweet Surprise' });
-            const buffs = e.statuses.filter(s => STATUS[s.id] && STATUS[s.id].kind === 'buff' && s.id !== 'shield' && !s.apexLocked).slice(0, 2);
-            buffs.forEach(b => B.removeStatus(e, b.id));
             B.applyStatus(u, e, 'sticky', P.dur);
             B.applyStatus(u, e, 'drowsy', P.dur);
-            B.fxFloatIcon(e.x, e.y - 85, '🍫 CHOCO COATED!', '#c98a5a');
+            B.fxCocoa('coated', e);
           });
           u._chocoUntil = B.t + P.dur;
           if (!u._cocoaChocolateHook) {
@@ -1067,7 +988,8 @@ defHero({
               ev.src._cocoaChocoAt = B.t;
               B.energy(ev.src, S.energyBonus);
               B.applyStatus(u, ev.src, 'speedup', 2.0);
-              B.fxFloatIcon(ev.src.x, ev.src.y - 80, `⚡ +${Math.round(S.energyBonus)}`, '#f3d3a7');
+              B.fxCocoa('hit', ev.src);
+              B.fxFloatIcon(ev.src.x, ev.src.y - 80, `+${Math.round(S.energyBonus)}⚡`, '#f3d3a7');
             });
           }
         });
@@ -1091,7 +1013,8 @@ defHero({
             B.energy(u, S.killEnergy);
             B.reduceCd(u, S.killCdr);
             B.bonbon(u, 1);
-            B.fxFloatIcon(u.x, u.y - 105, `🍬 TAKEDOWN TREAT +${Math.round(S.killEnergy)}⚡`, '#c98a5a');
+            B.fxCocoa('treat', u);
+            B.fxFloatIcon(u.x, u.y - 105, `+${Math.round(S.killEnergy)}⚡`, '#f3d3a7');
             Sound.play('item_pop', { vol: .4 });
           }
         });
@@ -1115,9 +1038,16 @@ defHero({
           B.applyStatus(u, a, 'bonbonblessing', 8);
           B.applyStatus(u, a, 'lucky', 8);
           B.heal(u, a, u.max.hp * 0.10, { tag: 'Basket Rescue' });
-          B.fxSparkle(a.x, a.y - 45, 10, '#f3d3a7');
-          B.fxFloatIcon(a.x, a.y - 95, '🍬 EMERGENCY BASKET!', '#c98a5a');
+          B.fxCocoa('rescue', a);
           Sound.play('item_pop', { vol: .45 });
+        });
+        // If Cocoa falls, her team-wide perks fall with her.
+        B.on(u, 'allyDown', d => {
+          if (d !== u) return;
+          B.alliesOf(u).forEach(a => {
+            a.flat.crit7 = a.flat.ccRes7 = a.flat.cdr7 = a.flat.energyGen7 = 0;
+            a._cocoaBuffGuardUntil = 0; a.dirty = true;
+          });
         });
         B.every(u, 1, () => {
           const all = B.alliesOf(u);
@@ -1128,13 +1058,15 @@ defHero({
               B.applyStatus(u, a, 'lucky', 1.4);
               B.applyStatus(u, a, 'bonbonblessing', 1.4);
             }
+            a.flat.crit7 = powered ? .15 : 0;
+            a.flat.ccRes7 = powered ? .25 : 0;
             a.flat.cdr7 = fullTeam ? S.hasteBonus : 0;
             a.flat.energyGen7 = fullTeam ? S.energyGen : 0;
-            a._cocoaBuffGuardUntil = fullTeam ? B.t + 1.2 : 0;
+            a._cocoaBuffGuardUntil = (fullTeam || powered) ? B.t + 1.2 : 0;
             a.dirty = true;
             if (fullTeam) {
               B.energy(a, S.tickEnergy);
-              if (chance(.25)) B.fxSparkle(a.x, a.y - 45, 4, '#e8b98a');
+              if (chance(.25)) B.fxCocoa('symphony', a);
             }
           });
         });
@@ -1290,9 +1222,9 @@ defHero({
   growth: { hp: .086, atk: .098, def: .078, mag: .064, mdef: .074 },
   move: { gait: 'hop', bob: 10, freq: 2.0, lean: 5, squash: .09, idle: 'wind', step: 'bounce',
     particles: 'notes', pcol: '#ffd166', trail: { on: false }, brake: .25 },
-  basic: { name: 'Wind-Up Jab', type: 'physical', ratio: .98, range: 195, sfx: 'swing_light', hit: 'hit_blunt',
-    wind: .14, note: 'Struck exactly on the beat, every time.',
-    onHit: (u, t, B) => { B.applyStatus(u, u, 'tempo', 6, { stacks: 1 }); u._lastBeat = B.t; } },
+  basic: { name: 'Wind-Up Jab', type: 'physical', ratio: .98, range: 195, sfx: 'swish_attack', hit: 'hit_blunt',
+    wind: .14, animStyle: 'boxtenJab', note: 'Struck exactly on the beat, every time.',
+    onHit: (u, t, B) => { B.applyStatus(u, u, 'tempo', 6, { stacks: 1 }); u._lastBeat = B.t; B.fxBoxten('tick', u); } },
   skills: {
     W: {
       name: 'Wind-Up Strike', type: 'Physical Damage', energy: 100,
@@ -1310,19 +1242,22 @@ defHero({
         });
       },
       cast: (u, B, S) => {
-        const t = B.nearest(u, B.enemiesOf(u)); if (!t) return;
+        let t = B.nearest(u, B.enemiesOf(u)); if (!t) return;
         const tempo = (u.getStatus('tempo') || {}).stacks || 0;
-        B.anim(u, 'wind', .45); Sound.play('spin');
+        B.anim(u, 'wind', .45, 'boxtenWindUp'); Sound.play('spin');
+        B.fxBoxten('wind', u, { big: tempo >= 10 });
         B.after(.38, () => {
+          if (!u.alive) return;
+          if (!t.alive) { t = B.nearest(u, B.enemiesOf(u)); if (!t) return; }
           Sound.play('hit_heavy'); B.hitstop(110); B.shake(13, .4);
-          B.fxSlash(u, t, { col: '#ffd166', ang: -40, big: true });
-          B.fxNotes(t.x, t.y - 60, 10);
+          B.fxSlash(u, t, { col: '#d9b8ff', ang: -40, big: true });
+          B.fxBoxten('strike', t, { big: tempo >= 10 });
           B.damage(u, t, u.st.atk * (S.ratio + S.perTempo * tempo), { type: 'physical', tag: 'Wind-Up Strike' });
           if (tempo >= 10 || u.boxtenMaxTempo) {
             const echo = B.nearest(u, B.enemiesOf(u).filter(enemy => enemy !== t));
             if (echo) {
               B.damage(u, echo, u.st.atk * S.echo, { type: 'physical', tag: 'Wind-Up Echo' });
-              B.fxNotes(echo.x, echo.y - 60, 6);
+              B.fxBoxten('echo', echo);
             }
           }
           u._lastBeat = B.t;
@@ -1332,11 +1267,11 @@ defHero({
     G: {
       name: 'Music Box Melody', type: 'Physical Damage', cd: 9,
       v: { ratio: 1.15, bonus: .45 }, p: { dur: 5.5, radius: 320, en: 18 },
-      desc: (S, P) => `Sound waves ripple out for <em>${pcn(S.ratio * 100)}</em> Attack, cutting enemy Attack Speed for ${P.dur}s and interrupting their casts. Enemies already slowed or crowd controlled take <em>+${pcn(S.bonus * 100)}</em> bonus damage, and hitting two or more enemies grants Boxten 2 bonus 🎵 Tempo stacks and ${P.en} Energy.`,
+      desc: (S, P) => `Sound waves ripple out for <em>${pcn(S.ratio * 100)}</em> Attack, cutting enemy Attack Speed for ${P.dur}s. Enemies already slowed or crowd controlled take <em>+${pcn(S.bonus * 100)}</em> bonus damage, and hitting two or more enemies grants Boxten 2 bonus 🎵 Tempo stacks and ${P.en} Energy.`,
       ai: { prio: 55, cond: (u, B) => B.enemiesOf(u).some(e => B.distance(e, u) < 320) },
       cast: (u, B, S, P) => {
-        B.anim(u, 'cast', .35); Sound.play('whoosh');
-        B.fxRing(u.x, u.y - 40, P.radius * 2, '#ffd166', .5);
+        B.anim(u, 'cast', .5, 'boxtenMelody'); Sound.play('whoosh'); Sound.play('ticktock', { vol: .3, throttle: 200 });
+        B.fxBoxten('melody', u, { reach: P.radius });
         let hit = 0;
         B.enemiesOf(u).forEach(e => {
           if (B.distance(e, u) > P.radius) return;
@@ -1344,8 +1279,8 @@ defHero({
           const cc = e.hasStatus('slow') || e.hasStatus('stun') || e.hasStatus('freeze') || e.hasStatus('sleep') || e.hasStatus('root');
           const dmg = u.st.atk * S.ratio * (cc ? (1 + S.bonus) : 1);
           B.damage(u, e, dmg, { type: 'physical', tag: 'Music Box Melody' });
-          B.applyStatus(u, e, 'slow', P.dur);
-          if (cc) B.fxFloatIcon(e.x, e.y - 95, '🎵 CRIT', '#ffd166');
+          B.applyStatus(u, e, 'drowsy', P.dur);   // Attack Speed down, as the skill says
+          B.fxBoxten('plink', e);
         });
         if (hit >= 2) {
           B.applyStatus(u, u, 'tempo', 8, { stacks: 2 });
@@ -1358,9 +1293,9 @@ defHero({
       name: 'Perfect Rhythm', type: 'Self Buff', cd: 15,
       v: { ratio: .42 }, p: { dur: 8 },
       desc: (S, P) => `Boxten locks into the beat for ${P.dur}s, gaining Attack Speed and Crit Chance. Every second attack while active releases a sound wave for <em>${pcn(S.ratio * 100)}</em> Attack to nearby enemies.`,
-      ai: { prio: 52, cond: (u) => !u.hasStatus('speedup') },
+      ai: { prio: 52, cond: (u, B) => B.t >= (u._rhythmUntil || 0) },
       cast: (u, B, S, P) => {
-        B.anim(u, 'cast', .3); Sound.play('buff'); B.fxAura(u, '#ffd166', P.dur);
+        B.anim(u, 'cast', .45, 'boxtenFocus'); Sound.play('buff'); B.fxBoxten('rhythm', u); B.fxAura(u, '#b78cf0', P.dur);
         B.applyStatus(u, u, 'speedup', P.dur, { stacks: 2 });
         B.applyStatus(u, u, 'lucky', P.dur);
         u._rhythmUntil = B.t + P.dur; u._beatCount = 0;
@@ -1369,7 +1304,7 @@ defHero({
           B.on(u, 'basicHit', () => {
             if (B.t > (u._rhythmUntil || 0)) return;
             if (++u._beatCount % 2) return;
-            Sound.play('hit_magic', { vol: .5 }); B.fxRing(u.x, u.y - 40, 260, '#ffd166', .3);
+            Sound.play('hit_magic', { vol: .5 }); B.fxBoxten('pulse', u, { w: 480 });
             B.aoe(u, u.x, 240, u.team, u.st.atk * S.ratio, { type: 'physical', tag: 'Perfect Rhythm' });
           });
         }
@@ -1382,7 +1317,7 @@ defHero({
       passive: (u, B, S, P) => {
         B.every(u, .5, () => {
           const n = B.alliesOf(u).filter(a => a !== u).length;
-          u.flat.aspdP = n * S.per; u.flat.cdr = n * S.per; u.flat.energyGen = n * S.per;
+          u.flat.aspdP5 = n * S.per; u.flat.cdr5 = n * S.per; u.flat.energyGen5 = n * S.per;
           u.dirty = true;
         });
         B.on(u, 'allyCast', () => {
@@ -1402,13 +1337,15 @@ defHero({
       v: { pen: .25 }, p: { max: 10 },
       desc: (S, P) => `Boxten starts battle fully wound at ${P.max} 🎵 Tempo. At maximum Tempo his attacks strike an extra enemy, his cooldowns shorten, and his sound attacks ignore <em>${pcn(S.pen * 100)}</em> Defense. If Tempo ever empties he becomes 🔧 Unwound until he rebuilds it.`,
       passive: (u, B, S, P) => {
-        B.after(.2, () => B.applyStatus(u, u, 'tempo', 999, { stacks: P.max }));
+        B.after(.2, () => { B.applyStatus(u, u, 'tempo', 999, { stacks: P.max }); u._lastBeat = B.t + 4; B.fxBoxten('full', u); });
         B.every(u, .5, () => {
           const t = u.getStatus('tempo');
           const full = t && t.stacks >= P.max;
           u.pierce = !!full;
           u.flat.cdr2 = full ? .25 : 0;
           u.flat.armorPen4 = full ? S.pen : 0;
+          if (full && !u._boxtenWasFull) B.fxBoxten('full', u);
+          u._boxtenWasFull = !!full;
           u.boxtenMaxTempo = !!full;
           if (!t && !u.hasStatus('unwound')) B.applyStatus(u, u, 'unwound', 5);
           if (t && u.hasStatus('unwound')) B.removeStatus(u, 'unwound');
@@ -1735,14 +1672,15 @@ defHero({
         u._connieDecoyAt = 0;
 
         const summonDecoy = () => {
-          if (!u.alive || B.minionsOf(u).length >= 2) return;
+          if (!u.alive || B.minionsOf(u).length >= 1) return;
           B.fxConnieSkill('phantom', u, { twisted: u.twisted });
           Sound.play('unsummon', { vol: .4 });
           B.summon(u, {
             name: u.twisted ? 'Twisted Phantom' : 'Phantom Decoy',
             art: Art.unit('Connie', u.twisted),
             hp: u.max.hp * .25,
-            scale: .8,
+            scale: .7,
+            ghostly: true,
             life: 6,
             taunt: 260,
             tint: u.twisted ? '#df4c9e' : '#bfe9ff',
@@ -1770,7 +1708,7 @@ defHero({
           }
         });
 
-        B.every(u, 8.0, () => summonDecoy());
+        B.every(u, 12.0, () => summonDecoy());
       },
       cast: (u, B, S, P) => {
         B.anim(u, 'cast', .72, 'connieEscape');
@@ -2089,7 +2027,7 @@ defHero({
   id: 'Ginger', name: 'Ginger', folder: 'Ginger', file: 'Ginger', icon: 'Ginger',
   role: 'Support', tier: 'SS', element: 'Bake',
   blurb: 'An observant and gentle gingerbread artisan whose delicate piping and selfless baking keep her friends standing when all hope seems lost. With her piping bag, royal icing barriers, and miraculous gingerbread confections, Ginger turns the chaos of battle into a masterwork of care.',
-  base: { hp: 4950, atk: 210, def: 285, mag: 420, mdef: 325, spd: 126, acc: 215, eva: 155 },
+  base: { hp: 4550, atk: 200, def: 265, mag: 390, mdef: 305, spd: 120, acc: 205, eva: 150 },
   hidden: { range: 280, aspd: 1.05, ms: 82, aggro: .55, crit: .08, critDmg: 1.50, healPow: 1.65, shieldPow: 1.55, cdr: .18, ccRes: .30, kbRes: .45, armorPen: 0, magPen: .12 },
   growth: { hp: .102, atk: .068, def: .088, mag: .112, mdef: .096 },
   move: { gait: 'waddle', bob: 9, freq: 1.8, lean: 6, squash: .09, idle: 'breathe', step: 'step_soft',

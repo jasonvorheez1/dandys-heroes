@@ -119,7 +119,7 @@ defHero({
   id: 'Dandy', name: 'Dandy', folder: 'Dandy', file: 'Dandy', icon: 'Dandy',
   role: 'Tank', tier: 'S', element: 'Attention',
   blurb: 'The mascot wants your attention. Ignoring him is the more dangerous choice.',
-  base: { hp: 5650, atk: 380, def: 340, mag: 145, mdef: 315, spd: 110, acc: 214, eva: 116 },
+  base: { hp: 5900, atk: 395, def: 352, mag: 145, mdef: 326, spd: 112, acc: 218, eva: 116 },
   hidden: { range: 158, aspd: 1.03, ms: 78, aggro: 1.15, crit: .16, critDmg: 1.8, healPow: 1.05, shieldPow: 1,
     cdr: .08, ccRes: .28, kbRes: .48, armorPen: .18, magPen: .05 },
   growth: { hp: .098, atk: .094, def: .091, mag: .06, mdef: .088 },
@@ -129,6 +129,8 @@ defHero({
     sfx: 'swing_heavy', hit: 'hit_blunt', wind: .28,
     onHit: (u, t, B) => {
       const maxed = u.hasStatus('distortion') || dandyStacks(u, t, 'neglect') >= (u.dandyMax || 5);
+      B.fxDandy('stars', t.x, t.y - 60, 4, false); Sound.play('hit_blunt', { vol: .5, throttle: 120 });
+      if (maxed) { B.fxDandy('stomp', t.x, t.y, 120, '#ff7a8a'); Sound.play('rocks', { vol: .4, throttle: 200 }); Sound.play('guardbreak', { vol: .35, delay: .04, throttle: 200 }); }
       if (maxed) B.damage(u, t, t.max.hp * (u.dandyMaxDmg || .035), { type: 'physical', melee: true, tag: 'Unforgettable' });
       if (u.hasStatus('distortion')) B.enemiesOf(u).filter(e => e !== t && Math.abs(e.x - t.x) < 135)
         .forEach(e => B.damage(u, e, u.st.atk * (u.dandySplashRatio || .45), { type: 'physical', melee: true, tag: 'Distorted Swing' }));
@@ -143,13 +145,13 @@ defHero({
           if (!ev.src || ev.src.team === u.team) return;
           ev.src._dandyLastHit = B.t;
           const rec = dandyRecord(u, B, ev.src, 'attention', P.max);
-          if (rec.before < P.max && rec.stacks >= P.max) dandyRestore(u, B, u.max.hp * S.restore);
+          if (rec.before < P.max && rec.stacks >= P.max) { dandyRestore(u, B, u.max.hp * S.restore); B.fxDandy('stars', u.x, u.y - 90, 10, true); B.fxSparkle(u.x, u.y - 70, 8, '#ffe28a'); Sound.play('cheer', { vol: .4, throttle: 400 }); Sound.play('sparkle', { vol: .3, throttle: 400 }); }
         });
         B.on(u, 'allyDamaged', ev => {
           if (!ev.src || ev.unit === u || !u.alive || u.flags.untargetable) return;
           const rec = dandyRecord(u, B, ev.src, 'neglect', P.max);
           u._dandyLastAllyAttacker = ev.src;
-          if (rec.before < P.max && rec.stacks >= P.max) B.energy(u, P.energy);
+          if (rec.before < P.max && rec.stacks >= P.max) { B.energy(u, P.energy); B.fxFloatIcon(ev.src.x, ev.src.y - 100, '❗', '#ff5b7f'); B.fxDandy('spot', ev.src.x, ev.src.y, 1.4, '#ff8aa0'); Sound.play('warn', { vol: .4, throttle: 400 }); Sound.play('tw_dandy_spot', { vol: .5, delay: .1, throttle: 600 }); }
         });
         B.every(u, .4, () => {
           const lost = u._dandyLastHp - u.hpPct;
@@ -159,16 +161,24 @@ defHero({
       },
       cast: (u, B, S, P) => {
         const foes = B.enemiesOf(u); if (!foes.length) return;
+        Sound.play('dandy_entrance', { vol: .5, throttle: 400 }); Sound.play('airhorn', { vol: .22, delay: .05, throttle: 600 });
+        const stage = B.enemiesOf(u).slice().sort((a, b) => dandyStacks(u, b, 'neglect') - dandyStacks(u, a, 'neglect'))[0];
+        if (stage) B.fxDandy('spot', stage.x, stage.y, 1.6, '#ffe28a');
         B.dash(u, B.avgX(foes), .28);
         B.after(.3, () => {
           if (!u.alive) return;
+          B.fxDandy('stomp', u.x, u.y, 260, '#ffd166'); Sound.play('tw_dandy_step', { vol: .8 }); Sound.play('quake', { vol: .5, delay: .03 });
           B.enemiesOf(u).filter(e => Math.abs(e.x - u.x) < 230).forEach(e => B.knockback(u, e, P.kb));
           const t = B.enemiesOf(u).slice().sort((a, b) => dandyStacks(u, b, 'neglect') - dandyStacks(u, a, 'neglect'))[0]; if (!t) return;
           const wasMax = dandyStacks(u, t, 'neglect') >= P.max;
           B.repeat(P.hits, .16, i => {
             if (!t.alive || !u.alive) return;
             const missing = u.max.hp - u.hp;
-            B.fxSlash(u, t, { col: '#ffd166', ang: -35 + i * 22, big: i === P.hits - 1 });
+            const last = i === P.hits - 1;
+            B.fxSlash(u, t, { col: '#ffd166', ang: -35 + i * 22, big: last });
+            B.fxDandy('stars', t.x, t.y - 60, last ? 14 : 5, last);
+            Sound.play(last ? 'hit_heavy' : (i % 2 ? 'hit_blunt' : 'drum_hit'), { vol: last ? .9 : .6 });
+            if (last) { Sound.play('qom_crash', { vol: .45, delay: .02 }); if (wasMax) { B.fxDandy('stomp', t.x, t.y, 200, '#ff7a8a'); Sound.play('crowd_aww', { vol: .3, delay: .15 }); } B.flash('#fff2a5', .3, .25); B.fxConfetti(t.x, t.y - 70, 24); }
             B.damage(u, t, u.st.atk * S.ratio / P.hits * (wasMax && i === P.hits - 1 ? P.finisher : 1), { type: 'physical', melee: true, tag: 'Center of Attention' });
             if (dandyStacks(u, t, 'neglect')) { dandySpendNeglect(u, t); dandyRestore(u, B, missing * S.heal); }
             if (wasMax && i === P.hits - 1) B.applyStatus(u, t, 'stun', P.stun);
@@ -181,14 +191,14 @@ defHero({
       ai: { prio: 58, cond: (u, B) => B.enemiesOf(u).some(e => Math.abs(e.x - u.x) < 250) },
       cast: (u, B, S, P) => {
         const hits = B.enemiesOf(u).filter(e => Math.abs(e.x - u.x) < P.range); if (!hits.length) return;
-        B.anim(u, 'cast', .35); Sound.play('swing_heavy'); B.fxRing(u.x, u.y - 45, P.range, '#ffd166', .32);
+        B.anim(u, 'cast', .35); Sound.play('swing_heavy'); Sound.play('bigwig_stamp', { vol: .55, delay: .12 }); Sound.play('tw_dandy_step', { vol: .6, delay: .1 }); B.fxRing(u.x, u.y - 45, P.range, '#ffd166', .32); B.fxDandy('stomp', u.x, u.y, P.range * 1.6, '#ffb347');
         hits.forEach(e => {
           const attention = dandyStacks(u, e, 'attention'), neglect = dandyStacks(u, e, 'neglect');
           B.damage(u, e, u.st.atk * S.ratio * (neglect ? 1 + neglect * S.neglectBonus : 1), { type: 'physical', melee: true, tag: 'Closing Time' });
           B.knockback(u, e, P.kb + attention * P.attentionKb); B.applyStatus(u, e, 'weaken', P.dur, { stacks: 2 });
           if (neglect) B.energy(e, -P.energy);
         });
-        B.applyStatus(u, u, 'fortify', P.dur, { stacks: Math.min(5, hits.length) });
+        B.applyStatus(u, u, 'fortify', P.dur, { stacks: Math.min(5, hits.length) }); Sound.play('shield_cast', { vol: .4, delay: .15 }); B.fxSparkle(u.x, u.y - 60, 8, '#ffd166');
         if (hits.length >= 3) B.applyStatus(u, u, 'composed', P.dr);
       } },
     B: { name: 'Keep Smiling', type: 'Physical Damage', cd: 10,
@@ -197,7 +207,7 @@ defHero({
       ai: { prio: 54, cond: (u) => !!(u._dandyLastAllyAttacker && u._dandyLastAllyAttacker.alive) },
       cast: (u, B, S, P) => {
         const t = u._dandyLastAllyAttacker && u._dandyLastAllyAttacker.alive ? u._dandyLastAllyAttacker : B.bestTarget(u); if (!t) return;
-        B.anim(u, 'cast', .3); Sound.play('hit_blunt'); B.fxSlash(u, t, { col: '#fff2a5', big: true });
+        B.anim(u, 'cast', .3); Sound.play('hit_blunt'); Sound.play('ding', { vol: .4, delay: .1 }); B.fxSlash(u, t, { col: '#fff2a5', big: true }); B.fxDandy('spot', t.x, t.y, .9, '#fff2a5'); B.fxDandy('stars', t.x, t.y - 60, 9, true); B.fxFloatIcon(u.x, u.y - 100, '😁', '#ffe28a');
         const neglect = dandyStacks(u, t, 'neglect');
         const ev = B.damage(u, t, u.st.atk * S.ratio * (1 + neglect * P.per), { type: 'physical', melee: true, tag: 'Keep Smiling' });
         B.applyStatus(u, t, 'slow', P.slow, { stacks: 2 });
@@ -231,7 +241,7 @@ defHero({
           u.immovable = u.hasStatus('distortion');
           if (u._dandyDistorted || u.hpPct >= P.thr || !maxed) return;
           u._dandyDistorted = true; B.cleanseAll(u); dandyRestore(u, B, u.max.hp * S.heal, { pure: true });
-          B.applyStatus(u, u, 'distortion', P.dur); B.fxStatusOn(u, 'CurseEffect', { sizeMul: 1.2 }); Sound.play('warn');
+          B.applyStatus(u, u, 'distortion', P.dur); B.fxStatusOn(u, 'CurseEffect', { sizeMul: 1.2 }); B.fxDandy('distort', u.x, u.y); B.fxDandy('stomp', u.x, u.y, 320, '#ff2d6f'); Sound.play('warn'); Sound.play('tw_dandy_spot', { vol: .9 }); Sound.play('ult', { vol: .45, delay: .1 }); Sound.play('quake', { vol: .6, delay: .2 });
           B.after(P.dur, () => {
             if (!u.alive) return;
             B.enemiesOf(u).forEach(e => { e.statuses = e.statuses.filter(s => !(s.id === 'neglect' && s.src === u)); e.dirty = true; });

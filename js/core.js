@@ -3,6 +3,15 @@
 
 const ASSET = './';
 
+/* Big uploads (music, voice lines) are served from the GitHub repo through
+   jsDelivr, pinned to a commit. Files newer than that commit stay local until
+   the pin is bumped, so list them here. */
+const UPLOADS_CDN = 'https://cdn.jsdelivr.net/gh/jasonvorheez1/dandys-heroes@a3a9fc5a18f1f6c4e64578bcf3dbde7da02116ae/uploads/';
+const UPLOADS_LOCAL = new Set(["Barretshoot.gif", "Bullmotor.webp", "Cursor_-_Equip_ff7.wav", "Cursor_-_Move_ff7.wav", "Dandysheroes-2.webp", "Gigi_Ability.ogg", "Grangalan.webp", "Purchase.wav", "Shiva-ffvii.webp", "backgroundeditteam.webp", "barretgunfire.wav", "barretgunupthenarmup.gif", "barretidle.gif", "barretreadygun.gif", "barretvmportrait.png", "crowdawwww.mp3", "dandyhimself.webp", "drumhit.mp3", "ff7_Cursor_-_Accept.wav", "ff7enemydown.wav", "ff7stronghit.wav", "ff7swordhit.wav", "fistup.mp3", "glassbreak.mp3", "ice.wav", "laserhit.mp3", "launcher-room.webp", "luckygirl.png", "orb.mp3", "powerline_attack2_beat1.mp3", "powerline_attack2_beat2.mp3", "powerline_defeat_microphonics.mp3", "ramuh.webp", "sephirothidle.gif", "sephirothputswordbackandturnidling__1_.gif", "sephirothswingsword.gif", "sephirothusemagic-frames-removed.gif", "sephirothusemagic.gif", "sephirothvnportrait.zip", "sephirothwingandslashesfire.gif", "skillimpacthit.mp3", "slots.mp3", "slotsstop.mp3", "sproutfull.webp", "swishattack.mp3", "swishattack2.mp3", "vocalsmalescream.mp3", "yappingattack.mp3", "yappinginaskill1.mp3"]);
+function uploadUrl(name) {
+  return UPLOADS_LOCAL.has(name) ? ASSET + 'uploads/' + name : UPLOADS_CDN + encodeURIComponent(name).replace(/%2F/g, '/');
+}
+
 /* ---------- dom ---------- */
 function $(s, r) { return (r || document).querySelector(s); }
 function $$(s, r) { return [].slice.call((r || document).querySelectorAll(s)); }
@@ -91,7 +100,9 @@ const GRAPHICS_DEFAULTS = {
 const GraphicsSettings = {
   readLocal() {
     try {
-      const value = Number(localStorage.getItem(GRAPHICS_PREF_KEY));
+      const stored = localStorage.getItem(GRAPHICS_PREF_KEY);
+      if (stored === null || stored.trim() === '') return null;
+      const value = Number(stored);
       return Number.isFinite(value) ? clamp(value, 0, 100) : null;
     } catch (_) { return null; }
   },
@@ -258,7 +269,7 @@ const ease = {
 
 /* ---------- asset paths ---------- */
 /* Heroes with no file in icons/. Their full art stands in for the icon. */
-const MISSING_ICONS = { Ginger: 1, Rudie: 1, Eggson: 1, Flyte: 1, Soulvester: 1, Gourdy: 1, Waxwell: 1, Sora: 1, Riku: 1, Kairi: 1, Goofy: 1, Phantasia: 1, Tisha: 1, Ribecca: 1, Glisten: 1, Flutter: 1, BigWig: 1, CheerbearShelly: 1, BedtimeAstro: 1, WishBearGigi: 1 };
+const MISSING_ICONS = { Eggson: 1, Flyte: 1, Soulvester: 1, Gourdy: 1, Waxwell: 1, Sora: 1, Riku: 1, Kairi: 1, Goofy: 1, Phantasia: 1, Tisha: 1, Ribecca: 1, Glisten: 1, Flutter: 1, BigWig: 1, CheerbearShelly: 1, BedtimeAstro: 1, WishBearGigi: 1 };
 
 /* The collaboration art arrived as sprite exports instead of the usual
    Characters/<name> folders. These single-frame poses stay crisp in roster,
@@ -428,6 +439,7 @@ const Art = {
 /* ---------- tiny preloader ---------- */
 const Preload = {
   cache: {},
+  cacheOrder: [],
   img(src) {
     if (this.cache[src]) return this.cache[src];
     const i = new Image();
@@ -438,6 +450,14 @@ const Preload = {
     try { i.fetchPriority = 'low'; } catch (_) { /* older browsers */ }
     i.src = src;
     this.cache[src] = i;
+    this.cacheOrder.push(src);
+    // Keep a small warm set. The browser's HTTP cache still serves older
+    // images, while releasing these Image references lets phones reclaim
+    // decoded cutouts after several different battles.
+    while (this.cacheOrder.length > 24) {
+      const oldest = this.cacheOrder.shift();
+      delete this.cache[oldest];
+    }
     return i;
   },
   /** Duplicate srcs are collapsed, decoded before completion, and a slow or
@@ -541,11 +561,15 @@ const LoadingScreen = {
     const host = $('#loadScreen');
     if (!host) { Preload.all(opt.assets || []).then(() => ready && ready()); return; }
     const token = ++this.token, fill = $('#loadFill'), pct = $('#loadPct'), msg = $('#loadMsg');
+    const progress = $('#loadProgress'), count = $('#loadCount');
     $('#loadKicker').textContent = opt.kicker || 'NOW LOADING';
     $('#loadTitle').textContent = opt.title || 'Preparing the stage';
     msg.textContent = opt.message || 'Gathering props'; pct.textContent = '0%'; fill.style.width = '0%';
+    if (progress) progress.setAttribute('aria-valuenow', '0');
+    if (count) count.textContent = 'Gathering the props';
+    host.setAttribute('aria-busy', 'true');
     const cast = clear($('#loadCast'));
-    (opt.portraits || []).filter(Boolean).slice(0, 3).forEach((src, i) => {
+    (opt.portraits || []).filter(Boolean).slice(0, 5).forEach((src, i) => {
       const img = el('img'); img.src = src; img.alt = ''; img.style.setProperty('--load-i', i); cast.appendChild(img);
     });
     host.hidden = false;
@@ -554,11 +578,17 @@ const LoadingScreen = {
     Preload.all(opt.assets || [], (done, total) => {
       if (token !== this.token) return;
       const p = total ? done / total : 1;
-      fill.style.width = `${Math.round(p * 100)}%`; pct.textContent = `${Math.round(p * 100)}%`;
-      msg.textContent = p < .38 ? (opt.message || 'Gathering props') : p < .78 ? 'Lighting the set' : 'Final checks';
+      const percent = Math.round(p * 100);
+      fill.style.width = `${percent}%`; pct.textContent = `${percent}%`;
+      if (progress) progress.setAttribute('aria-valuenow', String(percent));
+      if (count) count.textContent = total ? `${done} of ${total} set pieces checked` : 'Putting the finishing touches on';
+      msg.textContent = p < .38 ? (opt.message || 'Gathering props') : p < .78 ? 'The cast is getting ready' : 'Almost time to play';
     }).catch(() => {}).then(() => {
       if (token !== this.token) return;
       fill.style.width = '100%'; pct.textContent = '100%'; msg.textContent = 'Ready';
+      if (progress) progress.setAttribute('aria-valuenow', '100');
+      if (count) count.textContent = 'Curtain’s up!';
+      host.setAttribute('aria-busy', 'false');
       const finish = () => {
         if (token !== this.token) return;
         host.classList.remove('visible');
@@ -580,6 +610,6 @@ const LoadingScreen = {
     this.token++;
     const host = $('#loadScreen');
     if (!host) return;
-    host.classList.remove('visible'); host.hidden = true;
+    host.classList.remove('visible'); host.hidden = true; host.setAttribute('aria-busy', 'false');
   }
 };

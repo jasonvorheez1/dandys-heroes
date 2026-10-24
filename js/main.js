@@ -2,24 +2,15 @@
 'use strict';
 
 (function boot() {
-  const bootFill = $('#bootFill');
-  let started = false;
-
-  const setProgress = progress => {
-    bootFill.style.width = `${Math.round(progress * 100)}%`;
-  };
-
   FX.init();
   Save.load();
+  Save.startAutosave();
 
-  // Reconcile the account while the small startup bundle is loading. Waiting
-  // here prevents Home from rendering local data and then being replaced by a
-  // cloud copy a moment later.
+  // Show the title screen while account data and game art prepare in the background.
   const accountReady = startAccountSync();
-  preloadStartupAssets(setProgress).then(start).catch(start);
-
-  // A missing or slow asset must never hold the game hostage on the loader.
-  setTimeout(start, 9000);
+  revealLauncher();
+  setTimeout(() => Promise.resolve().then(preloadStartupAssets)
+    .catch(err => console.warn('startup art preload failed', err)), 300);
 
   function startAccountSync() {
     return typeof WebsimAccount !== 'undefined'
@@ -27,39 +18,17 @@
       : Promise.resolve();
   }
 
-  function preloadStartupAssets(onProgress) {
+  function preloadStartupAssets() {
     const week = currentWeek();
     const firstView = [
       ...Save.data.team.filter(Boolean),
       featured(week).pass || STARTERS[0]
     ];
     const assets = [
-      ...firstView.flatMap(id => [Art.hero(id), Art.icon(id)]),
-      ASSET + 'uploads/backgroundeditteam.png'
+      ...firstView.flatMap(id => [Art.hero(id), Art.icon(id)])
     ];
 
-    setProgress(.05);
-    return Preload.all(assets, (done, total) => {
-      setProgress(.05 + .9 * (done / total));
-    });
-  }
-
-  function start() {
-    if (started) return;
-    started = true;
-    setProgress(1);
-    setTimeout(async () => {
-      try { await accountReady; }
-      catch (err) { console.warn('account startup failed', err); }
-
-      try {
-        if (typeof Lab !== 'undefined') await Lab.init();
-      } catch (err) {
-        console.warn('private lab startup failed', err);
-      }
-
-      revealLauncher();
-    }, 220);
+    return Preload.all(assets);
   }
 
   function revealLauncher() {
@@ -74,19 +43,29 @@
     launcher.hidden = false;
     requestAnimationFrame(() => {
       launcher.classList.add('visible');
-      play.focus({ preventScroll: true });
     });
-    setTimeout(() => Accessibility.firstRunPrompt(), 320);
+    const showAccessibilityPrompt = () => setTimeout(() => Accessibility.firstRunPrompt(), 320);
+    accountReady.then(showAccessibilityPrompt, showAccessibilityPrompt);
 
-    settings.onclick = () => Screens.openSettings();
-    play.onclick = () => {
+    settings.onclick = async () => {
+      settings.disabled = true;
+      try { await accountReady; }
+      catch (err) { console.warn('account startup failed', err); }
+      settings.disabled = false;
+      if (!launched) Screens.openSettings();
+    };
+    play.onclick = async () => {
       if (launched) return;
       launched = true;
       play.disabled = true;
+      settings.disabled = true;
+      play.textContent = 'Opening…';
 
       // This click is the browser-approved gesture that unlocks game audio.
       Sound.play('ui_ok', { vol: HANDHELD_AUDIO ? .72 : .42 });
       Music.play('navigation');
+      try { await accountReady; }
+      catch (err) { console.warn('account startup failed', err); }
       launcher.classList.add('leaving');
       setTimeout(() => {
         launcher.hidden = true;

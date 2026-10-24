@@ -53,7 +53,7 @@ const Screens = {
     const copy = this.budsDemandCopy(buds.refusals);
     const requestNumber = Math.min(8, buds.refusals + 1);
     const body = el('section', 'dandy-buds-demand-card');
-    body.innerHTML = `<div class="dandy-demand-art"><span></span><img src="uploads/dandyhimself.png" alt="Dandy"></div>
+    body.innerHTML = `<div class="dandy-demand-art"><span></span><img src="uploads/dandyhimself.webp" alt="Dandy"></div>
       <small>DANDY'S BUDS · REQUEST ${requestNumber} / 8</small><h2>${copy[0]}</h2><p>${copy[1]}</p>
       <div class="dandy-demand-rule"><i></i><span>Click the Buds card to continue</span><i></i></div><div class="dandy-demand-actions"><button type="button" class="dandy-demand-open">${copy[2]} <b>›</b></button><button type="button" class="dandy-demand-later">NOT NOW</button></div>`;
     let resolved = false;
@@ -197,6 +197,7 @@ const Screens = {
     if (!battleOwnsMusic)
       Music.screen(this.cur, {
         cookieRun: !!s.querySelector('.cookie-event'),
+        ff7: s.querySelector('.ff7-event') ? s.querySelector('.ff7-event').dataset.music : null,
         qomEvent: !!s.querySelector('.event-dossier.qom'),
         collabMenu: !!s.querySelector('.event-dossier.collab'),
         delilahEvent: !!s.querySelector('.event-dossier.delilah'),
@@ -265,24 +266,16 @@ const Screens = {
     stage.setAttribute('aria-label', `Home Base: ${stageTeam.length} of 5 Toons ready, led by ${HEROES[leader].name}. Tap to edit formation.`);
     stage.innerHTML = `<span class="home-stage-sky"></span><span class="home-stage-cloud a" aria-hidden="true"></span><span class="home-stage-cloud b" aria-hidden="true"></span><span class="home-stage-floor"></span><span class="home-stage-rays"></span><i class="home-spark a"></i><i class="home-spark b"></i><i class="home-spark c"></i>
       <span class="home-stage-sign"><b>HOME BASE</b><small>TEAM HUDDLE</small></span>
-      <span class="home-map-labels" aria-hidden="true">
-        <span class="home-map-label home-map-run"><i>▶</i><b>RUN</b><small>ENDLESS</small></span>
-        <span class="home-map-label home-map-events"><i>♛</i><b>EVENTS</b><small>WEEKLY</small></span>
-        <span class="home-map-label home-map-trials"><i>⚗</i><b>TRIALS</b><small>DIVISIONS</small></span>
-        <span class="home-map-label home-map-crates"><i>▣</i><b>CRATES</b><small>REWARDS</small></span>
-        <span class="home-map-label home-map-heroes"><i>✦</i><b>ROSTER</b><small>TOONS</small></span>
-      </span>
-      <span class="home-stage-copy"><small>ACTIVE SQUAD</small><b>${stageTeam.length}/5 TOONS READY</b><span><i class="home-lead-star" aria-hidden="true">★</i> ${HEROES[leader].name} leads the way</span></span>
+      <span class="home-stage-copy"><small>YOUR PARTY</small><b>${stageTeam.length} / 5 TOONS</b><span>TEAM POWER <strong>⚡ ${teamPower}</strong></span></span>
       <span class="home-stage-party">${stageTeam.map((id, i) => {
         const h = HEROES[id];
         const isLead = id === leader;
         const role = h.role || 'Attacker';
         const roleIcon = role === 'Tank' ? '🛡️' : role === 'Support' ? '💚' : '⚔️';
         const heroLvl = Save.hero(id).level;
-        return `<span class="home-stage-toon${isLead ? ' lead' : ''}" data-hero="${id}" title="${h.name} · Lv ${heroLvl} · ${heroRole(role)}" style="--home-i:${i};--home-left:${stageTeam.length < 2 ? 35 : 4 + i * 70 / (stageTeam.length - 1)}%;--home-in:${.06 + i * .1}s;--home-idle:${-i * .32}s;--home-out:${i * .035}s;"><span class="home-toon-badges">${isLead ? '<i class="home-toon-crown" title="Leader">👑</i>' : ''}<span class="home-toon-role ${role.toLowerCase()}">${roleIcon}</span></span><img src="${Art.hero(id)}" alt="${h.name}"><span class="home-toon-pill"><b>${h.name}</b><small>Lv ${heroLvl}</small></span></span>`;
+        const homeLeft = stageTeam.length < 2 ? 50 : 8 + i * 84 / (stageTeam.length - 1);
+        return `<span class="home-stage-toon${isLead ? ' lead' : ''}" data-hero="${id}" title="${h.name} · Lv ${heroLvl} · ${heroRole(role)}" style="--home-i:${i};--home-left:${homeLeft}%;--home-in:${.06 + i * .1}s;--home-idle:${-i * .32}s;--home-out:${i * .035}s;"><span class="home-toon-badges">${isLead ? '<i class="home-toon-crown" title="Leader">👑</i>' : ''}<span class="home-toon-role ${role.toLowerCase()}">${roleIcon}</span></span><img src="${Art.hero(id)}" alt="${h.name}"><span class="home-toon-pill"><b>${h.name}</b><small>Lv ${heroLvl}</small></span></span>`;
       }).join('')}</span>
-      <span class="home-stage-dashboard"><span><small>TEAM POWER</small><b>⚡ ${teamPower}</b></span><span><small>LEAD</small><b>Lv ${Save.hero(leader).level}</b></span></span>
-      <span class="home-stage-next"><small>NEXT UP</small><b><i class="home-next-icon">${nextRoomIcon}</i> ${nextRoomName}</b><em>Floor ${run.floor} · Room ${run.node + 1}/${layout.nodes.length}</em></span>
       <em class="home-stage-edit"><span>EDIT SQUAD</span> <b>›</b></em>`;
 
     stage.querySelectorAll('.home-stage-toon').forEach(toonEl => {
@@ -307,7 +300,7 @@ const Screens = {
       const action = claim ? 'OPEN GIFT' : ['active', 'paused'].includes(buds.state) ? 'RESUME' : 'START';
       const progress = claim ? stageNum : ['active', 'paused'].includes(buds.state) ? stageNum - 1 : 0;
       bud.setAttribute('aria-label', `${headline}. ${action}`);
-      bud.innerHTML = `<span class="home-buds-mark"><img src="uploads/dandysbudicon.png" alt=""><img class="home-buds-dandy" src="uploads/dandyhimself.png" alt=""></span>
+      bud.innerHTML = `<span class="home-buds-mark"><img src="uploads/dandysbudicon.png" alt=""><img class="home-buds-dandy" src="uploads/dandyhimself.webp" alt=""></span>
         <span class="home-buds-copy grow"><small>DANDY'S BUDS · ${claim ? 'REWARD READY' : `${progress}/3 FLOORS COMPLETE`}</small><b>${headline}</b><span>${subline}</span>
           <span class="home-buds-progress" aria-label="${progress} of 3 floors complete"><i class="${progress >= 1 ? 'done' : ''}"></i><i class="${progress >= 2 ? 'done' : ''}"></i><i class="${progress >= 3 ? 'done' : ''}"></i></span></span>
         <span class="home-buds-action"><em>${action}</em><strong>›</strong></span>`;
@@ -380,6 +373,7 @@ const Screens = {
     growGrid.appendChild(growCard('🤝', 'Friendship', `${badgeCount} badge${badgeCount === 1 ? '' : 's'} linked`, () => Screens.go('friendship'), 'friendship'));
     const achDone = Achievements.completed().length, achTotal = Achievements.list.length;
     growGrid.appendChild(growCard('📖', 'Journal', `${achDone} / ${achTotal} achievements`, () => Screens.go('journal'), null, `${Math.round(achDone / achTotal * 100)}%`));
+    growGrid.appendChild(growCard('🏆', 'Leaderboard', 'Global player rankings', () => Screens.openLeaderboard(), null));
     grow.appendChild(growGrid);
 
     const cap = globalCap(), next = Math.min(cap, d.mastery + 1), reward = d.mastery < cap ? Save.masteryReward(next) : null;
@@ -665,6 +659,7 @@ const Screens = {
         else { Sound.play('ui_err'); UI.toast('That save slot could not be opened'); }
       });
       const duplicate = el('button', 'btn tiny grow', 'Copy');
+      duplicate.disabled = slot.id === SAVE_TEST_SLOT_ID || (slot.active && Save.isTestSession());
       duplicate.onclick = () => this.askSaveName('Copy Save', slot.name + ' Copy', name => {
         if (Save.activeSlot !== slot.id && !Save.switchSlot(slot.id)) { UI.toast('That save slot could not be opened'); return; }
         if (Save.createSlot(name, true)) location.reload();

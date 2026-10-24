@@ -883,7 +883,7 @@ defHero({
   base: { hp: 4180, atk: 195, def: 240, mag: 385, mdef: 320, spd: 114, acc: 210, eva: 135 },
   hidden: { range: 300, aspd: .96, ms: 72, aggro: .60, crit: .12, critDmg: 1.60, healPow: 1.30, shieldPow: 1.35, cdr: .18, ccRes: .25, kbRes: .35, armorPen: .15, magPen: .20 },
   growth: { hp: .092, atk: .070, def: .085, mag: .105, mdef: .092 },
-  move: { gait: 'march', bob: 5, freq: 1.8, lean: 8, squash: .05, idle: 'tap', step: 'step',
+  move: { gait: 'march', bob: 7, freq: 2.3, lean: 11, squash: .08, idle: 'tap', step: 'step',
     particles: 'dust', pcol: '#c9a87a', trail: { on: false }, brake: .4 },
   basic: {
     name: 'Stratum Extraction',
@@ -900,6 +900,8 @@ defHero({
     onHit: (u, t, B) => {
       if (!t || !t.alive) return;
       B.applyStatus(u, t, 'stratigraphy', 6.0, { stacks: 1 });
+      const _r = t.getStatus('stratigraphy');
+      if (_r && _r.stacks >= 5 && !t.hasStatus('fullyresearched')) { B.applyStatus(u, t, 'fullyresearched', 999); B.fxShellyLens(t.x, t.y - 70, '#d9c29a'); }
       u._shellyBasics = (u._shellyBasics || 0) + 1;
       if (u._shellyBasics % 2 === 0) {
         const ally = B.lowestHp(B.alliesOf(u)) || u;
@@ -907,7 +909,7 @@ defHero({
           B.shield(u, ally, u.max.hp * .12, 6);
           B.energy(ally, 15);
           B.fxSparkle(ally.x, ally.y - 45, 6, '#d8b579');
-          B.fxFloatIcon(ally.x, ally.y - 100, '🦴 AMBER SHARD +15⚡', '#d8b579');
+          B.fxFloatIcon(ally.x, ally.y - 100, 'Amber shard +15⚡', '#d8b579');
         }
       }
     }
@@ -929,10 +931,10 @@ defHero({
           const r = e.getStatus('stratigraphy');
           if (r && r.stacks >= P.full && !e.hasStatus('fullyresearched')) {
             B.applyStatus(u, e, 'fullyresearched', 999);
-            B.fxFloatObject(e.x, e.y - 104, 'Magifyingglass', '#d8b579');
-            B.fxRing(e.x, e.y - 42, 120, '#d8b579', .45);
+            B.fxShellyLens(e.x, e.y - 70, '#d9c29a');
+            
             Sound.play('get_rare', { vol: .45 });
-            B.fxFloatIcon(e.x, e.y - 100, '🦴 FULLY RESEARCHED', '#d8b579');
+            B.fxFloatIcon(e.x, e.y - 100, 'Fully researched', '#d8b579');
           }
         };
 
@@ -955,7 +957,7 @@ defHero({
         B.after(.32, () => {
           if (!u.alive) return;
           B.tint('#d8b579', .25, .6);
-          B.flash('#fef08a', .3, .2);
+          B.flash('#c9a676', .15, .15);
           if (B.fxShellyFossil) B.fxShellyFossil(u.x, u.y - 40, 480);
           else B.fxRing(u.x, u.y - 40, 480, '#c9a87a', .7);
 
@@ -967,8 +969,8 @@ defHero({
             B.applyStatus(u, a, 'lucky', P.dur);
             B.applyStatus(u, a, 'findings', P.dur);
             B.applyStatus(u, a, 'ward', P.dur);
-            B.fxSparkle(a.x, a.y - 45, 12, '#fef08a');
-            B.fxFloatIcon(a.x, a.y - 105, '🦴 AMBER MATRIX', '#d8b579');
+            B.fxSparkle(a.x, a.y - 45, 12, '#e2c691');
+            B.fxFloatIcon(a.x, a.y - 105, 'Amber matrix', '#d8b579');
           });
 
           // Damage & debuff enemies
@@ -1003,8 +1005,8 @@ defHero({
           B.energy(targetUnit, P.energy);
           const s = targetUnit.getStatus('inspired');
           if (s) s.t = Math.min(s.t + 3.0, 18.0);
-          B.fxFloatIcon(targetUnit.x, targetUnit.y - 105, '🎒 PALEO SNACK +25⚡', '#f59e0b');
-          B.fxSparkle(targetUnit.x, targetUnit.y - 45, 8, '#f59e0b');
+          B.fxFloatIcon(targetUnit.x, targetUnit.y - 105, 'Paleo snack +25⚡', '#c8741f');
+          B.fxSparkle(targetUnit.x, targetUnit.y - 45, 8, '#c8741f');
         };
 
         B.on(u, 'enemyDown', () => {
@@ -1034,15 +1036,15 @@ defHero({
         Sound.play('cheer');
         Sound.play('fanfare', { vol: .55 });
         if (B.fxShellyInspiration) B.fxShellyInspiration(u.x, u.y - 40, P.dur);
-        else B.fxAura(u, '#f2cf77', P.dur);
+        else B.fxAura(u, '#d9a441', P.dur);
 
         B.alliesOf(u).forEach(a => {
           B.applyStatus(u, a, 'inspired', P.dur);
           B.applyStatus(u, a, 'haste', P.dur);
           B.applyStatus(u, a, 'speedup', P.dur, { stacks: 1 });
-          B.fxSparkle(a.x, a.y - 48, 10, '#f2cf77');
+          B.fxSparkle(a.x, a.y - 48, 10, '#d9a441');
         });
-        B.fxFloatIcon(u.x, u.y - 110, '🌞 RELENTLESS INSPIRATION!', '#f59e0b');
+        B.fxFloatIcon(u.x, u.y - 110, 'Inspired!', '#c8741f');
       }
     },
 
@@ -1071,9 +1073,9 @@ defHero({
           B.energy(ally, 30);
           B.applyStatus(u, ally, 'lucky', 6.0);
           B.anim(u, 'cast', .35, 'shellySolve');
-          B.fxFloatObject(ally.x, ally.y - 104, 'Magifyingglass', '#38bdf8');
-          B.fxFloatIcon(ally.x, ally.y - 95, '💡 5★ PROBLEM SOLVED!', '#38bdf8');
-          B.fxSparkle(ally.x, ally.y - 45, 8, '#38bdf8');
+          B.fxShellyLens(ally.x, ally.y - 70, '#6f9aa8');
+          B.fxFloatIcon(ally.x, ally.y - 95, 'Problem solved', '#6f9aa8');
+          B.fxSparkle(ally.x, ally.y - 45, 8, '#6f9aa8');
         };
 
         B.on(u, 'statusApplied', ev => {
@@ -1101,10 +1103,10 @@ defHero({
             B.cleanse(a, 2);
             B.shield(u, a, u.max.hp * S.shield, P.dur);
             B.applyStatus(u, a, 'ward', P.dur);
-            B.fxFloatObject(a.x, a.y - 104, 'Magifyingglass', '#86d5e8');
-            B.fxSparkle(a.x, a.y - 45, 8, '#86d5e8');
+            B.fxShellyLens(a.x, a.y - 70, '#6f9aa8');
+            B.fxSparkle(a.x, a.y - 45, 8, '#6f9aa8');
           });
-          B.fxFloatIcon(u.x, u.y - 110, '🛡 AMMONITE FORTIFICATION', '#86d5e8');
+          B.fxFloatIcon(u.x, u.y - 110, 'Ammonite plating', '#6f9aa8');
         } else {
           // Offensive Protocol: Apex Discovery
           Sound.play('buff');
@@ -1113,10 +1115,10 @@ defHero({
             B.applyStatus(u, a, 'skillpower', P.dur, { stacks: 6 });
             B.applyStatus(u, a, 'focus', P.dur);
             B.applyStatus(u, a, 'atkup', P.dur, { val: S.dmg });
-            B.fxFloatObject(a.x, a.y - 104, 'Magifyingglass', '#f59e0b');
-            B.fxSparkle(a.x, a.y - 45, 8, '#f59e0b');
+            B.fxShellyLens(a.x, a.y - 70, '#d9a441');
+            B.fxSparkle(a.x, a.y - 45, 8, '#c8741f');
           });
-          B.fxFloatIcon(u.x, u.y - 110, '🦖 APEX DISCOVERY!', '#f59e0b');
+          B.fxFloatIcon(u.x, u.y - 110, 'Big find!', '#c8741f');
         }
       }
     },
@@ -1126,7 +1128,7 @@ defHero({
       name: "Paleontologist's Passion",
       type: 'Eureka! Engine / Skill Amplification',
       v: { boost: .60 },
-      p: { max: 10, refund: .50 },
+      p: { max: 8, refund: .50 },
       desc: (S, P) => `Every ally skill cast or Critical Hit grants Shelly a stack of 📈 Fossil Excitement (max ${P.max}). Each stack permanently increases team Skill Power by +3%, Skill Haste by +2%, and Crit Chance by +1.5%. Upon reaching ${P.max} stacks (or when Shelly casts an ultimate), she enters 💡 Eureka! Breakthrough: the next ally skill cast triggers with 0 cooldown, refunds ${pcn(P.refund * 100)} Energy, deals +<em>${pcn(S.boost * 100)}</em> bonus damage, and is guaranteed to Super Crit! (Excitement resets to 5 rather than 0).`,
       passive: (u, B, S, P) => {
         const addExcitement = () => {
@@ -1138,11 +1140,11 @@ defHero({
             u._eurekaReady = true;
             Sound.play('get_rare', { vol: .65 });
             Sound.play('sparkle', { vol: .6 });
-            B.flash('#ffd700', .25, .15);
-            B.fxFloatIcon(u.x, u.y - 115, '💡 EUREKA! BREAKTHROUGH!', '#ffd700');
-            B.fxRing(u.x, u.y - 40, 220, '#ffd700', .55);
+            B.flash('#d9a441', .25, .15);
+            B.fxFloatIcon(u.x, u.y - 115, 'Eureka!', '#d9a441');
+            B.fxShellyEureka(u.x, u.y - 95);
           } else {
-            B.fxFloatIcon(u.x, u.y - 100, `📈 EXCITEMENT (${stacks})`, '#f59e0b');
+          B.fxFloatIcon(u.x, u.y - 100, `Excitement ${stacks}`, '#c8741f');
           }
         };
 
@@ -1172,8 +1174,8 @@ defHero({
 
           B.anim(u, 'cast', .45, 'shellyEureka');
           Sound.play('fanfare', { vol: .75 });
-          B.fxFloatIcon(ev.unit.x, ev.unit.y - 110, '💡 EUREKA SUPER CRIT!', '#ffd700');
-          B.fxRing(ev.unit.x, ev.unit.y - 40, 160, '#ffd700', .5);
+          B.fxFloatIcon(ev.unit.x, ev.unit.y - 110, 'Eureka!', '#d9a441');
+          B.fxShellyEureka(ev.unit.x, ev.unit.y - 95);
         });
 
         // Passive stat amplification based on excitement stacks
@@ -1197,6 +1199,8 @@ defHero({
         const deployArchive = () => {
           if (!u.alive) return;
           B.alliesOf(u).forEach(a => {
+            if (a._shellyArchive === u) return;
+            a._shellyArchive = u;
             B.applyStatus(u, a, 'skillpower', 999, { stacks: S.redPower });
             B.applyStatus(u, a, 'haste', 999, { stacks: 2 });
             B.applyStatus(u, a, 'focus', 999);
@@ -1207,7 +1211,7 @@ defHero({
             B.fxSparkle(a.x, a.y - 45, 8, '#d8b579');
           });
           B.fxFloatObject(u.x + u.face * 24, u.y - 115, 'Book', '#d8b579');
-          B.fxFloatIcon(u.x, u.y - 110, '🏛 ANCIENT ARCHIVE ACTIVE', '#d8b579');
+          B.fxFloatIcon(u.x, u.y - 110, 'Ancient Archive', '#d8b579');
         };
 
         B.on(u, 'waveStart', deployArchive);
@@ -1219,7 +1223,7 @@ defHero({
           Sound.play('earth_quake', { vol: .75 });
           Sound.play('hit_heavy', { vol: .65 });
           B.tint('#d8b579', .25, .5);
-          B.flash('#fef08a', .3, .2);
+          B.flash('#c9a676', .15, .15);
           if (B.fxShellyFossil) B.fxShellyFossil(u.x, u.y - 40, 520);
           else B.fxRing(u.x, u.y - 40, 520, '#d8b579', .8);
 
@@ -1231,10 +1235,10 @@ defHero({
 
           B.alliesOf(u).filter(a => a.alive).forEach(a => {
             B.heal(u, a, a.max.hp * .15, { tag: 'Amber Core' });
-            B.fxSparkle(a.x, a.y - 45, 6, '#ffd700');
+            B.fxSparkle(a.x, a.y - 45, 6, '#d9a441');
           });
 
-          B.fxFloatIcon(u.x, u.y - 110, '🦖 PREHISTORIC STOMP!', '#f59e0b');
+          B.fxFloatIcon(u.x, u.y - 110, 'Dino stomp!', '#c8741f');
         });
 
         // Ancient Amber Stasis lethal damage save
@@ -1248,11 +1252,11 @@ defHero({
           B.applyStatus(u, a, 'amberstasis', 3.5);
           B.applyStatus(u, a, 'untargetable', 3.5);
           B.applyStatus(u, a, 'ward', 3.5);
-          if (B.fxShellyAmber) B.fxShellyAmber(a.x, a.y - 40, 3.5);
+          if (B.fxShellyAmber) B.fxShellyAmber(a.x, a.y - 5, 3.5);
 
           Sound.play('fanfare', { vol: .85 });
-          B.flash('#fef08a', .5, .3);
-          B.fxFloatIcon(a.x, a.y - 120, '💎 ANCIENT AMBER STASIS!', '#fef08a');
+          B.flash('#c9a676', .2, .2);
+          B.fxFloatIcon(a.x, a.y - 120, 'Amber stasis', '#e2c691');
         });
       }
     }
@@ -1546,9 +1550,16 @@ defHero({
   growth: { hp: .080, atk: .106, def: .072, mag: .062, mdef: .070 },
   move: { gait: 'bounce', bob: 12, freq: 2.8, lean: 14, squash: .11, idle: 'bounce', step: 'bounce',
     particles: 'confetti', pcol: '#ff8fb0', trail: { on: true, col: '#ffd166', rate: .06 }, brake: .5 },
-  basic: { name: 'Swing Through', type: 'physical', ratio: .95, range: 190, sfx: 'swing_light', hit: 'hit_blunt',
+  basic: { name: 'Swing Through', type: 'physical', ratio: .95, range: 190, sfx: 'yap_attack', hit: 'hit_blunt',
     wind: .12, animStyle: 'yattaSwing', note: 'Every swing is on the way to somewhere else.',
-    onHit: (u, t, B) => { u.beat = (u.beat || 0) + 1; if (u.beat % 3 === 0) B.applyStatus(u, u, 'celebration', 10, { stacks: 1 }); } },
+    onHit: (u, t, B) => {
+      u.beat = (u.beat || 0) + 1;
+      if (u.beat % 3 === 0) {
+        B.applyStatus(u, u, 'celebration', 10, { stacks: 1 });
+        const c = u.getStatus('celebration');
+        if (c && c.stacks >= 5 && !u._yattaFullCue) { u._yattaFullCue = true; B.fxYattaSkill('full', u); }
+      }
+    } },
   skills: {
     W: {
       name: 'Piñata Party', type: 'Physical Damage', energy: 100,
@@ -1559,31 +1570,38 @@ defHero({
         B.on(u, 'basicHit', ev => {
           const c = u.getStatus('celebration');
           if (!c || c.stacks < P.max) return;
-          B.removeStatus(u, 'celebration');
+          B.removeStatus(u, 'celebration'); u._yattaFullCue = false;
           Sound.play('explode', { vol: .7 }); B.shake(10, .3);
-          B.fxYattaSkill('finish', u); B.fxConfetti(ev.target.x, ev.target.y - 50, 18);
+          // the explosion goes off where the swing landed, not under her feet
+          B.fxYattaSkill('finish', ev.target);
           B.aoe(u, ev.target.x, 230, u.team, u.st.atk * S.burst, { type: 'physical', tag: 'candy explosion' });
           if (u.candyShred) B.aoeStatus(u, ev.target.x, 230, 'defdown', 6);
         });
       },
       cast: (u, B, S, P) => {
-        B.anim(u, 'cast', .72, 'yattaParty'); Sound.play('pop2', { vol: .44 }); Sound.play('bounce'); B.fxYattaSkill('party', u);
+        B.anim(u, 'cast', .72, 'yattaParty'); Sound.play('pop2', { vol: .44 }); Sound.play('yap_skill', { vol: .6 }); Sound.play('bounce'); B.fxYattaSkill('party', u);
         const hits = new Map();
+        let prev = null;
         B.repeat(P.hits, .12, i => {
+          if (!u.alive) return;
           const foes = B.enemiesOf(u); if (!foes.length) return;
-          const t = pick(foes);
-          B.blink(u, t.x - u.face * 50, t.depth);
+          // bounce *between* enemies: never the one just hit unless it is alone
+          const t = pick(foes.length > 1 ? foes.filter(e => e !== prev) : foes);
+          prev = t;
+          const from = { x: u.x, y: u.y };
+          const dir = t.x < u.x ? -1 : 1; u.face = dir;
+          B.blink(u, t.x - dir * 50, t.depth);
           Sound.play('hit_blunt', { vol: .55, rate: rnd(.9, 1.25), throttle: 12 });
-          B.fxYattaSkill('partyHit', u, { target: t, index: i, last: P.hits - 1 });
+          B.fxYattaSkill('partyHit', u, { target: t, index: i, last: P.hits - 1, from });
           B.shake(5, .1);
           B.damage(u, t, u.st.atk * S.ratio, { type: 'physical', tag: 'Piñata Party' });
           hits.set(t, (hits.get(t) || 0) + 1);
-          if (hits.get(t) >= P.finishNeed) B.applyStatus(u, t, 'dizzy', P.dizzy);
+          if (hits.get(t) >= P.finishNeed && !t.hasStatus('dizzy')) { B.applyStatus(u, t, 'dizzy', P.dizzy); B.fxYattaSkill('dizzy', u, { target: t }); }
           if (i === P.hits - 1) B.after(.08, () => {
             const focus = [...hits.entries()].sort((a, b) => b[1] - a[1])[0];
             if (!focus || focus[1] < P.finishNeed || !focus[0].alive) return;
             const target = focus[0];
-            Sound.play('explode', { vol: .54 }); B.hitstop(75); B.fxYattaSkill('finish', u, { target });
+            Sound.play('explode', { vol: .54 }); B.hitstop(75); B.fxYattaSkill('finish', target);
             B.damage(u, target, u.st.atk * S.finish, { type: 'physical', tag: 'Party Finish' });
             B.applyStatus(u, target, 'exposed', P.finishExpose);
           });
@@ -1600,17 +1618,21 @@ defHero({
           if (!t || !t.alive || chainN > 5) return;
           const low = t.hpPct < P.thr;
           const dizzy = t.hasStatus('dizzy');
-          B.blink(u, t.x - u.face * 50, t.depth);
+          const from = { x: u.x, y: u.y };
+          const dir = t.x < u.x ? -1 : 1; u.face = dir;
+          B.blink(u, t.x - dir * 50, t.depth);
           Sound.play(low ? 'crit' : 'hit_heavy'); B.hitstop(low ? 120 : 70); B.shake(low ? 15 : 9, .3);
-          B.fxYattaSkill('crash', u, { target: t, chain: chainN, low });
+          B.fxYattaSkill('crash', u, { target: t, chain: chainN, low, from });
           const before = t.alive;
           B.damage(u, t, u.st.atk * S.ratio * (low ? 1.6 : 1) * (1 + chainN * .3),
             { type: 'physical', forceCrit: low, tag: 'Candy Crash' });
           if (low && t.alive) B.applyStatus(u, t, 'stun', P.stun);
           if (before && !t.alive && dizzy) B.applyStatus(u, u, 'celebration', 10, { stacks: Math.round(P.dizzyCelebrate) });
           if (u.crashChain && before && !t.alive) {
-            const next = B.lowestHp(B.enemiesOf(u));
-            if (next) { B.resetCd(u, 'G'); B.after(.2, () => bounce(next, chainN + 1)); }
+            // bounce to a *nearby* enemy; two kills in one chain refunds the skill
+            const next = B.nearest(t, B.enemiesOf(u).filter(e => e.alive && e !== t));
+            if (chainN >= 1) B.resetCd(u, 'G');
+            if (next) B.after(.2, () => bounce(next, chainN + 1));
           }
         };
         B.anim(u, 'wind', .3, 'yattaCrash'); Sound.play('jump'); B.fxYattaSkill('crashStart', u);
@@ -1621,7 +1643,7 @@ defHero({
       name: 'Spring Loaded', type: 'Self Buff', cd: 12,
       v: { eva: .40 }, p: { dur: 7 },
       desc: (S, P) => `Yatta bounds around the field for ${P.dur}s, gaining <em>${pcn(S.eva * 100)}</em> Evasion, Move Speed, and 1 🎉 Celebration stack. Every dodge restores Energy; dodges during Spring Loaded also add another Celebration stack.`,
-      ai: { prio: 52, cond: (u) => u.hpPct < .9 },
+      ai: { prio: 52, cond: (u, B) => B.t >= (u._yattaSpringUntil || 0) },
       cast: (u, B, S, P) => {
         B.anim(u, 'cast', .45, 'yattaSpring'); Sound.play('bounce'); Sound.play('pop2', { vol: .25 }); B.fxYattaSkill('spring', u, { dur: P.dur });
         u._yattaSpringUntil = B.t + P.dur;
@@ -1630,7 +1652,7 @@ defHero({
         B.applyStatus(u, u, 'celebration', P.dur, { stacks: 1 });
         B.after(P.dur, () => { if (B.t >= (u._yattaSpringUntil || 0)) { u.flat.evaP2 = 0; u._yattaSpringUntil = 0; u.dirty = true; } });
       },
-      passive: (u, B) => { B.on(u, 'dodged', () => { B.energy(u, 12); if (B.t < (u._yattaSpringUntil || 0)) B.applyStatus(u, u, 'celebration', 10, { stacks: 1 }); }); }
+      passive: (u, B) => { B.on(u, 'dodged', () => { B.energy(u, 12); B.fxYattaSkill('dodge', u); if (B.t < (u._yattaSpringUntil || 0)) B.applyStatus(u, u, 'celebration', 10, { stacks: 1 }); }); }
     },
     P: {
       name: 'Festival Fuel', type: 'Attack Speed',
@@ -1651,14 +1673,12 @@ defHero({
 });
 
 /* ============================================================ POPPY
-   Tank / Bubble Shelter - C Tier.
-   Bubbly and evasive rather than armored: Poppy survives by not being hit,
-   but now shares just enough of that safety to hold a line for her team. */
+   Bubble tank: every defensive beat creates an opening for her friends. */
 defHero({
   id: 'Poppy', name: 'Poppy', folder: 'Poppy', file: 'Poppy', icon: 'Poppy',
-  role: 'Tank', tier: 'C', element: 'Bubble',
-  blurb: 'A cheerful bubble Toon who bounces out of danger more often than she stands in it.',
-  base: { hp: 4500, atk: 202, def: 218, mag: 178, mdef: 198, spd: 122, acc: 182, eva: 220 },
+  role: 'Tank', tier: 'B', element: 'Bubble',
+  blurb: 'She turns every close call into a bubble big enough for her friends.',
+  base: { hp: 4700, atk: 202, def: 230, mag: 178, mdef: 210, spd: 122, acc: 182, eva: 220 },
   hidden: { range: 185, aspd: .96, ms: 88, aggro: 1.55, crit: .08, critDmg: 1.5, healPow: 1, shieldPow: 1.30, cdr: .05, ccRes: .15, kbRes: .12, armorPen: 0, magPen: 0 },
   growth: { hp: .096, atk: .058, def: .078, mag: .054, mdef: .072 },
   move: { gait: 'bounce', bob: 14, freq: 2.6, lean: 8, squash: .16, hover: 4, idle: 'bounce', step: 'bounce',
@@ -1668,10 +1688,10 @@ defHero({
     onHit: (u, t, B) => { if (chance(.15)) B.knockback(u, t, 30); } },
   skills: {
     W: {
-      name: 'Panic Pop', type: 'Physical Damage / Control', energy: 100,
-      v: { ratio: 1.05 }, p: { dur: 5, kb: 155, slow: 3.5, energy: 8 },
+      name: 'Panic Pop', type: 'Physical Damage / Control / Shield', energy: 100,
+      v: { ratio: 1.05, shelter: .12 }, p: { dur: 5, kb: 155, slow: 3.5, energy: 8, finaleRadius: 150, finaleStun: 1.5 },
       desc: (S, P) => `<span class="sk-pas">Losing HP makes Poppy 🫧 Buoyant for ${P.dur}s: more Move Speed and Evasion. Dodging a hit while Buoyant restores Energy.</span>
-        Active: Poppy launches herself forward, bouncing between enemies for <em>${pcn(S.ratio * 100)}</em> Attack each. Enemies hit are knocked back and 🐢 Slowed for ${P.slow}s.`,
+        Active: Poppy shelters the lowest-HP teammate for <em>${pcn(S.shelter * 100)}</em> of her Max HP, then bounces through enemies five times for <em>${pcn(S.ratio * 100)}</em> Attack per hit. Each hit knocks back and 🐢 Slows for ${P.slow}s; the final pop 🌀 Stuns nearby enemies for ${P.finaleStun}s.`,
       passive: (u, B, S, P) => {
         B.on(u, 'damaged', ev => { if (!ev.dot) B.applyStatus(u, u, 'buoyant', P.dur, { stacks: 1 }); });
         B.on(u, 'dodged', () => { if (u.hasStatus('buoyant')) B.energy(u, P.energy); });
@@ -1679,33 +1699,55 @@ defHero({
       cast: (u, B, S, P) => {
         B.anim(u, 'cast', .78, 'poppyBounceRush'); Sound.play('bounce'); Sound.play('jump', { vol: .34, throttle: 180 });
         B.applyStatus(u, u, 'buoyant', P.dur, { stacks: 2 });
-        B.fxRing(u.x, u.y - 32, 72, '#ffe9f2');
-        B.repeat(5, .13, () => {
+        B.fxPoppy('inflate', u);
+        const friend = B.lowestHp(B.alliesOf(u).filter(a => a !== u && !a.minion)) || u;
+        if (friend) {
+          B.shield(u, friend, u.max.hp * S.shelter, 6);
+          B.fxPoppy('dome', friend);
+        }
+        let lastTarget = null;
+        B.repeat(5, .13, i => {
           if (!u.alive || (u.flags && u.flags.noAct)) return;
           const foes = B.enemiesOf(u); if (!foes.length) return;
-          const t = pick(foes);
+          // Spread the parade across the enemy line before bouncing back.
+          const choices = foes.filter(e => e !== lastTarget);
+          const t = (choices.length ? choices : foes).sort((a, b) => B.distance(a, u) - B.distance(b, u))[0];
+          lastTarget = t;
           const dir = t.x < u.x ? -1 : 1;
           u.face = dir;
-          B.blink(u, t.x - dir * 46, t.depth);
+          B.fxPoppy('launch', u, { dir });
+          // Her own pogo hops are voluntary, so Air Pressure's anti-displacement must not pin her.
+          B.blink(u, t.x - dir * 46, t.depth, true);
           Sound.play('hit_light', { vol: .5, rate: rnd(.9, 1.2), throttle: 12 });
-          B.fxBoom(t.x, t.y - 30, .6, '#ffe9f2'); B.shake(3, .1);
+          B.fxPoppy('bump', t); B.shake(3, .1);
           B.damage(u, t, u.st.atk * S.ratio, { type: 'physical', tag: 'Panic Pop' });
           B.knockback(u, t, P.kb); B.applyStatus(u, t, 'slow', P.slow);
+          if (i === 4) {
+            B.fxPoppy('finale', t, { w: P.finaleRadius * 2 });
+            B.enemiesOf(u).filter(e => B.distance(e, t) <= P.finaleRadius).forEach(e =>
+              B.applyStatus(u, e, 'stun', P.finaleStun * (B.t < (u._poppyControlUntil || 0) ? 1.4 : 1)));
+            Sound.play('pop2', { vol: .62 });
+          }
         });
       }
     },
     G: {
-      name: 'Bubble Bounce', type: 'Shield', cd: 10,
-      v: { shield: .32 }, p: { dur: 6.5, kb: 185, shelter: .32 },
-      desc: (S, P) => `Poppy wraps herself in a bubble worth <em>${pcn(S.shield * 100)}</em> of her Max HP for ${P.dur}s. Nearby allies receive a Bubble Shelter worth ${Math.round(P.shelter*100)}% of her own Shield, brief Speed Up, and Attack Up. When it pops it knocks nearby enemies back, and Poppy gains Move Speed and Buoyancy.`,
-      ai: { prio: 55, cond: (u) => !u.hasStatus('shield') },
+      name: 'Bubble Bounce', type: 'Shield / Team Buff / Control', cd: 10,
+      v: { shield: .32, shelter: .14 }, p: { dur: 7.5, kb: 185, hush: 1.5 },
+      desc: (S, P) => `Poppy gains a bubble worth <em>${pcn(S.shield * 100)}</em> of her Max HP for ${P.dur}s. Her teammates gain Bubble Shelters worth <em>${pcn(S.shelter * 100)}</em> of her Max HP, plus Speed Up. The bubble's sudden squeak 🔇 Silences nearby enemies for ${P.hush}s. When it pops, it pushes enemies away, refreshes allied shelters, and gives nearby allies Energy.`,
+      ai: { prio: 55, cond: (u, B) => B.t >= (u._poppyBounceUntil || 0) },
       cast: (u, B, S, P) => {
+        u._poppyBounceUntil = B.t + P.dur;
         B.anim(u, 'cast', .72, 'poppyBubbleGuard'); Sound.play('cloth'); Sound.play('bounce', { vol: .28, throttle: 180 });
-        B.fxRing(u.x, u.y - 30, 90, '#ffe9f2');
-        const shelter = () => B.alliesOf(u).filter(a => a !== u && B.distance(a, u) < 280).forEach(a => {
-          B.shield(u, a, u.max.hp * S.shield * P.shelter, 4.5);
+        B.fxPoppy('inflate', u);
+        B.enemiesOf(u).filter(e => B.distance(e, u) <= 225).forEach(e => {
+          B.applyStatus(u, e, 'silence', P.hush * (B.t < (u._poppyControlUntil || 0) ? 1.4 : 1));
+          B.fxPoppy('squeak', e);
+        });
+        const shelter = () => B.alliesOf(u).filter(a => a !== u).forEach(a => {
+          B.shield(u, a, u.max.hp * S.shelter, P.dur);
           B.applyStatus(u, a, 'speedup', 4, { stacks: 1 });
-          B.applyStatus(u, a, 'atkup', 4, { stacks: 1 });
+          B.fxPoppy('dome', a);
         });
         shelter();
         const bubble = B.poppyBubble(u, false);
@@ -1714,11 +1756,12 @@ defHero({
           B.poppyBubblePop(u, false, bubble);
           B.emitFor(u, 'poppyBubblePop', { bubble });
           if (!u.alive) return;
-          Sound.play('explode', { vol: .5 }); B.fxBoom(u.x, u.y - 30, 1, '#ffe9f2'); B.shake(8, .3);
+          Sound.play('pop2', { vol: .6 }); Sound.play('explode', { vol: .3 }); B.fxPoppy('burst', u); B.shake(7, .28);
           B.enemiesOf(u).forEach(e => { if (B.distance(e, u) < 220) B.knockback(u, e, P.kb); });
           B.applyStatus(u, u, 'speedup', 4, { stacks: 2 });
           B.applyStatus(u, u, 'buoyant', 4, { stacks: 1 });
           shelter();
+          B.alliesOf(u).filter(a => a !== u && B.distance(a, u) < 300).forEach(a => B.energy(a, 10));
         };
         B.shield(u, u, u.max.hp * S.shield, P.dur, {
           onBreak: burst
@@ -1728,30 +1771,73 @@ defHero({
     },
     B: {
       name: 'Pop Shock', type: 'Physical Damage / Debuff', cd: 12,
-      v: { ratio: 1.18 }, p: { dur: 6, kb: 145, radius: 220 },
-      desc: (S, P) => `Poppy compresses, then suddenly expands outward for <em>${pcn(S.ratio * 100)}</em> Attack to everything nearby, knocking enemies away. Anyone hit becomes 🥴 Off Balance for ${P.dur}s, losing Accuracy and cooldown recovery.`,
-      ai: { prio: 50, cond: (u, B) => B.enemiesOf(u).some(e => B.distance(e, u) <= 260) },
+      v: { ratio: 1.18 }, p: { dur: 6, kb: 145, radius: 220, echoRadius: 135, stun: 2.5 },
+      desc: (S, P) => `Poppy bursts for <em>${pcn(S.ratio * 100)}</em> Attack, knocking enemies away and making them 🥴 Off Balance for ${P.dur}s. The strongest enemy caught is 🌀 Stunned for ${P.stun}s. Allies protected by her bubbles echo the shock around themselves, extending its reach across the team. Each enemy is hit once.`,
+      ai: { prio: 50, cond: (u, B) => B.enemiesOf(u).some(e =>
+        B.distance(e, u) <= 260 || B.alliesOf(u).some(a => a !== u && a.shields.some(sh => sh.src === u) && B.distance(e, a) <= 170)) },
       cast: (u, B, S, P) => {
         B.anim(u, 'wind', .74, 'poppyPopShock'); Sound.play('warn'); Sound.play('beam_charge', { vol: .18, throttle: 260 });
         B.after(.38, () => {
           if (!u.alive) return;
-          Sound.play('explode'); B.hitstop(90); B.shake(11, .35); B.fxBoom(u.x, u.y - 30, 1.2, '#ffe9f2');
-          B.enemiesOf(u).forEach(e => {
-            if (B.distance(e, u) > P.radius) return;
+          Sound.play('explode'); Sound.play('pop2', { vol: .5 }); B.hitstop(90); B.shake(11, .35); B.fxPoppy('shock', u, { w: P.radius * 2 });
+          const echoes = B.alliesOf(u).filter(a => a !== u && a.shields.some(sh => sh.src === u));
+          echoes.forEach(a => B.fxPoppy('echo', a, { w: P.echoRadius * 2 }));
+          const caught = B.enemiesOf(u).filter(e =>
+            B.distance(e, u) <= P.radius || echoes.some(a => B.distance(e, a) <= P.echoRadius));
+          const heavy = caught.slice().sort((a, b) => (b.st.atk + b.st.mag) - (a.st.atk + a.st.mag))[0];
+          caught.forEach(e => {
             B.damage(u, e, u.st.atk * S.ratio, { type: 'physical', tag: 'Pop Shock' });
             B.applyStatus(u, e, 'offbalance', P.dur);
             B.knockback(u, e, P.kb);
+            if (e === heavy && e.alive) B.applyStatus(u, e, 'stun', P.stun * (B.t < (u._poppyControlUntil || 0) ? 1.4 : 1));
           });
         });
       }
     },
     P: {
-      name: 'Air Filled', type: 'Max HP',
-      v: {}, p: { stackHp: .02, stackShield: .03, stackKb: .03 },
-      desc: (S, P) => `Losing HP grants Air Pressure (max 10). Each stack adds ${(P.stackHp*100).toFixed(1)}% Max HP, Shield Strength and Knockback Resistance. At ten stacks Poppy cannot be displaced and takes noticeably less damage.`,
+      name: 'Air Filled', type: 'Max HP / Recovery',
+      v: { recovery: .22 }, p: { stackHp: .02, stackShield: .03, stackKb: .03, lowHp: .30, recoveryDur: 7, rescueShield: .10 },
+      fixedP: ['lowHp', 'recoveryDur'],
+      desc: (S, P) => `Taking damage grants Air Pressure; a shield Poppy placed on an ally breaking grants two stacks and restores her Energy. Each stack adds ${(P.stackHp*100).toFixed(1)}% Max HP, Shield Strength and Knockback Resistance. At ten stacks she cannot be displaced and takes less damage. Once per wave below ${pcn(P.lowHp * 100)}% HP, she gains a rescue bubble and restores <em>${pcn(S.recovery * 100)}</em> Max HP over ${P.recoveryDur}s.`,
       passive: (u, B, S, P) => {
         u._poppyStackHp=P.stackHp;u._poppyStackShield=P.stackShield;u._poppyStackKb=P.stackKb;
+        u._poppyRecoveryUses = 0;
+        u._poppyRecoveryNext = 0;
+        B.on(u, 'waveStart', () => { u._poppyRecoveryUses = 0; u._poppyRecoveryNext = 0; });
         B.on(u, 'damaged', ev => { if (!ev.dot) B.applyStatus(u, u, 'airpressure', 999, { stacks: 1 }); });
+        B.on(u, 'allyShieldBreak', ev => {
+          if (ev.unit === u || ev.shield?.src !== u) return;
+          B.applyStatus(u, u, 'airpressure', 999, { stacks: 2 });
+          B.energy(u, 8);
+        });
+        const secondWind = () => {
+          if (!u.alive || u.hpPct > P.lowHp || B.t < u._poppyRecoveryNext ||
+              u._poppyRecoveryUses >= (u._poppyRecoveryMax || 1)) return;
+          const strength = Math.pow(.8, u._poppyRecoveryUses++);
+          u._poppyRecoveryNext = B.t + P.recoveryDur + 1;
+          if (u._poppyRecoveryRed) {
+            B.cleanseAll(u);
+            B.applyStatus(u, u, 'ccimmune', 1.8);
+            B.applyStatus(u, u, 'speedup', P.recoveryDur);
+            u._poppyControlUntil = B.t + P.recoveryDur;
+          }
+          B.heal(u, u, u.max.hp * S.recovery * .35 * strength, { tag: 'Air Filled' });
+          B.applyStatus(u, u, 'regen', P.recoveryDur, {
+            val: u.max.hp * S.recovery * .65 * strength / P.recoveryDur
+          });
+          B.shield(u, u, u.max.hp * P.rescueShield * strength, P.recoveryDur);
+          const friend = B.lowestHp(B.alliesOf(u).filter(a => a !== u && !a.minion));
+          if (friend) B.shield(u, friend, u.max.hp * P.rescueShield * .7 * strength, P.recoveryDur);
+          B.applyStatus(u, u, 'airpressure', 999, { stacks: 3 });
+          B.fxPoppy('rescue', u);
+          // Only show the rescue bubble if no other bubble is wrapped around her.
+          const rescueBubble = u.poppyBubbleEl ? null : B.poppyBubble(u, false);
+          if (rescueBubble) B.after(P.recoveryDur, () => B.poppyBubblePop(u, false, rescueBubble));
+          Sound.play('grow', { vol: .4 });
+          B.log('<b>' + u.name + '</b> catches a second wind!');
+        };
+        B.on(u, 'allyLow', ally => { if (ally === u) secondWind(); });
+        B.every(u, .25, secondWind);
         B.every(u, .5, () => {
           const a = u.getStatus('airpressure');
           const maxed = a && a.stacks >= 10;
@@ -1762,26 +1848,27 @@ defHero({
             if (!u.casting && u.animStyle !== 'poppyBigBubble') {
               B.anim(u, 'cast', .66, 'poppyPressure');
             }
-            B.fxRing(u.x, u.y - 38, 118, '#ffe9f2');
+            B.fxPoppy('pressure', u);
             Sound.play('grow', { vol: .42 });
           }
-          u.immovable = !!maxed;
+          u.noDisplace = !!maxed;   // cannot be knocked or pulled, but still walks and fights
           u.flat.dmgTaken3 = maxed ? -.15 : 0;
           u.dirty = true;
         });
       }
     },
     R: {
-      name: 'The Biggest Bubble', type: 'Battle Opener',
-      v: { shield: .24 }, p: { bubbleDur: 3.8, heal: .12, revive: .55, atkLoss: .24, msGain: .36, kb: 200 },
-      desc: (S, P) => `At the start of battle Poppy gains a Shield worth <em>${pcn(S.shield * 100)}</em> of her Max HP. The first time she would be defeated she instead becomes a giant bubble for ${P.bubbleDur}s: untargetable, unable to act, slowly healing. When it pops she returns to battle, damaging and pushing back nearby enemies, then gains <em>${pcn(P.msGain * 100)}</em> Move Speed but <em>${pcn(P.atkLoss * 100)}</em> less Attack for the rest of the battle.`,
+      name: 'The Biggest Bubble', type: 'Battle Opener / Rescue',
+      v: { shield: .24 }, p: { bubbleDur: 3.8, heal: .12, revive: .55, msGain: .36, kb: 200 },
+      desc: (S, P) => `Poppy opens with a Shield worth <em>${pcn(S.shield * 100)}</em> of her Max HP and shares a smaller one with the team. Air Filled can now rescue her three times per wave, with smaller heals after the first; each rescue cleanses her, grants brief control immunity and Speed Up, and lengthens her Stuns and Silence by 40% for 7s. The first time she would fall, she becomes an invulnerable giant bubble for ${P.bubbleDur}s, then bursts for damage and knockback, restores her HP, shields and energizes her allies, and keeps increased Move Speed.`,
       passive: (u, B, S, P) => {
+        u._poppyRecoveryMax = 3;
+        u._poppyRecoveryRed = true;
         B.after(.3, () => {
           const openingBubble = B.poppyBubble(u, false);
           B.shield(u, u, u.max.hp * S.shield, 999, { onBreak: () => B.poppyBubblePop(u, false, openingBubble) });
-          const ally = B.lowestHp(B.alliesOf(u).filter(a => a !== u));
-          if (ally) B.shield(u, ally, u.max.hp * S.shield * .24, 6);
-          B.fxRing(u.x, u.y - 30, 90, '#ffe9f2');
+          B.alliesOf(u).filter(a => a !== u).forEach(a => B.shield(u, a, u.max.hp * S.shield * .45, 6));
+          B.fxPoppy('inflate', u);
         });
         B.on(u, 'lethal', ev => {
           if (u._bubbled) return;
@@ -1790,7 +1877,7 @@ defHero({
           u.casting = null; u.pendingHit = null; u.windup = 0;
           u.moving = false; u.movingY = false; u.actionArtSrc = null;
           B.cleanseAll(u);
-          Sound.play('cloth'); B.fxRing(u.x, u.y - 40, 140, '#ffe9f2');
+          Sound.play('cloth'); B.fxPoppy('giant', u);
           B.anim(u, 'cast', P.bubbleDur, 'poppyBigBubble');
           B.poppyBubble(u, true);
           u.invuln = B.t + P.bubbleDur;    // "cannot be damaged" - a hard guarantee, not just untargetable
@@ -1803,14 +1890,19 @@ defHero({
             B.poppyBubblePop(u);
             B.anim(u, 'cast', .56, 'poppyBurst');
             u.hp = Math.max(u.hp, u.max.hp * P.revive);
-            Sound.play('explode'); B.shake(14, .4); B.fxBoom(u.x, u.y - 30, 1.4, '#ffe9f2');
+            Sound.play('pop2', { vol: .7 }); Sound.play('explode', { vol: .5 }); B.shake(14, .4); B.fxPoppy('return', u);
             B.enemiesOf(u).forEach(e => {
               if (B.distance(e, u) > 240) return;
               B.damage(u, e, u.st.atk * 1.2, { type: 'physical', tag: 'The Biggest Bubble' });
               B.knockback(u, e, P.kb);
             });
             B.applyStatus(u, u, 'buoyant', 6, { stacks: 2 });
-            u.flat.atkP2 = -P.atkLoss; u.flat.msP2 = P.msGain; u.dirty = true;
+            B.alliesOf(u).filter(a => a !== u).forEach(a => {
+              B.shield(u, a, u.max.hp * S.shield * .65, 8);
+              B.energy(a, 18);
+              B.fxPoppy('gift', a);
+            });
+            u.flat.msP2 = P.msGain; u.dirty = true;
           });
         });
       }

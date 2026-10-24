@@ -2,6 +2,11 @@
    the result screen and reward payout hand-off. */
 'use strict';
 
+function liveBattleSpeed(value) {
+  const speed = Number(value);
+  return [1, 1.5, 2, 3].includes(speed) ? speed : 1;
+}
+
 const BattleScreen = {
   active: null,
   onDone: null,
@@ -34,6 +39,15 @@ const BattleScreen = {
     $('#battle').classList.toggle('kh-battle', !!(cfg.meta && (cfg.meta.collabTheme || cfg.meta.collabEntrance)));
     $('#battle').classList.toggle('unknown-world-battle', !!(cfg.meta && cfg.meta.unknownWorld));
     $('#battle').classList.toggle('qom-battle', !!(cfg.meta && cfg.meta.qom));
+    const activeMutations = typeof BattleMutations !== 'undefined' ? BattleMutations.resolve(cfg.meta && cfg.meta.mutations) : [];
+    const oldMutationPanel = $('#mutationLive');
+    if (oldMutationPanel) oldMutationPanel.remove();
+    if (activeMutations.length) {
+      const panel = el('details', 'mutation-live');
+      panel.id = 'mutationLive';
+      panel.innerHTML = `<summary><b>${activeMutations.length} MUTATION${activeMutations.length === 1 ? '' : 'S'}</b><i>⌄</i></summary><div class="mutation-live-list">${BattleMutations.cards(activeMutations, true)}</div>`;
+      $('#battleHud').appendChild(panel);
+    }
     $('#battleHud').classList.remove('wave-exit');
     // Result animations are reused across battles. Never carry the previous
     // result's closed elevator state into the next Apex/trial result screen.
@@ -46,10 +60,17 @@ const BattleScreen = {
       Save.data.opt.paceV2 = true;
       Save.write();
     }
-    b.speed = Save.data.opt.speed || 1;
+    // A legacy or malformed save must not turn a live fight into a ticket
+    // simulation. Only the speeds offered by the battle control are valid.
+    b.speed = liveBattleSpeed(Save.data.opt.speed);
+    b.autoWhite = Save.data.opt.autoWhite !== false;
     $('#btnSpeed i').textContent = b.speed + 'x';
-    $('#btnAuto i').textContent = '⏸';
-    $('#btnAuto').classList.remove('on');
+    $('#btnAuto').classList.toggle('on', b.autoWhite);
+    $('#btnAuto').setAttribute('aria-pressed', String(b.autoWhite));
+    $('#btnAuto').setAttribute('aria-label', `Auto skills ${b.autoWhite ? 'on' : 'off'}`);
+    $('#btnPause i').textContent = '⏸';
+    $('#btnPause').classList.remove('on');
+    $('#btnPause').setAttribute('aria-label', 'Pause battle');
     const finishBattle = (res) => {
       // Chained victories can hand off directly to the next room, but a loss
       // still needs its results card so the player can see what happened and
@@ -98,13 +119,16 @@ const BattleScreen = {
       ? [...new Set(Object.values(UNKNOWN_WORLD_SKILL_AUDIO).concat('machine_speak', 'unknown_world_explode'))] : [];
     const cookieCues = [...(cfg.team || []), ...(cfg.foes || [])].some(f => f && f.id === 'ShadowMilkCookie')
       ? ['cookie_darkmagic_ability', 'cookie_darkmagic_spread'] : [];
+    const ff7Cues = [...(cfg.team || []), ...(cfg.foes || [])].some(f => f &&
+      (f.id === 'Sephiroth' || f.id === 'Barret' || f.id === 'Cloud' || (typeof FF7_ENEMY_IDS !== 'undefined' && FF7_ENEMY_IDS.includes(f.id))))
+      ? ['ff7_enemy_down', 'ff7_barret_gun', 'ff7_sword_hit', 'ff7_strong_hit', 'ff7_ice', 'ff7_slots_spin', 'ff7_slots_stop'] : [];
     const hasQom = [...(cfg.team || []), ...(cfg.foes || [])].some(f => f && /^QOM/.test(f.id));
     const qomCues = hasQom ? ['qom_hey', 'qom_crash', 'qom_snare', 'qom_riff', 'qom_guard',
       'qom_bone', 'qom_counter', 'qom_ghost', 'qom_candy'] : [];
     Sound.warm(['hit_slash', 'hit_blunt', 'hit_magic', 'swing_light', 'step', 'crit', 'heal',
       'heal_soft', 'sparkle', 'shrink2', 'spectral', 'shatter', 'beam_charge',
       'beam_fire', 'flash', 'blot_ink_cast', 'blot_mime_wall', 'blot_ink_burst', 'throwsomething', 'sweep', 'pop2', 'down', 'blood', 'cleanse',
-      'guard', 'shock', 'shock_big', 'toon_death', 'toodles_gamble', 'rudie_wind', 'rudie_hoofstep', 'rudie_red_nose', 'apex_trial_warning', ...creatureCues, ...teamDownCues, ...unknownWorldCues, ...qomCues, ...cookieCues]);
+      'guard', 'shock', 'shock_big', 'toon_death', 'toodles_gamble', 'rudie_wind', 'rudie_hoofstep', 'rudie_red_nose', 'apex_trial_warning', ...creatureCues, ...teamDownCues, ...unknownWorldCues, ...qomCues, ...cookieCues, ...ff7Cues]);
     const begin = () => {
       if (this.active !== b) return;
       b.loading = false;
@@ -141,9 +165,13 @@ const BattleScreen = {
     LoadingScreen.hide();
     FX.clear();
     Sound.stopBuses(['movement', 'impact', 'ability', 'creature', 'ambience']);
+    Sound.setCombatLoad(0);
+    Music.clearDuck(false);
     $('#battle').hidden = true;
     $('#battle').classList.remove('kh-battle');
     $('#battle').classList.remove('unknown-world-battle');
+    const mutationPanel = $('#mutationLive');
+    if (mutationPanel) mutationPanel.remove();
     $('#battleHud').classList.remove('wave-exit');
     $('#battleEnd').classList.remove('elevator-closing');
     if (!opt.keepAppHidden) $('#app').hidden = false;
@@ -157,6 +185,9 @@ const BattleScreen = {
    */
   showResult(res, cfg) {
     const b = this.active;
+    $('#battleEnd').classList.remove('ff7-victory');
+    // An FF7 party member on a winning team takes over the whole results flow.
+    if (res.win && !cfg.machine && typeof FF7Victory !== 'undefined' && FF7Victory.applies(b)) { FF7Victory.show(this, res, cfg); return; }
     if (!cfg.endless) Music.stop();
     const box = $('#battleEnd');
     box.hidden = false; clear(box);
@@ -396,9 +427,20 @@ const BattleScreen = {
     };
     $('#btnAuto').onclick = (e) => {
       const b = this.active; if (!b || (b.paused && b._dandyCoach && b._dandyCoach.classList.contains('show'))) return;
+      b.autoWhite = !b.autoWhite;
+      Save.data.opt.autoWhite = b.autoWhite; Save.write();
+      e.currentTarget.classList.toggle('on', b.autoWhite);
+      e.currentTarget.setAttribute('aria-pressed', String(b.autoWhite));
+      e.currentTarget.setAttribute('aria-label', `Auto skills ${b.autoWhite ? 'on' : 'off'}`);
+      Sound.play('ui_move');
+    };
+    $('#btnPause').onclick = (e) => {
+      const b = this.active; if (!b || (b.paused && b._dandyCoach && b._dandyCoach.classList.contains('show'))) return;
       b.paused = !b.paused;
       e.currentTarget.classList.toggle('on', b.paused);
-      $('#btnAuto i').textContent = b.paused ? '▶' : '⏸';
+      $('i', e.currentTarget).textContent = b.paused ? '▶' : '⏸';
+      e.currentTarget.setAttribute('aria-label', b.paused ? 'Resume battle' : 'Pause battle');
+      if (!b.paused) b.last = performance.now();
       Sound.play('ui_move');
     };
     $('#btnQuit').onclick = () => {

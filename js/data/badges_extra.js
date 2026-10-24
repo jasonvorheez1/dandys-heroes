@@ -835,9 +835,9 @@ defBadge({
 defBadge({
   id: 'rodger_teagan', owner: 'Teagan', friend: 'Rodger',
   name: "Rodger's Quiet Notes", icon: '📓', color: '#b8d9b2',
-  desc: 'A few of Rodger’s quiet observations, kept by Teagan as a reminder that he has found a place at her table.',
+  desc: 'A few of Rodger’s quiet observations, kept by Teagan as a reminder that he has found a place at her table. She can use the notes without Rodger in her battle party.',
   stat: lvl => `+${(12 + lvl * 6).toFixed(0)}% Skill Haste · +${(10 + lvl * 5).toFixed(0)}% Magic Attack`,
-  effect: "Rodger's forensic dossiers turn Teagan's polite parlor rules into inescapable traps! Whenever Teagan Silences, Saps, or applies Etiquette to an enemy, Rodger marks them as Investigated: they lose 25 Energy, suffer -30% Magic Defense, and take 30% increased damage from all sources for 6s. In addition, when Teagan casts Tea Time, Rodger drops a Classified Briefing that gives the most injured ally a Tea-Service Shield worth 24%+ Max HP and +30% Skill Haste for 6s.",
+  effect: "Teagan uses Rodger's notes herself; Rodger does not need to be on the team. When she Stuns, Slows, or makes an enemy Drowsy, she marks them Investigated for 6s, drains Energy, lowers Magic Defense, and exposes them to extra damage. Tea Time gives the most injured ally a Tea-Service Shield worth 24%+ of Teagan's Max HP and Haste for 6s.",
   apply(u, B, lvl) {
     u.flat.cdr = (u.flat.cdr || 0) + (0.12 + lvl * 0.06);
     u.flat.magP = (u.flat.magP || 0) + (0.10 + lvl * 0.05);
@@ -846,14 +846,15 @@ defBadge({
 
     B.on(u, 'statusApplied', ev => {
       if (!ev || ev.src !== u || !ev.unit || ev.unit.team === u.team || !ev.unit.alive) return;
-      if (!['silence', 'sap', 'etiquette', 'buffsealed', 'teagandistracted'].includes(ev.id)) return;
+      if (!['stun', 'slow', 'drowsy'].includes(ev.id)) return;
       const target = ev.unit;
       const now = B.t;
       if (now < (target._rodgerInvestigatedAt || 0)) return;
       target._rodgerInvestigatedAt = now + 4.0;
       B.energy(target, -(20 + lvl * 3));
-      B.applyStatus(u, target, 'magdown', 5 + lvl * .4, { val: 0.30 });
-      B.applyStatus(u, target, 'weaken', 5 + lvl * .4);
+      B.applyStatus(u, target, 'investigated', 6);
+      B.applyStatus(u, target, 'magdown', 6);
+      B.applyStatus(u, target, 'exposed', 6, { stacks: 2 });
       B.fxFloatIcon(target.x, target.y - 105, '🔍 INVESTIGATED', '#b8d9b2');
     });
 
@@ -1611,51 +1612,31 @@ defBadge({
 defBadge({
   id: 'vee_shelly', owner: 'Vee', friend: 'Shelly',
   name: "Shelly's Amber Broadcast Lens", icon: '🔍', color: '#ffb347',
-  desc: "A polished prehistoric amber lens Shelly fashioned to fit over Vee's camera. It filters out interference and reveals ancient structural weaknesses.",
-  stat: lvl => `+${(15 + lvl * 5).toFixed(0)}% Max HP · +${(12 + lvl * 4).toFixed(0)}% Shield Power`,
-  effect: "Shelly's amber lens refracts studio spotlights with prehistoric clarity! When Spotlight On or Audience Support is cast, all allies gain an Amber Resonator Shield (20%+ of Vee's Max HP for 8s) and +25% Critical Chance against the Headline. The Headline suffers 30% Defense and Magic Defense shred for 7s. Furthermore, whenever Vee absorbs redirected allied damage, the lens emits an Amber Pulse that blinds nearby enemies for 2.5s and restores 15 Energy to Vee.",
+  desc: "Shelly fitted an amber lens to Vee's camera. The old resin makes flaws in the picture easier to see.",
+  stat: lvl => '+' + (6 + lvl * 3) + '% Magic Attack · +' + (3 + lvl * 2) + '% Magic Penetration',
+  effect: 'Spotlight On and Audience Surge fire an extra amber beam at the Headline, adding two Signal Interference stacks. Every third Basic Attack against the Headline sends a smaller amber pulse to another enemy.',
   apply(u, B, lvl) {
-    u.flat.hpP = (u.flat.hpP || 0) + (0.15 + lvl * 0.05);
-    u.flat.shieldPowP = (u.flat.shieldPowP || 0) + (0.12 + lvl * 0.04);
+    u.flat.magP = (u.flat.magP || 0) + .06 + lvl * .03;
+    u.flat.magPen = (u.flat.magPen || 0) + .03 + lvl * .02;
     u.dirty = true;
-
-    const amberRefraction = () => {
-      if (!u.alive) return;
-      Sound.play('get_rare', { vol: 0.45 });
-      B.fxRing(u.x, u.y - 35, 190, '#ffb347', 0.45);
-      B.alliesOf(u).forEach(a => {
-        B.shield(u, a, u.max.hp * (0.20 + lvl * 0.04), 8);
-        B.applyStatus(u, a, 'critup', 7, { val: 0.25 });
-        B.fxSparkle(a.x, a.y - 45, 8, '#ffb347');
-      });
-      const headline = B.enemiesOf(u).find(e => e.hasStatus('headline'));
-      if (headline && headline.alive) {
-        B.applyStatus(u, headline, 'defdown', 7, { stacks: 3 });
-        B.applyStatus(u, headline, 'magdown', 7, { stacks: 3 });
-        B.fxRing(headline.x, headline.y - 40, 100, '#ffb347', 0.4);
-      }
-      B.fxFloatIcon(u.x, u.y - 110, '🔍 AMBER LENS', '#ffb347');
-    };
-
-    B.after(0.25, amberRefraction);
     B.on(u, 'cast', ev => {
-      if (ev.key === 'W' || ev.key === 'G') amberRefraction();
+      if (!u.alive || (ev.key !== 'W' && ev.key !== 'G')) return;
+      const t = B.enemiesOf(u).find(e => e.alive && e.hasStatus('headline'));
+      if (!t) return;
+      B.damage(u, t, u.st.mag * (.48 + lvl * .06), { type: 'magic', chained: true, tag: 'Amber Broadcast' });
+      if (t.alive) B.applyStatus(u, t, 'vee_static', 6, { stacks: 2 });
+      B.fxSparkle(t.x, t.y - 40, 9, '#ffb347');
+      Sound.play('laser_hit', { vol: .4, throttle: 120 });
     });
-
-    // When Vee absorbs redirected allied damage:
-    B.on(u, 'damaged', ev => {
-      if (!ev || !ev.redirected || !u.alive) return;
-      if (B.t < (u._veeAmberPulseAt || 0)) return;
-      u._veeAmberPulseAt = B.t + Math.max(3.0, 5.0 - lvl * 0.4);
-      Sound.play('hit_magic', { vol: 0.4 });
-      B.energy(u, 15 + lvl * 3);
-      B.enemiesOf(u).forEach(e => {
-        if (B.distance(u, e) <= 260) {
-          B.applyStatus(u, e, 'blind', 2.5);
-          B.fxSparkle(e.x, e.y - 40, 6, '#ffb347');
-        }
-      });
-      B.fxFloatIcon(u.x, u.y - 95, '✨ AMBER PULSE', '#ffb347');
+    B.on(u, 'basicHit', ev => {
+      const t = ev.target;
+      if (!t || !t.hasStatus('headline')) return;
+      u._amberVeeHits = (u._amberVeeHits || 0) + 1;
+      if (u._amberVeeHits % 3 !== 0) return;
+      const next = B.enemiesOf(u).find(e => e.alive && e !== t);
+      if (!next) return;
+      B.damage(u, next, u.st.mag * (.24 + lvl * .04), { type: 'magic', chained: true, tag: 'Amber Pulse' });
+      B.fxSparkle(next.x, next.y - 40, 6, '#ffb347');
     });
   }
 });
@@ -1807,4 +1788,3 @@ defBadge({
     });
   }
 });
-

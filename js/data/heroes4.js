@@ -891,10 +891,10 @@ defHero({
   hidden: { range: 250, aspd: .82, ms: 76, aggro: .35, crit: .04, critDmg: 1.30,
     healPow: 1.55, shieldPow: 1.10, cdr: .10, ccRes: .15, kbRes: .25, armorPen: 0, magPen: 0 },
   growth: { hp: .085, atk: .044, def: .082, mag: .096, mdef: .091 },
-  move: { gait: 'walk', bob: 3.5, freq: 1.2, lean: 2, squash: .02, idle: 'look', step: 'step',
-    particles: 'crumbs', pcol: '#ffd166', trail: { on: true, col: '#ff758f', rate: .12 }, brake: .35 },
+  move: { gait: 'fret', bob: 4, freq: 1.3, lean: 6, squash: .02, idle: 'look', step: 'step',
+    particles: null, brake: .35 },
   basic: { name: 'Baked Sweets', type: 'magic', ratio: .28, range: 250, proj: 'food', pimg: 'Brownie', pcol: '#f4a261',
-    sfx: 'throwsomething', hit: 'hit_magic', wind: .15 },
+    sfx: 'throwsomething', hit: 'hit_magic', wind: .15, animStyle: 'sproutToss' },
   skills: {
     W: {
       name: 'Baked Sweets', type: 'Healing', energy: 100,
@@ -903,9 +903,9 @@ defHero({
       desc: (S, P) => `<span class="sk-pas">Sprout always knows his allies' HP. When any ally drops below ${pc(P.triageThreshold)} HP, his next Basic Attack instead rushes a treat to that ally, healing them for ${pc(P.triageHeal)} of their Max HP (${pc(P.triageHeal + P.triageLowBonus)} if below 50%).</span>
         <b>Active:</b> Sprout immediately gives the lowest-HP ally a freshly made treat, healing for ${pc(S.heal)} of their Max HP. Increased to ${pc(S.healLow)} if they are below ${pc(S.lowThreshold)} HP.`,
       cast: (u, B, S) => {
-        const ally = B.alliesOf(u).sort((a, b) => a.hpPct - b.hpPct)[0];
+        const ally = B.lowestHp(B.alliesOf(u));
         if (!ally) return;
-        B.anim(u, 'cast', .4);
+        B.anim(u, 'cast', .5, 'sproutBake');
         const ratio = ally.hpPct < S.lowThreshold ? S.healLow : S.heal;
         B.fxSproutSkill('bake', u, ally);
         B.heal(u, ally, ally.max.hp * ratio, { tag: 'Baked Sweets' });
@@ -929,7 +929,7 @@ defHero({
             .sort((a, b) => a.hpPct - b.hpPct)[0];
           if (!ally) { u._triageReady = false; return; }
           const bonus = ally.hpPct < .50 ? P.triageLowBonus : 0;
-          B.heal(u, ally, ally.max.hp * (P.triageHeal + bonus), { silent: true, tag: 'triage' });
+          B.heal(u, ally, ally.max.hp * (P.triageHeal + bonus), { tag: 'triage' });
           B.fxSproutSkill('delivery', u, ally);
           B.fxFloatItem(ally.x, ally.y - 82, 'Bread');
           B.fxFloatIcon(ally.x, ally.y - 104, 'TRIAGE', '#80ed99');
@@ -944,10 +944,12 @@ defHero({
       desc: (S, P) => `Sprout rushes to the most injured ally, healing them over ${S.regenDur}s (${pc(S.regenVal)}/s of Max HP), granting ${S.fortStacks} stacks of 🧱 Fortify and ${pc(S.speedPct)} Move Speed for ${S.buffDur}s.
         Sprout also gains ${pc(S.speedPct)} Move Speed for ${S.selfSpeedDur}s to quickly reach the next ally in need.`,
       cast: (u, B, S) => {
-        const ally = B.alliesOf(u).sort((a, b) => a.hpPct - b.hpPct)[0];
+        const ally = B.lowestHp(B.alliesOf(u));
         if (!ally) return;
-        B.anim(u, 'wind', .3); B.fxSproutSkill('rush', u, ally); Sound.play('dash');
-        B.fxArc(u, ally, { col: '#f4a261', size: 9, speed: 520 }, () => {
+        B.anim(u, 'cast', .45, 'sproutRush'); B.fxSproutSkill('rush', u, ally);
+        // Sprout actually runs over to them, then hands the treat across.
+        if (ally !== u) B.dash(u, ally.x - u.face * 46, .3, { depth: ally.depth });
+        B.after(ally !== u ? .3 : .05, () => {
           if (!ally.alive) return;
           B.applyStatus(u, ally, 'regen', S.regenDur, { val: ally.max.hp * S.regenVal });
           B.applyStatus(u, ally, 'fortify', S.buffDur, { stacks: S.fortStacks });
@@ -958,7 +960,7 @@ defHero({
           if (u._tryHpBoost) u._tryHpBoost(ally);
         });
         B.applyStatus(u, u, 'speedup', S.selfSpeedDur);
-        Sound.play('heal');
+        B.after(.3, () => Sound.play('heal'));
       }
     },
     B: {
@@ -967,9 +969,9 @@ defHero({
       desc: (S, P) => `Distributes fresh treats to the <b>2 allies missing the most HP</b>, healing each for ${pc(S.heal)} of their Max HP and granting ${pc(S.healRecvBuff)} increased Healing Received for ${S.buffDur}s.
         Each ally below ${pc(S.threshold)} HP receives an additional ${pc(S.bonusHeal)} heal.`,
       cast: (u, B, S) => {
-        B.anim(u, 'cast', .4);
+        B.anim(u, 'cast', .75, 'sproutOven');
         Sound.play('heal');
-        const targets = B.alliesOf(u)
+        const targets = B.alliesOf(u).slice()
           .sort((a, b) => (b.max.hp - b.hp) - (a.max.hp - a.hp))
           .slice(0, 2);
         B.fxSproutSkill('oven', u, null, targets);
@@ -978,8 +980,7 @@ defHero({
             if (!a.alive) return;
             B.heal(u, a, a.max.hp * S.heal, { tag: 'Fresh Out of the Oven' });
             // Temporary healing-received boost via flat modifier
-            a.flat.healRecv = (a.flat.healRecv || 0) + S.healRecvBuff; a.dirty = true;
-            B.after(S.buffDur, () => { a.flat.healRecv = (a.flat.healRecv || 0) - S.healRecvBuff; a.dirty = true; });
+            B.applyStatus(u, a, 'receptive', S.buffDur, { val: S.healRecvBuff });
             B.fxFloatItem(a.x, a.y - 88, i ? 'Brownie' : 'Bread');
             B.fxFloatIcon(a.x, a.y - 110, '+HEAL REC', '#80ed99');
             if (u._tryHpBoost) u._tryHpBoost(a);
@@ -1017,18 +1018,24 @@ defHero({
             B.applyStatus(u, a, 'receptive', 5, { val: .14 });
             B.fxFloatItem(a.x, a.y - 84, 'Bread');
           });
-          B.fxRing(u.x, u.y - 42, 280, '#f4a261', .42);
         });
         B.every(u, .5, () => {
           const wounded = Math.min(B.alliesOf(u).filter(a => a !== u && a.hpPct < S.woundedThreshold).length, 4);
           u.flat.healPowP2 = wounded * S.healPowPerAlly;
           u.dirty = true;
         });
+        // Critically hurt allies set him off before they are actually KO'd.
+        B.on(u, 'allyLow', a => {
+          if (a === u || !a.alive || a.hpPct >= .25) return;
+          if (a._sproutAlarm && B.t - a._sproutAlarm < 8) return;
+          a._sproutAlarm = B.t;
+          B.energy(u, S.energyOnLethal * .5);
+          B.fxFloatIcon(u.x, u.y - 104, '!', '#e8505b');
+        });
         B.on(u, 'allyLethal', ev => {
           if (!ev.unit || ev.unit === u) return;
           B.energy(u, S.energyOnLethal);
-          B.fxFloatItem(u.x, u.y - 82, 'Trinkets/SPROUT_SavoryCharm');
-          B.fxFloatIcon(u.x, u.y - 104, 'ALERT!', '#ff758f');
+          B.fxFloatIcon(u.x, u.y - 104, '!!', '#e8505b');
         });
       }
     },
@@ -1046,16 +1053,15 @@ defHero({
           if (u._igySaves >= S.maxUses) return;
           if (u._igySaved.has(t.id)) return;
           ev.prevented = true;
+          B.fxSproutBeat(u);
           t.hp = t.max.hp * S.reviveHp;
           u._igySaves++;
           u._igySaved.add(t.id);
           B.fxSproutSkill('save', u, t, B.alliesOf(u), { ultimate: true });
           B.applyStatus(u, t, 'fortify', S.fortDur, { stacks: S.fortStacks });
           B.fxFloatItem(t.x, t.y - 96, 'Trinkets/SPROUT_SavoryCharm');
-          B.fxFloatIcon(t.x, t.y - 120, "I'VE GOT YOU!", '#ffd166');
-          B.flash('#f4a261', .28, .3);
-          B.fxSparkle(t.x, t.y - 50, 14, '#f4a261');
-          B.fxRing(t.x, t.y - 30, 180, '#f4a261', .5);
+          B.fxFloatIcon(t.x, t.y - 120, "I'VE GOT YOU!", '#ffd9a8');
+          B.flash('#ffb3a0', .22, .3);
           B.alliesOf(u).forEach(a => {
             if (a.alive && a !== t) {
               B.heal(u, a, a.max.hp * S.otherHeal, { tag: "I've Got You" });

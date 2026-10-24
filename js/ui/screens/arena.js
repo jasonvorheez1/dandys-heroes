@@ -14,6 +14,8 @@ Object.assign(Screens, {
   /* ============================================================ ARENA */
   arena(s) {
     const a = Arena.today();
+    const league = Arena.league(a.rank);
+    const season = Math.floor(dayIndex() / 28) + 1;
     const stage = el('section', 'arena-colosseum' + (this._arenaReturn ? ' returning' : ''));
     stage.id = 'arenaColosseum';
     stage.innerHTML = `<div class="arena-sky"></div><div class="arena-crowd">${arenaCrowd(42)}</div>
@@ -21,7 +23,7 @@ Object.assign(Screens, {
 
     const top = el('header', 'arena-marquee');
     top.innerHTML = `<div class="arena-laurel">✦</div><div class="arena-title"><small>GARDENVIEW GRAND</small><h1>COLOSSEUM</h1><span>THE CROWD IS WAITING</span></div>
-      <div class="arena-record"><small>CURRENT RANK</small><b>#${fmt(a.rank)}</b><span>${a.wins}W · ${a.losses}L</span><em>🪙 ${fmt(Save.res('arenaCoin'))}</em></div>`;
+      <div class="arena-record arena-league-${league.name.toLowerCase()}"><small>SEASON ${season} · LEAGUE</small><b class="arena-league-name">${league.icon} ${league.name}</b><span>RANK #${fmt(a.rank)} · ${a.wins}W ${a.losses}L</span><i class="arena-league-meter"><em style="width:${league.progress * 100}%"></em></i><small class="arena-promotion-hint">${league.next ? `${fmt(league.remaining)} pts to ${league.next.name}` : 'TOP LEAGUE'}</small><em>🪙 ${fmt(Save.res('arenaCoin'))}</em></div>`;
     stage.appendChild(top);
 
     const reward = Arena.rewards();
@@ -35,10 +37,17 @@ Object.assign(Screens, {
     };
     stage.appendChild(briefing);
 
+    const quest = el('section', 'arena-daily-quest');
+    const dailyWins = Math.min(3, Number(a.dailyWins) || 0);
+    quest.innerHTML = `<div class="arena-quest-mark">✦</div><div class="arena-quest-copy"><small>DAILY COLOSSEUM CONTRACT</small><b>Win 3 first-time challenges</b><span>${a.dailyClaimed ? 'Contract complete · the purse is yours.' : `${dailyWins} / 3 victories · each rival can count once.`}</span><i><em style="width:${dailyWins / 3 * 100}%"></em></i></div><div class="arena-quest-prize"><small>CONTRACT PURSE</small><b>🪙 45 · ✦ 150 · CORE ×2</b></div>`;
+    stage.appendChild(quest);
+
     const live = el('section', 'arena-live');
     live.id = 'arenaLive';
     stage.appendChild(live);
-    if (typeof ArenaLive !== 'undefined') ArenaLive.mount(live);
+    if (Save.isTestSession()) {
+      live.innerHTML = '<div class="arena-live-empty">Full Test Save uses the local arena only. Saved player defenses stay separate from your account.</div>';
+    } else if (typeof ArenaLive !== 'undefined') ArenaLive.mount(live);
 
     const challenges = el('div', 'arena-challenges');
     a.opponents.forEach((opp, index) => {
@@ -57,10 +66,11 @@ Object.assign(Screens, {
         roster.appendChild(fighter);
       });
       const avg = Math.round(sum(opp.levels) / opp.levels.length);
-      card.innerHTML = `<div class="arena-challenge-head"><small>${opp.saved ? 'SAVED DEFENDER' : `DEFENDER ${index + 1}`}</small><span class="arena-role-pill">${opp.saved ? 'PLAYER SNAPSHOT' : 'DEFENDER TEAM'}</span>${opp.tag ? `<span class="arena-tag ${opp.tag}">${opp.label}</span>` : '<span class="arena-tag">LADDER</span>'}</div>
+      card.classList.toggle('featured-rival', !!opp.featured);
+      card.innerHTML = `<div class="arena-challenge-head"><small>${opp.featured ? '✦ FEATURED RIVAL' : opp.saved ? 'SAVED DEFENDER' : `DEFENDER ${index + 1}`}</small><span class="arena-role-pill">${opp.saved ? 'PLAYER SNAPSHOT' : 'DEFENDER TEAM'}</span>${opp.featured ? '<span class="arena-tag arena-tag-featured">BONUS PURSE</span>' : opp.tag ? `<span class="arena-tag ${opp.tag}">${opp.label}</span>` : '<span class="arena-tag">LADDER</span>'}</div>
         <div class="arena-challenger"><b>${opp.name}</b><span>Rank #${fmt(opp.rank)} · Avg Lv ${avg}</span></div>`;
       card.appendChild(roster);
-      const fight = el('button', 'arena-fight' + (opp.beaten ? ' rematch' : ''), opp.beaten ? 'RE-ATTACK' : 'ATTACK DEFENDER');
+      const fight = el('button', 'arena-fight' + (opp.beaten ? ' rematch' : ''), opp.beaten ? 'SPAR AGAIN' : opp.featured ? 'CLAIM THE PURSE' : 'ENTER MATCH');
       fight.onclick = () => this.arenaFight(opp);
       card.appendChild(fight);
       challenges.appendChild(card);
@@ -117,7 +127,7 @@ Object.assign(Screens, {
       <strong>VS</strong><section class="arena-intro-side rival"><small>DEFENDER TEAM</small><div>${arenaPortraits(rivalIds, true)}</div><b>${opp.name}</b></section></div>
       <div class="arena-intro-bell">⚔</div>`;
     $('#app').appendChild(layer);
-    Music.play('arena'); Sound.play('arena_fanfare', { vol: .52 }); Sound.play('arena_crowd', { vol: .56, delay: 180 });
+    Music.play('arenaBattle'); Sound.play('arena_fanfare', { vol: .52 }); Sound.play('arena_crowd', { vol: .56, delay: 180 });
     requestAnimationFrame(() => layer.classList.add('play'));
     setTimeout(() => { layer.classList.add('depart'); Sound.play('arena_gate', { vol: .55 }); }, 1450);
     setTimeout(() => { layer.remove(); launch(); }, 1920);
@@ -135,15 +145,18 @@ Object.assign(Screens, {
     const reward = Arena.rewards();
     this.arenaMatchIntro(opp, chosenTeam, () => {
       BattleScreen.launch({
-        team, foes: Arena.specs(opp), music: 'arena',
+        team, foes: Arena.specs(opp), music: 'arenaBattle',
         meta: { title: 'Predetermined PvP · ' + opp.name, bg: 'uploads/arenabackground.png', floorLabel: 'PREDETERMINED PVP · ATTACKER VS DEFENDER', arenaPvP: true, skillStartEnergy: 18, enemySkillStartEnergy: 0 },
         rewards: () => reward,
         onDone: res => {
+          let arenaResult = { firstClear: false, questComplete: false };
           if (!res.quit) {
-            Arena.resolve(opp, res.win, reward);
-            if (res.win) payoutBattle(chosenTeam, {}, { mastery: 100, pass: 0 });
+            arenaResult = Arena.resolve(opp, res.win, reward);
+            if (res.win && arenaResult.firstClear) payoutBattle(chosenTeam, {}, { mastery: 100, pass: 0 });
           }
-          this._arenaReturn = res.win ? 'VICTORY LAP · THE CROWD ERUPTS!' : 'THE GATES OPEN · TRAIN AND RETURN.';
+          this._arenaReturn = res.win
+            ? (arenaResult.questComplete ? 'CONTRACT COMPLETE · THE CROWD ERUPTS!' : arenaResult.firstClear ? 'VICTORY LAP · THE CROWD ERUPTS!' : 'FRIENDLY SPAR · KEEP TRAINING!')
+            : 'THE GATES OPEN · TRAIN AND RETURN.';
           this.render();
         }
       });

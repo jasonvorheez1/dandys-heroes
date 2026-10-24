@@ -51,6 +51,7 @@ function glistenOpening(u, B, S, P) {
     if (!u.alive) return;
     B.anim(u, 'cast', .56, 'glistenReflection');
     Sound.play('hero_glisten_ability', { vol: .50, throttle: 700 });
+    Sound.play('glass_break', { vol: .62, throttle: 500 });
     glistenJumpTo(u, B, glistenPartner(u, B), 0);
     // The stage-light opening is the Powerline nod; the mirror is Glisten's.
     B.enemiesOf(u).slice().sort((a, b) => B.distance(u, a) - B.distance(u, b))
@@ -87,6 +88,7 @@ defHero({
         const ally = glistenPartner(u, B);
         B.anim(u, 'cast', .72, 'glistenReflection');
         Sound.play('hero_glisten_ability', { vol: .54, throttle: 700 });
+        Sound.play('glass_break', { vol: .68, throttle: 500 });
         glistenJumpTo(u, B, ally, P.dizzyDur);
         B.cleanse(ally, 1);
         B.shield(u, ally, u.st.mag * S.shield, P.shieldDur);

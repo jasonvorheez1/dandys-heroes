@@ -216,7 +216,7 @@ const FX = {
       burst of real burn/freeze/stun artwork the moment that status lands,
       instead of just an emoji floater. Self-removes when it finishes. */
   statusBurst(x, y, folder, opt) {
-    if (!this.front || this.reducedEffects || !this.effectAllowed(2)) return;
+    if (!this.front || this._denseVisualSafe || this.reducedEffects || !this.effectAllowed(2)) return;
     opt = opt || {};
     const size = opt.size || 68;
     const n = el('div');
@@ -254,7 +254,7 @@ const FX = {
       never read as a renamed generic status effect. These are deliberately
       local, matte effects: no full-screen white flash and no rapid flicker. */
   qomSkill(kind, x, y, opt) {
-    if (!this.front) return;
+    if (!this.front || this._denseVisualSafe) return;
     opt = opt || {};
     const groups = {
       beat: 'drums', chorus: 'drums', finalChorus: 'drums', snare: 'drums', candy: 'drums',
@@ -262,7 +262,7 @@ const FX = {
       barrier: 'keytar', bone: 'keytar', backstage: 'keytar', reassemble: 'keytar', ovation: 'keytar',
       guard: 'sword', parry: 'sword', rush: 'sword', riposte: 'sword',
       phantom: 'connie', vanish: 'connie', possess: 'connie', counter: 'connie', finale: 'connie',
-      trick: 'drums', resonance: 'keytar'
+      trick: 'drums', resonance: 'keytar', resist: 'keytar', pulse: 'keytar'
     };
     const palette = {
       drums: ['#bbfa79', '#e5a8ff', 'uploads/gourdydrums.png'],
@@ -276,30 +276,36 @@ const FX = {
     const target = opt.target;
     const centerY = y - 56;
     const broad = ['chorus', 'finalChorus', 'solo', 'barrier', 'ovation', 'finale', 'resonance'].includes(kind);
-    this.qomStage(kind, group, x, centerY, y, opt, primary, accent);
-    this.ring(x, centerY, broad ? 240 : 110, primary, broad ? .52 : .33);
-    if (target) this.targetLine({ x, y: centerY }, { x: target.x, y: target.y - 54 }, primary);
-    if (kind === 'beat' || kind === 'snare') {
-      if (kind === 'snare' || opt.beat === 4) this.burst(x, centerY, 5, [primary, accent], { spMin: 40, spMax: 130, life: .38 });
-      this.floatIcon(x + (opt.face || 1) * 26, centerY - 12, kind === 'snare' ? '♬' : String(opt.beat || '♪'), primary);
-    } else if (kind === 'candy') {
-      this.floatIcon(x, centerY - 18, '🍬', accent);
-      this.burst(x, centerY, 8, [primary, accent], { spMin: 55, spMax: 160, life: .5 });
-    } else if (kind === 'bone') {
-      this.floatIcon(target ? target.x : x + 40, target ? target.y - 78 : centerY, '🦴', accent);
-    } else if (kind === 'guard' || kind === 'backstage' || kind === 'barrier' || kind === 'ovation') {
-      this.floatIcon(target ? target.x : x, target ? target.y - 85 : centerY - 28, '⬡', accent);
-      if (target) this.ring(target.x, target.y - 52, 94, accent, .38);
-    } else if (kind === 'vanish' || kind === 'reassemble') {
-      this.burst(x, centerY, 10, [primary, accent], { spMin: 35, spMax: 160, lift: 90, life: .55 });
-    } else if (kind === 'parry' || kind === 'riposte' || kind === 'rush') {
-      if (target) this.slash(target.x, target.y - 55, { col: accent, ang: -28 * (opt.face || 1), big: true });
+    if (group === 'keytar') {
+      this.ribeccaFx(kind, x, y, opt);
+      // Her real keytar only flashes on the big team moments.
+      if (!['barrier', 'ovation', 'backstage'].includes(kind) || !this.effectAllowed(2)) return;
     } else {
-      this.burst(target ? target.x : x, target ? target.y - 56 : centerY, broad ? 11 : 6,
-        [primary, accent], { spMin: 55, spMax: broad ? 210 : 145, life: .48 });
-      this.floatIcon(x + (opt.face || 1) * 34, centerY - 15, group === 'connie' ? '♩' : '♪', accent);
+      this.qomStage(kind, group, x, centerY, y, opt, primary, accent);
+      this.ring(x, centerY, broad ? 240 : 110, primary, broad ? .52 : .33);
+      if (target) this.targetLine({ x, y: centerY }, { x: target.x, y: target.y - 54 }, primary);
+      if (kind === 'beat' || kind === 'snare') {
+        if (kind === 'snare' || opt.beat === 4) this.burst(x, centerY, 5, [primary, accent], { spMin: 40, spMax: 130, life: .38 });
+        this.floatIcon(x + (opt.face || 1) * 26, centerY - 12, kind === 'snare' ? '♬' : String(opt.beat || '♪'), primary);
+      } else if (kind === 'candy') {
+        this.floatIcon(x, centerY - 18, '🍬', accent);
+        this.burst(x, centerY, 8, [primary, accent], { spMin: 55, spMax: 160, life: .5 });
+      } else if (kind === 'bone') {
+        this.floatIcon(target ? target.x : x + 40, target ? target.y - 78 : centerY, '🦴', accent);
+      } else if (kind === 'guard' || kind === 'backstage' || kind === 'barrier' || kind === 'ovation') {
+        this.floatIcon(target ? target.x : x, target ? target.y - 85 : centerY - 28, '⬡', accent);
+        if (target) this.ring(target.x, target.y - 52, 94, accent, .38);
+      } else if (kind === 'vanish' || kind === 'reassemble') {
+        this.burst(x, centerY, 10, [primary, accent], { spMin: 35, spMax: 160, lift: 90, life: .55 });
+      } else if (kind === 'parry' || kind === 'riposte' || kind === 'rush') {
+        if (target) this.slash(target.x, target.y - 55, { col: accent, ang: -28 * (opt.face || 1), big: true });
+      } else {
+        this.burst(target ? target.x : x, target ? target.y - 56 : centerY, broad ? 11 : 6,
+          [primary, accent], { spMin: 55, spMax: broad ? 210 : 145, life: .48 });
+        this.floatIcon(x + (opt.face || 1) * 34, centerY - 15, group === 'connie' ? '♩' : '♪', accent);
+      }
     }
-    if (kind === 'beat' || kind === 'snare' || !this.effectAllowed(2)) return;
+    if (group !== 'keytar' && (kind === 'beat' || kind === 'snare' || !this.effectAllowed(2))) return;
     const size = broad ? 76 : 58;
     const prop = el('img', 'qom-skill-prop');
     prop.src = ASSET + art;
@@ -321,7 +327,7 @@ const FX = {
       drumhead shockwaves, amp soundwaves, keytar keys, sword glints, and
       drifting phantom notes. All local, short, and skipped in lite mode. */
   qomStage(kind, group, x, cy, gy, opt, primary, accent) {
-    if (!this.front || this.reducedEffects || !this.effectAllowed(2)) return;
+    if (!this.front || this._denseVisualSafe || this.reducedEffects || !this.effectAllowed(2)) return;
     const face = opt.face || 1, target = opt.target;
     const add = (css, frames, ms, host) => {
       const n = el('div');
@@ -436,7 +442,7 @@ const FX = {
       transform so movement and facing are untouched. Big moments add a stage
       spotlight, sweeping lights and a short shake. */
   qomPerform(kind, id, body, x, y, face, w) {
-    if (this.reducedEffects || !body || !body.animate) return;
+    if (this._denseVisualSafe || this.reducedEffects || !body || !body.animate) return;
     face = face || 1;
     const move = (frames, ms, easing) => {
       const opt = { duration: ms, easing: easing || 'ease-out' };
@@ -468,12 +474,30 @@ const FX = {
         glow('#f6e285', 900); this.shake(3, .2); this.flash('#9a3fd0', .14, .5);
       }
     } else if (id === 'QOMRibecca') {
-      if (kind === 'barrier' || kind === 'backstage' || kind === 'resonance' || kind === 'ovation') {
-        move([{ transform: 'rotate(0)' }, { transform: `rotate(${face * -7}deg) translateY(-4px)`, offset: .35 }, { transform: `rotate(${face * 5}deg)`, offset: .7 }, { transform: 'rotate(0)' }], 620);
-        glow('#a9f482', 600);
+      // Deadpan headbanger: slow nods that land on the beat, stiff skeleton limbs.
+      if (kind === 'barrier' || kind === 'backstage') {
+        move([{ transform: 'rotate(0)' }, { transform: `rotate(${face * 6}deg) translateY(5px)`, offset: .18 },
+          { transform: 'rotate(0) translateY(-2px)', offset: .3 }, { transform: `rotate(${face * 6}deg) translateY(5px)`, offset: .5 },
+          { transform: 'rotate(0)', offset: .65 }, { transform: 'none' }], 700, 'ease-in-out');
+      } else if (kind === 'resonance' || kind === 'ovation') {
+        move([{ transform: 'translateY(0) scale(1,1)' }, { transform: 'translateY(6px) scale(1.1,.88)', offset: .16 },
+          { transform: 'translateY(-14px) scale(.94,1.1)', offset: .36 }, { transform: 'translateY(2px) scale(1.06,.94)', offset: .55 }, { transform: 'none' }], kind === 'ovation' ? 900 : 560);
         if (kind === 'ovation') this.shake(2, .16);
-      } else if (kind === 'bone') move([{ transform: 'rotate(0)' }, { transform: `rotate(${face * 16}deg) translateX(${face * 8}px)`, offset: .3 }, { transform: 'rotate(0)' }], 320);
-      else if (kind === 'reassemble') move([{ transform: 'none', opacity: 1 }, { transform: 'translateY(14px) scale(1.1,.6) rotate(8deg)', opacity: .55, offset: .3 }, { transform: 'translateY(10px) scale(1.05,.7) rotate(-6deg)', opacity: .6, offset: .6 }, { transform: 'translateY(-6px) scale(.95,1.08)', offset: .85 }, { transform: 'none', opacity: 1 }], 900);
+      } else if (kind === 'pulse') {
+        move([{ transform: 'none' }, { transform: `translateX(${-face * 5}px) rotate(${face * -4}deg)`, offset: .25 },
+          { transform: `translateX(${face * 12}px) rotate(${face * 7}deg) scale(1.04,.97)`, offset: .5 }, { transform: 'none' }], 340);
+      } else if (kind === 'bone') {
+        move([{ transform: 'none' }, { transform: `rotate(${face * -10}deg) translateX(${-face * 6}px)`, offset: .22 },
+          { transform: `rotate(${face * 14}deg) translateX(${face * 12}px) scale(1.05,.96)`, offset: .46 }, { transform: 'none' }], 420);
+      } else if (kind === 'resist') {
+        move([{ transform: 'none' }, { transform: `translateX(${face * 3}px)`, offset: .2 }, { transform: `translateX(${-face * 3}px)`, offset: .4 },
+          { transform: `translateX(${face * 2}px)`, offset: .6 }, { transform: 'none' }], 240, 'linear');
+      } else if (kind === 'reassemble') {
+        // Collapse into a heap, jitter, then snap upright in two stepped pops.
+        move([{ transform: 'none', opacity: 1 }, { transform: 'translateY(16px) scale(1.14,.55) rotate(6deg)', opacity: .6, offset: .22 },
+          { transform: 'translateY(16px) scale(1.12,.58) rotate(-5deg)', opacity: .6, offset: .45 }, { transform: 'translateY(8px) scale(1.04,.8)', opacity: .8, offset: .62 },
+          { transform: 'translateY(-10px) scale(.94,1.1)', offset: .8 }, { transform: 'none', opacity: 1 }], 1000, 'steps(14,end)');
+      }
     } else if (id === 'QOMSoulvester') {
       if (kind === 'guard') { move([{ transform: 'scale(1)' }, { transform: `scale(1.06,.95) translateX(${face * 6}px)`, offset: .3 }, { transform: 'scale(1)' }], 380); glow('#c9b4ff', 420); }
       else if (kind === 'parry' || kind === 'rush') move([{ transform: 'rotate(0)' }, { transform: `rotate(${face * -10}deg) translateX(${-face * 8}px)`, offset: .2 }, { transform: `rotate(${face * 14}deg) translateX(${face * 14}px)`, offset: .5 }, { transform: 'rotate(0)' }], 360);
@@ -486,9 +510,106 @@ const FX = {
     }
   },
 
+  /* ---- Ribecca: backstage skeleton keytarist (css/ribecca-fx.css) -----------
+     Equalizer walls instead of bubbles, guitar cables between bandmates, real
+     drawn bones, and subwoofer thumps. Bone white, grape purple, acid green. */
+  _rbOk(n) { return this.front && !this.reducedEffects && this.effectAllowed(n || 2); },
+
+  rbWall(x, y, w, life) {
+    if (!this._rbOk(3)) return;
+    const n = this._astroEl('rb-wall', x, y + 6, `--w:${w || 74}px;--h:${(w || 74) * .8}px;--life:${life || 1.3}s`, life || 1.3);
+    let h = ''; for (let i = 0; i < 9; i++) h += `<i style="--bd:${(i * 53 % 7) * .06}s"></i>`;
+    n.innerHTML = h;
+  },
+
+  rbBone(x, y, tx, ty, o) {
+    if (!this._rbOk(2)) return;
+    o = o || {};
+    this._astroEl('rb-bone fly', x, y, `--s:${o.s || 22}px;--dx:${tx - x}px;--dy:${ty - y}px;--arc:${o.arc || 34}px;--r:${o.r || 540}deg;--d:${o.d || 0}s;--life:${o.life || .42}s`, (o.life || .42) + (o.d || 0));
+  },
+
+  rbBonesPop(x, y, n) {
+    if (!this._rbOk(2)) return;
+    for (let i = 0; i < (n || 4); i++) {
+      const a = (i / (n || 4)) * Math.PI * 2 + Math.random() * .6, r = 26 + Math.random() * 28;
+      this._astroEl('rb-bone pop', x, y, `--s:${11 + Math.random() * 6}px;--dx:${Math.cos(a) * r}px;--dy:${Math.sin(a) * r * .7 + 12}px;--r:${(Math.random() - .5) * 600}deg;--d:${i * .02}s`, .7);
+    }
+  },
+
+  rbCone(x, y, w, d) {
+    if (!this.back || this.reducedEffects || !this.effectAllowed(1)) return;
+    this._astroEl('rb-cone', x, y, `--w:${w || 160}px;--d:${d || 0}s`, 1, 'back');
+    for (let i = 0; i < 4; i++) this._astroEl('rb-dust', x + (i - 1.5) * (w || 160) * .18, y, `--s:${9 + (i % 2) * 5}px;--dx:${(i - 1.5) * 8}px;--d:${.05 + i * .03}s`, .9, 'back');
+  },
+
+  rbNotes(x, y, n, o) {
+    if (!this._rbOk(2)) return;
+    o = o || {};
+    const cols = ['#a9f482', '#c499f4', '#f4f1e6'];
+    for (let i = 0; i < (n || 3); i++) {
+      const e = this._astroEl('rb-note', x + (Math.random() - .5) * (o.spread || 30), y, `--s:${11 + Math.random() * 4}px;--c:${cols[i % 3]};--dx:${(Math.random() - .5) * 46}px;--dy:${-(o.rise || 40) - Math.random() * 22}px;--r:${(Math.random() - .5) * 30}deg;--d:${i * .07}s;--life:${.8 + Math.random() * .3}s`, 1.4);
+      if (i % 2) e.innerHTML = '<i></i>';
+    }
+  },
+
+  /** A guitar cable sagging from one unit to another. */
+  rbCable(x1, y1, x2, y2, life) {
+    if (!this._rbOk(2)) return;
+    const dx = x2 - x1, dist = Math.abs(dx); if (dist < 24) return;
+    const left = Math.min(x1, x2);
+    const n = this._astroEl('rb-cable', left, Math.min(y1, y2), `width:${dist}px;--sag:${Math.min(46, 14 + dist * .09)}px;--life:${life || 1}s;${dx < 0 ? 'transform-origin:100% 0;' : ''}`, life || 1);
+    if (dx < 0) n.style.transform = 'scaleX(-1)'; // plug ends on the receiving unit either way
+  },
+
+  ribeccaFx(kind, x, y, opt) {
+    if (!this.front) return;
+    opt = opt || {};
+    const t = opt.target, face = opt.face || 1, mid = y - 50, foot = y + 4;
+    if (kind === 'barrier') {          // Sound Barrier / Sound Field wall
+      const hx = t ? t.x : x, hy = t ? t.y : y;
+      this.rbWall(hx, hy, t ? 66 : 84, t ? 1.2 : 1.5);
+      if (t && Math.abs(t.x - x) > 30) this.rbCable(x, mid + 24, t.x, t.y - 26, 1.1);
+      this.rbCone(hx, hy + 4, t ? 100 : 170);
+      if (!t) this.rbNotes(x, mid - 10, 4, { spread: 50 });
+    } else if (kind === 'backstage') { // Backstage Protection: cable + wall on the protected ally
+      const hx = t ? t.x : x, hy = t ? t.y : y;
+      this.rbWall(hx, hy, 66, 1.4);
+      if (t && Math.abs(t.x - x) > 30) this.rbCable(x, mid + 24, t.x, t.y - 26, 1.3);
+      this.rbNotes(hx, hy - 60, 2, { spread: 20 });
+    } else if (kind === 'resonance') { // full resonance shock: sub thump outward
+      this.rbCone(x, foot, 320);
+      this.rbCone(x, foot, 200, .08);
+      this.rbNotes(x, mid, 4, { spread: 60 });
+    } else if (kind === 'pulse') {     // Keytar Bass Pulse
+      this.rbCone(x + face * 40, foot, 190);
+      this.rbNotes(x + face * 30, mid - 4, 2, { spread: 20 });
+    } else if (kind === 'bone' && t) { // Bone Rattler: three bones and a clack
+      const sx = x + face * 18, sy = y - 58, tx = t.x, ty = t.y - 56;
+      for (let i = 0; i < 3; i++) this.rbBone(sx, sy - i * 4, tx + (i - 1) * 14, ty - (i % 2) * 8, { s: 20 + i * 2, arc: 26 + i * 8, d: i * .05, life: .38 + i * .03, r: 480 + i * 90 });
+      setTimeout(() => {
+        this.rbBonesPop(tx, ty, 5);
+        for (let i = 0; i < 4; i++) this._astroEl('rb-pip', tx, ty, `--a:${-60 + i * 40}deg;--d:${i * .02}s`, .6);
+      }, 400);
+    } else if (kind === 'reassemble') { // bones pull back together
+      for (let i = 0; i < 7; i++) {
+        const a = (i / 7) * Math.PI * 2, r = 46 + (i % 3) * 14;
+        this._astroEl('rb-bone gather', x, mid, `--s:${13 + (i % 3) * 4}px;--dx:${Math.cos(a) * r}px;--dy:${Math.sin(a) * r * .8}px;--r:${(i - 3) * 90}deg;--d:${i * .05}s;--life:.7s`, 1.2);
+      }
+      this.rbCone(x, foot, 130, .5);
+    } else if (kind === 'resist') {    // a debuff bounces off: just a little clack
+      for (let i = 0; i < 3; i++) this._astroEl('rb-pip', x, mid + 10, `--a:${-50 + i * 50}deg;--d:${i * .03}s`, .6);
+    } else if (kind === 'ovation') {   // Standing Ovation
+      this.rbWall(t ? t.x : x, t ? t.y : y, 96, 1.8);
+      if (t && Math.abs(t.x - x) > 30) this.rbCable(x, mid + 24, t.x, t.y - 26, 1.6);
+      this.rbCone(x, foot, 360);
+      this.rbCone(x, foot, 240, .1);
+      this.rbNotes(x, mid, 6, { spread: 80, rise: 60 });
+    }
+  },
+
   /** A cone of stage light plus two sweeping colored beams behind a Queen. */
   qomSpotlight(x, y, w, id, sweep) {
-    if (!this.back || !this.effectAllowed(2)) return;
+    if (!this.back || this._denseVisualSafe || !this.effectAllowed(2)) return;
     const cols = { QOMGourdy: '#bbfa79', QOMEclipse: '#be69f6', QOMRibecca: '#a9f482', QOMSoulvester: '#c9b4ff', QOMConnie: '#8cf0da' };
     const col = cols[id] || '#c47cf2', cw = Math.max(110, w * 1.5), ch = 300;
     const cone = el('div');
@@ -513,7 +634,7 @@ const FX = {
   },
 
   qomBasic(id, x, y, tx, ty, type) {
-    if (!this.front) return;
+    if (!this.front || this._denseVisualSafe) return;
     const colors = id === 'QOMRibecca' ? ['#b9f681', '#bb8aef']
       : id === 'QOMSoulvester' ? ['#dccaff', '#fff3d1']
       : id === 'QOMConnie' ? ['#e2b3ff', '#8cf2d8']
@@ -590,9 +711,8 @@ const FX = {
     setTimeout(() => n.remove(), life + 360);
   },
 
-  /** Teagan’s combat language is hospitality under pressure: the tea service
-      is warm and precise, corrections are a sharp porcelain tap, and Proper
-      Seating visibly places a guest at her table. */
+  /** Teagan’s combat language is hospitality under pressure: warm tea,
+      a courteous invitation, and a quiet pause for the whole table. */
   teaganSkill(kind, x, y, opt) {
     if (!this.front) return;
     opt = opt || {};
@@ -633,7 +753,6 @@ const FX = {
       this.aura(x, y, '#d9a66a', 1.7);
       for (let i = 0; i < 9; i++) this.part({ x: x + rnd(-size * .38, size * .38), y: y - rnd(30, 72), vx: rnd(-12, 12), vy: rnd(-55, -22), g: -18, size: rnd(3, 7), col: i % 2 ? cream : tea, life: rnd(.55, 1.0), shape: 'txt', char: '·' });
       allies.forEach((a, i) => { cup(a.x, ty(a), 110 + i * 55, cream); this.ring(a.x, ty(a), size * .42, sage, .3); });
-      targets.forEach((t, i) => setTimeout(() => { this.ring(t.x, ty(t), size * .48, tea, .3); this.floatIcon(t.x, ty(t) - 60, 'ETIQUETTE', cream); }, 150 + i * 40));
       plaque(x, y - 42, 'TEA IS SERVED', cream, .9);
       return;
     }
@@ -645,13 +764,25 @@ const FX = {
       return;
     }
 
-    if (kind === 'correction' && target) {
+    if ((kind === 'invitation' || kind === 'correction') && target) {
       this.targetLine({ x: x + face * 20, y: y - 20 }, target, cream);
       cup(target.x, ty(target), 100, cream);
       this.ring(target.x, ty(target), size * .62, red, .34);
       this.burst(target.x, ty(target) - 18, 8, [cream, red, tea], { shape: 'streak', spMin: 45, spMax: 150, lift: 45, sMin: 2, sMax: 7, life: .52 });
-      this.floatIcon(target.x, ty(target) - 66, 'MIND YOUR MANNERS', cream);
-      plaque(target.x, ty(target), 'PLEASE. SIT. DOWN.', red, .78);
+      this.floatIcon(target.x, ty(target) - 66, 'A SEAT FOR YOU', cream);
+      plaque(target.x, ty(target), 'A MOMENT FOR TEA', red, .78);
+      return;
+    }
+
+    if (kind === 'quiet') {
+      this.ring(x, y - 30, size * 1.2, tea, .52);
+      this.aura(x, y, '#e6cb9f', 1.4);
+      targets.forEach((t, i) => setTimeout(() => {
+        this.ring(t.x, ty(t), size * .55, blue, .4);
+        this.floatIcon(t.x, ty(t) - 54, 'QUIET MOMENT', cream);
+      }, 70 + i * 45));
+      allies.forEach((a, i) => { cup(a.x, ty(a), 120 + i * 45, cream); this.ring(a.x, ty(a), size * .42, sage, .3); });
+      plaque(x, y - 42, 'A QUIETER TABLE', cream, .9);
       return;
     }
 
@@ -685,7 +816,7 @@ const FX = {
       zone that turns enemy pressure into a visible boundary. Keep the
       effects local to the caster/targets so a five-person fight stays legible. */
   shellySkill(kind, x, y, opt) {
-    if (!this.front) return;
+    if (!this.front || this._denseVisualSafe) return;
     opt = opt || {};
     const size = opt.size || 100, face = opt.face || 1;
     const target = opt.target || opt.ally;
@@ -961,6 +1092,7 @@ const FX = {
     }
 
     if (kind === 'beam' && target) {
+      Sound.play('laser_hit', { vol: .5, throttle: 250 });
       const ty = targetY(target);
       if (opt.phase === 'charge') {
         this.castProp(x + face * 20, y - 2, { kind: 'item', img: 'Trinkets/BRIGHTNEY_SpareBulb', size: 38 }, col, .42);
@@ -1461,79 +1593,193 @@ const FX = {
     if (!this.front) return;
     opt = opt || {};
     const size = opt.size || 92, face = opt.face || 1, target = opt.target;
-    const gold = '#ffd166', pink = '#ff8fb0', aqua = '#6fe3c4', purple = '#9b7bff', cream = '#fff4c9';
-    const colors = [gold, pink, aqua, purple, cream];
-    const targetY = t => t && (t.y - 48);
-    const streamer = (sx, sy, dir, delay, wide) => {
-      setTimeout(() => {
-        const n = el('i'), len = size * (wide ? 1.42 : .90), h = Math.max(4, size * .055);
-        n.style.cssText = `position:absolute;left:${sx}px;top:${sy}px;width:${len}px;height:${h}px;border-radius:99px;
-          background:linear-gradient(90deg,${cream},${pick(colors)},transparent);pointer-events:none;z-index:8;opacity:0;
-          transform-origin:0 50%;transform:rotate(${dir * rnd(-46,46)}deg) scaleX(.08);filter:drop-shadow(0 1px 1px #4f274488)`;
-        this.front.appendChild(n);
-        requestAnimationFrame(() => { n.style.transition = 'transform .18s cubic-bezier(.12,1.35,.3,1),opacity .08s';
-          n.style.opacity = .9; n.style.transform = `rotate(${dir * rnd(-46,46)}deg) scaleX(1)`; });
-        setTimeout(() => { n.style.transition = 'transform .26s ease-in,opacity .22s'; n.style.opacity = 0; n.style.transform += ' scaleX(.65)'; }, 180);
-        setTimeout(() => n.remove(), 480);
-      }, delay || 0);
-    };
-    const pop = (cx, cy, amount, scale) => {
-      const n = amount || 8;
-      for (let i = 0; i < n; i++) this.part({
-        x: cx + rnd(-size * .13, size * .13), y: cy + rnd(-size * .14, size * .08),
-        vx: rnd(-120, 120) * (scale || 1), vy: rnd(-165, -55) * (scale || 1), g: 370,
-        size: rnd(3, 8) * (scale || 1), col: pick(colors), life: rnd(.42, .78),
-        shape: i % 3 === 0 ? 'streak' : 'sq', spin: rnd(-12, 12), layer: i % 2 ? 'f' : 'b'
-      });
-    };
-    const impact = (t, index, big) => {
+    const PINK = '#ff4fa3', YEL = '#ffd23f', CYAN = '#35c4e8', CREAM = '#fff3a0';
+    const cols = [PINK, YEL, CYAN];
+    const ok = n => !this.reducedEffects && this.effectAllowed(n || 2);
+    const ty = t => t.y - 48;
+    const fringe = (fx, fy, ang, len, d, c) => ok(2) && this._astroEl('yt-fringe', fx, fy,
+      `--a:${ang}deg;--l:${len}px;--c:${c || cols[(Math.random() * 3) | 0]};--d:${d || 0}s;--life:${.5 + Math.random() * .2}s`, 1);
+    const candies = (cx, cy, n, spread) => { if (!ok(2)) return;
+      for (let i = 0; i < n; i++) this._astroEl('yt-candy', cx, cy,
+        `--s:${8 + Math.random() * 5}px;--c:${cols[i % 3]};--dx:${(Math.random() - .5) * spread}px;--up:${-26 - Math.random() * 34}px;--down:${10 + Math.random() * 18}px;--r:${(Math.random() - .5) * 700}deg;--d:${i * .02}s;--life:${.55 + Math.random() * .25}s`, 1); };
+    const scraps = (cx, cy, n, reach) => { if (!ok(2)) return;
+      for (let i = 0; i < n; i++) { const a = Math.random() * Math.PI * 2, r = reach * (.5 + Math.random() * .6);
+        this._astroEl('yt-scrap', cx, cy, `--c:${cols[i % 3]};--w:${7 + Math.random() * 6}px;--h:${4 + Math.random() * 4}px;--dx:${Math.cos(a) * r}px;--dy:${Math.sin(a) * r * .8 + 14}px;--r:${(Math.random() - .5) * 900}deg;--d:${i * .01}s;--life:${.6 + Math.random() * .3}s`, 1.1); } };
+    const whump = (cx, cy, s, big) => this._astroEl('yt-whump', cx, cy, `--s:${s}px;--c:${big ? PINK : YEL};--c2:${big ? CREAM : '#fff'};--r:${(Math.random() - .5) * 40}deg`, .4);
+    const ribbon = (x1, y1, x2, y2) => { if (!ok(2)) return; const dx = x2 - x1, dy = y2 - y1, len = Math.hypot(dx, dy); if (len < 20) return;
+      this._astroEl('yt-ribbon', x1, y1, `width:${len}px;--a:${Math.atan2(dy, dx)}rad`, .5); };
+    const hit = (t, index, big) => {
       if (!t) return;
-      const tx = t.x, ty = targetY(t), s = big ? 1.25 : .78;
-      this.ring(tx, ty, size * s, big ? gold : pink, big ? .38 : .22);
-      this.slash(tx + face * size * .08, ty, { col: index % 2 ? gold : cream, ang: face * (-32 + (index || 0) * 22), small: !big });
-      streamer(tx - face * size * .10, ty - size * .12, face, 0, big);
-      pop(tx, ty, big ? 16 : 5, big ? 1.12 : .72);
+      const tx = t.x, y0 = ty(t);
+      whump(tx, y0, big ? 96 : 58, big);
+      fringe(tx - face * 6, y0, face > 0 ? -20 + (index % 3) * 18 : 200 - (index % 3) * 18, big ? 70 : 44, 0);
+      candies(tx, y0, big ? 7 : 3, big ? 110 : 60);
+      scraps(tx, y0, big ? 8 : 3, big ? 70 : 38);
     };
 
-    if (kind === 'basic') {
-      impact(target, opt.index || 0, !!opt.celebration);
-      return;
-    }
+    if (kind === 'basic') { hit(target, opt.index || 0, !!opt.celebration); return; }
     if (kind === 'party') {
-      this.castProp(x + face * size * .16, y + size * .14, { kind: 'item', img: 'Trinkets/YATTA_PartyPopper', size: 52 }, gold, .48);
-      this.ring(x, y + size * .17, size * .78, gold, .28);
-      [0, 1, 2, 3].forEach(i => streamer(x + face * size * .12, y - size * .22, face, i * 42, true));
-      pop(x + face * size * .18, y - size * .20, 11, .86);
+      // She pulls out a popper, cracks it: streamers whip off in a fan.
+      this.castProp(x + face * size * .16, y + size * .14, { kind: 'item', img: 'Trinkets/YATTA_PartyPopper', size: 52 }, YEL, .48);
+      for (let i = 0; i < 5; i++) fringe(x + face * size * .14, y - size * .2, (face > 0 ? -50 : 230) + face * i * 25, size * 1.0, i * .04);
+      candies(x + face * size * .18, y - size * .2, 6, 120);
       return;
     }
-    if (kind === 'partyHit') { impact(target, opt.index || 0, (opt.index || 0) === (opt.last || 7)); return; }
+    if (kind === 'partyHit') {
+      if (opt.from) ribbon(opt.from.x, opt.from.y - 44, target ? target.x : opt.from.x, target ? ty(target) : opt.from.y - 44);
+      hit(target, opt.index || 0, (opt.index || 0) === (opt.last || 7));
+      return;
+    }
     if (kind === 'crashStart') {
-      this.ring(x, y + size * .20, size * .62, aqua, .20);
-      this.ring(x, y + size * .20, size * .94, pink, .32);
-      streamer(x, y - size * .18, face, 0, false);
+      // Winds up like a spring: coil, flash of fringe, off she goes.
+      this._astroEl('yt-spring', x, y + 6, '--life:.5s', .6).innerHTML = this._ytCoil();
+      for (let i = 0; i < 3; i++) fringe(x, y - size * .1, (face > 0 ? 180 : 0) + (i - 1) * 30, size * .7, i * .03, cols[i]);
       return;
     }
     if (kind === 'crash') {
-      impact(target, opt.chain || 0, true);
-      if (target) {
-        this.boom(target.x, targetY(target), 1.0 + (opt.chain || 0) * .14, pink);
-        this.floatIcon(target.x, targetY(target) - size * .72, opt.low ? 'JACKPOT!' : 'CRASH!', gold);
+      if (opt.from) ribbon(opt.from.x, opt.from.y - 44, target.x, ty(target));
+      hit(target, opt.chain || 0, true);
+      if (opt.low && target) { // finisher gets a second, bigger crack
+        setTimeout(() => whump(target.x, ty(target) - 6, 130, true), 70);
+        candies(target.x, ty(target), 8, 150);
       }
       return;
     }
     if (kind === 'spring') {
-      this.aura(x, y, pink, Math.max(1, opt.dur || 3));
-      this.ring(x, y + size * .20, size * .86, aqua, .34);
-      this.ring(x, y + size * .20, size * 1.32, pink, .52);
-      pop(x, y - size * .25, 10, .78);
-      this.floatIcon(x, y - size * .92, 'BOING!', cream);
+      this._astroEl('yt-spring', x, y + 6, '--life:.8s', .9).innerHTML = this._ytCoil();
+      for (let i = 0; i < 4; i++) fringe(x, y - size * .2, -90 + (i - 1.5) * 38, size * .55, i * .04, cols[i % 3]);
+      candies(x, y - size * .3, 4, 70);
       return;
     }
-    if (kind === 'finish') {
-      this.ring(x, y - size * .10, size * 1.48, gold, .44);
-      this.burst(x, y - size * .16, 22, colors, { shape: 'paper', spMin: 75, spMax: 280, lift: 130, sMin: 4, sMax: 11, life: .84, g: 410 });
-      [0, 1, 2, 3, 4].forEach(i => streamer(x, y - size * .16, i % 2 ? 1 : -1, i * 28, true));
-      this.floatIcon(x, y - size * 1.02, 'BIG FINISH!', gold);
+    if (kind === 'dizzy' && target) {
+      if (!ok(2)) return;
+      const n = this._astroEl('yt-orbit', target.x, target.y - size * .98, '--life:1.7s', 1.8);
+      n.innerHTML = cols.map((c, i) => `<i style="--c:${c};--d:${-i * .3}s"></i>`).join('');
+      return;
+    }
+    if (kind === 'dodge') {
+      for (let i = 0; i < 2; i++) fringe(x, y - size * .3, (i ? 20 : 160), size * .5, i * .03, cols[i]);
+      scraps(x, y - size * .3, 4, 40);
+      return;
+    }
+    if (kind === 'full') {   // max Celebration: fringe crown around her
+      for (let i = 0; i < 6; i++) fringe(x, y - size * .35, -90 + (i - 2.5) * 36, size * .5, i * .03, cols[i % 3]);
+      return;
+    }
+    if (kind === 'finish') { // the candy explosion
+      whump(x, y - size * .2, size * 1.5, true);
+      for (let i = 0; i < 8; i++) fringe(x, y - size * .2, i * 45, size * 1.15, i * .02);
+      candies(x, y - size * .2, 14, size * 3);
+      scraps(x, y - size * .2, 16, size * 1.3);
+      this._astroEl('yt-whump', x, y - size * .2, `--s:${size * 2.3}px;--c:${YEL};--c2:#fff;--r:20deg`, .4);
+    }
+  },
+
+  /** A zig-zag coil spring, drawn rather than described. */
+  _ytCoil() {
+    return '<svg viewBox="0 0 22 30"><polyline points="11,30 2,26 20,22 2,18 20,14 2,10 20,6 11,2" fill="none" stroke="#35c4e8" stroke-width="3.2" stroke-linejoin="round" stroke-linecap="round"/><polyline points="11,30 2,26 20,22 2,18 20,14 2,10 20,6 11,2" fill="none" stroke="#fff3a0" stroke-width="1" stroke-linejoin="round" opacity=".7"/></svg>';
+  },
+
+  /* ---- Poppy: soap-film bubbles (css/poppy-fx.css) --------------------------
+     Aqua and bubblegum pink to match her art. Pops throw droplets and snap a
+     thin film outward; nothing is a plain glowing circle. */
+  _ppOk(n) { return this.front && !this.reducedEffects && this.effectAllowed(n || 2); },
+
+  ppBubbles(x, y, n, opt) {
+    if (!this._ppOk(2)) return;
+    opt = opt || {};
+    for (let i = 0; i < (n || 4); i++) this._astroEl('pp-b', x + (Math.random() - .5) * (opt.spread || 40), y + (Math.random() - .5) * (opt.vspread || 16),
+      `--s:${(opt.s || 14) * (.6 + Math.random() * .9)}px;--dx:${(Math.random() - .5) * (opt.drift || 30)}px;--dy:${-(opt.rise || 38) * (.6 + Math.random() * .8)}px;--d:${i * .06}s;--life:${.8 + Math.random() * .5}s`, 1.5);
+  },
+
+  ppPop(x, y, size, n) {
+    if (!this._ppOk(2)) return;
+    this._astroEl('pp-film', x, y, `--s:${size || 40}px`, .5);
+    const cols = ['#ffffff', '#9fe9f7', '#ffb3dc'];
+    const k = n || 7;
+    for (let i = 0; i < k; i++) {
+      const ang = (i / k) * Math.PI * 2 + Math.random() * .5, r = (size || 40) * (.6 + Math.random() * .6);
+      this._astroEl('pp-drop', x, y,
+        `--s:${4 + Math.random() * 3}px;--c:${cols[i % 3]};--dx:${Math.cos(ang) * r}px;--dy:${Math.sin(ang) * r * .8 + 10}px;--a:${ang * 57 + 90}deg;--life:${.4 + Math.random() * .2}s`, .8);
+    }
+  },
+
+  ppWave(x, y, w, d) {
+    if (!this.back || this.reducedEffects || !this.effectAllowed(1)) return;
+    this._astroEl('pp-wave', x, y, `--w:${w || 220}px;--d:${d || 0}s`, 1, 'back');
+  },
+
+  ppDome(x, y, w, life) {
+    if (!this._ppOk(3)) return;
+    this._astroEl('pp-dome', x, y, `--w:${w || 64}px;--life:${life || 1.2}s`, life || 1.2);
+  },
+
+  ppSqueak(x, y) {
+    if (!this._ppOk(2)) return;
+    [-50, 10, 70].forEach((a, i) => this._astroEl('pp-arc', x, y, `--s:${24 + i * 6}px;--a:${a}deg;--d:${i * .06}s`, .8));
+  },
+
+  ppTrail(x, y, dir, n) {
+    if (!this._ppOk(2)) return;
+    for (let i = 0; i < (n || 4); i++) this._astroEl('pp-trail', x - dir * i * 12, y + (Math.random() - .5) * 18,
+      `--s:${6 + Math.random() * 7}px;--dx:${-dir * 8}px;--d:${i * .04}s`, .8);
+  },
+
+  /** High-level beats, called from Poppy's kit via Battle.fxPoppy. */
+  poppyFx(kind, x, y, opt) {
+    if (!this.front) return;
+    opt = opt || {};
+    const mid = y - 38, foot = y + 4;
+    if (kind === 'launch') {            // hop off: a smear of tiny bubbles
+      this.ppTrail(x, mid, opt.dir || 1, 4);
+      this.ppPop(x, foot, 34, 5);
+    } else if (kind === 'bump') {       // a bounce lands on a foe
+      this.ppPop(x, mid, opt.w || 44, 6);
+      this.ppBubbles(x, mid, 2, { s: 10, rise: 26 });
+    } else if (kind === 'finale') {     // Panic Pop's last pop
+      this.ppWave(x, foot, opt.w || 280);
+      this.ppWave(x, foot, (opt.w || 280) * .66, .08);
+      this.ppPop(x, mid, 76, 11);
+      this.ppBubbles(x, mid, 6, { s: 16, spread: 90, rise: 56 });
+    } else if (kind === 'dome') {       // a shelter on an ally
+      this.ppDome(x, foot + 6, opt.w || 62, opt.life || 1.3);
+      this.ppBubbles(x, mid, 2, { s: 8, rise: 30 });
+    } else if (kind === 'inflate') {    // Poppy puffing her own big bubble
+      this.ppBubbles(x, foot, 6, { s: 12, spread: 56, rise: 60 });
+      this.ppWave(x, foot, 150);
+    } else if (kind === 'squeak') {     // Silence squeak on a foe
+      this.ppSqueak(x, y - 70);
+    } else if (kind === 'burst') {      // Bubble Bounce popping
+      this.ppWave(x, foot, 340);
+      this.ppWave(x, foot, 230, .07);
+      this.ppPop(x, mid, 90, 12);
+      this.ppBubbles(x, mid, 7, { s: 16, spread: 120, rise: 50, drift: 60 });
+    } else if (kind === 'shock') {      // Pop Shock outward ring
+      this.ppWave(x, foot, opt.w || 480);
+      this.ppWave(x, foot, (opt.w || 480) * .6, .06);
+      this.ppPop(x, mid, 84, 12);
+    } else if (kind === 'echo') {       // an ally echoing the shock
+      this.ppWave(x, foot, opt.w || 250, .1);
+      this.ppPop(x, mid, 46, 6);
+    } else if (kind === 'rescue') {     // second wind
+      this.ppDome(x, foot + 6, 80, 1.6);
+      this.ppBubbles(x, mid, 6, { s: 14, spread: 60, rise: 64 });
+    } else if (kind === 'pressure') {   // Air Pressure maxed
+      this.ppPop(x, mid, 70, 8);
+      this.ppWave(x, foot, 200);
+    } else if (kind === 'giant') {      // becoming the Biggest Bubble
+      this.ppBubbles(x, foot, 10, { s: 18, spread: 90, rise: 90 });
+      this.ppWave(x, foot, 300);
+    } else if (kind === 'return') {     // bursting back out
+      this.ppWave(x, foot, 460);
+      this.ppWave(x, foot, 300, .07);
+      this.ppWave(x, foot, 160, .14);
+      this.ppPop(x, mid, 120, 16);
+      this.ppBubbles(x, mid, 10, { s: 18, spread: 150, rise: 80, drift: 80 });
+    } else if (kind === 'gift') {       // shield/energy gift to an ally
+      this.ppDome(x, foot + 6, 58, 1.1);
+    } else if (kind === 'wisp') {       // a small buoyant flourish
+      this.ppBubbles(x, mid, 2, { s: 9, rise: 30 });
     }
   },
 
@@ -1541,27 +1787,15 @@ const FX = {
     if (!this.front) return;
     opt = opt || {};
     const size = opt.size || 90;
-    this.ring(x, y, phase === 'cast' ? size * .82 : size * 1.08, '#ffb6df', .34);
-    for (let i = 0; i < (opt.ultimate ? 9 : 6); i++) {
-      const bubble = el('i');
-      const d = rnd(size * .10, size * .25), a = rnd(0, Math.PI * 2), r = rnd(size * .18, size * .52);
-      bubble.style.cssText = `position:absolute;left:${x + Math.cos(a) * r - d / 2}px;top:${y + Math.sin(a) * r - d / 2}px;
-        width:${d}px;height:${d}px;border-radius:50%;border:2px solid #ffe8f6;
-        background:radial-gradient(circle at 31% 27%,#fff 0 7%,#ffb6df66 10% 34%,#80ddf355 70%,transparent 74%);
-        box-shadow:inset -2px -3px 5px #f38fc366;opacity:0;pointer-events:none;transform:scale(.35)`;
-      this.front.appendChild(bubble);
-      requestAnimationFrame(() => {
-        bubble.style.transition = `transform ${rnd(.32, .48)}s cubic-bezier(.16,1.4,.3,1),opacity .12s`;
-        bubble.style.opacity = .92; bubble.style.transform = `translate(${rnd(-10, 10)}px,${rnd(-28, -12)}px) scale(1)`;
-      });
-      setTimeout(() => { bubble.style.transition = 'transform .28s ease-in,opacity .2s';
-        bubble.style.transform += ' scale(1.45)'; bubble.style.opacity = 0; }, 330 + i * 18);
-      setTimeout(() => bubble.remove(), 680 + i * 18);
+    if (phase === 'cast') {
+      this.ppBubbles(x, y + size * .1, opt.ultimate ? 6 : 4, { s: 13, spread: size * .7, rise: size * .55 });
+    } else {
+      this.ppPop(x, y - size * .1, size * .55, opt.ultimate ? 9 : 6);
     }
   },
 
   scrapsSignature(phase, x, y, opt) {
-    if (!this.front) return;
+    if (!this.front || this._denseVisualSafe) return;
     opt = opt || {};
     const size = opt.size || 92;
     const craft = opt.craft || 'cardboard';
@@ -1626,7 +1860,7 @@ const FX = {
   },
 
   scrapsCircle(x, y, radius, craft, powered) {
-    if (!this.back || this.reducedEffects || !this.effectAllowed(2)) return;
+    if (!this.back || this._denseVisualSafe || this.reducedEffects || !this.effectAllowed(2)) return;
     const color = { cardboard: '#e9b86d', cup: '#ff80a7', yarn: '#ce78b4' }[craft] || '#ffd166';
     const width = Math.max(140, Math.min(650, radius * 2));
     const height = width * .44;
@@ -1676,7 +1910,7 @@ const FX = {
 
   /** Paper-shard explosion for Every Piece Counts when a foe falls inside the circle. */
   scrapsShards(x, y, radius) {
-    if (!this.front || this.reducedEffects || !this.effectAllowed(3)) return;
+    if (!this.front || this._denseVisualSafe || this.reducedEffects || !this.effectAllowed(3)) return;
     const r = Math.max(60, Math.min(220, radius || 120));
     this.ring(x, y, r * 1.6, '#fff1c8', .28);
     this.burst(x, y - 30, 16, ['#e9b86d', '#ff9fbb', '#fff1c8', '#ce78b4'],
@@ -1687,142 +1921,272 @@ const FX = {
 
   /** Quick craft-change flourish so G's new weapon is readable at a glance. */
   scrapsCraftSwap(x, y, craft) {
-    if (!this.front || this.reducedEffects || !this.effectAllowed(2)) return;
+    if (!this.front || this._denseVisualSafe || this.reducedEffects || !this.effectAllowed(2)) return;
     const color = { cardboard: '#e9b86d', cup: '#ff80a7', yarn: '#ce78b4' }[craft] || '#ffd166';
     this.ring(x, y + 12, 96, color, .3);
     this.burst(x, y - 40, 9, [color, '#fff1c8'],
       { shape: 'paper', spMin: 50, spMax: 140, lift: 70, sMin: 4, sMax: 9, life: .55 });
   },
 
+  /* ---- Cocoa: a bakery counter in motion (css/cocoa-fx.css) ----------------
+     Twist-wrapped sweets, cocoa-powder puffs, sugar crystals and glossy glaze.
+     Everything is small and warm; status names carry the words, not emoji. */
+  _cocoaOk(n) { return this.front && !this.reducedEffects && this.effectAllowed(n || 2); },
+
+  cocoaPuff(x, y, n, opt) {
+    if (!this._cocoaOk(2)) return;
+    opt = opt || {};
+    for (let i = 0; i < (n || 3); i++) this._astroEl('cc-puff', x + (Math.random() - .5) * (opt.spread || 30), y + (Math.random() - .5) * 8,
+      `--w:${(opt.w || 22) * (.7 + Math.random() * .6)}px;--dx:${(Math.random() - .5) * 46}px;--dy:${-10 - Math.random() * 26}px;--d:${i * .05}s`, 1);
+  },
+
+  cocoaSugar(x, y, n, opt) {
+    if (!this._cocoaOk(2)) return;
+    opt = opt || {};
+    const cols = ['#fff3dc', '#f3d3a7', '#e8b98a', '#f4b9b4'];
+    for (let i = 0; i < (n || 6); i++) this._astroEl('cc-sugar', x + (Math.random() - .5) * (opt.spread || 40), y + (Math.random() - .5) * 20,
+      `--s:${4 + Math.random() * 4}px;--c:${cols[i % cols.length]};--dx:${(Math.random() - .5) * 36}px;--dy:${-18 - Math.random() * 36}px;--r:${(Math.random() - .5) * 240}deg;--d:${i * .045}s;--life:${.8 + Math.random() * .4}s`, 1.4);
+  },
+
+  cocoaWrapFly(x, y, n, opt) {
+    if (!this._cocoaOk(2)) return;
+    opt = opt || {};
+    for (let i = 0; i < (n || 3); i++) {
+      const dir = n > 1 ? (i / (n - 1) - .5) * 2 : 0;
+      this._astroEl('cc-wrap fly' + (i % 3 === 2 ? ' pink' : ''), x, y,
+        `--s:${(opt.s || 18) + (i % 2) * 3}px;--dx:${dir * (opt.spread || 70) + (Math.random() - .5) * 14}px;--up:${-(opt.up || 54) - Math.random() * 18}px;--r:${dir * 260 + (Math.random() - .5) * 120}deg;--d:${i * .05}s;--life:${.75 + Math.random() * .15}s`,
+        1.2).innerHTML = '<i></i>';
+    }
+  },
+
+  cocoaFloor(x, y, w, d) {
+    if (!this.back || this.reducedEffects || !this.effectAllowed(1)) return;
+    this._astroEl('cc-floor', x, y, `--w:${w || 120}px;--d:${d || 0}s`, 1.1, 'back');
+  },
+
+  /** Glossy chocolate glaze shell for shields, with melted drips at its hem. */
+  cocoaShell(x, y, w, life) {
+    if (!this._cocoaOk(3)) return;
+    this._astroEl('cc-shell', x, y, `--w:${w || 70}px;--life:${life || 1.1}s`, (life || 1.1));
+  },
+
+  cocoaSwirl(x, y, w) {
+    if (!this._cocoaOk(2)) return;
+    for (let i = 0; i < 2; i++) this._astroEl('cc-swirl', x, y, `--w:${(w || 64) * (1 - i * .22)}px;--d:${i * .1}s`, 1);
+  },
+
+  cocoaSplat(x, y, w, life) {
+    if (!this.back || this.reducedEffects || !this.effectAllowed(2)) return;
+    this._astroEl('cc-splat', x, y, `--w:${w || 150}px;--life:${life || 2.4}s`, life || 2.4, 'back');
+  },
+
+  cocoaDrips(x, y, n) {
+    if (!this._cocoaOk(2)) return;
+    for (let i = 0; i < (n || 3); i++) this._astroEl('cc-drip', x + (i - ((n || 3) - 1) / 2) * 12 + (Math.random() - .5) * 5, y,
+      `--d:${i * .12}s`, 1.2);
+  },
+
+  /** High-level beats, called from Cocoa's kit via Battle.fxCocoa. */
+  cocoaFx(kind, x, y, opt) {
+    if (!this.front) return;
+    opt = opt || {};
+    const top = y - 62;
+    if (kind === 'rush') {            // sweet lands: sugar glitter and a doily ring
+      this.cocoaPuff(x, y - 8, 2, { w: 18 });
+      this.cocoaSugar(x, top + 12, opt.big ? 9 : 6);
+      this.cocoaFloor(x, y + 4, 86);
+    } else if (kind === 'shell') {    // Confection Shield
+      this.cocoaShell(x, y + 6, opt.w || 74, opt.life || 1.2);
+      this.cocoaSugar(x, top, 3, { spread: 30 });
+    } else if (kind === 'icing') {    // already shielded: sweet regen
+      this.cocoaDrips(x, top - 4, 3);
+      this.cocoaSugar(x, top + 6, 3);
+    } else if (kind === 'cleanse') {  // BonBon Blessing
+      this.cocoaSwirl(x, y - 6, 64);
+      this.cocoaDrips(x, top - 2, 2);
+    } else if (kind === 'feast') {    // Delivery active, from Cocoa
+      this.cocoaWrapFly(x, top + 10, 5, { spread: 96, up: 66, s: 20 });
+      this.cocoaPuff(x, y - 4, 5, { w: 28, spread: 50 });
+      this.cocoaFloor(x, y + 4, 150);
+      this.cocoaFloor(x, y + 4, 210, .12);
+    } else if (kind === 'splat') {    // Sweet Surprise burst
+      this.cocoaSplat(x, y + 6, opt.w || 170, 3);
+      this.cocoaPuff(x, y - 20, 7, { w: 34, spread: 90 });
+      this.cocoaWrapFly(x, y - 60, 4, { spread: 120, up: 80, s: 16 });
+    } else if (kind === 'coated') {   // a foe covered in chocolate
+      this.cocoaDrips(x, top + 4, 3);
+      this.cocoaPuff(x, y - 24, 2, { w: 18 });
+    } else if (kind === 'hit') {      // allied hit on a coated foe: tiny crumbs
+      this.cocoaSugar(x, top + 10, 3, { spread: 26 });
+    } else if (kind === 'rescue') {
+      this.cocoaShell(x, y + 6, 82, 1.4);
+      this.cocoaWrapFly(x, top + 14, 3, { spread: 60, up: 52, s: 16 });
+      this.cocoaFloor(x, y + 4, 110);
+      this.cocoaSugar(x, top + 10, 8);
+    } else if (kind === 'overflow') {
+      this.cocoaWrapFly(x, top + 10, 2, { spread: 34, up: 48, s: 16 });
+      this.cocoaSugar(x, top + 10, 5);
+    } else if (kind === 'treat') {    // takedown treat: a small pop above Cocoa
+      this.cocoaWrapFly(x, top - 4, 1, { spread: 0, up: 44, s: 16 });
+      this.cocoaSugar(x, top, 3, { spread: 20 });
+    } else if (kind === 'symphony') {
+      this.cocoaSugar(x, top + 20, 2, { spread: 34 });
+    }
+  },
+
   cocoaSignature(phase, x, y, opt) {
     if (!this.front) return;
     opt = opt || {};
-    const size = opt.size || 92, count = opt.ultimate ? 5 : 3;
+    const size = opt.size || 92;
     if (phase === 'cast') {
-      // BonBons orbit Cocoa in a gentle hand-off arc with real item art instead
-      // of a generic haste glyph.
-      for (let i = 0; i < count; i++) {
-        const bon = el('div'); const s = size * (i % 2 ? .29 : .25);
-        bon.style.cssText = `position:absolute;left:${x - s / 2}px;top:${y - s / 2}px;width:${s}px;height:${s}px;
-          pointer-events:none;opacity:0;z-index:7;transform:translate(0,12px) rotate(-35deg) scale(.25);
-          filter:drop-shadow(0 3px 2px #2b130faa)`;
-        bon.innerHTML = `<img src="${Art.item('Bonbon')}" style="width:100%;height:100%;object-fit:contain">`;
-        this.front.appendChild(bon);
-        const a = -Math.PI * .92 + i * (Math.PI * 1.05 / Math.max(1, count - 1));
-        setTimeout(() => {
-          bon.style.transition = 'transform .34s cubic-bezier(.15,1.45,.35,1),opacity .12s'; bon.style.opacity = 1;
-          bon.style.transform = `translate(${Math.cos(a) * size * .62}px,${Math.sin(a) * size * .46}px) rotate(${i * 55}deg) scale(1)`;
-        }, i * 35);
-        setTimeout(() => { bon.style.transition = 'transform .28s ease-in,opacity .22s'; bon.style.opacity = 0;
-          bon.style.transform = `translate(${Math.cos(a) * size * .2}px,${-size * .72}px) rotate(${i * 90 + 80}deg) scale(.65)`; }, 360 + i * 28);
-        setTimeout(() => bon.remove(), 760);
-      }
-      this.ring(x, y + size * .24, size * 1.15, '#c98a5a', .5);
+      // Flour-and-cocoa dust at her feet as she hops and a few sweets pop up.
+      this.cocoaPuff(x, y + size * .22, opt.ultimate ? 5 : 3, { w: 22, spread: size * .5 });
+      this.cocoaWrapFly(x, y - size * .1, opt.ultimate ? 4 : 2, { spread: size * .8, up: size * .5, s: 15 });
       return;
     }
-
-    // The delivery lands as a chocolate seal with candy crumbs, warm and
-    // readable without a bright screen flash.
-    const seal = el('div');
-    seal.style.cssText = `position:absolute;left:${x - size * .46}px;top:${y - size * .23}px;width:${size * .92}px;height:${size * .46}px;
-      border-radius:50%;background:radial-gradient(ellipse,#f3c795 0 14%,#9b532f 18% 43%,#542719 47% 58%,transparent 62%);
-      pointer-events:none;opacity:0;transform:scale(.2);filter:drop-shadow(0 3px 2px #0008)`;
-    this.front.appendChild(seal);
-    requestAnimationFrame(() => { seal.style.transition = 'transform .2s cubic-bezier(.12,1.55,.3,1),opacity .1s';
-      seal.style.opacity = .92; seal.style.transform = 'scale(1)'; });
-    setTimeout(() => { seal.style.transition = 'transform .34s,opacity .32s'; seal.style.transform = 'scale(1.18)'; seal.style.opacity = 0; }, 260);
-    setTimeout(() => seal.remove(), 680);
-    this.burst(x, y, opt.ultimate ? 16 : 9, ['#5b2c1d', '#a9653d', '#e8b98a'],
-      { shape: 'dot', spMin: 70, spMax: 220, lift: 80, sMin: 4, sMax: 10, life: .7, g: 470 });
-    this.sparkle(x, y - size * .18, opt.ultimate ? 8 : 5, '#f3c795');
+    this.cocoaPuff(x, y - size * .1, 2, { w: 18 });
+    this.cocoaSugar(x, y - size * .2, opt.ultimate ? 7 : 4);
   },
 
-  /** Soft rising steam wisps: the signature of food that was just made. */
+  /* ---- Boxten: a wind-up music box (css/boxten-fx.css) ---------------------
+     Brass key, steel comb teeth, drawn notes and ticked groove rings in plum
+     and lilac. Stepped animation keeps it clockwork rather than glowing. */
+  _bxOk(n) { return this.front && !this.reducedEffects && this.effectAllowed(n || 2); },
+
+  bxNotes(x, y, n, opt) {
+    if (!this._bxOk(2)) return;
+    opt = opt || {};
+    const cols = ['#f1e3ff', '#d9b8ff', '#ffe29a'];
+    for (let i = 0; i < (n || 4); i++) {
+      const e = this._astroEl('bx-note' + (i % 2 ? ' flag' : ''), x + (Math.random() - .5) * (opt.spread || 36), y + (Math.random() - .5) * 10,
+        `--s:${11 + Math.random() * 5}px;--c:${cols[i % 3]};--dx:${(Math.random() - .5) * (opt.drift || 50)}px;--dy:${-(opt.rise || 40) - Math.random() * 24}px;--r:${(Math.random() - .5) * 40}deg;--d:${i * .06}s;--life:${.8 + Math.random() * .3}s`, 1.4);
+      if (i % 2) e.innerHTML = '<i></i>';
+    }
+  },
+
+  bxGears(x, y, n, opt) {
+    if (!this._bxOk(2)) return;
+    opt = opt || {};
+    for (let i = 0; i < (n || 3); i++) this._astroEl('bx-gear', x, y,
+      `--s:${8 + Math.random() * 9}px;--c:${i % 2 ? '#d6a94a' : '#b9b4d6'};--dx:${(Math.random() - .5) * (opt.spread || 70)}px;--dy:${-14 - Math.random() * 34}px;--r:${(Math.random() < .5 ? -1 : 1) * (160 + Math.random() * 200)}deg;--d:${i * .07}s;--life:${.6 + Math.random() * .3}s`, 1.1);
+  },
+
+  bxRing(x, y, w, d, solid) {
+    if (!this.back || this.reducedEffects || !this.effectAllowed(1)) return;
+    this._astroEl('bx-ring' + (solid ? ' solid' : ''), x, y, `--w:${w}px;--d:${d || 0}s`, 1.1, 'back');
+  },
+
+  bxKey(x, y, s, turn) {
+    if (!this._bxOk(2)) return;
+    this._astroEl('bx-key', x, y, `--s:${s || 34}px;--turn:${turn || 900}deg`, .8).innerHTML = '<i></i>';
+  },
+
+  /** A steel comb plucked outward along the floor from x, one tooth after another. */
+  bxComb(x, y, reach, face) {
+    if (!this.back || this.reducedEffects || !this.effectAllowed(2)) return;
+    const teeth = 9;
+    for (const dir of [-1, 1]) for (let i = 1; i <= teeth; i++) {
+      const dx = dir * (i / teeth) * reach;
+      this._astroEl('bx-tooth', x + dx, y, `--h:${14 + ((i * 7) % 5) * 5}px;--d:${i * .035}s;transform:translateY(-100%)`, .95, 'back');
+    }
+  },
+
+  boxtenFx(kind, x, y, opt) {
+    if (!this.front) return;
+    opt = opt || {};
+    const face = opt.face || 1, mid = y - 44, foot = y + 4;
+    if (kind === 'wind') {              // key turns at his back, cogs pop loose
+      this.bxKey(x - face * 34, y - 40, opt.big ? 40 : 32, opt.big ? 1080 : 720);
+      this.bxGears(x - face * 20, y - 30, opt.big ? 5 : 3);
+      this.bxRing(x, foot, 120, 0, true);
+    } else if (kind === 'strike') {     // heavy spinning hit
+      this._astroEl('bx-spark', x, y - 50, `--s:${opt.big ? 84 : 56}px`, .5);
+      this.bxRing(x, foot, opt.big ? 300 : 200);
+      this.bxNotes(x, mid - 10, 4);
+      this.bxGears(x, mid, 2, { spread: 60 });
+    } else if (kind === 'echo') {
+      this._astroEl('bx-spark', x, y - 50, '--s:40px', .5);
+      this.bxNotes(x, mid, 3, { spread: 24 });
+    } else if (kind === 'melody') {     // comb plucked outward + groove rings
+      this.bxComb(x, foot, (opt.reach || 320), face);
+      this.bxRing(x, foot, (opt.reach || 320) * 2);
+      this.bxRing(x, foot, (opt.reach || 320) * 1.2, .09, true);
+      this.bxNotes(x, mid - 20, 5, { spread: 70 });
+    } else if (kind === 'plink') {      // a foe caught by the melody
+      this.bxNotes(x, y - 70, 2, { spread: 16, rise: 24 });
+      for (let i = 0; i < 3; i++) this._astroEl('bx-tick', x, y - 56, `--a:${-50 + i * 50}deg;--d:${i * .04}s`, .8);
+    } else if (kind === 'rhythm') {     // Perfect Rhythm: metronome-like ticks around him
+      for (let i = 0; i < 6; i++) this._astroEl('bx-tick', x, mid, `--a:${i * 60}deg;--d:${i * .05}s`, .8);
+      this.bxRing(x, foot, 150, 0, true);
+      this.bxNotes(x, mid, 3, { spread: 30 });
+    } else if (kind === 'pulse') {      // every-other-attack sound wave
+      this.bxRing(x, foot, opt.w || 480);
+      this.bxRing(x, foot, (opt.w || 480) * .6, .07, true);
+      this.bxNotes(x, mid, 2, { spread: 40 });
+    } else if (kind === 'full') {       // fully wound
+      this.bxGears(x, mid, 4, { spread: 80 });
+      this.bxRing(x, foot, 190, 0, true);
+    } else if (kind === 'tick') {
+      for (let i = 0; i < 3; i++) this._astroEl('bx-tick', x, mid - 20, `--a:${-40 + i * 40}deg;--d:${i * .03}s`, .7);
+    }
+  },
+
+  /* ---- Sprout: a worried baker's kitchen -----------------------------------
+     Warm cream steam, strawberry-red hearts, and mint leaf tufts, all drawn in
+     CSS (css/sprout-fx.css). Effects stay small and local: he is handing
+     someone a treat, not casting a spell. */
   sproutSteam(x, y, n, col) {
     if (!this.front || this.reducedEffects || !this.effectAllowed(2)) return;
-    for (let i = 0; i < (n || 4); i++) setTimeout(() => this.part({
-      x: x + (Math.random() - .5) * 26, y, vx: (Math.random() - .5) * 18, vy: -(44 + Math.random() * 40),
-      g: -12, drag: .65, size: 11 + Math.random() * 9, col: col || '#fff2dc', shape: 'dot',
-      alpha: .6, life: .95 + Math.random() * .4, scale: .6, dscale: 1.15 }), i * 55);
+    for (let i = 0; i < (n || 3); i++) this._astroEl('sp-steam', x + (Math.random() - .5) * 22, y,
+      `--dx:${(Math.random() - .5) * 18}px;--c:${col || '#fff4e0'};animation-delay:${i * .07}s;--w:${10 + Math.random() * 7}px`, 1.3);
   },
 
-  /** Little hearts that float up off a freshly healed ally. */
   sproutHearts(x, y, n) {
     if (!this.front || this.reducedEffects || !this.effectAllowed(2)) return;
-    for (let i = 0; i < (n || 3); i++) setTimeout(() => this.part({
-      x: x + (Math.random() - .5) * 34, y, vx: (Math.random() - .5) * 36, vy: -(55 + Math.random() * 45),
-      g: -18, drag: .55, size: 13 + Math.random() * 6, col: i % 2 ? '#ff758f' : '#ffd166', shape: 'txt',
-      char: i % 3 ? '♥' : '✦', life: .95 + Math.random() * .3, spin: (Math.random() - .5) * 40 }), i * 75);
+    for (let i = 0; i < (n || 2); i++) this._astroEl('sp-heart', x + (Math.random() - .5) * 30, y,
+      `--s:${9 + Math.random() * 5}px;--dx:${(Math.random() - .5) * 26}px;--c:${i % 2 ? '#e8505b' : '#ff9aa8'};animation-delay:${i * .12}s`, 1.4);
   },
 
-  /** Fresh mint strawberry sprout leaves fluttering up during heals & saves. */
+  /** Little strawberry-top leaves tumbling down off a fresh delivery. */
   sproutLeaves(x, y, n, opt) {
     if (!this.front || this.reducedEffects || !this.effectAllowed(2)) return;
     opt = opt || {};
-    const cols = ['#80ed99', '#57cc99', '#b7efc5', '#70e000'];
-    const chars = ['🌱', '🍃', '☘️', '✦'];
-    for (let i = 0; i < (n || 4); i++) setTimeout(() => this.part({
-      x: x + (Math.random() - .5) * (opt.spread || 32),
-      y: y + (Math.random() - .5) * 12,
-      vx: (Math.random() - .5) * (opt.sp || 50),
-      vy: -(opt.lift || 48) - Math.random() * 32,
-      g: 35, drag: 1.1, size: 12 + Math.random() * 6,
-      col: cols[i % cols.length], shape: 'txt',
-      char: chars[i % chars.length],
-      life: .9 + Math.random() * .4,
-      spin: (Math.random() - .5) * 160
-    }), i * 60);
+    for (let i = 0; i < (n || 3); i++) this._astroEl('sp-leaf', x + (Math.random() - .5) * (opt.spread || 34), y - 10 - Math.random() * 14,
+      `--s:${9 + Math.random() * 5}px;--dx:${(Math.random() - .5) * 46}px;--r:${(Math.random() - .5) * 280}deg;--c:${i % 2 ? '#8fcf9a' : '#6fb67f'};animation-delay:${i * .08}s`, 1.3);
   },
 
-  /** Golden protective dome with strawberry vine shimmer that settles over the person Sprout is saving. */
+  /** A warm glow settling on the floor under whoever just got looked after. */
+  sproutGlow(x, y, size, life) {
+    if (!this.back || this.reducedEffects || !this.effectAllowed(1)) return;
+    this._astroEl('sp-glow', x, y - 4, `--w:${size || 90}px`, life || .8, 'back');
+  },
+
+  /** A soft peach bubble with a strawberry-leaf crown: a held-tight hug, not armour. */
   sproutDome(x, y, radius, dur) {
     if (!this.front || this.reducedEffects || !this.effectAllowed(3)) return;
-    const w = radius * 1.8, h = radius * 1.45;
-    const n = el('div');
-    n.style.cssText = `position:absolute;left:${x - w / 2}px;top:${y - h * .85}px;width:${w}px;height:${h}px;
-      border-radius:50% 50% 46% 46%;border:3.5px solid #ffd166dd;pointer-events:none;opacity:0;z-index:5;
-      background:radial-gradient(ellipse at 50% 38%,#fff8e777 0 25%,#ffd16633 55%,transparent 75%);
-      box-shadow:0 0 32px #f4a261dd, 0 0 16px #80ed99aa, inset 0 0 26px #fff2cf88;transform:scale(.35);transform-origin:50% 90%`;
-    this.front.appendChild(n);
-    requestAnimationFrame(() => {
-      n.style.transition = 'transform .38s cubic-bezier(.15,1.5,.35,1),opacity .18s';
-      n.style.opacity = .98;
-      n.style.transform = 'scale(1)';
-    });
-    setTimeout(() => {
-      n.style.transition = 'opacity .45s,transform .45s';
-      n.style.opacity = 0;
-      n.style.transform = 'scale(1.15)';
-    }, Math.max(300, (dur || 1.2) * 1000 - 450));
-    setTimeout(() => n.remove(), (dur || 1.2) * 1000 + 100);
+    const w = radius * 1.6, h = radius * 1.7, life = Math.max(.8, dur || 1.2);
+    this._astroEl('sp-dome', x - w / 2, y - h * .86, `width:${w}px;height:${h}px;--life:${life}s`, life + .3);
   },
 
-  /** Sprout's combat language is delivery and protection: recognizable food
-      leaves his hands, allies get a warm tether, and the emergency save forms
-      a barrier around the person he protects. Keep these beats local so his
-      healer kit does not look like a generic green magic spell. */
   sproutSkill(kind, x, y, opt) {
     if (!this.front) return;
     opt = opt || {};
-    const col = '#f4a261', target = opt.target, targets = opt.targets || [];
+    const col = '#e0925f', target = opt.target, targets = opt.targets || [];
     const face = opt.face || 1;
     const food = opt.food || (kind === 'delivery' ? 'Bread' : 'Brownie');
     const mark = (t, size) => {
       if (!t) return;
-      this.ring(t.x, t.y - 34, size || 78, col, .35);
-      this.sparkle(t.x, t.y - 58, opt.ultimate ? 12 : 7, '#ffd7a0');
-      this.sproutHearts(t.x, t.y - 60, opt.ultimate ? 6 : 4);
-      this.sproutLeaves(t.x, t.y - 56, opt.ultimate ? 5 : 3);
+      this.sproutGlow(t.x, t.y, size || 80, .8);
+      this.sproutHearts(t.x, t.y - 62, opt.ultimate ? 3 : 2);
+      this.sproutLeaves(t.x, t.y - 66, opt.ultimate ? 4 : 2);
     };
-    // Crumbs shed along the flight of a thrown treat.
     const crumbTrail = (x1, y1, x2, y2, dur) => {
       for (let i = 1; i <= 4; i++) setTimeout(() => this.burst(x1 + (x2 - x1) * i / 5, y1 + (y2 - y1) * i / 5 - 30 * Math.sin(i / 5 * Math.PI), 2,
-        ['#ffd7a0', '#e9b97c', '#fff2cf'], { spMin: 10, spMax: 45, lift: 10, sMin: 2, sMax: 4, life: .4, g: 260 }), dur * 1000 * i / 5);
+        ['#e9c28f', '#d9a566', '#fff0d6'], { spMin: 10, spMax: 45, lift: 10, sMin: 2, sMax: 4, life: .4, g: 260 }), dur * 1000 * i / 5);
     };
     if (kind === 'bake' || kind === 'delivery') {
       this.castProp(x + face * 18, y, { kind: 'item', img: food, size: 48 }, col, .38);
-      this.sproutSteam(x + face * 18, y - 70, kind === 'bake' ? 5 : 3);
-      this.sproutLeaves(x + face * 18, y - 60, 3);
+      this.sproutSteam(x + face * 18, y - 70, kind === 'bake' ? 4 : 2);
       if (target) {
         this.itemArc(x + face * 24, y - 62, target.x, target.y - 62, food,
           { size: 28, dur: .40, arc: 54, col, spin: 260 });
@@ -1832,44 +2196,28 @@ const FX = {
           this.sproutSteam(target.x, target.y - 60, 3);
           this.floatItem(target.x, target.y - 88, food, col);
         }, 380);
-      } else {
-        this.ring(x, y - 34, 70, col, .28);
       }
       return;
     }
     if (kind === 'rush') {
-      this.ring(x, y - 28, 68, col, .28);
-      this.sproutLeaves(x, y - 40, 4);
       if (target) {
-        this.heartLink(x + face * 20, y - 52, target.x, target.y - 54);
-        // Hurried dust puffs, crumbs, and mint leaves chase the dash path.
-        for (let i = 0; i < 4; i++) setTimeout(() => {
-          this.burst(x + (target.x - x) * (i + 1) / 5, y - 6, 3, ['#ffe6c2', '#fff2cf', '#ffd166'],
-            { spMin: 20, spMax: 70, lift: 25, sMin: 3, sMax: 6, life: .4, g: 220 });
-          this.sproutHearts(x + (target.x - x) * (i + 1) / 5, y - 50, 1);
-          this.sproutLeaves(x + (target.x - x) * (i + 1) / 5, y - 44, 1);
-        }, i * 70);
+        // dust kicked up along the run, then a warm landing beside them
+        for (let i = 0; i < 4; i++) setTimeout(() => this.burst(x + (target.x - x) * (i + 1) / 5, y - 4, 3,
+          ['#f3dcc0', '#fff0d6'], { spMin: 20, spMax: 70, lift: 25, sMin: 3, sMax: 6, life: .4, g: 220 }), i * 70);
         setTimeout(() => {
-          if (target.alive) {
-            mark(target, 110);
-            this.ring(target.x, target.y - 32, 115, '#ffd166', .45);
-            this.sproutDome(target.x, target.y, 64, .9);
-            this.aura(target.x, target.y, col, 4.8);
-            this.sproutSteam(target.x, target.y - 60, 4);
-            this.floatItem(target.x, target.y - 92, 'Proteinbar', '#ffd166');
-          }
-        }, 360);
+          if (!target.alive) return;
+          mark(target, 100);
+          this.aura(target.x, target.y, col, 4.8);
+          this.sproutSteam(target.x, target.y - 60, 3);
+          this.floatItem(target.x, target.y - 92, 'Proteinbar', '#e0925f');
+        }, 340);
       }
-      this.burst(x, y - 35, 8, ['#f4a261', '#ffd7a0', '#fff2cf'],
-        { spMin: 40, spMax: 130, lift: 45, sMin: 3, sMax: 7, life: .5, g: 330 });
       return;
     }
     if (kind === 'oven') {
-      this.ring(x, y - 30, 118, '#ff9f43', .45);
-      this.sproutSteam(x + face * 14, y - 62, 8, '#ffe9cc');
-      this.sproutLeaves(x + face * 14, y - 55, 5);
-      this.burst(x + face * 14, y - 48, 12, ['#ffbf69', '#ff9f43', '#fff2cf', '#ff758f'],
-        { spMin: 35, spMax: 130, lift: 75, sMin: 3, sMax: 7, life: .55, g: 240 });
+      this.sproutSteam(x + face * 14, y - 62, 6, '#ffeed8');
+      this.burst(x + face * 14, y - 48, 8, ['#f2b179', '#e0925f', '#fff0d6'],
+        { spMin: 35, spMax: 110, lift: 70, sMin: 3, sMax: 6, life: .5, g: 240 });
       targets.slice(0, 2).forEach((t, i) => {
         setTimeout(() => {
           if (!t || !t.alive) return;
@@ -1879,228 +2227,165 @@ const FX = {
           crumbTrail(x + face * 18, y - 62, t.x, t.y - 62, .42);
           setTimeout(() => {
             mark(t, 82);
-            this.sproutSteam(t.x, t.y - 60, 4);
+            this.sproutSteam(t.x, t.y - 60, 3);
             this.floatItem(t.x, t.y - 88, treatItem, col);
           }, 390);
-        }, i * 150);
+        }, 280 + i * 170);
       });
-      this.castProp(x + face * 18, y, { kind: 'item', img: food, size: 50 }, col, .52);
       return;
     }
     if (kind === 'batch') {
-      // Wave-start Fresh Batch: a warm kitchen pulse that reaches every ally.
-      this.ring(x, y - 42, 160, col, .5);
-      this.ring(x, y - 42, 280, '#ffd7a0', .65);
-      this.ring(x, y - 42, 360, '#ff758f', .7);
-      this.sproutSteam(x, y - 70, 8, '#fff2dc');
-      this.sproutLeaves(x, y - 60, 8);
+      this._astroEl('sp-wave', x, y - 6, '', 1.2, 'back');
+      this.sproutSteam(x, y - 70, 5, '#fff4e0');
       targets.filter(t => t && t.alive).forEach((t, i) => setTimeout(() => {
-        this.ring(t.x, t.y - 34, 76, col, .35);
-        this.sproutHearts(t.x, t.y - 56, 3);
-        this.sproutLeaves(t.x, t.y - 56, 3);
-        this.sparkle(t.x, t.y - 56, 5, '#ffd7a0');
-        this.floatItem(t.x, t.y - 82, 'Bread', '#ffd166');
-      }, 120 + i * 70));
+        this.sproutGlow(t.x, t.y, 70, .7);
+        this.sproutHearts(t.x, t.y - 58, 1);
+        this.floatItem(t.x, t.y - 82, 'Bread', '#e0925f');
+      }, 160 + i * 80));
       return;
     }
     if (kind === 'save') {
       if (target) {
-        this.flash('#ffb3c1', .25, .3);
-        this.ring(target.x, target.y - 30, opt.ultimate ? 180 : 140, '#ffd166', .6);
-        this.ring(target.x, target.y - 30, opt.ultimate ? 270 : 200, '#fff2cf', .75);
-        this.aura(target.x, target.y, '#f4a261', 1.4);
+        this.sproutGlow(target.x, target.y, opt.ultimate ? 150 : 120, 1.1);
         this.heartLink(x + face * 18, y - 62, target.x, target.y - 62);
-        this.sproutDome(target.x, target.y, opt.ultimate ? 104 : 82, 1.4);
-        this.burst(target.x, target.y - 38, opt.ultimate ? 22 : 14,
-          ['#f4a261', '#ffd166', '#fff2cf', '#ff758f', '#80ed99'],
-          { spMin: 90, spMax: 280, lift: 95, sMin: 4, sMax: 10, life: .8, g: 420 });
-        this.sproutHearts(target.x, target.y - 70, opt.ultimate ? 9 : 6);
-        this.sproutLeaves(target.x, target.y - 65, opt.ultimate ? 8 : 5);
-        this.sproutSteam(target.x, target.y - 50, 6, '#fff7e6');
-        this.floatItem(target.x, target.y - 105, 'Trinkets/SPROUT_SavoryCharm', '#ffd166');
-        this.shake(3.5, .2);
+        this.sproutDome(target.x, target.y, opt.ultimate ? 100 : 80, 1.4);
+        this.sproutHearts(target.x, target.y - 70, opt.ultimate ? 6 : 4);
+        this.sproutLeaves(target.x, target.y - 72, opt.ultimate ? 6 : 4);
+        this.sproutSteam(target.x, target.y - 50, 4, '#fff7e6');
+        this.floatItem(target.x, target.y - 105, 'Trinkets/SPROUT_SavoryCharm', '#e0925f');
+        this.shake(2.5, .18);
       }
       targets.filter(t => t && t !== target && t.alive).forEach((t, i) =>
         setTimeout(() => mark(t, 72), 170 + i * 50));
     }
   },
 
-  /** Astro's celestial drifting stardust motes and crescent moon particles. */
-  astroStardust(x, y, n, col, opt) {
-    if (!this.front || this.reducedEffects || !this.effectAllowed(2)) return;
-    opt = opt || {};
-    const cols = col ? [col] : ['#b9a4ff', '#dcd0ff', '#8f7fff', '#ffffff', '#ffd166'];
-    const glyphs = ['✦', '✧', '⭐', '🌙', '·'];
-    for (let i = 0; i < (n || 5); i++) setTimeout(() => {
-      const a = (opt.dir != null ? opt.dir : Math.random() * Math.PI * 2) + (Math.random() - .5) * (opt.spread || 2.5);
-      const sp = (opt.spMin || 35) + Math.random() * ((opt.spMax || 110) - (opt.spMin || 35));
-      this.part({
-        x: x + (Math.random() - .5) * (opt.jitter || 24),
-        y: y + (Math.random() - .5) * (opt.jitter || 16),
-        vx: Math.cos(a) * sp,
-        vy: Math.sin(a) * sp - (opt.lift == null ? 35 : opt.lift),
-        g: opt.g != null ? opt.g : 40,
-        drag: 1.15,
-        size: 11 + Math.random() * 8,
-        col: cols[i % cols.length],
-        shape: 'txt',
-        char: glyphs[i % glyphs.length],
-        life: .9 + Math.random() * .4,
-        spin: (Math.random() - .5) * 140
-      });
-    }, i * 45);
+  /* ---- Astro: a sleepy kid's night sky ------------------------------------
+     Everything here is drawn (CSS shapes, no emoji): cream moonlight and
+     four-point stars over deep indigo, with little teal accents from his skin.
+     Keyframes live in css/astro-fx.css. */
+  _astroEl(cls, x, y, css, life, layer) {
+    const n = el('div', cls);
+    n.style.cssText = `left:${x}px;top:${y}px;${css || ''}`;
+    (layer === 'back' ? this.back : this.front).appendChild(n);
+    setTimeout(() => n.remove(), (life || 1.4) * 1000 + 120);
+    return n;
   },
 
-  /** Drowsy / sleep status: soft sleepy glyphs and lavender dream mist circling head. */
-  astroDrowsy(target) {
-    if (!target || !this.front || this.reducedEffects || !this.effectAllowed(2)) return;
-    const glyphs = ['💤', '🌙', '💤', '✦'];
-    for (let i = 0; i < 4; i++) {
-      const a = (i / 4) * Math.PI * 2;
-      this.part({
-        x: target.x + Math.cos(a) * 22,
-        y: target.y - 92 + Math.sin(a) * 8,
-        vx: -Math.sin(a) * 75,
-        vy: Math.cos(a) * 20 - 15,
-        g: 10,
-        drag: 1.25,
-        size: 13,
-        col: '#dcd0ff',
-        shape: 'txt',
-        char: glyphs[i],
-        life: .95,
-        fade: true
-      });
+  /** A few drifting four-point stars and the odd tiny crescent. */
+  astroStardust(x, y, n, col, opt) {
+    if (!this.front || this._denseVisualSafe || this.reducedEffects || !this.effectAllowed(2)) return;
+    opt = opt || {};
+    const cols = col ? [col] : ['#f7e9b8', '#cfd0ff', '#8d86e0', '#9fe3df'];
+    for (let i = 0; i < (n || 5); i++) {
+      const sz = 7 + Math.random() * 9, moon = i % 5 === 4;
+      const dx = (Math.random() - .5) * (opt.spread ? 150 : 90), dy = -(24 + Math.random() * (opt.lift || 55));
+      const c = cols[i % cols.length];
+      this._astroEl(moon ? 'az-moon' : 'az-star', x + (Math.random() - .5) * 30, y + (Math.random() - .5) * 20,
+        `--s:${sz}px;--c:${c};--dx:${dx}px;--dy:${dy}px;--r:${(Math.random() - .5) * 90}deg;animation-delay:${i * .05}s`, 1.5);
     }
   },
 
-  /** Lunar crescent barrier shield that encases Astro or his protected allies. */
+  /** Drowsy / asleep: a lazy trail of Z's and one hanging crescent over the head. */
+  astroDrowsy(target) {
+    if (!target || !this.front || this._denseVisualSafe || this.reducedEffects || !this.effectAllowed(2)) return;
+    const x = target.x + 10, y = target.y - 96;
+    for (let i = 0; i < 3; i++) {
+      this._astroEl('az-z', x + i * 7, y - i * 8,
+        `--s:${11 + i * 4}px;--dx:${10 + i * 6}px;animation-delay:${i * .22}s`, 1.7);
+    }
+    this._astroEl('az-moon az-moon-hang', target.x - 14, y + 4, '--s:12px;--c:#f7e9b8', 1.5);
+  },
+
+  /** A soft moonlit dome: indigo glass, a cream crescent rim and a few twinkles. */
   astroMoonShield(x, y, radius, dur) {
-    if (!this.front || this.reducedEffects || !this.effectAllowed(3)) return;
-    const w = radius * 1.7, h = radius * 1.5;
-    const n = el('div');
-    n.style.cssText = `position:absolute;left:${x - w / 2}px;top:${y - h * .82}px;width:${w}px;height:${h}px;
-      border-radius:50%;border:3px dashed #b9a4ffcc;pointer-events:none;opacity:0;z-index:5;
-      background:radial-gradient(ellipse at 42% 38%,#f3eaff66 0 25%,#7c4dff26 60%,transparent 76%);
-      box-shadow:0 0 28px #7c4dffcc,inset 0 0 20px #b9a4ff88;transform:scale(.35);transform-origin:50% 85%`;
-    this.front.appendChild(n);
-    requestAnimationFrame(() => {
-      n.style.transition = 'transform .36s cubic-bezier(.15,1.5,.35,1),opacity .18s';
-      n.style.opacity = .95;
-      n.style.transform = 'scale(1)';
-    });
-    setTimeout(() => {
-      n.style.transition = 'opacity .45s,transform .45s';
-      n.style.opacity = 0;
-      n.style.transform = 'scale(1.15)';
-    }, Math.max(300, (dur || 1.2) * 1000 - 450));
-    setTimeout(() => n.remove(), (dur || 1.2) * 1000 + 100);
+    if (!this.front || this._denseVisualSafe || this.reducedEffects || !this.effectAllowed(3)) return;
+    const w = radius * 1.5, h = radius * 1.7;
+    const life = Math.max(.8, dur || 1.2);
+    const n = this._astroEl('az-dome', x - w / 2, y - h * .86, `width:${w}px;height:${h}px;--life:${life}s`, life + .4);
+    for (let i = 0; i < 3; i++) {
+      const s = el('i', 'az-twinkle');
+      s.style.cssText = `left:${18 + Math.random() * 64}%;top:${14 + Math.random() * 52}%;animation-delay:${i * .3}s`;
+      n.appendChild(s);
+    }
   },
 
-  /** Falling shooting star diving from the night sky with stardust streak and impact burst. */
-  starfall(x, y, opt) {
-    if (!this.front || this.reducedEffects) return;
-    opt = opt || {};
-    const col = opt.col || '#b9a4ff';
-    const sx = x - 55 + (Math.random() - .5) * 20;
-    const sy = y - 240;
-    const n = el('div');
-    n.style.cssText = `position:absolute;left:${sx}px;top:${sy}px;width:6px;height:52px;
-      border-radius:99px;background:linear-gradient(180deg,#ffffff,#ffd166 40%,${col});
-      box-shadow:0 0 16px ${col},0 0 8px #ffffff;transform:rotate(24deg);transform-origin:50% 0;
-      pointer-events:none;opacity:0;transition:transform .26s cubic-bezier(.2,.8,.4,1),opacity .08s;z-index:6;`;
-    this.front.appendChild(n);
-    requestAnimationFrame(() => {
-      n.style.opacity = 1;
-      n.style.transform = `translate(${x - sx}px,${y - sy - 40}px) rotate(24deg) scaleY(1.4)`;
-    });
+  /** A shooting star: bright head, tapered tail, a quiet little burst on landing. */
+  astroStar(x, y, opt) {
+    if (!this.front || this.reducedEffects || this._denseVisualSafe) return;
+    const col = (opt && opt.col) || '#f7e9b8';
+    const sx = x - 90 - Math.random() * 30, sy = y - 250;
+    const ang = Math.atan2(y - 36 - sy, x - sx);
+    const n = this._astroEl('az-shoot', sx, sy,
+      `--dx:${x - sx}px;--dy:${y - 36 - sy}px;--a:${ang}rad;--c:${col}`, .6);
     setTimeout(() => {
-      n.style.opacity = 0;
-      n.remove();
-      this.burst(x, y - 36, 12, ['#ffffff', '#ffd166', '#b9a4ff', '#7c4dff'],
-        { spMin: 60, spMax: 190, lift: 55, sMin: 3, sMax: 8, life: .5, g: 320 });
-      this.ring(x, y - 30, 84, col, .35);
-      this.astroStardust(x, y - 40, 5, col, { spMin: 40, spMax: 130, lift: 45 });
-    }, 250);
+      if (this._denseVisualSafe) return;
+      this._astroEl('az-pop', x, y - 34, `--c:${col}`, .6);
+      this._astroEl('az-ripple', x, y - 6, '', .7, 'back');
+      this.astroStardust(x, y - 36, 3, col, { lift: 40 });
+    }, 290);
   },
 
-  /** Astro's signature celestial support language:
-      Deep dream pulse waves, orbiting sleep glyphs, shooting starfalls,
-      and starlight star pillows cushioning wounded allies. */
+  /** Dream Pulse: a slow wave of dusk rolling out across the field. */
+  astroWave(x, y) {
+    if (!this.back || this._denseVisualSafe || this.reducedEffects) return;
+    this._astroEl('az-wave', x, y, '', 1.3, 'back');
+    this._astroEl('az-wave az-wave2', x, y, '', 1.5, 'back');
+  },
+
+  /** Endless Night: dusk settles over the stage, stars come out, a moon rises. */
+  astroNightfall(dur) {
+    if (!this.back || this._denseVisualSafe || this.reducedEffects) return;
+    dur = dur || 10;
+    const n = this._astroEl('az-night', 0, 0, `--life:${dur}s`, dur + .8, 'back');
+    n.innerHTML = '<b class="az-night-moon"></b>' + Array.from({ length: 14 }, () =>
+      `<i style="left:${Math.random() * 100}%;top:${Math.random() * 55}%;--d:${(Math.random() * 3).toFixed(2)}s;--sz:${(3 + Math.random() * 4).toFixed(1)}px"></i>`).join('');
+  },
+
+  /** Astro's support language: slow, soft, never loud. */
   astroSkill(kind, x, y, opt) {
-    if (!this.front) return;
+    if (!this.front || this._denseVisualSafe) return;
     opt = opt || {};
-    const col = '#b9a4ff', target = opt.target, targets = opt.targets || [];
+    const target = opt.target, targets = opt.targets || [];
     if (kind === 'pulse') {
-      this.ring(x, y - 40, 180, '#7c4dff', .45);
-      this.ring(x, y - 40, 340, '#b9a4ff', .6);
-      this.ring(x, y - 40, 520, '#dcd0ff', .75);
-      this.astroStardust(x, y - 50, 14, '#b9a4ff', { spread: Math.PI * 2, spMin: 60, spMax: 220, lift: 40 });
-      this.floatItem(x, y - 96, 'Trinkets/ASTRO_Starpillow', '#b9a4ff');
+      if (!opt.isAlly) { targets.forEach((t, i) => t && t.alive && setTimeout(() => this.astroDrowsy(t), i * 60)); return; }
+      this.astroWave(x, y - 8);
+      this.astroStardust(x, y - 50, 8, null, { spread: 1, lift: 70 });
+      this.floatItem(x, y - 96, 'Trinkets/ASTRO_Starpillow', '#cfd0ff');
       targets.forEach((t, i) => {
         if (!t || !t.alive) return;
-        setTimeout(() => {
-          if (opt.isAlly) {
-            this.ring(t.x, t.y - 34, 76, '#b9a4ff', .35);
-            this.sparkle(t.x, t.y - 50, 8, '#dcd0ff');
-            this.astroStardust(t.x, t.y - 50, 4, '#b9a4ff');
-            this.floatItem(t.x, t.y - 88, 'Trinkets/ASTRO_Starpillow', '#b9a4ff');
-          } else {
-            this.astroDrowsy(t);
-            this.ring(t.x, t.y - 34, 70, '#7c4dff', .3);
-          }
-        }, i * 40);
+        setTimeout(() => this.astroStardust(t.x, t.y - 50, 3, '#f7e9b8'), 180 + i * 70);
       });
       return;
     }
     if (kind === 'slumber') {
       if (target) {
-        this.ring(target.x, target.y - 45, 115, '#7f6bd6', .45);
-        this.ring(target.x, target.y - 45, 160, '#b9a4ff', .55);
+        this._astroEl('az-ripple az-ripple-big', target.x, target.y - 6, '', .9, 'back');
         this.astroDrowsy(target);
-        this.astroStardust(target.x, target.y - 55, 8, '#7f6bd6');
-        this.floatItem(target.x, target.y - 96, 'Trinkets/ASTRO_Starpillow', '#7f6bd6');
-        this.floatIcon(target.x, target.y - 120, '💤 SLUMBER', '#b9a4ff');
-      }
-      return;
-    }
-    if (kind === 'starfall') {
-      if (target) {
-        this.starfall(target.x, target.y, { col: '#b9a4ff' });
+        this.astroStardust(target.x, target.y - 55, 5, '#cfd0ff');
+        this.floatItem(target.x, target.y - 96, 'Trinkets/ASTRO_Starpillow', '#8d86e0');
       }
       return;
     }
     if (kind === 'rested') {
-      if (target) {
-        this.ring(target.x, target.y - 34, 82, '#b9a4ff', .38);
-        this.sparkle(target.x, target.y - 50, 7, '#dcd0ff');
-        this.astroStardust(target.x, target.y - 50, 4, '#ffd166');
-        this.floatItem(target.x, target.y - 88, 'Trinkets/ASTRO_Starpillow', '#ffd166');
-      }
+      if (target) this.astroStardust(target.x, target.y - 52, 2, '#f7e9b8', { lift: 40 });
       return;
     }
     if (kind === 'shield') {
       if (target) {
-        this.ring(target.x, target.y - 35, 120, '#b9a4ff', .45);
-        this.astroMoonShield(target.x, target.y, 76, opt.dur || 1.3);
-        this.astroStardust(target.x, target.y - 50, 6, '#b9a4ff');
-        this.floatItem(target.x, target.y - 94, 'Trinkets/ASTRO_Starpillow', '#b9a4ff');
+        this.astroMoonShield(target.x, target.y, 70, opt.dur || 1.3);
+        this.astroStardust(target.x, target.y - 50, 3, '#cfd0ff');
       }
       return;
     }
     if (kind === 'save') {
       if (target) {
-        this.flash('#2b2160', .35, .35);
-        this.ring(target.x, target.y - 35, 150, '#ffffff', .6);
-        this.ring(target.x, target.y - 35, 230, '#b9a4ff', .75);
-        this.aura(target.x, target.y, '#7c4dff', 1.8);
+        this.flash('#14123f', .3, .4);
+        this.astroWave(target.x, target.y - 8);
         this.astroMoonShield(target.x, target.y, 90, 1.8);
-        this.burst(target.x, target.y - 40, 20, ['#ffffff', '#ffd166', '#b9a4ff', '#7c4dff'],
-          { spMin: 90, spMax: 260, lift: 90, sMin: 4, sMax: 10, life: .8, g: 400 });
-        this.astroStardust(target.x, target.y - 60, 10, '#ffffff', { spMin: 60, spMax: 200, lift: 60 });
-        this.floatItem(target.x, target.y - 105, 'Trinkets/ASTRO_Starpillow', '#ffffff');
-        this.floatIcon(target.x, target.y - 128, '🌙 SAVED', '#dcd0ff');
-        this.shake(4, .22);
+        this.astroStardust(target.x, target.y - 60, 8, '#f7e9b8', { spread: 1, lift: 70 });
+        this.floatItem(target.x, target.y - 105, 'Trinkets/ASTRO_Starpillow', '#f7e9b8');
+        this.shake(2, .2);
       }
     }
   },
@@ -2179,7 +2464,9 @@ const FX = {
       gradients: soft wax has pooled rims and drips, while Flame Trail has a
       bright core, hot embers, and a directionally flowing wick. */
   waxZone(x, anchorY, type, radius, dur) {
-    if (!this.back) return;
+    // Dense Waxwell battles keep terrain in the combat model, but creating
+    // animated terrain nodes in the detached safety host still burns CPU.
+    if (!this.back || this._denseVisualSafe) return;
     const isViolet = type === 'scented_violet' || type === 'violet_flame';
     const flame = type === 'flame' || isViolet, w = Math.max(58, radius * 2), h = flame ? 29 : 24;
     const n = el('div');
@@ -2206,7 +2493,7 @@ const FX = {
   },
 
   waxTrail(x1, y1, x2, y2, face, type, dur) {
-    if (!this.front) return;
+    if (!this.front || this._denseVisualSafe) return;
     const flame = type === 'flame', h = flame ? 14 : 9;
     const dx = x2 - x1, dy = y2 - y1, width = Math.max(42, Math.hypot(dx, dy));
     const angle = Math.atan2(dy, dx) * 180 / Math.PI;
@@ -2261,7 +2548,7 @@ const FX = {
   },
 
   waxwellSkill(kind, x, y, opt) {
-    if (!this.front) return;
+    if (!this.front || this._denseVisualSafe) return;
     opt = opt || {};
     const gold = '#e7bd54', fire = '#ff8a38';
     if (kind === 'run') {
@@ -2447,8 +2734,9 @@ const FX = {
   },
 
   veeSignature(phase, x, y, opt) {
-    if (!this.front) return;
+    if (!this.front || this._denseVisualSafe) return;
     opt = opt || {};
+    if (!this.effectAllowed(opt.ultimate ? 3 : 2)) return;
     const size = opt.size || 94, w = size * 1.12, h = size * .78;
     // A single smooth CRT scan and camera frame, with no flickering static or
     // repeated luminance changes, important for the game's reduced-flash mix.
@@ -2514,7 +2802,7 @@ const FX = {
       its lamp sweeps the field, steam follows the chimney, then the engine
       carries the impact line across the stage. */
   trainPass(dir, left, right, ground, dur, anchor) {
-    if (!this.front || !this.back) return;
+    if (!this.front || !this.back || this._denseVisualSafe) return;
     // The engine runs along Dyle's actual depth lane, rather than a fixed
     // centre stripe. It can still sweep the whole field, but now visibly
     // belongs to the Toon who called it.
@@ -2801,6 +3089,7 @@ const FX = {
   },
 
   toodlesEightBallFortune(x, y, kind, isSuper) {
+    Sound.play('orb_magic', { vol: .55, throttle: 300 });
     if (!this.front) return;
     const fortuneTexts = {
       damage: 'OUTLOOK GOOD!',
@@ -2910,7 +3199,7 @@ const FX = {
   },
 
   qomGourdyDrumBlast(x, y, beat, power) {
-    if (!this.front) return;
+    if (!this.front || this._denseVisualSafe) return;
     const colors = { 1: '#a7f05f', 2: '#ba59e0', 3: '#8cf0da', 4: '#f4ffd9' };
     const col = colors[beat] || '#bbfa79';
     const rad = beat === 4 ? 140 : 85 + beat * 12;
@@ -3149,51 +3438,87 @@ const FX = {
 
   gigiRoulette(x, y, results) {
     if (!this.front || !results || !results.length) return;
+    if (this._denseVisualSafe) {
+      results.forEach((r, i) => setTimeout(() => this.floatIcon(x, y - 70 - i * 18, `${r.icon} ${r.name}`, r.color), i * 260));
+      return;
+    }
+    this.front.querySelectorAll('.gigi-roulette-live').forEach(n => n.remove());
+    const prizeSound = { heart: 'heal', shield: 'shield_cast', tempo: 'gigi_land', energy: 'beam_charge',
+      power: 'buff', jinx: 'spectral', double: 'cheer', jackpot: 'get_rare' };
     const wheel = el('div');
     wheel.className = 'gigi-roulette-live';
-    wheel.style.cssText = `position:absolute;left:0;top:0;z-index:24;width:156px;height:184px;margin-left:-78px;margin-top:-170px;
-      pointer-events:none;opacity:0;transform:translate(${x}px,${y}px) scale(.72);filter:drop-shadow(0 5px 8px #45163288);`;
+    wheel.style.cssText = `position:absolute;left:0;top:0;z-index:24;width:156px;height:190px;margin-left:-78px;margin-top:-176px;
+      pointer-events:none;opacity:0;transform:translate(${x}px,${y}px) scale(.6) rotate(-6deg);filter:drop-shadow(0 6px 8px #45163299);`;
     const wedges = ['#ff719d','#61d8dc','#ffd166','#9d8bff','#ff9d58','#a5aac4','#73c889','#fff0a0'];
     const marks = ['♥','◆','➤','⚡','★','☁','×2','✦'];
     const gradient = wedges.map((c, i) => `${c} ${i * 45}deg ${(i + 1) * 45}deg`).join(',');
-    wheel.innerHTML = `<div style="position:absolute;left:11px;top:6px;font:900 11px/1 Arial;letter-spacing:2px;color:#fff4cf;text-shadow:0 2px 3px #41132d">GIGI'S LUCKY WHEEL</div>
-      <div class="gigi-roulette-disc" style="position:absolute;left:9px;top:25px;width:138px;height:138px;border:5px solid #fff0c1;border-radius:50%;box-sizing:border-box;background:conic-gradient(${gradient});box-shadow:inset 0 0 0 3px #8b345b,0 0 0 3px #7c2148;">
+    const pegs = Array.from({ length: 16 }, (_, i) => `<u style="position:absolute;left:50%;top:50%;width:7px;height:7px;margin:-3.5px;border-radius:50%;background:${i % 2 ? '#fff6d3' : '#ffd166'};box-shadow:0 0 5px #ffe8a0;transform:rotate(${i * 22.5}deg) translateY(-69px)"></u>`).join('');
+    wheel.innerHTML = `<div style="position:absolute;left:0;right:0;top:0;text-align:center;font:900 10px/1 Arial;letter-spacing:2.5px;color:#fff4cf;text-shadow:0 2px 3px #41132d">LUCKY SPIN</div>
+      <div style="position:absolute;left:3px;top:19px;width:150px;height:150px;border-radius:50%;background:radial-gradient(circle at 35% 25%,#ff9fc4,#c2457d 60%,#7c2148);box-shadow:0 0 0 3px #fff0c1,0 0 18px #ff8fc088"></div>
+      <div class="gigi-roulette-disc" style="position:absolute;left:14px;top:30px;width:128px;height:128px;border-radius:50%;box-sizing:border-box;border:3px solid #fff0c1;background:conic-gradient(${gradient});box-shadow:inset 0 0 0 2px #8b345b,inset 0 0 14px #0004;">
         ${marks.map((m,i)=>`<b style="position:absolute;left:50%;top:50%;width:26px;height:20px;margin-left:-13px;margin-top:-10px;display:block;text-align:center;color:#542846;font:1000 16px/20px Arial;text-shadow:0 1px 0 #fff9" data-wedge="${i}">${m}</b>`).join('')}
-        <i style="position:absolute;left:50%;top:50%;width:36px;height:36px;margin:-18px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff8d7,#f5b2cb 52%,#9b315e 100%);border:3px solid #fff4d0;box-sizing:border-box;box-shadow:0 2px 4px #4a1732"></i>
-      </div><div style="position:absolute;left:72px;top:18px;width:0;height:0;border-left:9px solid transparent;border-right:9px solid transparent;border-top:18px solid #fff6d3;filter:drop-shadow(0 2px 1px #672647)"></div>
-      <strong style="position:absolute;left:0;right:0;top:164px;text-align:center;font:1000 14px/18px Arial;color:#fff5d6;text-shadow:0 2px 4px #451632;white-space:nowrap"></strong>`;
+        <i style="position:absolute;left:50%;top:50%;width:32px;height:32px;margin:-16px;border-radius:50%;background:radial-gradient(circle at 35% 30%,#fff8d7,#f5b2cb 52%,#9b315e 100%);border:3px solid #fff4d0;box-sizing:border-box;box-shadow:0 2px 4px #4a1732"></i>
+      </div>
+      <div style="position:absolute;left:3px;top:19px;width:150px;height:150px;pointer-events:none">${pegs}</div>
+      <div class="gigi-roulette-pin" style="position:absolute;left:66px;top:9px;width:0;height:0;border-left:12px solid transparent;border-right:12px solid transparent;border-top:24px solid #fff6d3;filter:drop-shadow(0 2px 1px #672647);transform-origin:50% 0"></div>
+      <strong style="position:absolute;left:-20px;right:-20px;top:170px;text-align:center;font:1000 15px/18px Arial;color:#fff5d6;text-shadow:0 2px 4px #451632;white-space:nowrap"></strong>`;
     this.front.appendChild(wheel);
-    const disc = wheel.querySelector('.gigi-roulette-disc');
+    const disc = wheel.querySelector('.gigi-roulette-disc'), pin = wheel.querySelector('.gigi-roulette-pin');
     wheel.querySelectorAll('[data-wedge]').forEach(mark => {
       const i = Number(mark.dataset.wedge), a = (i * 45 + 22.5) * Math.PI / 180;
-      mark.style.transform = `translate(${Math.sin(a) * 43}px,${-Math.cos(a) * 43}px)`;
+      mark.style.transform = `translate(${Math.sin(a) * 40}px,${-Math.cos(a) * 40}px)`;
     });
     requestAnimationFrame(() => {
-      wheel.style.transition = 'opacity .12s,transform .2s cubic-bezier(.2,1.4,.4,1)'; wheel.style.opacity = '1'; wheel.style.transform = `translate(${x}px,${y}px) scale(1)`;
-      setTimeout(() => { wheel.style.transition = ''; }, 230);
+      wheel.style.transition = 'opacity .12s,transform .24s cubic-bezier(.2,1.5,.4,1)'; wheel.style.opacity = '1'; wheel.style.transform = `translate(${x}px,${y}px) scale(1) rotate(0deg)`;
+      setTimeout(() => { wheel.style.transition = ''; }, 260);
     });
+    // The spin is cumulative so every extra tape keeps turning the same disc.
+    let turns = 0;
     results.forEach((result, i) => {
       setTimeout(() => {
         if (!wheel.isConnected) return;
-        const stop = ((360 - ((result.index || 0) * 45 + 22.5)) % 360) + 360 * (4 + i);
+        const cur = turns % 360;
+        const target = ((360 - ((result.index || 0) * 45 + 22.5)) % 360);
+        turns += ((target - cur + 360) % 360) + 360 * 4;
         disc.style.transition = 'transform 1.05s cubic-bezier(.08,.72,.16,1)';
-        disc.style.transform = `rotate(${stop}deg)`;
+        disc.style.transform = `rotate(${turns}deg)`;
+        // Flapper ticks as the wedges pass.
+        for (let k = 0; k < 9; k++) setTimeout(() => {
+          if (!pin.isConnected) return;
+          pin.style.transition = 'transform .05s'; pin.style.transform = 'rotate(-22deg)';
+          setTimeout(() => { pin.style.transform = 'rotate(0deg)'; }, 55);
+        }, 40 + k * k * 11);
         setTimeout(() => {
           const label = wheel.querySelector('strong');
-          label.textContent = `${result.name.toUpperCase()}${result.combo > 1 ? `  ×${result.combo}` : ''}`;
+          label.textContent = `${result.icon} ${result.name.toUpperCase()}${result.combo > 1 ? `  ×${result.combo}` : ''}`;
           label.style.color = result.color || '#fff5d6';
-          this.sparkle(x, y - 65, result.id === 'jackpot' ? 12 : 5, result.color || '#fff0a0');
-        }, 980);
-      }, i * 1120);
+          label.animate([{ transform: 'scale(.6)' }, { transform: 'scale(1.25)' }, { transform: 'scale(1)' }], { duration: 320, easing: 'ease-out' });
+          const jp = result.id === 'jackpot';
+          this.sparkle(x, y - 65, jp ? 14 : 6, result.color || '#fff0a0');
+          this.ring(x, y - 10, jp ? 120 : 70, result.color || '#fff0a0', .3);
+          if (jp && this.confetti) this.confetti(x, y - 70, 18);
+          if (typeof Sound !== 'undefined') {
+            Sound.play(prizeSound[result.id] || 'ding', { vol: jp ? .72 : .5, priority: jp, throttle: 0 });
+            if (jp) Sound.play('cheer_big', { vol: .42, throttle: 600 });
+          }
+        }, 1020);
+      }, i * 1180);
     });
     setTimeout(() => {
       wheel.style.transition = 'opacity .24s,transform .24s ease-in'; wheel.style.opacity = '0'; wheel.style.transform = `translate(${x}px,${y - 18}px) scale(.9)`;
       setTimeout(() => wheel.remove(), 260);
-    }, 1180 + results.length * 1120);
+    }, 1500 + results.length * 1180);
   },
 
   veePanel(x, y, eyebrow, title, col, dur, small) {
-    if (!this.front) return;
+    if (!this.front || this._denseVisualSafe) return;
+    // Several overlapping casts can otherwise build a wall of animated ad
+    // cards and large image layers before the old ones finish leaving.
+    // Vee can trigger multiple cards from a single cast. On dense boards keep
+    // only a pair alive so layered image/transition work cannot stall input.
+    const maxPanels = this._denseParty ? 2 : this._qualityMax <= .68 ? 3 : 4;
+    if (this.front.querySelectorAll('.vee-ad-popup').length >= maxPanels) return;
+    if (!this.effectAllowed(small ? 1 : 2)) return;
     const w = small ? 122 : 184, h = small ? 78 : 122;
     const isSpotlight = /SPOTLIGHT|HEADLINE/i.test(title + ' ' + eyebrow);
     const isAudience = /APPLAUSE|BOOSTED|FAN FAVORITE/i.test(title + ' ' + eyebrow);
@@ -3206,7 +3531,7 @@ const FX = {
     const kicker = isCommercial ? 'VEE\'S NETWORK' : isAudience ? 'VEE LIVE' : 'VEE BROADCAST';
     const action = isCommercial ? 'STAY TUNED' : isAudience ? 'SMILE!' : 'LOOK AT ME!';
     const n = el('div', `vee-ad-popup${small ? ' vee-ad-popup-small' : ''}`);
-    n.style.cssText = `left:${x - w / 2}px;top:${y - h / 2}px;width:${w}px;--vee-accent:${col || '#7be0ff'};--vee-ad-life:${Math.max(.28, dur || .8)}s`;
+    n.style.cssText = `left:${x - w / 2}px;top:${y - h / 2}px;width:${w}px;--vee-accent:${col || '#6fe35a'};--vee-ad-life:${Math.max(.28, dur || .8)}s`;
     n.innerHTML = `<div class="vee-ad-top"><span>${kicker}</span><i>● ON AIR</i></div>
       <div class="vee-ad-art"><img src="${ASSET}uploads/${art}" alt=""><b>${action}</b></div>
       <div class="vee-ad-copy"><small>${eyebrow}</small><strong>${title}</strong><em>${isCommercial ? 'PLEASE WAIT FOR THE SHOW' : 'YOUR ATTENTION IS REQUIRED'}</em></div>
@@ -3222,72 +3547,65 @@ const FX = {
     setTimeout(() => n.remove(), ((dur || .8) + .3) * 1000);
   },
 
-  veeLight(x, y, col, size, delay) {
-    // The broadcast cards remain readable in LOW, but the decorative light
-    // beams are optional. Avoid rebuilding a full field of glowing DOM nodes
-    // when the player has explicitly chosen a light particle profile.
-    if (!this.front || this.reducedEffects || this.particleMode === 'off' || this.graphicsQuality <= 33) return;
+  /* ---- Vee: a studio floor ------------------------------------------------
+     Phosphor green and white-hot light on black. Spotlight cones, CRT
+     power-on flashes and test-pattern bars (css/vee-fx.css) replace the old
+     neon rings; the pop-up ad cards stay as her signature gag, but only one
+     per cast. */
+  veeCone(x, y, headline, delay) {
+    if (!this.front || this._denseVisualSafe || this.reducedEffects || this.graphicsQuality <= 33) return;
     setTimeout(() => {
-      const density = this.graphicsQuality <= 66 ? .78 : 1;
-      const s = (size || 82) * density, glow = col || '#7be0ff', n = el('div');
-      n.style.cssText = `position:absolute;left:${x - s / 2}px;top:${y - s / 2}px;width:${s}px;height:${s}px;z-index:8;
-        pointer-events:none;opacity:0;transform:scale(.25) rotate(-18deg);mix-blend-mode:screen;
-        background:
-          radial-gradient(ellipse at 50% 50%,#fff 0 2.5%,${glow} 4%,transparent 16%),
-          radial-gradient(ellipse at 50% 50%,transparent 0 20%,${glow}66 36%,transparent 70%),
-          linear-gradient(90deg,transparent 0 47%,#ffffffd9 49% 51%,transparent 53%),
-          linear-gradient(0deg,transparent 0 47%,#ffffffd9 49% 51%,transparent 53%);
-        filter:drop-shadow(0 0 7px ${glow})`;
-      this.front.appendChild(n);
-      requestAnimationFrame(() => { n.style.transition = 'transform .22s cubic-bezier(.15,1.5,.3,1),opacity .1s'; n.style.opacity = .9; n.style.transform = 'scale(1) rotate(5deg)'; });
-      setTimeout(() => { n.style.transition = 'transform .28s ease-out,opacity .24s'; n.style.opacity = 0; n.style.transform = 'scale(1.45) rotate(18deg)'; }, 300);
-      setTimeout(() => n.remove(), 620);
+      const n = this._astroEl('vee-cone' + (headline ? ' vee-cone-hot' : ''), x - 45, y - 300, '', 1.1);
+      n.innerHTML = '<i></i>';
     }, delay || 0);
   },
 
+  /** A CRT switching on: white line, stretched to a glowing box, then gone. */
+  veeCrt(x, y, w, delay) {
+    if (!this.front || this._denseVisualSafe || this.reducedEffects || !this.effectAllowed(1)) return;
+    setTimeout(() => this._astroEl('vee-crt', x, y, `--w:${w || 56}px`, .6), delay || 0);
+  },
+
   veeSpotlight(x, y, face, foes, headline) {
-    this.castProp(x + face * 18, y, { kind: 'item', img: 'Trinkets/VEE_Veemote', size: 42 }, '#75e65f', .65);
-    this.veePanel(x, y - 106, 'ON AIR', 'SPOTLIGHT ON', '#7be0ff', .82);
+    if (this._denseVisualSafe) return;
+    this.castProp(x + face * 18, y, { kind: 'item', img: 'Trinkets/VEE_Veemote', size: 42 }, '#6fe35a', .65);
+    this.veePanel(x, y - 106, 'ON AIR', 'SPOTLIGHT ON', '#6fe35a', .82);
     const maxTargets = this.graphicsQuality >= 67 ? 5 : 2;
-    const orderedFoes = (foes || []).slice().sort((a, b) => (b === headline ? 1 : 0) - (a === headline ? 1 : 0));
-    orderedFoes.slice(0, maxTargets).forEach((foe, i) => {
-      const isHeadline = foe === headline || (foe.hasStatus && foe.hasStatus('headline'));
-      this.veeLight(foe.x, foe.y - 58, isHeadline ? '#75e65f' : '#7be0ff', isHeadline ? 122 : 82, 95 + i * 35);
+    const ordered = (foes || []).slice().sort((a, b) => (b === headline ? 1 : 0) - (a === headline ? 1 : 0));
+    ordered.slice(0, maxTargets).forEach((foe, i) => {
+      const hot = foe === headline || (foe.hasStatus && foe.hasStatus('headline'));
+      this.veeCone(foe.x, foe.y, hot, 110 + i * 60);
       setTimeout(() => {
-        if (this.graphicsQuality > 33 && this.particleMode !== 'off') this.ring(foe.x, foe.y - 35, isHeadline ? 116 : 72, isHeadline ? '#75e65f' : '#7be0ff', .34);
-        if (isHeadline) {
-          if (this.graphicsQuality > 33 && this.particleMode !== 'off') this.targetLine({ x, y }, foe, '#75e65f');
-          this.veePanel(foe.x, foe.y - 112, 'PRIORITY TARGET', 'HEADLINE', '#75e65f', .72, true);
-        }
-      }, 170 + i * 35);
+        if (hot) this.targetLine({ x, y }, foe, '#6fe35a');
+        this.shake(hot ? 3 : 1.5, .15);
+      }, 220 + i * 60);
     });
+    if (headline) this.veeCrt(headline.x, headline.y - 100, 70, 260);
   },
 
   veeAudience(x, y, face, allies) {
-    this.castProp(x + face * 18, y, { kind: 'item', img: 'Trinkets/VEE_Veemote', size: 42 }, '#75e65f', .70);
-    this.veePanel(x, y - 108, 'LIVE AUDIENCE', 'APPLAUSE!', '#75e65f', .90);
-    const maxAllies = this.graphicsQuality >= 67 ? 3 : 2;
+    if (this._denseVisualSafe) return;
+    this.castProp(x + face * 18, y, { kind: 'item', img: 'Trinkets/VEE_Veemote', size: 42 }, '#6fe35a', .70);
+    this.veePanel(x, y - 108, 'LIVE AUDIENCE', 'APPLAUSE!', '#6fe35a', .90);
+    const maxAllies = this.graphicsQuality >= 67 ? 4 : 2;
     (allies || []).slice(0, maxAllies).forEach((ally, i) => setTimeout(() => {
-      if (this.graphicsQuality > 33 && this.particleMode !== 'off') this.targetLine({ x, y }, ally, '#75e65f');
-      this.veeLight(ally.x, ally.y - 58, '#75e65f', 86, 0);
-      if (this.graphicsQuality > 33 && this.particleMode !== 'off') this.ring(ally.x, ally.y - 34, 82, '#75e65f', .34);
-      this.sparkle(ally.x, ally.y - 58, this.graphicsQuality >= 67 ? 5 : 3, '#caffb8');
-      this.veePanel(ally.x, ally.y - 105, 'FAN FAVORITE', 'BOOSTED', '#75e65f', .62, true);
-    }, 120 + i * 70));
+      this.veeCrt(ally.x, ally.y - 60, 44, 0);
+      // studio confetti: small paper bits popped up over the audience
+      this.burst(ally.x, ally.y - 70, 7, ['#f2ffe8', '#6fe35a', '#bff5a6', '#ffffff'],
+        { shape: 'paper', spMin: 50, spMax: 150, lift: 120, sMin: 4, sMax: 7, life: .9, g: 300 });
+    }, 160 + i * 90));
   },
 
   veeCommercial(x, y, face, midX, ground, allies, enemies) {
-    this.castProp(x + face * 18, y, { kind: 'item', img: 'Trinkets/VEE_Veemote', size: 44 }, '#7be0ff', .74);
-    this.veePanel(midX, ground - 142, "VEE'S NETWORK", "WE'LL BE RIGHT BACK", '#7be0ff', 1.18);
-    const maxTargets = this.graphicsQuality >= 67 ? 5 : 2;
-    (enemies || []).slice(0, maxTargets).forEach((foe, i) => setTimeout(() => {
-      if (this.graphicsQuality > 33 && this.particleMode !== 'off') this.ring(foe.x, foe.y - 32, 68, '#7be0ff', .32);
-      this.veePanel(foe.x, foe.y - 98, 'AD BREAK', 'SLOWED', '#7be0ff', .64, true);
-    }, 120 + i * 40));
-    (allies || []).slice(0, maxTargets).forEach((ally, i) => setTimeout(() => {
-      if (this.graphicsQuality > 33 && this.particleMode !== 'off') this.ring(ally.x, ally.y - 32, 70, '#75e65f', .32);
-      this.sparkle(ally.x, ally.y - 55, this.graphicsQuality >= 67 ? 3 : 2, '#aef6a8');
-    }, 150 + i * 34));
+    if (this._denseVisualSafe) return;
+    this.castProp(x + face * 18, y, { kind: 'item', img: 'Trinkets/VEE_Veemote', size: 44 }, '#6fe35a', .74);
+    this.veePanel(midX, ground - 142, "VEE'S NETWORK", "WE'LL BE RIGHT BACK", '#6fe35a', 1.18);
+    if (this.back && !this.reducedEffects) {
+      const bars = this._astroEl('vee-bars', 0, 0, '', 1.5, 'back');
+      bars.innerHTML = '<i></i><i></i><i></i><i></i><i></i><i></i><i></i>';
+    }
+    (enemies || []).slice(0, this.graphicsQuality >= 67 ? 5 : 2).forEach((foe, i) =>
+      this.veeCrt(foe.x, foe.y - 70, 50, 200 + i * 60));
   },
 
   flyteWindRibbon(x1, y1, x2, y2, dur, col, delay) {
@@ -3590,6 +3908,7 @@ const FX = {
   // a dense 5v5, cap those transient clusters per short time slice while
   // leaving the particle pool and important hit sparks intact.
   effectAllowed(cost) {
+    if (this._denseVisualSafe) return false;
     if (!this._combatLoad) return true;
     const now = performance.now();
     if (now - this._effectWindowAt >= 90) {
@@ -3651,7 +3970,7 @@ const FX = {
 
   /** Physics particle. opt: {x,y,vx,vy,g,size,col,life,shape,fade,spin,scale} */
   part(opt) {
-    if (!this.front || this.reducedEffects || this.particlesSuppressed()) return;
+    if (!this.front || this._denseVisualSafe || this.reducedEffects || this.particlesSuppressed()) return;
     const cap = this.particleCap();
     if (this._denseParty && this.parts.length >= Math.min(cap, this._particleTripAt)) {
       this.tripParticleBreaker();
@@ -3694,7 +4013,7 @@ const FX = {
   },
 
   burst(x, y, n, col, opt) {
-    if (this.reducedEffects || this.particlesSuppressed()) return;
+    if (this._denseVisualSafe || this.reducedEffects || this.particlesSuppressed()) return;
     opt = opt || {};
     n = Math.round(n * this.quality);
     for (let i = 0; i < n; i++) {
@@ -3716,9 +4035,9 @@ const FX = {
   /* ---------- update pump ---------- */
   update(dt) {
     if (this._denseVisualSafe) {
-      // Detached hosts protect authored DOM effects; also skip the particle
-      // transform pump so a high-frequency Waxwell fight cannot monopolize
-      // the main thread on its render path.
+      // Drop any particles that were queued before the dense battle guard
+      // activated. Clearing only the array left their detached nodes alive.
+      for (const p of this.parts) if (p && p.n) p.n.remove();
       this.parts.length = 0;
       return;
     }
@@ -3902,6 +4221,7 @@ const FX = {
       combat hit, not just the composed slash/boom skill effects, so ordinary
       basic attacks carry real impact instead of just a floating number. */
   hitSpark(x, y, col, opt) {
+    if (this._denseVisualSafe) return;
     opt = opt || {};
     const big = !!opt.big;
     // Basic attacks can land in a dense cluster during an AoE or multi-hit
@@ -3996,10 +4316,12 @@ const FX = {
   },
 
   floatIcon(x, y, char, col) {
-    if (!this.pop) return;
+    if (!this.pop || this._denseVisualSafe) return;
     if (!this.combatNumbers && typeof char === 'string' && char.length > 2) return;
     this.trimPops();
     const str = String(char != null ? char : '');
+    const emojiPattern = /[\p{Extended_Pictographic}\uFE0F\u200D]/u;
+    const hasEmoji = emojiPattern.test(str);
     const isGlyph = str.length <= 2 && !/[A-Za-z0-9]/.test(str);
     const n = el('div', 'pop ' + (isGlyph ? 'pop-glyph' : 'pop-banner'));
     n.style.left = x + 'px';
@@ -4013,7 +4335,21 @@ const FX = {
         n.style.boxShadow = `0 4px 12px rgba(0,0,0,0.55), inset 0 1px 0 rgba(255,255,255,0.25), 0 0 8px ${col}44`;
       }
     }
-    n.textContent = str;
+    if (hasEmoji) {
+      const label = str.replace(/[\p{Extended_Pictographic}\uFE0F\u200D]/gu, '').replace(/\s+/g, ' ').trim();
+      const mark = el('span', 'pop-effect-mark');
+      mark.setAttribute('aria-hidden', 'true');
+      if (col) mark.style.color = col;
+      n.appendChild(mark);
+      if (label) {
+        const copy = el('span');
+        copy.textContent = label;
+        n.appendChild(copy);
+      }
+      this.sparkle(x, y, isGlyph ? 5 : 3, col || '#fff1a8');
+    } else {
+      n.textContent = str;
+    }
     this.pop.appendChild(n);
     setTimeout(() => { if (n.parentNode) n.remove(); }, 660);
   },
@@ -4025,7 +4361,7 @@ const FX = {
       spin-in, a little sparkle burst and a gentle idle wobble rather than
       just sitting there as a flat static icon. */
   floatItem(x, y, img, col, resolver) {
-    if (!this.pop) return;
+    if (!this.pop || this._denseVisualSafe) return;
     this.trimPops();
     const n = el('div', 'pop');
     n.style.cssText = `left:${x}px;top:${y}px;width:20px;height:20px;margin-left:-10px;margin-top:-10px;
@@ -4054,7 +4390,7 @@ const FX = {
 
   /** Damage / heal number. */
   number(x, y, txt, kind, crit, superCrit) {
-    if (!this.combatNumbers || !this.pop) return;
+    if (!this.combatNumbers || !this.pop || this._denseVisualSafe) return;
     // Damage-over-time ticks are intentionally quieter in a full battle. The
     // status/effect still resolves and crit/heal/shield numbers remain exact;
     // this only prevents ten nearby periodic ticks from spawning nearly
@@ -4103,6 +4439,11 @@ const FX = {
       n.innerHTML = `<img src="${Art.object(opt.img)}" style="width:${s}px;height:${s}px;object-fit:contain;
         filter:drop-shadow(0 1px 2px rgba(0,0,0,.5))">`;
       css += `transform:translate(${x}px,${y}px) rotate(${rnd(-30, 30)}deg)`;
+    } else if (kind === 'cocoawrap') {
+      n.className = 'cc-wrap' + (Math.random() < .35 ? ' pink' : '');
+      n.innerHTML = '<i></i>';
+      n.style.setProperty('--s', (opt.size || 22) + 'px');
+      css += `transform:translate(${x}px,${y}px)`;
     } else if (kind === 'spear') {
       css += `width:46px;height:9px;clip-path:polygon(0 34%,68% 34%,68% 0,100% 50%,68% 100%,68% 66%,0 66%);
         background:linear-gradient(90deg,#8b5834 0 62%,#f8d36d 63% 70%,#f9f3d8 71%);transform:translate(${x}px,${y}px)`;
@@ -4522,6 +4863,7 @@ const FX = {
   },
 
   starfall(x, y, onHit) {
+    if (this._denseVisualSafe) return;
     const n = el('div');
     n.style.cssText = `position:absolute;left:${x}px;top:-60px;font-size:26px;pointer-events:none;
       filter:drop-shadow(0 0 12px #b9a4ff);transform:translate(-50%,0)`;
@@ -4550,74 +4892,173 @@ const FX = {
     setTimeout(() => n.remove(), 800);
   },
 
-  /** Tisha briefly reveals her otherwise invisible Clean Lines as crisp floor
-      rulers. They are lightweight DOM strips rather than a particle flood. */
+  /** Tisha's Clean Lines: glowing taped floor rulers with tick marks, a sparkle
+      cap and a shimmering floor strip. Still just a few DOM nodes per line. */
   tishaLines(lines, groundY, dur, permanent) {
     if (!this.back) return;
     (lines || []).forEach((x, i) => {
       const line = el('div');
-      line.style.cssText = `position:absolute;left:${x - 3}px;top:${groundY - 132}px;width:6px;height:144px;
-        z-index:3;pointer-events:none;opacity:0;transform:scaleY(.05);transform-origin:50% 100%;
-        background:repeating-linear-gradient(180deg,#eaffff 0 8px,#65d7dc 8px 13px,transparent 13px 19px);
-        border-radius:99px;filter:drop-shadow(0 0 ${permanent ? 8 : 5}px #78e7e9)`;
+      line.style.cssText = `position:absolute;left:${x - 22}px;top:${groundY - 150}px;width:44px;height:170px;
+        z-index:3;pointer-events:none;opacity:0;transform:scaleY(.05);transform-origin:50% 100%`;
+      line.innerHTML = `
+        <i style="position:absolute;left:19px;top:0;width:6px;height:150px;border-radius:99px;
+          background:linear-gradient(180deg,#fff 0,#bff6f4 30%,#4fcfd6 100%);
+          box-shadow:0 0 ${permanent ? 14 : 9}px #78e7e9,0 0 3px #fff"></i>
+        <i style="position:absolute;left:8px;top:6px;width:28px;height:140px;
+          background:repeating-linear-gradient(180deg,#d9ffff 0 3px,transparent 3px 14px);
+          -webkit-mask:linear-gradient(90deg,transparent 0 30%,#000 30% 70%,transparent 70%);
+          mask:linear-gradient(90deg,transparent 0 30%,#000 30% 70%,transparent 70%);opacity:.75"></i>
+        <i style="position:absolute;left:2px;top:146px;width:40px;height:14px;border-radius:50%;
+          background:radial-gradient(ellipse,#bffcff99 0,#5fe0e555 50%,transparent 72%)"></i>
+        <i style="position:absolute;left:15px;top:-6px;width:14px;height:14px;
+          background:radial-gradient(circle,#fff 0,#9ff 40%,transparent 70%);
+          clip-path:polygon(50% 0,62% 38%,100% 50%,62% 62%,50% 100%,38% 62%,0 50%,38% 38%)"></i>`;
       this.back.appendChild(line);
       setTimeout(() => {
-        line.style.transition = 'transform .22s cubic-bezier(.15,1.2,.3,1),opacity .16s';
-        line.style.opacity = permanent ? .82 : .62; line.style.transform = 'scaleY(1)';
-      }, i * 55);
+        line.style.transition = 'transform .26s cubic-bezier(.15,1.3,.3,1),opacity .16s';
+        line.style.opacity = permanent ? .9 : .72; line.style.transform = 'scaleY(1)';
+        if (!this.reducedEffects) for (let k = 0; k < 4; k++) this.part({ x: x + rnd(-8, 8), y: groundY - rnd(10, 120),
+          vx: rnd(-14, 14), vy: rnd(-40, -12), g: -6, size: rnd(3, 6), col: pick(['#ffffff', '#bffcff', '#78e7e9']),
+          life: rnd(.5, .9), drag: 1.5, layer: 'b' });
+      }, i * 70);
       setTimeout(() => { line.style.transition = 'opacity .38s'; line.style.opacity = 0; }, dur * 1000);
       setTimeout(() => line.remove(), dur * 1000 + 450);
     });
   },
 
-  /** A real feather-duster sweep travels through the formation, trailing soft
-      dust puffs and speed lines so the direction of Tisha's reposition is clear. */
+  /** A feather-duster sweep with a curved swoosh arc, sparkles and dust puffs. */
   tishaSweep(fromX, toX, y, dir, wide) {
     if (!this.front) return;
     dir = dir || (toX >= fromX ? 1 : -1);
-    const size = wide ? 88 : 64, duster = el('div');
+    const size = wide ? 96 : 68, span = Math.abs(toX - fromX) + 40, mid = (fromX + toX) / 2;
+    const arc = el('div');
+    arc.style.cssText = `position:absolute;left:${mid - span / 2}px;top:${y - 44}px;width:${span}px;height:56px;z-index:9;
+      pointer-events:none;opacity:0;transform-origin:${dir > 0 ? '0' : '100%'} 50%;transform:scaleX(.1);
+      border-radius:50%;border-top:${wide ? 7 : 5}px solid #eaffff;
+      -webkit-mask:linear-gradient(${dir > 0 ? 90 : 270}deg,transparent,#000 70%);mask:linear-gradient(${dir > 0 ? 90 : 270}deg,transparent,#000 70%);
+      filter:drop-shadow(0 0 6px #78e7e9)`;
+    this.front.appendChild(arc);
+    const duster = el('div');
     duster.style.cssText = `position:absolute;left:0;top:0;width:${size}px;height:${size}px;z-index:10;
-      pointer-events:none;opacity:0;filter:drop-shadow(0 5px 3px #0009);
-      transform:translate(${fromX - size / 2}px,${y - size * .72}px) rotate(${dir > 0 ? -48 : 48}deg) scale(.7)`;
+      pointer-events:none;opacity:0;filter:drop-shadow(0 5px 3px #0009) drop-shadow(0 0 8px #8fe8ed99);
+      transform:translate(${fromX - size / 2}px,${y - size * .72}px) rotate(${dir > 0 ? -58 : 58}deg) scale(.7)`;
     duster.innerHTML = `<img src="${Art.item('Trinkets/TISHA_Featherduster')}" alt="" style="width:100%;height:100%;object-fit:contain;${dir < 0 ? 'transform:scaleX(-1)' : ''}">`;
     this.front.appendChild(duster);
     requestAnimationFrame(() => {
-      duster.style.transition = `transform ${wide ? .38 : .24}s cubic-bezier(.15,.75,.25,1),opacity .1s`;
+      const t = wide ? .4 : .26;
+      arc.style.transition = `transform ${t}s cubic-bezier(.1,.8,.2,1),opacity .08s`;
+      arc.style.opacity = .95; arc.style.transform = 'scaleX(1)';
+      duster.style.transition = `transform ${t}s cubic-bezier(.12,.8,.2,1),opacity .1s`;
       duster.style.opacity = 1;
-      duster.style.transform = `translate(${toX - size / 2}px,${y - size * .82}px) rotate(${dir > 0 ? 38 : -38}deg) scale(1)`;
+      duster.style.transform = `translate(${toX - size / 2}px,${y - size * .82}px) rotate(${dir > 0 ? 42 : -42}deg) scale(1.08)`;
     });
-    const puffs = wide ? 14 : 7;
+    const puffs = wide ? 16 : 8;
     for (let i = 0; i < puffs; i++) {
       const p = (i + .5) / puffs;
-      this.part({ x: lerp(fromX, toX, p) + rnd(-12, 12), y: y + rnd(-22, 10), vx: dir * rnd(25, 90),
-        vy: rnd(-80, -20), g: 40, size: rnd(8, wide ? 17 : 13), col: pick(['#dff3ea', '#b7d8d0', '#8fe8ed']),
-        life: rnd(.38, .72), drag: 2, layer: i % 2 ? 'f' : 'b' });
+      this.part({ x: lerp(fromX, toX, p) + rnd(-12, 12), y: y + rnd(-26, 10), vx: dir * rnd(25, 100),
+        vy: rnd(-90, -20), g: 40, size: rnd(8, wide ? 18 : 13), col: pick(['#eef8f2', '#b7d8d0', '#8fe8ed']),
+        life: rnd(.4, .8), drag: 2, layer: i % 2 ? 'f' : 'b' });
+      if (i % 2 === 0) this.part({ x: lerp(fromX, toX, p) + rnd(-10, 10), y: y + rnd(-34, 0), vx: dir * rnd(10, 40),
+        vy: rnd(-50, -10), g: -10, size: rnd(3, 6), col: pick(['#ffffff', '#d9ffff']), life: rnd(.5, .9), drag: 1.5, layer: 'f' });
     }
-    setTimeout(() => { duster.style.transition = 'opacity .16s'; duster.style.opacity = 0; }, wide ? 400 : 270);
-    setTimeout(() => duster.remove(), wide ? 650 : 510);
+    setTimeout(() => { arc.style.transition = 'opacity .22s'; arc.style.opacity = 0;
+      duster.style.transition = 'opacity .16s'; duster.style.opacity = 0; }, wide ? 420 : 290);
+    setTimeout(() => { duster.remove(); arc.remove(); }, wide ? 700 : 560);
   },
 
-  /** Wide, low-opacity battlefield dust. It hangs for the authored duration
-      without continuously creating particles, keeping long battles cheap. */
+  /** Hanging dust bank: churning, drifting puffs with a faint teal glint,
+      plus a ground haze. Layers drift via CSS animation so it stays cheap. */
   tishaDust(x, groundY, width, dur, reduced) {
     if (!this.back) return;
     const cloud = el('div');
-    cloud.style.cssText = `position:absolute;left:${x - width / 2}px;top:${groundY - 124}px;width:${width}px;height:128px;
-      z-index:4;pointer-events:none;opacity:0;transform:scale(.72) translateY(12px);border-radius:50%;
-      background:radial-gradient(ellipse at 18% 66%,#b8ccc0aa 0 12%,transparent 32%),
-        radial-gradient(ellipse at 47% 45%,#dce7dfaa 0 19%,transparent 42%),
-        radial-gradient(ellipse at 76% 64%,#9fbab2aa 0 15%,transparent 36%);
-      filter:blur(${reduced ? 4 : 2}px) drop-shadow(0 0 7px #8fe8ed55)`;
+    cloud.style.cssText = `position:absolute;left:${x - width / 2}px;top:${groundY - 140}px;width:${width}px;height:150px;
+      z-index:4;pointer-events:none;opacity:0;transform:scale(.7) translateY(14px);
+      transition:opacity .25s,transform .6s cubic-bezier(.15,1,.3,1)`;
+    const blobs = reduced ? 6 : 11;
+    let html = `<i style="position:absolute;left:0;right:0;bottom:0;height:46px;border-radius:50%;
+      background:radial-gradient(ellipse,#c9d6cbcc 0,#9fb8aa66 55%,transparent 75%);filter:blur(5px)"></i>`;
+    for (let i = 0; i < blobs; i++) {
+      const s = rnd(46, 92), l = (i + .5) / blobs * (width - s) + rnd(-10, 10), b = rnd(8, 70);
+      const col = pick(['#e3ebe3', '#c3d3c8', '#a8bfb4', '#d3e9e4']);
+      html += `<i style="position:absolute;left:${l}px;bottom:${b}px;width:${s}px;height:${s * .78}px;border-radius:50%;
+        background:radial-gradient(circle at 38% 36%,#fff6 0,${col}dd 38%,${col}00 72%);filter:blur(${reduced ? 4 : 2.5}px);
+        animation:tishaDrift ${rnd(2.2, 3.6).toFixed(2)}s ease-in-out ${rnd(0, 1.2).toFixed(2)}s infinite alternate"></i>`;
+    }
+    html += `<i style="position:absolute;inset:0;border-radius:50%;box-shadow:inset 0 0 40px #8fe8ed33"></i>`;
+    cloud.innerHTML = html;
     this.back.appendChild(cloud);
-    requestAnimationFrame(() => {
-      cloud.style.transition = 'opacity .25s,transform .55s cubic-bezier(.15,1,.3,1)';
-      cloud.style.opacity = reduced ? .42 : .67; cloud.style.transform = 'scale(1) translateY(0)';
-    });
-    for (let i = 0; i < (reduced ? 7 : 13); i++) this.part({ x: x + rnd(-width * .42, width * .42),
-      y: groundY - rnd(15, 92), vx: rnd(-45, 45), vy: rnd(-55, -12), g: -5, size: rnd(9, 20),
-      col: pick(['#dce7df', '#a9c3bb', '#8fe8ed']), life: rnd(.65, 1.25), drag: 2, layer: 'b' });
-    setTimeout(() => { cloud.style.transition = 'opacity .48s'; cloud.style.opacity = 0; }, Math.max(.4, dur - .45) * 1000);
+    requestAnimationFrame(() => { cloud.style.opacity = reduced ? .5 : .85; cloud.style.transform = 'scale(1) translateY(0)'; });
+    for (let i = 0; i < (reduced ? 8 : 16); i++) this.part({ x: x + rnd(-width * .45, width * .45),
+      y: groundY - rnd(15, 110), vx: rnd(-40, 40), vy: rnd(-50, -10), g: -5, size: rnd(3, 16),
+      col: pick(['#dce7df', '#a9c3bb', '#8fe8ed', '#ffffff']), life: rnd(.7, 1.4), drag: 2, layer: 'b' });
+    setTimeout(() => { cloud.style.transition = 'opacity .5s'; cloud.style.opacity = 0; }, Math.max(.4, dur - .45) * 1000);
     setTimeout(() => cloud.remove(), dur * 1000 + 120);
+  },
+
+  /** Dandy's mascot stage-show kit: spotlight cones, stomp shockwaves,
+      star/ticket bursts and a distorted curtain-drop. DOM + a few particles. */
+  dandySpotlight(x, groundY, dur, col) {
+    if (!this.back) return;
+    col = col || '#ffe28a';
+    const n = el('div');
+    n.style.cssText = `position:absolute;left:${x - 90}px;top:${groundY - 330}px;width:180px;height:340px;z-index:3;
+      pointer-events:none;opacity:0;transition:opacity .22s;
+      background:linear-gradient(180deg,${col}00 0,${col}55 55%,${col}88 100%);
+      clip-path:polygon(40% 0,60% 0,100% 100%,0 100%);filter:blur(1.5px)`;
+    n.innerHTML = `<i style="position:absolute;left:4%;right:4%;bottom:-4px;height:30px;border-radius:50%;
+      background:radial-gradient(ellipse,#fff 0,${col}cc 40%,transparent 72%)"></i>`;
+    this.back.appendChild(n);
+    requestAnimationFrame(() => { n.style.opacity = 1; });
+    setTimeout(() => { n.style.transition = 'opacity .35s'; n.style.opacity = 0; }, dur * 1000);
+    setTimeout(() => n.remove(), dur * 1000 + 400);
+  },
+
+  dandyStars(x, y, n, big) {
+    for (let i = 0; i < n * this.quality; i++) {
+      const a = rnd(0, Math.PI * 2), sp = rnd(120, big ? 380 : 260);
+      this.part({ x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp - 90, g: 520, size: rnd(big ? 14 : 10, big ? 24 : 17),
+        col: pick(['#ffd166', '#fff2a5', '#ff7a8a', '#ffffff']), life: rnd(.55, 1.05), shape: 'txt',
+        char: pick(['★', '✦', '✶']), spin: rnd(-9, 9), layer: 'f' });
+    }
+    for (let i = 0; i < (big ? 14 : 6) * this.quality; i++) this.part({ x, y, vx: rnd(-240, 240), vy: rnd(-330, -90), g: 760,
+      size: rnd(5, 10), col: pick(['#ff5b7f', '#ffc94d', '#6fe3c4', '#8f7fff']), life: rnd(.8, 1.4), shape: 'sq', spin: rnd(-14, 14) });
+  },
+
+  /** Ground-slam: double shockwave, flying dirt and a crack line. */
+  dandyStomp(x, groundY, size, col) {
+    if (!this.back) return;
+    col = col || '#ffd166';
+    this.ring(x, groundY - 6, size, col, .5);
+    this.ring(x, groundY - 6, size * .62, '#fff6c8', .36);
+    const crack = el('div');
+    crack.style.cssText = `position:absolute;left:${x - size * .45}px;top:${groundY - 8}px;width:${size * .9}px;height:8px;z-index:2;
+      pointer-events:none;opacity:.9;transform:scaleX(.1);
+      background:linear-gradient(90deg,transparent,#2a1608 18%,#2a1608 82%,transparent);
+      clip-path:polygon(0 50%,12% 0,24% 80%,38% 10%,52% 90%,66% 5%,80% 75%,100% 50%,80% 100%,52% 100%,24% 100%)`;
+    this.back.appendChild(crack);
+    requestAnimationFrame(() => { crack.style.transition = 'transform .18s cubic-bezier(.1,.9,.3,1),opacity .8s .4s'; crack.style.transform = 'scaleX(1)'; crack.style.opacity = 0; });
+    setTimeout(() => crack.remove(), 1400);
+    for (let i = 0; i < 12 * this.quality; i++) this.part({ x: x + rnd(-size * .4, size * .4), y: groundY - 4,
+      vx: rnd(-200, 200), vy: rnd(-260, -80), g: 800, size: rnd(5, 12), col: pick(['#8a6a45', '#b99466', '#d9c29a']),
+      life: rnd(.4, .8), drag: .6, layer: 'f' });
+    this.shake(5, .22);
+  },
+
+  /** Mascot meltdown: dark-magenta curtain pulse with jagged smile flash. */
+  dandyDistort(x, y) {
+    if (!this.front) return;
+    this.flash('#7a1e5e', .35, .5);
+    const n = el('div');
+    n.style.cssText = `position:absolute;left:${x - 110}px;top:${y - 130}px;width:220px;height:200px;z-index:9;pointer-events:none;
+      opacity:0;transform:scale(.4);border-radius:50%;
+      background:radial-gradient(circle,#ff2d6f88 0,#7a1e5e66 45%,transparent 70%);filter:blur(2px)`;
+    n.innerHTML = `<b style="position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);font-size:76px;color:#fff;
+      text-shadow:0 0 18px #ff2d6f,0 0 4px #000;letter-spacing:-4px">◡̈</b>`;
+    this.front.appendChild(n);
+    requestAnimationFrame(() => { n.style.transition = 'transform .5s cubic-bezier(.1,1.3,.3,1),opacity .2s'; n.style.opacity = 1; n.style.transform = 'scale(1.15)'; });
+    setTimeout(() => { n.style.transition = 'opacity .5s,transform .5s'; n.style.opacity = 0; n.style.transform = 'scale(1.7)'; }, 700);
+    setTimeout(() => n.remove(), 1300);
+    this.shake(8, .35);
   },
 
   steam(x, y, n) { this.smoke(x, y, n, '#e0d0b8'); },
@@ -5061,97 +5502,110 @@ const FX = {
     setTimeout(() => pool.remove(), duration * 1000 + 100);
   },
 
-  /* Shelly Prehistoric Fossil Excavation */
-  shellyFossilExcavation(x, y, radius, opt) {
-    if (!this.front || this.reducedEffects) return;
-    opt = opt || {};
-    const rad = radius || 260;
-    const dur = opt.dur || 0.85;
-    const v = el('div', 'shelly-fossil-matrix');
-    v.style.cssText = `left:${x - rad}px;top:${y - rad}px;width:${rad * 2}px;height:${rad * 2}px;`;
-    v.innerHTML = `
-      <div class="fossil-matrix-core"></div>
-      <div class="fossil-matrix-strata r1"></div>
-      <div class="fossil-matrix-strata r2"></div>
-      <div class="fossil-matrix-strata r3"></div>
-      <div class="fossil-matrix-amber"></div>
-    `;
+  /* ---- Shelly: field-notebook effects. Earth tones, inked outlines, and
+     things that are actually dug up, instead of glowing orbs. ---- */
+  _shellyFx(cls, x, y, w, h, svg, life, lift) {
+    if (!this.front || this._denseVisualSafe || this.reducedEffects) return null;
+    const v = el('div', 'sh-fx ' + cls);
+    v.style.cssText = `left:${x - w / 2}px;top:${y - h / 2}px;width:${w}px;height:${h}px;`;
+    v.innerHTML = svg;
     this.front.appendChild(v);
-    requestAnimationFrame(() => v.classList.add('active'));
+    requestAnimationFrame(() => v.classList.add('on'));
+    setTimeout(() => v.classList.add('off'), Math.max(100, (life - .3) * 1000));
+    setTimeout(() => v.remove(), life * 1000 + 80);
+    return v;
+  },
 
-    const runes = ['🐚', '🦴', '🦖', '🔍', '✨', '💎'];
-    const pCount = Math.min(16, Math.round(rad / 16));
-    for (let i = 0; i < pCount; i++) {
-      const ang = (i / pCount) * Math.PI * 2 + rnd(-0.2, 0.2);
-      const dist = rad * rnd(0.25, 0.75);
-      this.floatIcon(x + Math.cos(ang) * dist, y + Math.sin(ang) * dist - 12, pick(runes), '#d8b579');
-      this.part({
-        x: x + Math.cos(ang) * dist,
-        y: y + Math.sin(ang) * dist,
-        vx: Math.cos(ang) * rnd(45, 95),
-        vy: Math.sin(ang) * rnd(45, 95) - 20,
-        g: 35,
-        size: rnd(10, 18),
-        col: pick(['#fef08a', '#f59e0b', '#d97706', '#d8b579', '#78350f']),
-        life: rnd(0.45, 0.8),
-        drag: 1.2,
-        layer: 'f'
-      });
+  /* Dig site: sediment layers peel open under the whole field, an ammonite is
+     uncovered in the middle, rock chips and dust fly. */
+  shellyFossilExcavation(x, y, radius, opt) {
+    if (!this.front || this._denseVisualSafe || this.reducedEffects) return;
+    const rad = radius || 260, dur = (opt && opt.dur) || 1.1;
+    const w = rad * 2, h = rad * .8;
+    const layers = ['#5b3d27', '#7d5a3a', '#a07b52', '#c9a676'];
+    const wob = (rx, ry, seed) => {
+      let d = '';
+      for (let i = 0; i <= 24; i++) {
+        const a = i / 24 * Math.PI * 2, k = 1 + Math.sin(a * 3 + seed) * .035 + Math.sin(a * 7 + seed * 2) * .02;
+        d += (i ? 'L' : 'M') + (100 + Math.cos(a) * rx * k).toFixed(1) + ' ' + (40 + Math.sin(a) * ry * k).toFixed(1);
+      }
+      return d + 'Z';
+    };
+    const strata = layers.map((c, i) =>
+      `<path class="sh-layer" style="--d:${i * .09}s" d="${wob(96 - i * 19, 37 - i * 7.5, i)}" fill="${c}" stroke="#2f2016" stroke-width="1.1"/>`).join('');
+    const lines = [[44, 36, 156, 33], [34, 47, 168, 45], [52, 55, 146, 57]].map((l, i) =>
+      `<path class="sh-draw" pathLength="1" style="--d:${.25 + i * .08}s" d="M${l[0]} ${l[1]}q${(l[2] - l[0]) / 4} -4 ${(l[2] - l[0]) / 2} 0t${(l[2] - l[0]) / 2} ${l[3] - l[1]}" fill="none" stroke="#2f2016" stroke-opacity=".55" stroke-width=".9"/>`).join('');
+    const ammo = `<g class="sh-ammo" transform="translate(100 40)">
+      <path class="sh-draw" pathLength="1" style="--d:.35s" fill="none" stroke="#2f2016" stroke-width="1.6" stroke-linecap="round" d="M0 0c3 -1 4 2 2 4c-4 4 -10 1 -10 -5c0 -8 8 -13 16 -10c10 4 12 16 5 23c-9 9 -25 6 -29 -6"/>
+      <path d="M-24 11c-4 -12 3 -26 16 -28c12 -2 22 7 22 19c0 14 -12 22 -24 20" fill="#e2c691" fill-opacity=".35" stroke="none"/></g>`;
+    const v = this._shellyFx('sh-dig', x, y + rad * .16, w, h,
+      `<svg viewBox="0 0 200 80" width="100%" height="100%" preserveAspectRatio="none">${strata}${lines}${ammo}</svg>`, dur);
+    if (!v) return;
+    const dust = ['#a07b52', '#c9a676', '#d9c29a', '#7d5a3a'];
+    const n = Math.min(22, Math.round(rad / 14));
+    for (let i = 0; i < n; i++) {
+      const a = rnd(0, Math.PI * 2), d = rad * rnd(.1, .8), px = x + Math.cos(a) * d, py = y + rad * .16 + Math.sin(a) * d * .4;
+      const chip = i % 3 !== 0;
+      this.part({ x: px, y: py, vx: Math.cos(a) * rnd(20, 60), vy: chip ? rnd(-170, -90) : rnd(-30, -10), g: chip ? 420 : -8,
+        size: chip ? rnd(4, 8) : rnd(14, 26), col: pick(dust), life: chip ? rnd(.45, .75) : rnd(.6, 1), drag: chip ? .6 : 1.6,
+        alpha: chip ? 1 : .45, shape: chip ? 'sq' : 'dot', layer: 'f' });
     }
-
-    setTimeout(() => {
-      v.classList.remove('active');
-      v.classList.add('leaving');
-    }, Math.max(120, (dur - 0.25) * 1000));
-    setTimeout(() => v.remove(), dur * 1000 + 100);
   },
 
-  /* Shelly Relentless Inspiration Whistle */
+  /* Field whistle: sound lines fan out from Shelly and a chalk circle is drawn
+     on the ground for as long as the team is Inspired. */
   shellyInspirationWhistle(x, y, dur) {
-    if (!this.front || this.reducedEffects) return;
-    const duration = dur || 2.5;
-    const w = el('div', 'shelly-inspiration-aura');
-    w.style.cssText = `left:${x - 55}px;top:${y - 65}px;`;
-    w.innerHTML = `
-      <div class="inspiration-sun-core"></div>
-      <div class="inspiration-radiance-ring"></div>
-      <div class="inspiration-whistle-glyph">🌞</div>
-    `;
-    this.front.appendChild(w);
-    requestAnimationFrame(() => w.classList.add('active'));
-
-    this.ring(x, y - 40, 220, '#f59e0b', 0.55);
-    this.ring(x, y - 40, 320, '#fef08a', 0.7);
-
-    setTimeout(() => {
-      w.classList.remove('active');
-      w.classList.add('leaving');
-    }, Math.max(150, (duration - 0.4) * 1000));
-    setTimeout(() => w.remove(), duration * 1000 + 100);
+    if (!this.front || this._denseVisualSafe || this.reducedEffects) return;
+    const life = dur || 2.5;
+    const arcs = [0, 1, 2].map(i => `<path class="sh-wave" style="--d:${i * .16}s" d="M${62 + i * 13} ${18 - i * 4}q${14 + i * 8} ${22 + i * 4} 0 ${44 + i * 8}" fill="none" stroke="#3b2a1f" stroke-width="3.2" stroke-linecap="round"/>`).join('');
+    const ticks = [[40, 20, 32, 11], [48, 12, 46, 2], [32, 34, 21, 31]].map((t, i) =>
+      `<path class="sh-pop" style="--d:${.1 + i * .07}s" d="M${t[0]} ${t[1]}L${t[2]} ${t[3]}" stroke="#b8651f" stroke-width="3" stroke-linecap="round"/>`).join('');
+    this._shellyFx('sh-whistle', x + 30, y - 55, 120, 80,
+      `<svg viewBox="0 0 120 80" width="100%" height="100%" overflow="visible">${arcs}${ticks}</svg>`, 1.1);
+    const r = 150;
+    this._shellyFx('sh-chalk', x, y + 52, r * 2, r * .55,
+      `<svg viewBox="0 0 200 55" width="100%" height="100%" preserveAspectRatio="none"><ellipse class="sh-draw" pathLength="1" cx="100" cy="27" rx="96" ry="24" fill="#f1e4c8" fill-opacity=".14" stroke="#f1e4c8" stroke-width="2" stroke-dasharray="1" stroke-linecap="round" transform="rotate(-2 100 27)"/><ellipse cx="100" cy="27" rx="78" ry="18" fill="none" stroke="#f1e4c8" stroke-opacity=".5" stroke-width="1" stroke-dasharray="6 5"/></svg>`, life);
+    for (let i = 0; i < 7; i++) this.part({ x: x + rnd(-70, 70), y: y + 40 + rnd(-6, 8), vx: rnd(-14, 14), vy: rnd(-55, -25), g: -6,
+      size: rnd(3, 5), col: pick(['#f1e4c8', '#e2c691', '#d9a441']), life: rnd(.6, 1.1), alpha: .8, layer: 'f' });
   },
 
-  /* Shelly Prehistoric Amber Stasis */
+  /* A lump of amber with a little fern caught inside, dropped over an ally. */
   shellyAmberStasis(x, y, dur) {
-    if (!this.front || this.reducedEffects) return;
-    const duration = dur || 3.5;
-    const gem = el('div', 'shelly-amber-stasis');
-    gem.style.cssText = `left:${x - 45}px;top:${y - 85}px;`;
-    gem.innerHTML = `
-      <div class="amber-stasis-facet f1"></div>
-      <div class="amber-stasis-facet f2"></div>
-      <div class="amber-stasis-crystal">💎</div>
-    `;
-    this.front.appendChild(gem);
-    requestAnimationFrame(() => gem.classList.add('active'));
+    if (!this.front || this._denseVisualSafe || this.reducedEffects) return;
+    const life = dur || 3.5;
+    this._shellyFx('sh-amber', x, y - 38, 96, 120,
+      `<svg viewBox="0 0 96 120" width="100%" height="100%" overflow="visible">
+        <defs><linearGradient id="shAm" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f0b24a"/><stop offset=".55" stop-color="#c8741f"/><stop offset="1" stop-color="#8a4a12"/></linearGradient></defs>
+        <ellipse cx="48" cy="112" rx="32" ry="6" fill="#2f2016" fill-opacity=".3"/>
+        <path d="M14 78c-6-22 2-52 22-62c14-7 36-4 44 12c10 20 6 46-8 60c-12 12-48 10-58-10z" fill="url(#shAm)" fill-opacity=".82" stroke="#3b2a1f" stroke-width="2.2" stroke-linejoin="round"/>
+        <path d="M30 98c-4-14-2-34 6-48M62 100c8-12 10-30 4-48" fill="none" stroke="#fbd98c" stroke-opacity=".35" stroke-width="1.2"/>
+        <g stroke="#3b2a1f" stroke-width="1.6" fill="none" stroke-linecap="round" opacity=".85"><path d="M48 86V40"/><path d="M48 76l-13-9M48 68l-12-10M48 59l-9-8M48 76l13-9M48 68l12-10M48 59l9-8M48 50l-5-5M48 50l5-5"/></g>
+        <path class="sh-glint" d="M26 30c4-8 12-13 20-14" fill="none" stroke="#fff6d8" stroke-width="3.2" stroke-linecap="round"/>
+        <circle cx="70" cy="38" r="2" fill="#fff6d8"/>
+      </svg>`, life);
+    for (let i = 0; i < 6; i++) this.part({ x: x + rnd(-30, 30), y: y - 30 + rnd(-30, 20), vx: rnd(-25, 25), vy: rnd(-40, -10), g: 0,
+      size: rnd(3, 5), col: pick(['#f0b24a', '#fbd98c']), life: rnd(.5, .9), alpha: .9, layer: 'f' });
+  },
 
-    this.ring(x, y - 35, 110, '#fef08a', 0.45);
-    this.ring(x, y - 35, 145, '#f59e0b', 0.6);
+  /* A magnifying lens swings over a target and glints: Shelly studying it. */
+  shellyLens(x, y, col) {
+    this._shellyFx('sh-lens', x, y, 84, 84,
+      `<svg viewBox="0 0 84 84" width="100%" height="100%" overflow="visible">
+        <path d="M50 50l22 22" stroke="#5b3d27" stroke-width="9" stroke-linecap="round"/><path d="M50 50l22 22" stroke="#2f2016" stroke-width="2" stroke-linecap="round" opacity=".5"/>
+        <circle cx="32" cy="32" r="22" fill="${col || '#d9c29a'}" fill-opacity=".18" stroke="#3b2a1f" stroke-width="4"/>
+        <circle cx="32" cy="32" r="22" fill="none" stroke="#c9a676" stroke-width="1.5" stroke-opacity=".8" transform="scale(.82) translate(7 7)"/>
+        <path class="sh-glint" d="M18 26c3-6 8-9 14-10" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"/>
+      </svg>`, 1.0);
+  },
 
-    setTimeout(() => {
-      gem.classList.remove('active');
-      gem.classList.add('leaving');
-    }, Math.max(150, (duration - 0.3) * 1000));
-    setTimeout(() => gem.remove(), duration * 1000 + 120);
+  /* The "I've got it!" burst: short inked ticks radiating from her head. */
+  shellyEureka(x, y) {
+    let t = '';
+    for (let i = 0; i < 9; i++) {
+      const a = -Math.PI / 2 + (i - 4) * .36, r0 = 30 + (i % 2) * 6, r1 = r0 + 16 + (i % 3) * 5;
+      t += `<path class="sh-pop" style="--d:${i * .025}s" d="M${60 + Math.cos(a) * r0} ${60 + Math.sin(a) * r0}L${60 + Math.cos(a) * r1} ${60 + Math.sin(a) * r1}" stroke="${i % 2 ? '#b8651f' : '#3b2a1f'}" stroke-width="3.2" stroke-linecap="round"/>`;
+    }
+    this._shellyFx('sh-eureka', x, y, 120, 120, `<svg viewBox="0 0 120 120" width="100%" height="100%" overflow="visible">${t}</svg>`, .75);
   },
 
   /* ============================================================
@@ -5243,7 +5697,7 @@ const FX = {
 
   /* Vee Live Broadcast Climax Transformation */
   veeLiveBroadcast(x, y) {
-    if (!this.front || this.reducedEffects) return;
+    if (!this.front || this._denseVisualSafe || this.reducedEffects) return;
     const size = 160;
     const broadcast = el('div', 'vee-live-broadcast');
     broadcast.style.cssText = `left:${x - size / 2}px;top:${y - size / 2}px;width:${size}px;height:${size}px;`;
@@ -5256,8 +5710,7 @@ const FX = {
     requestAnimationFrame(() => broadcast.classList.add('active'));
 
     this.ring(x, y, 180, '#ff2b6b', 0.55);
-    this.ring(x, y, 240, '#7be0ff', 0.75);
-    this.sparkle(x, y, 20, '#7be0ff');
+    this.ring(x, y, 240, '#6fe35a', 0.75);
 
     setTimeout(() => {
       broadcast.classList.remove('active');
@@ -5292,5 +5745,3 @@ const FX = {
     setTimeout(() => panic.remove(), 2200);
   }
 };
-
-

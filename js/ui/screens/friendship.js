@@ -361,7 +361,7 @@ Object.assign(Screens, {
     };
     const decorated = campaigns.map((c, index) => ({ c, index, s: state(c) }));
     const name = c => String(c.title || c.id).toLocaleLowerCase();
-    const level = c => Number(c.recLevel) || 0;
+    const level = c => friendshipStageLevel(c, Math.min(Save.campaignStage(c.id), c.stages.length - 1));
     const canon = c => Number(c.canonicalOrder) || 999;
     const readyRank = s => !s.unlocked ? 3 : s.finished ? 2 : s.introSeen ? 0 : 1;
     decorated.sort((a, b) => {
@@ -381,6 +381,7 @@ Object.assign(Screens, {
     const unlocked = Campaign.unlocked(c);
     const introSeen = unlocked && Save.campaignIntroSeen(c.id);
     const finished = done >= total;
+    const nextLevel = friendshipStageLevel(c, Math.min(done, total - 1));
     const badge = BADGES[c.badge] || { color: '#ffb0dc', name: c.badge || 'Badge', stat: () => '', effect: '' };
     const badgeOwned = Save.ownsBadge(c.badge);
     const storyIds = Campaign.requiredIds(c, Math.min(done, total - 1));
@@ -427,7 +428,7 @@ Object.assign(Screens, {
     body.appendChild(proof);
     const progress = el('div', 'friendship-progress');
     progress.innerHTML = `<div><b>${primaryMissing ? 'Own both featured Toons to unlock' : hasPrereq ? (c.prereqMsg || 'Clear prerequisite story first') : finished ? 'Story complete' : !introSeen ? 'Story introduction ready' : `${done} of ${total} chapters`}</b>
-      <span>Recommended level ${c.recLevel} · ${friendshipObtainLabel(c.a, c.b)}</span></div><strong>${Math.round(done / total * 100)}%</strong>`;
+      <span>Recommended Lv ${nextLevel}${finished ? ' finale' : ` · Chapter ${done + 1}`} · ${friendshipObtainLabel(c.a, c.b)}</span></div><strong>${Math.round(done / total * 100)}%</strong>`;
     const meter = el('div', 'friendship-meter');
     for (let i = 0; i < total; i++) meter.appendChild(el('i', i < done ? 'filled' : i === done && unlocked && introSeen ? 'next' : ''));
     progress.appendChild(meter);
@@ -439,8 +440,8 @@ Object.assign(Screens, {
       const next = i === done && !finished;
       const accessible = introSeen && (cleared || next || finished);
       const node = el('button', `friendship-stage${cleared ? ' cleared' : ''}${next ? ' current' : ''}${accessible ? '' : ' unavailable'}`);
-      node.setAttribute('aria-label', `${primaryMissing ? 'Locked until both featured Toons are owned' : hasPrereq ? 'Locked until prerequisite cleared' : !introSeen ? 'Locked until introduction' : finished ? 'Read' : cleared ? 'Replay' : next ? 'Play' : 'Locked'} chapter ${i + 1}: ${stage.name}`);
-      node.innerHTML = `<i>${cleared ? '✓' : i + 1}</i><span><small>CHAPTER ${i + 1}</small><b>${stage.name}</b></span>${next ? '<em>PLAY</em>' : ''}`;
+      node.setAttribute('aria-label', `${primaryMissing ? 'Locked until both featured Toons are owned' : hasPrereq ? 'Locked until prerequisite cleared' : !introSeen ? 'Locked until introduction' : finished ? 'Read' : cleared ? 'Replay' : next ? 'Play' : 'Locked'} chapter ${i + 1}: ${stage.name}, recommended level ${friendshipStageLevel(c, i)}`);
+      node.innerHTML = `<i>${cleared ? '✓' : i + 1}</i><span><small>CHAPTER ${i + 1} · LV ${friendshipStageLevel(c, i)}</small><b>${stage.name}</b></span>${next ? '<em>PLAY</em>' : ''}`;
       node.onclick = () => {
         if (primaryMissing) {
           UI.toast(`Own ${HEROES[c.a].name} and ${HEROES[c.b].name} first`); Sound.play('ui_err'); return;
@@ -585,6 +586,7 @@ Object.assign(Screens, {
   campaignSetup(c, stageIdx) {
     if (!Campaign.unlocked(c)) { UI.toast(`Own ${HEROES[c.a].name} and ${HEROES[c.b].name} first`); Sound.play('ui_err'); return; }
     const stage = c.stages[stageIdx];
+    const recLevel = friendshipStageLevel(c, stageIdx);
     const replay = stageIdx < Save.campaignStage(c.id);
     const storyIds = Campaign.requiredIds(c, stageIdx);
     const ownedStory = storyIds.filter(id => Save.owns(id));
@@ -597,7 +599,7 @@ Object.assign(Screens, {
     scroll.innerHTML = `<div class="friendship-setup-scene">
       <img src="${Art.hero(c.a)}" alt="${HEROES[c.a].name}" loading="lazy" decoding="async"><div><small>${replay ? 'REPLAY' : `CHAPTER ${stageIdx + 1} OF ${c.stages.length}`}</small>
       <b>${stage.name}</b><span>${HEROES[c.a].name} + ${HEROES[c.b].name}</span></div><img src="${Art.hero(c.b)}" alt="${HEROES[c.b].name}" loading="lazy" decoding="async"></div>
-      <div class="friendship-setup-info"><span>★ Recommended Lv ${c.recLevel}</span><span>${friendshipObtainLabel(c.a, c.b)}</span><span>${RES.ichor.icon} ${300 + c.recLevel * 8}</span><span>${RES.exp.icon} ${250 + c.recLevel * 6}</span></div>
+      <div class="friendship-setup-info"><span>★ Recommended Lv ${recLevel}</span><span>${friendshipObtainLabel(c.a, c.b)}</span><span>${RES.ichor.icon} ${300 + recLevel * 8}</span><span>${RES.exp.icon} ${250 + recLevel * 6}</span></div>
       <div class="friendship-required"><b>Story cast · ${partySize}/5 battle slots</b>${storyIds.map(id => `<span class="${Save.owns(id) ? 'owned' : 'guest'}">${Save.owns(id) ? '✓' : '○'} ${HEROES[id].name}</span>`).join('')}</div>`;
     scroll.appendChild(p.node);
     body.appendChild(scroll);

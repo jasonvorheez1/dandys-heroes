@@ -1,16 +1,29 @@
 /* ai.js - per-unit decision making.
-   The default order is Green, then Blue, then White at full Energy, but every
-   skill declares its own condition so a healer waits for wounded allies, a
-   controller waits for a cluster, and a burst unit saves for a real target. */
+   Green and Blue skills run automatically; a charged White skill runs on Auto
+   or when the player taps its Hero portrait. Authored conditions still guide
+   automatic casts. */
 'use strict';
 
 const AI = {
+  interruptDisabled(u) {
+    // Control effects stop an action still in its windup. Without this, a
+    // stunned Hero could finish a White skill and a disarmed Hero could land
+    // the basic attack that was already queued.
+    if (u.pendingHit && (u.flags.noAct || u.flags.disarmed)) {
+      u.pendingHit = null;
+      u.animState = 'idle'; u.animT = 0; u.animDur = 0;
+    }
+    if (u.casting && (u.flags.noAct || u.flags.silenced)) {
+      u.casting = null;
+      u._castId = (u._castId || 0) + 1;
+      u.animState = 'idle'; u.animT = 0; u.animDur = 0;
+    }
+  },
 
   think(u, B, dt) {
-    // resolve a pending basic attack hit - committed once the windup starts,
-    // same as a real fighting game: no cancelling into a reposition or a new
-    // target mid-swing, and the hit only lands if the target is still where
-    // the swing is actually aimed once the windup finishes.
+    this.interruptDisabled(u);
+    // A basic attack commits to its target once the windup starts. Ordinary
+    // movement does not cancel it; a disabling status still can.
     if (u.pendingHit) {
       u.pendingHit.t -= dt;
       u.moving = false;
@@ -46,7 +59,7 @@ const AI = {
     if (u.id === 'Glisten' && u._glistenBusyUntil > B.t) {
       u.moving = false; return;
     }
-    if (u.flags.noAct) { u.moving = false; return; }
+    if (u.flags.noAct && !u.flags.flee) { u.moving = false; return; }
 
     // Attack Speed is applied while the cooldown counts down below. Keep the
     // timer itself in a common combat-time unit so slower units do not get
@@ -59,6 +72,13 @@ const AI = {
       const away = u.team === TEAM_P ? B.leftWall : B.rightWall;
       this.moveToward(u, B, away, dt, 1.25, u.depthHome);
       return;
+    }
+
+    // A player's manual White takes the next free action even while the team
+    // is approaching. Green and Blue remain automatic in either mode.
+    if (u._manualWhite) {
+      if (u.energy < u.energyMax) u._manualWhite = false;
+      else if (!u.flags.silenced && this.beginCast(u, B, 'W', true)) return;
     }
 
     // companion trailing its owner
@@ -76,9 +96,9 @@ const AI = {
       return;
     }
 
-    const distractor = u._distractor || u._teaganDistractor;
+    const distractor = u._distractor;
     let tgt = distractor && distractor.team !== u.team && B.isTargetable(distractor)
-      && B.t < (u._distractUntil || u._teaganDistractUntil || 0) ? distractor : B.bestTarget(u);
+      && B.t < (u._distractUntil || 0) ? distractor : B.bestTarget(u);
     // A target cache can be one tick behind after a Lab duel is assembled or
     // after an entrance status expires. Refresh directly from the live team so
     // a valid solo opponent never leaves the AI in an idle fallback.
@@ -242,7 +262,8 @@ const AI = {
     if (u.noSkills) return null;
     const sk = u.def.skills;
     // White fires the moment energy caps, unless a kit says otherwise
-    if (u.energy >= u.energyMax && sk.W && sk.W.cast && u.rarity >= 1 && !(u.cds.W > 0)) {
+    if (u.energy >= u.energyMax && sk.W && sk.W.cast && u.rarity >= 1 && !(u.cds.W > 0) &&
+        (u.team === TEAM_E || B.autoWhite || B.offscreen)) {
       // A few White skills are resources rather than a simple damage button.
       // Let their kit decide whether spending a full bar right now is useful.
       try { if (!sk.W.ai || !sk.W.ai.cond || sk.W.ai.cond(u, B)) return 'W'; }
@@ -261,22 +282,23 @@ const AI = {
     return best;
   },
 
-  beginCast(u, B, key) {
+  beginCast(u, B, key, manual) {
     const s = u.def.skills && u.def.skills[key];
     // Re-check the decision at the moment of activation. A death, interrupt,
     // silence, or cooldown change can happen after pickSkill() ran.
     if (!u.alive || !s || !s.cast || u.casting || u.pendingHit || u.flags.noAct || u.flags.silenced) return false;
     if (u.rarity < SKILL_RARITY[key] || (u.cds[key] || 0) > 0) return false;
     if (key === 'W' && u.energy < u.energyMax) return false;
-    if (s.ai && s.ai.cond) {
+    if (!manual && s.ai && s.ai.cond) {
       try { if (!s.ai.cond(u, B)) return false; } catch (e) { return false; }
     }
     const wind = Math.max(.12, Number(s.wind) || (key === 'W' ? .48 : .3));
     if (u.id === 'PureVanillaCookie' && key === 'W') u._vanillaCastGuardUntil = B.t + wind + .08;
-    if (u.unknownWorld) B.unknownWorldDialogue(u);
+    if (u.cogVoice) B.unknownWorldDialogue(u);
     const castId = (u._castId || 0) + 1;
     u._castId = castId;
-    u.casting = { key, t: wind, id: castId };
+    u.casting = { key, t: wind, id: castId, manual: !!manual };
+    if (key === 'W') u._manualWhite = false;
     if ((u.id === 'Tisha' || u.id === 'Poppy') && !u.twisted) {
       const skillArt = Art.skillHero(u.id, key);
       if (skillArt) {
@@ -295,7 +317,7 @@ const AI = {
     u.animState = 'wind'; u.animT = wind + .1; u.animDur = wind + .1; u.animStyle = null;
     u.moving = false;
     FX.telegraph(u.x, u.y, 70, u.team === TEAM_E ? '#ff6b6b' : '#7ad1ff', wind);
-    if (u.unknownWorld) {
+    if (u.cogVoice) {
       const cue = typeof UNKNOWN_WORLD_SKILL_AUDIO !== 'undefined' && UNKNOWN_WORLD_SKILL_AUDIO[`${u.id}:${key}`];
       if (cue) Sound.play(cue, { vol: key === 'W' ? .82 : .68, priority: key === 'W', throttle: 260 });
     } else if (u.twisted) Sound.twisted(u, 'skill', { vol: key === 'W' ? .78 : .62, throttle: 480 });
@@ -306,7 +328,7 @@ const AI = {
     }
     else {
       const voice = HERO_AUDIO[u.id];
-      if (voice && key === 'W' && voice.ability) Sound.hero(u, 'ability', { vol: .52, priority: true });
+      if (voice && key === 'W' && voice.ability) Sound.hero(u, 'ability', { vol: u.id === 'Gigi' ? .95 : .52, priority: true });
       else if (voice && voice.talk && !u._heroTalkPlayed) {
         u._heroTalkPlayed = Sound.hero(u, 'talk', { vol: .42, priority: true });
       }
@@ -326,7 +348,7 @@ const AI = {
       FX.ring(u.x, u.y - 30, 190, '#ffe27a', .35);
       FX.punchZoom(.05, .3);
       B.log('<b>' + u.name + '</b> uses <b>' + s.name + '</b>');
-    } else if (u.unknownWorld) {
+    } else if (u.cogVoice) {
       // These encounter-only machines are meant to advertise their kit in the
       // battle log too. Their short cooldown skills used to happen off-screen
       // between the larger actions, making the invasion feel like basic-attack
@@ -354,7 +376,7 @@ const AI = {
       return false;
     }
     if (start.delay > 0) {
-      u.casting = { key, t: Math.min(1.2, start.delay), id: u._castId };
+      u.casting = { key, t: Math.min(1.2, start.delay), id: u._castId, manual: !!(activation && activation.manual) };
       B.anim(u, 'wind', u.casting.t);
       return true;
     }
@@ -375,7 +397,7 @@ const AI = {
     B.heroSequence(u, key, u._castId);
     try { s.cast(u, B, B.scaled(u, key), B.skillParams(u, key)); }
     catch (e) { console.warn('skill failed', u.id, key, e); }
-    B.emitFor(u, 'cast', { key });
+    B.emitFor(u, 'cast', { key, manual: !!(activation && activation.manual) });
     if (key === 'W') B.emitTeam(u.team, 'allyUltimate', u);
     B.emitTeam(u.team, 'allyCast', u);
     B.emitFoe(u.team, 'enemyCast', u);
@@ -412,7 +434,7 @@ const AI = {
     // The supplied machine skill recordings are used as occasional attack
     // signatures too. Every third basic is enough to establish identity in a
     // large wave while preserving room for the named skill casts to land.
-    if (u.unknownWorld && typeof UNKNOWN_WORLD_BASIC_AUDIO !== 'undefined') {
+    if (u.cogVoice && typeof UNKNOWN_WORLD_BASIC_AUDIO !== 'undefined') {
       u._unknownBasicBeat = (u._unknownBasicBeat || 0) + 1;
       const cue = UNKNOWN_WORLD_BASIC_AUDIO[u.id];
       if (cue && u._unknownBasicBeat % 3 === 0)
@@ -482,7 +504,7 @@ const AI = {
         else FX.burst(actual.x, actual.y - 60, 5, b.pcol || '#fff', { spMax: 180 });
         FX.shake(melee ? 2.5 : 1.5, .08);
         B.emitFor(u, 'basicHit', { target: actual });
-        if (u.unknownWorld && chance(.24)) B.unknownWorldDialogue(u);
+        if (u.cogVoice && chance(.24)) B.unknownWorldDialogue(u);
         if (b.onHit) { try { b.onHit(u, actual, B, i); } catch (e) { console.warn(e); } }
         // pierce (Brightney at full charge) hits the line behind
         if (u.pierce) B.enemiesOf(u).forEach(o => { if (o !== actual && B.distance(o, actual) < 220)

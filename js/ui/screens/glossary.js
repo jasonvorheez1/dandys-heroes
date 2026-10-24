@@ -101,6 +101,7 @@ Object.assign(Screens, {
       ['Physical Damage', 'Reduced by Defense. Armor Penetration ignores part of that protection.'],
       ['Magic Damage', 'Reduced by Magic Defense. Magic Penetration ignores part of that protection.'],
       ['True Damage', 'Ignores Defense and Magic Defense.'],
+      ['Speed', 'Changes Energy gain and skill cooldown recovery. Attack Speed controls basic attacks.'],
       ['Accuracy & Evasion', 'Accuracy helps attacks connect; Evasion helps a target dodge. Guaranteed hits ignore that contest.'],
       ['Crowd Control', 'Stun, Freeze, Sleep, Root, Silence, Fear, Charm, and Knockback interrupt or restrict a unit.'],
       ['Shield', 'Temporary extra durability lost before HP. Shield Power increases shields created by that Hero.'],

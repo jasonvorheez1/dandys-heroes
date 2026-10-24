@@ -1,52 +1,152 @@
-/* heroes13.js - Teagan, a manners-first control tank. */
+/* heroes13.js - Teagan turns careful tea service into support and measured control. */
 'use strict';
 
-function teaganTape(u, B, n) {
-  const current = Math.max(0, Math.min(10, Number(u.teaganTapes) || 0));
-  const gained = Math.min(10 - current, Math.max(1, Number(n) || 1));
+function teaganTape(u, B, amount) {
+  const current = Math.max(0, Math.min(150, Number(u.teaganTapes) || 0));
+  const gained = Math.min(150 - current, Math.max(0, Number(amount) || 0));
   if (!gained) return;
   u.teaganTapes = current + gained;
-  // Energy-loss callbacks can fire several times in a short burst. Keep the
-  // resource exact, but avoid creating a burst of DOM effects for each one.
-  if (B.t - (u._teaganTapeFxAt ?? -Infinity) >= .45) {
+  if (B.t - (u._teaganTapeFxAt ?? -Infinity) >= .6) {
     u._teaganTapeFxAt = B.t;
     B.fxTeaganSkill('tape', u, { count: gained });
   }
 }
 
+function teaganTakeTea(u, B, S, P) {
+  if (!u.alive || u.hpPct >= .98 || u.teaganTapes < P.tapeCost || B.t < (u._teaganTeaNext || 0)) return false;
+  u.teaganTapes -= P.tapeCost;
+  u._teaganTeaNext = B.t + P.careCd;
+  B.cleanse(u, 1);
+  B.heal(u, u, u.max.hp * S.selfHeal, { tag: 'Tea Time' });
+  B.fxTeaganSkill('shield', u, { target: u });
+  Sound.play('teagan_tea_service', { vol: .58, throttle: 500 });
+  return true;
+}
+
 defHero({
-  id:'Teagan', name:'Teagan', folder:'Teagan', file:'Teagan', icon:'Teagan', role:'Control', roleLabel:'Control / Hidden Tank', tier:'S', position:'Midline', element:'Tea',
-  blurb:'A composed hostess who slows every fight down until her opponents forget whose turn it was.',
-  base:{ hp:6200, atk:165, def:328, mag:315, mdef:342, spd:112, acc:188, eva:142 },
-  hidden:{ range:255, aspd:.78, ms:66, aggro:1.15, crit:.06, critDmg:1.45, healPow:1.18, shieldPow:1.38, cdr:.08, ccRes:.24, kbRes:.52, armorPen:0, magPen:.10 },
-  growth:{ hp:.108, atk:.050, def:.096, mag:.096, mdef:.102 },
-  move:{ gait:'swagger', bob:4, freq:1.25, lean:4, squash:.04, idle:'settle', step:'step_soft', particles:'sparkle', pcol:'#c9955d', trail:{on:false}, brake:.55 },
-  basic:{ name:'Teacup Tap', type:'magic', ratio:.72, range:255, proj:'orb', pcol:'#c9955d', sfx:'whoosh', hit:'hit_magic', wind:.2, note:'A very precise correction.' },
-  skills:{
-    W:{ name:'Tea Time', type:'Magic / Shield', energy:100, v:{ heal:.14, shield:.18 }, p:{ dur:6, power:18, tape:3 },
-      desc:(S,P)=>`<span class="sk-pas">Teagan collects 📼 Tapes when enemies lose Power, are Silenced, are Distracted, or have a debuff blocked. Below half HP she spends ${P.tape} Tapes to heal and shield herself.</span> Active: serves tea to the battlefield, cleansing up to three debuffs from each ally, healing them for <em>${pcn(S.heal*100)}</em> Max HP, reducing enemy Power, and applying 🫖 Etiquette for ${P.dur}s.`,
-      passive:(u,B,S,P)=>{ u.teaganTapes=0; B.on(u,'statusApplied',ev=>{ if(ev.src===u && ev.unit && ev.unit.team!==u.team && ['silence','teagandistracted','etiquette'].includes(ev.id)) teaganTape(u,B); }); B.on(u,'enemyEnergyLost',()=>teaganTape(u,B)); B.on(u,'debuffBlocked',ev=>{ if(ev.unit && ev.unit.team!==u.team) teaganTape(u,B); }); B.every(u,.35,()=>{ if(u.hpPct<.5 && u.teaganTapes>=P.tape){ u.teaganTapes-=P.tape; B.heal(u,u,u.max.hp*S.heal,{tag:'Tea Time'}); B.shield(u,u,u.max.hp*S.shield,5); B.fxTeaganSkill('shield',u,{target:u}); } }); },
-      cast:(u,B,S,P)=>{ const allies=B.alliesOf(u), foes=B.enemiesOf(u); B.anim(u,'cast',.78,'teaganTea'); Sound.play('teagan_tea_service',{vol:.72,priority:true}); B.fxTeaganSkill('tea',u,{allies,targets:foes}); allies.forEach(a=>{ B.cleanse(a,3); B.heal(u,a,a.max.hp*S.heal,{tag:'Tea Time'}); }); foes.forEach(e=>{ B.energy(e,-P.power); B.applyStatus(u,e,'etiquette',P.dur); }); }
+  id: 'Teagan', name: 'Teagan', folder: 'Teagan', file: 'Teagan', icon: 'Teagan',
+  role: 'Support', roleLabel: 'Support / Control', tier: 'S', position: 'Midline', element: 'Tea',
+  blurb: 'A gracious host who knows when a friend needs a cup, a pause, or a place to sit.',
+  base: { hp: 4800, atk: 165, def: 270, mag: 325, mdef: 300, spd: 112, acc: 188, eva: 155 },
+  hidden: { range: 255, aspd: .90, ms: 72, aggro: .82, crit: .06, critDmg: 1.45, healPow: 1.30, shieldPow: 1.26, cdr: .08, ccRes: .24, kbRes: .32, armorPen: 0, magPen: .10 },
+  growth: { hp: .095, atk: .050, def: .082, mag: .100, mdef: .088 },
+  move: { gait: 'waddle', bob: 4, freq: 1.35, lean: 4, squash: .04, idle: 'pour', step: 'step_soft',
+    particles: 'steam', pcol: '#d7ad72', trail: { on: false }, brake: .5 },
+  basic: { name: 'Saucer Flick', type: 'magic', ratio: .82, range: 255, proj: 'orb', pcol: '#d7ad72',
+    sfx: 'whoosh', hit: 'hit_magic', wind: .19, note: 'A neat little clink before the next cup is poured.',
+    onHit: (u, t, B) => {
+      teaganTape(u, B, 15);
+      u.teaganSteep = Math.min(3, (u.teaganSteep || 0) + 1);
+    } },
+  skills: {
+    W: {
+      name: 'Tea Time', type: 'Shield / Self Healing', energy: 100,
+      v: { selfHeal: .32, shield: .12 }, p: { tapeCost: 75, careCd: 10, dur: 5 },
+      fixedP: ['tapeCost', 'careCd'],
+      desc: (S, P) => `<span class="sk-pas">Teagan gathers 📼 Tapes as she fights and helps her guests. Below 55% HP, she spends ${P.tapeCost} Tapes to heal herself for <em>${pcn(S.selfHeal * 100)}</em> Max HP and clear one debuff.</span> Active: Teagan serves tea, clearing one debuff and shielding every ally for <em>${pcn(S.shield * 100)}</em> of her Max HP with Haste for ${P.dur}s. Each recent basic attack lets the tea steep and strengthens the Shields. If she needs healing and has enough Tapes, she takes a cup herself.`,
+      passive: (u, B, S, P) => {
+        u.teaganTapes = 25;
+        u.teaganSteep = 0;
+        u._teaganTeaNext = 0;
+        B.on(u, 'waveStart', () => teaganTape(u, B, 20));
+        B.on(u, 'allyDamaged', ev => {
+          if (!ev || !ev.unit || ev.unit === u || ev.dot || B.t < (u._teaganGuestTapeAt || 0)) return;
+          u._teaganGuestTapeAt = B.t + .8;
+          teaganTape(u, B, 5);
+        });
+        B.every(u, .3, () => { if (u.hpPct < .55) teaganTakeTea(u, B, S, P); });
+      },
+      cast: (u, B, S, P) => {
+        const allies = B.alliesOf(u);
+        const steep = u.teaganSteep || 0;
+        u.teaganSteep = 0;
+        B.anim(u, 'cast', .82, 'teaganTea');
+        Sound.play('teagan_tea_service', { vol: .72, priority: true });
+        B.fxTeaganSkill('tea', u, { allies });
+        allies.forEach(a => {
+          B.cleanse(a, 1);
+          B.shield(u, a, u.max.hp * S.shield * (1 + steep * .15), P.dur);
+          B.applyStatus(u, a, 'haste', P.dur);
+        });
+        teaganTakeTea(u, B, S, P);
+      }
     },
-    G:{ name:'Mind Your Manners', type:'Magic Control', cd:10, v:{ ratio:.92, power:20 }, p:{ silence:2.8, sap:5, seal:4 },
-      desc:(S,P)=>`Corrects the highest-Power enemy for <em>${pcn(S.ratio*100)}</em> Magic, removing up to three positive effects and Silencing them for ${P.silence}s. They are 🛑 Buff Sealed for ${P.seal}s, reducing Skill Power and stopping their next hostile buff. Enemies already under Etiquette are also 🪫 Sapped for ${P.sap}s.`,
-      ai:{prio:59,cond:(u,B)=>B.enemiesOf(u).length>0}, cast:(u,B,S,P)=>{ const t=B.highestEnergy(B.enemiesOf(u)); if(!t)return; B.anim(u,'cast',.64,'teaganCorrect'); Sound.play('teagan_manners_correction',{vol:.68,priority:true}); B.fxTeaganSkill('correction',u,{target:t}); B.damage(u,t,u.st.mag*S.ratio,{type:'magic',tag:'Mind Your Manners'}); B.energy(t,-S.power); B.dispel(t,3); B.applyStatus(u,t,'buffsealed',P.seal,{stacks:1}); B.applyStatus(u,t,'silence',P.silence); B.applyStatus(u,t,'weaken',P.silence); if(t.hasStatus('etiquette')) B.applyStatus(u,t,'sap',P.sap); }
+    G: {
+      name: 'A Seat at the Table', type: 'Magic Control / Shield', cd: 10,
+      v: { ratio: 1.02, shield: .11 }, p: { stun: 2.4, slow: 4 },
+      desc: (S, P) => `Teagan offers the most dangerous enemy a place to pause. A cup deals <em>${pcn(S.ratio * 100)}</em> Magic damage, 🌀 Stuns them for ${P.stun}s, then 🐢 Slows them for ${P.slow}s. The most injured teammate receives a Shield worth <em>${pcn(S.shield * 100)}</em> of Teagan's Max HP.`,
+      ai: { prio: 58, cond: (u, B) => B.enemiesOf(u).length > 0 },
+      cast: (u, B, S, P) => {
+        const target = B.enemiesOf(u).slice().sort((a, b) =>
+          (b.st.atk + b.st.mag) - (a.st.atk + a.st.mag))[0];
+        if (!target) return;
+        B.anim(u, 'cast', .64, 'teaganCorrect');
+        Sound.play('teagan_manners_correction', { vol: .62, priority: true });
+        B.fxTeaganSkill('invitation', u, { target });
+        B.damage(u, target, u.st.mag * S.ratio * (1 + (u._teaganInviteBonus || 0)), { type: 'magic', tag: 'A Seat at the Table' });
+        if (target.alive) {
+          B.applyStatus(u, target, 'stun', P.stun);
+          B.applyStatus(u, target, 'slow', P.slow);
+        }
+        const friend = B.lowestHp(B.alliesOf(u).filter(a => a !== u && !a.minion)) || u;
+        B.shield(u, friend, u.max.hp * S.shield, 5);
+      }
     },
-    B:{ name:'Proper Seating', type:'Control / Shield', cd:12, v:{ shield:.13 }, p:{ dur:6 },
-      desc:(S,P)=>`Seats the highest-Attack enemy opposite Teagan for ${P.dur}s. They become Distracted by her, deal reduced damage, and lose Power whenever they hit her. If they attempt a skill, Teagan gains a <em>${pcn(S.shield*100)}</em> Max HP Shield.`,
-      ai:{prio:55,cond:(u,B)=>B.enemiesOf(u).length>0}, cast:(u,B,S,P)=>{ const t=B.highestStat(B.enemiesOf(u),'atk'); if(!t)return; B.anim(u,'cast',.64,'teaganSeat'); Sound.play('teagan_proper_seating',{vol:.7,priority:true}); B.fxTeaganSkill('seating',u,{target:t}); t._teaganDistractor=u; t._teaganDistractUntil=B.t+P.dur; B.applyStatus(u,t,'teagandistracted',P.dur); const off=B.on(u,'enemyCast',e=>{ if(e===t&&t.hasStatus('teagandistracted')){ B.shield(u,u,u.max.hp*S.shield,5); B.fxTeaganSkill('shield',u,{target:u}); } }); B.after(P.dur,off); }
+    B: {
+      name: 'A Quieter Table', type: 'Magic Control / Team Buff', cd: 12,
+      v: { ratio: .74 }, p: { dur: 5 },
+      desc: (S, P) => `Teagan settles the room. Enemies take <em>${pcn(S.ratio * 100)}</em> Magic damage and become 🌙 Drowsy for ${P.dur}s, slowing attacks and skill recovery. Allies gain Fortify and a little Energy so they can catch their breath.`,
+      ai: { prio: 53, cond: (u, B) => B.enemiesOf(u).length > 0 },
+      cast: (u, B, S, P) => {
+        const foes = B.enemiesOf(u), allies = B.alliesOf(u);
+        B.anim(u, 'cast', .72, 'teaganSeat');
+        Sound.play('teagan_proper_seating', { vol: .62, priority: true });
+        B.fxTeaganSkill('quiet', u, { targets: foes, allies });
+        foes.forEach(e => {
+          B.damage(u, e, u.st.mag * S.ratio, { type: 'magic', area: true, tag: 'A Quieter Table' });
+          if (e.alive) B.applyStatus(u, e, 'drowsy', P.dur);
+        });
+        allies.forEach(a => { B.applyStatus(u, a, 'fortify', P.dur); B.energy(a, 8); });
+      }
     },
-    P:{ name:'Elegant Host', type:'Passive', v:{ heal:.055 }, p:{}, desc:(S)=>`Controlled enemies lose Tenacity and Evasion. Whenever control prevents an enemy’s skill or buff, Teagan restores <em>${pcn(S.heal*100)}</em> Max HP.`,
-      passive:(u,B,S)=>{ B.on(u,'debuffBlocked',()=>B.heal(u,u,u.max.hp*S.heal,{tag:'Elegant Host'})); B.on(u,'buffBlocked',ev=>{ if(ev.unit && ev.unit.team!==u.team) B.heal(u,u,u.max.hp*S.heal,{tag:'Elegant Host'}); }); B.every(u,.4,()=>B.enemiesOf(u).forEach(e=>{ const controlled=e.hasStatus('etiquette')||e.hasStatus('teagandistracted'); const eva=controlled?-.18:0, ccRes=controlled?-.18:0; if(e.flat.evaPTeagan!==eva||e.flat.ccResPTeagan!==ccRes){ e.flat.evaPTeagan=eva; e.flat.ccResPTeagan=ccRes; e.dirty=true; } })); }
+    P: {
+      name: 'Remembered Orders', type: 'Passive / Team Buff',
+      v: { shield: .14 }, p: { every: 2, dur: 5, energy: 16 }, fixedP: ['every'],
+      desc: (S, P) => `Every ${P.every} basic attacks, Teagan prepares a cup for the teammate who needs it most. An injured guest receives a <em>${pcn(S.shield * 100)}</em> Max HP Shield; a tired guest gains ${P.energy} Energy; otherwise the cup grants Haste for ${P.dur}s.`,
+      passive: (u, B, S, P) => {
+        u._teaganCups = 0;
+        B.on(u, 'basicHit', () => {
+          u._teaganPreparedThisHit = false;
+          if (++u._teaganCups < P.every) return;
+          u._teaganCups = 0;
+          u._teaganPreparedThisHit = true;
+          const friend = B.lowestHp(B.alliesOf(u).filter(a => a !== u && !a.minion)) || u;
+          if (friend.hpPct < .75) B.shield(u, friend, u.max.hp * S.shield, P.dur);
+          else if (friend.energy < friend.energyMax * .5) B.energy(friend, P.energy);
+          else B.applyStatus(u, friend, 'haste', P.dur);
+          B.fxTeaganSkill('shield', u, { target: friend });
+        });
+      }
     },
-    R:{ name:'No Ichor on the Boa', type:'Debuff Immunity', v:{}, p:{ icd:7, immune:2.5, fatigue:5 }, desc:(S,P)=>`The first debuff applied to Teagan every ${P.icd}s starts ${P.immune}s of immunity to all applied debuffs. The source becomes 🥱 Fatigued for ${P.fatigue}s, causing their next buff to fail.`,
-      passive:(u,B,S,P)=>{ u.guards=u.guards||[]; u.guards.push((id,d)=>{ if(d.kind!=='debuff')return false; if(B.t<(u._teaganImmuneUntil||0))return true; if(B.t<(u._teaganGuardAt||0))return false; u._teaganGuardAt=B.t+P.icd;u._teaganImmuneUntil=B.t+P.immune;B.applyStatus(u,u,'ccimmune',P.immune);return true;}); B.on(u,'debuffBlocked',ev=>{ if(ev.unit===u){ B.fxTeaganSkill('guard',u); if(ev.src&&ev.src.alive) B.applyStatus(u,ev.src,'fatigue',P.fatigue); } }); }
+    R: {
+      name: 'A Cup for Everyone', type: 'Magic Damage / Upgrade',
+      v: { splash: .48, invite: .28 }, p: { radius: 150, dur: 3 },
+      desc: (S, P) => `Teagan's basic attacks splash to enemies within ${P.radius} range for <em>${pcn(S.splash * 100)}</em> Magic damage. When Remembered Orders serves a cup, the splash also makes those enemies 🌙 Drowsy for ${P.dur}s. A Seat at the Table deals <em>${pcn(S.invite * 100)}</em> more damage.`,
+      passive: (u, B, S, P) => {
+        u._teaganInviteBonus = S.invite;
+        B.on(u, 'basicHit', ev => {
+          const target = ev && ev.target;
+          if (!target) return;
+          B.enemiesOf(u).filter(e => e !== target && B.distance(e, target) <= P.radius).forEach(e => {
+            B.damage(u, e, u.st.mag * S.splash, { type: 'magic', area: true, tag: 'A Cup for Everyone' });
+            if (u._teaganPreparedThisHit && e.alive) B.applyStatus(u, e, 'drowsy', P.dur);
+          });
+        });
+      }
     }
   }
 });
 
-// Teagan previously existed only as an enemy-side quick-cast definition.
-// This playable kit loads after that placeholder and is explicitly enrolled
-// in the roster snapshot it created.
+// Teagan's playable definition replaces the earlier enemy-side quick-cast kit.
 if (typeof HERO_IDS !== 'undefined' && !HERO_IDS.includes('Teagan')) HERO_IDS.push('Teagan');
 if (typeof PLAYABLE_IDS !== 'undefined' && !PLAYABLE_IDS.includes('Teagan')) PLAYABLE_IDS.push('Teagan');

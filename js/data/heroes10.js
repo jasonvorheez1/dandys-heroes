@@ -105,7 +105,7 @@ defHero({
   scale: 1.65, nativeFace: -1,
   role: 'Control', roleLabel: 'Combo Control', tier: 'S', position: 'Middle', element: 'Light',
   blurb: 'A visiting Keyblade wielder who turns clean strings of hits into launches, stuns, and explosive finishers.',
-  base: { hp: 5850, atk: 485, def: 330, mag: 420, mdef: 315, spd: 138, acc: 220, eva: 172 },
+  base: { hp: 4650, atk: 405, def: 280, mag: 370, mdef: 290, spd: 132, acc: 210, eva: 158 },
   hidden: { range: 108, aspd: 1.22, ms: 94, aggro: .92, crit: .22, critDmg: 1.85, healPow: 1,
     shieldPow: 1.15, cdr: .12, ccRes: .32, kbRes: .42, armorPen: .20, magPen: .18 },
   growth: { hp: .098, atk: .104, def: .088, mag: .095, mdef: .086 },
@@ -117,7 +117,7 @@ defHero({
       const c = u.getStatus('combo');
       if (c && c.stacks >= 5) {
         B.removeStatus(u, 'combo');
-        B.damage(u, t, u.st.atk * 1.85, { type: 'physical', tag: 'Combo Finisher', forceCrit: true });
+        B.damage(u, t, u.st.atk * 1.45, { type: 'physical', tag: 'Combo Finisher', forceCrit: true });
         B.applyStatus(u, t, 'launch', .65); B.fxBoom(t.x, t.y - 48, .9, '#f7fbff');
         // The finisher keeps Sora moving instead of erasing the haste his
         // Combo Master passive has just built.
@@ -127,7 +127,7 @@ defHero({
   skills: {
     W: {
       name: 'Ars Arcanum', type: 'Physical Damage / Control', energy: 100,
-      v: { hit: .82, finish: 2.85, splash: 1.45 }, p: { hits: 6, stun: 2.2 },
+      v: { hit: .72, finish: 2.35, splash: 1.20 }, p: { hits: 6, stun: 1.8 },
       desc: (S, P) => `<span class="sk-pas">Basic Attacks build 🔑 Combo. At five stacks, Sora launches his target and keeps two stacks.</span> Active: rushes the highest-Energy enemy with ${P.hits} Keyblade hits for <em>${pcn(S.hit * 100)}</em> Attack each, then spends Combo on a final <em>${pcn(S.finish * 100)}</em> Attack strike that gains 12% Damage per spent stack. The finisher Stuns for ${P.stun}s, splashes nearby enemies, and rebuilds two Combo.`,
       passive: () => {},
       cast: (u, B, S, P) => {
@@ -162,7 +162,7 @@ defHero({
     },
     G: {
       name: 'Thunder', type: 'Magic Damage / Control', cd: 7,
-      v: { ratio: 2.35, shieldCrack: .50, comboBurst: .95 }, p: { shock: 4, delay: .4 },
+      v: { ratio: 1.95, shieldCrack: .40, comboBurst: .75 }, p: { shock: 3, delay: .4 },
       desc: (S, P) => `Calls lightning onto the three enemies with the highest Energy for <em>${pcn(S.ratio * 100)}</em> Magic Damage. Each bolt cracks <em>${pcn(S.shieldCrack * 100)}</em> of an active Shield, interrupts, and applies ${P.shock} Shock. Combo Locked targets take another Magic hit, are Stunned for 1.2s, and restore Sora’s Energy.`,
       ai: { prio: 62, cond: (u, B) => B.enemiesOf(u).length > 0 },
       cast: (u, B, S, P) => {
@@ -176,14 +176,14 @@ defHero({
           B.applyStatus(u, t, 'shock', 6, { stacks: P.shock, val: u.st.mag * .12 });
           if (t.hasStatus('comboed')) {
             B.damage(u, t, u.st.mag * S.comboBurst, { type: 'magic', tag: 'Thunder Combo Burst' });
-            B.applyStatus(u, t, 'stun', 1.2); B.energy(u, 14);
+            B.applyStatus(u, t, 'stun', 1.0); B.energy(u, 10);
           }
         }));
       }
     },
     B: {
       name: 'Back Off!', type: 'Physical Damage / Control / Shield', cd: 8.5,
-      v: { ratio: 2.75, shield: .18 }, p: { radius: 230, stun: 1.4 },
+      v: { ratio: 2.30, shield: .14 }, p: { radius: 215, stun: 1.2 },
       desc: (S, P) => `Sora breaks pressure with a circular Keyblade sweep, dealing <em>${pcn(S.ratio * 100)}</em> Attack to nearby enemies, interrupting and Stunning them for ${P.stun}s, then Knocking them Back. Hitting an enemy Shields the whole team for <em>${pcn(S.shield * 100)}</em> of each ally’s Max HP.`,
       ai: { prio: 78, cond: (u, B) => B.enemiesOf(u).some(e => B.distance(e, u) < 215) },
       cast: (u, B, S, P) => {
@@ -198,7 +198,7 @@ defHero({
     },
     P: {
       name: 'Combo Master', type: 'Skill Haste / Control',
-      v: { haste: .085, dr: .06 }, p: { energy: 14 },
+      v: { haste: .065, dr: .045 }, p: { energy: 9 },
       desc: (S, P) => `Sora starts with two 🔑 Combo. Each stack grants <em>${pcn(S.haste * 100)}</em> Skill Haste and <em>${pcn(S.dr * 100)}</em> Damage Reduction. If an enemy dodges one of Sora’s attacks, he reads their movement: they become Combo Locked and his follow-up attacks cannot be Dodged for 5s. Stunning or launching an enemy restores <em>${P.energy}</em> Energy and advances his cooldowns.`,
       passive: (u, B, S, P) => {
         B.applyStatus(u, u, 'combo', 999, { stacks: 2 });
@@ -226,13 +226,15 @@ defHero({
         });
         B.on(u, 'statusApplied', ev => {
           if (ev.src !== u || !ev.unit || ev.unit.team === u.team || (ev.id !== 'stun' && ev.id !== 'launch')) return;
-          B.energy(u, P.energy); B.reduceCd(u, .75);
+          if (B.t < (u._soraControlRefundAt || 0)) return;
+          u._soraControlRefundAt = B.t + 1.5;
+          B.energy(u, P.energy); B.reduceCd(u, .5);
         });
       }
     },
     R: {
       name: 'Trinity Limit', type: 'Physical Damage / Magic Damage / Control',
-      v: { physical: 2.25, magic: 2.45 }, p: { cd: 14, energy: 20, hasteDur: 7 },
+      v: { physical: 1.8, magic: 1.95 }, p: { cd: 18, energy: 14, hasteDur: 6 },
       desc: (S, P) => `Every ${P.cd.toFixed(1)}s, Sora unleashes Trinity Limit: it pulls every enemy to the center, interrupts them, and deals Physical and Magic Damage. Each enemy is left with 3 stacks of Combo Locked. Allies gain ${Math.round(P.energy)} Energy and ${P.hasteDur.toFixed(1)}s of Skill Haste.`,
       passive: (u, B, S, P) => {
         B.every(u, P.cd, () => {
@@ -306,7 +308,7 @@ defHero({
   scale: 1.75, nativeFace: -1,
   role: 'Tank', roleLabel: 'Counter Tank', tier: 'S', position: 'Frontline', element: 'Darkness',
   blurb: 'A defensive counter tank who intercepts danger, controls his darkness, and returns enemy pressure in one heavy slash.',
-  base: { hp: 7450, atk: 395, def: 410, mag: 260, mdef: 395, spd: 110, acc: 205, eva: 112 },
+  base: { hp: 6500, atk: 340, def: 385, mag: 225, mdef: 365, spd: 106, acc: 195, eva: 108 },
   hidden: { range: 82, aspd: .95, ms: 78, aggro: 1.65, crit: .12, critDmg: 1.75, healPow: 1,
     shieldPow: 1.25, cdr: .05, ccRes: .45, kbRes: .85, armorPen: .18, magPen: .10 },
   growth: { hp: .112, atk: .092, def: .104, mag: .075, mdef: .102 },
@@ -441,7 +443,7 @@ defHero({
   scale: 1.65, nativeFace: -1,
   role: 'Control', roleLabel: 'All-rounder Control', tier: 'S', position: 'Middle', element: 'Light',
   blurb: 'An all-rounder who turns light marks into safe zones, counter windows, and clean bursts of mixed damage.',
-  base: { hp: 5750, atk: 385, def: 320, mag: 475, mdef: 365, spd: 124, acc: 220, eva: 155 },
+  base: { hp: 4550, atk: 320, def: 270, mag: 415, mdef: 330, spd: 120, acc: 210, eva: 150 },
   hidden: { range: 126, aspd: 1.12, ms: 82, aggro: .83, crit: .16, critDmg: 1.70, healPow: 1.28,
     shieldPow: 1.24, cdr: .12, ccRes: .32, kbRes: .45, armorPen: .14, magPen: .20 },
   growth: { hp: .096, atk: .090, def: .088, mag: .104, mdef: .094 },
@@ -452,7 +454,7 @@ defHero({
   skills: {
     W: {
       name: 'Lightbound Strike', type: 'Physical Damage / Magic Damage / Control', energy: 100,
-      v: { physical: 1.25, magic: 2.15, shield: .18, heal: .75 }, p: { blind: 5.5 },
+      v: { physical: 1.15, magic: 1.75, shield: .14, heal: .60 }, p: { blind: 4.5 },
       desc: (S, P) => `<span class="sk-pas">Basic Attacks apply ✨ Gleam. When a Gleaming enemy attacks an ally, Kairi periodically gives that ally a Shield and gains Energy.</span> Active: dashes through every enemy, marking them, then bursts Gleam for Magic Damage and Blinds them for ${P.blind}s. The team gains Shields and the weakest ally is Healed.`,
       passive: (u, B) => B.on(u, 'allyDamaged', ev => {
         if (!ev.src || !ev.src.hasStatus('gleam') || !ev.unit || !ev.unit.alive) return;
@@ -475,7 +477,7 @@ defHero({
           foes.forEach(t => {
             if (!t.alive) return;
             const g = t.getStatus('gleam'); if (!g) return;
-            B.damage(u, t, u.st.mag * S.magic * (1 + (g.stacks - 1) * .35), { type: 'magic', tag: 'Lightbound Burst' });
+            B.damage(u, t, u.st.mag * S.magic * (1 + (g.stacks - 1) * .25), { type: 'magic', tag: 'Lightbound Burst' });
             B.applyStatus(u, t, 'blind', P.blind);
             blinded++;
             if (u.kairiOath) g.stacks = Math.max(1, g.stacks - 1);
@@ -490,8 +492,8 @@ defHero({
       }
     },
     G: {
-      name: 'Radiant Circle', type: 'Magic Damage / Control / Shield / Healing', cd: 8.5,
-      v: { tick: .72, shield: .25, allyShield: .11, heal: .32 }, p: { dur: 8, radius: 215 },
+      name: 'Radiant Circle', type: 'Magic Damage / Control / Shield / Healing', cd: 11,
+      v: { tick: .58, shield: .20, allyShield: .08, heal: .26 }, p: { dur: 6, radius: 205 },
       desc: (S, P) => `Creates a light circle around the lowest-HP ally for ${P.dur}s, Shielding and cleansing them while giving the team smaller Shields. Each second, it Heals that ally and damages enemies inside; ✨ Gleaming enemies are struck even outside the circle. Enemies in the circle are Slowed, and marked enemies there are Rooted. It ends in a burst that Knocks enemies Back.`,
       ai: { prio: 74, cond: (u, B) => B.alliesOf(u).some(a => a.hpPct < .86) || B.enemiesOf(u).some(e => e.hasStatus('gleam')) },
       cast: (u, B, S, P) => {
@@ -506,14 +508,14 @@ defHero({
           B.enemiesOf(u).filter(e => B.distance(e, a) <= P.radius || e.hasStatus('gleam')).forEach(e => {
             const inside = B.distance(e, a) <= P.radius;
             B.damage(u, e, u.st.mag * S.tick * (inside ? 1 : .6), { type: 'magic', dot: true, tag: 'Radiant Circle' });
-            if (inside) { B.applyStatus(u, e, 'slow', 2); if (e.hasStatus('gleam')) B.applyStatus(u, e, 'root', 1.25); }
+            if (inside) { B.applyStatus(u, e, 'slow', 2); if (e.hasStatus('gleam')) B.applyStatus(u, e, 'root', .85); }
           });
           B.after(1, pulse);
         }; pulse();
         B.after(P.dur, () => {
           if (!u.alive || !a.alive) return;
           B.enemiesOf(u).filter(e => B.distance(e, a) <= P.radius + 35 || e.hasStatus('gleam')).forEach(e => {
-            B.damage(u, e, u.st.mag * S.tick * 2.6, { type: 'magic', tag: 'Radiant Circle Burst' });
+            B.damage(u, e, u.st.mag * S.tick * 2.0, { type: 'magic', tag: 'Radiant Circle Burst' });
             if (B.distance(e, a) <= P.radius + 35) B.dash(e, e.x + u.face * 90, .22, { depth: e.depth });
           });
           B.fxRing(a.x, a.y - 40, P.radius + 40, '#fff4fb', .55);
@@ -563,7 +565,7 @@ defHero({
     },
     P: {
       name: 'Princess of Heart', type: 'Magic Damage / Shield / Control',
-      v: { punish: .95, rescueShield: .22 }, p: { missEnergy: 22, rescueCd: 10 },
+      v: { punish: .80, rescueShield: .18 }, p: { missEnergy: 16, rescueCd: 13 },
       desc: (S, P) => `Shielding an ally makes their next Basic Attack apply Gleam and grants 3s immunity to debuffs. When a Gleaming enemy misses, Kairi deals <em>${pcn(S.punish * 100)}</em> Magic Damage and drains Energy. An ally facing a hit that would leave them below 50% HP receives an emergency Shield and cleanse, once every ${P.rescueCd}s per ally.`,
       passive: (u, B, S, P) => {
         const hookEnemy = e => {
@@ -614,7 +616,7 @@ defHero({
     },
     R: {
       name: 'Oath of Light', type: 'Physical Damage / Magic Damage / Control',
-      v: { rescue: .55, teamHeal: .18, teamShield: .16 }, p: { max: 3 },
+      v: { rescue: .40, teamHeal: .12, teamShield: .12 }, p: { max: 3 },
       desc: (S, P) => `Enemies hold up to ${P.max} ✨ Gleam stacks; maximum Gleam applies ☀ Exposed to Light. Lightbound Strike consumes Gleam for extra burst Damage. Once per wave, Kairi survives lethal Damage at <em>${pcn(S.rescue * 100)}</em> HP, cleanses herself, marks and Blinds enemies, then Heals and Shields the team.`,
       passive: (u, B, S) => {
         u.kairiOath = true;
@@ -664,7 +666,7 @@ function goofyIntercept(u, ally, attacker, B, S, P, ev, automatic) {
     if (!u.alive || !attacker.alive) return;
     B.anim(u, 'attack', .46); B.damage(u, attacker, u.st.atk * S.ratio, { type: 'physical', melee: true, tag: 'Bodyguard Counter', noDodge: true });
     B.applyStatus(u, attacker, 'attackdown', P.debuff, { val: P.attackDown });
-    B.fxSlash(u, attacker, { col: '#b8efff', big: true }); Sound.play('hit_blunt', { vol: .62 });
+    B.fxGoofy('intercept', u); B.fxSlash(u, attacker, { col: '#f6c27a', big: true }); Sound.play('hit_blunt', { vol: .62 });
   });
   B.shield(u, ally, u.max.hp * S.shield, 7);
   if (ally.hpPct < .5) B.cleanse(ally, 2);
@@ -718,7 +720,7 @@ defHero({
         B.on(u, 'damaged', ev => {
           if (ev.basic && !ev.redirected && u.hasStatus('guardstance') && B.t >= u.goofyNextBlock) {
             ev.amount = 0; u.goofyNextBlock = B.t + P.blockCd; goofyCharge(u, B, 1); goofySturdy(u, B);
-            B.floatNum(u, -96, 'BLOCKED', 'block'); B.fxRing(u.x, u.y - 46, 92, '#b9efff', .35); Sound.play('block', { vol: .7 });
+            B.floatNum(u, -96, 'BLOCKED', 'block'); B.fxGoofy('block', u); Sound.play('block', { vol: .7 });
           } else if (ev.amount > 0 && !ev.redirected && chance(.12)) {
             collabVoice(u, 'hurt', { vol: .5 });
           }
@@ -734,16 +736,17 @@ defHero({
       },
       cast: (u, B, S, P) => {
         collabVoice(u, 'protect', { vol: .8, priority: true }); B.anim(u, 'cast', .7);
-        u.goofyGuardUntil = B.t + P.guard; B.fxRing(u.x, u.y - 42, 190, '#8ee5ff', .55);
+        u.goofyGuardUntil = B.t + P.guard; B.fxGoofy('guard', u, { dur: P.guard });
         if (u.goofyKnightLoyalty) B.alliesOf(u).forEach(a => B.shield(u, a, u.max.hp * S.redShield, P.guard + 2));
         B.after(P.guard, () => {
           if (!u.alive) return;
           const st = u.getStatus('shieldcharge'), charges = st ? st.stacks : 0;
           if (st) B.removeStatus(u, 'shieldcharge');
-          B.anim(u, 'attack', .75); Sound.play('goofy_skill', { vol: .78, priority: true });
+          B.anim(u, 'attack', .75); Sound.play('goofy_skill', { vol: .78, priority: true }); Sound.play('skill_impact', { vol: .5, throttle: 300 });
           const line = B.enemiesOf(u).filter(e => (e.x - u.x) * u.face >= -35 && Math.abs(e.depth - u.depth) < .44);
           const lead = line.slice().sort((a, b) => Math.abs(a.x - u.x) - Math.abs(b.x - u.x))[0];
-          if (lead) B.fxProj(u, lead, { kind: 'obj', img: 'goofy-shield', size: 44, col: '#9fe9ff', spin: 14 });
+          B.fxGoofy('throw', u);
+          if (lead) B.fxProj(u, lead, { kind: 'obj', img: 'goofy-shield', size: 44, col: '#f29a2e', spin: 14 });
           line.forEach(e => {
             B.damage(u, e, u.st.atk * (S.ratio + S.perCharge * charges), { type: 'physical', area: true, tag: 'Goofy Shield' });
             B.knockback(u, e, P.kb); B.fxSlash(u, e, { col: '#9fe9ff', big: true });
@@ -771,7 +774,7 @@ defHero({
           });
           if (hits.length >= 2) B.shield(u, u, u.max.hp * S.shield, 7);
           if (maximum && closest) B.applyStatus(u, closest, 'stun', P.stun);
-          B.fxRing(u.x, u.y - 42, P.radius, '#9fe9ff', .55); B.shake(hits.length >= 2 ? 11 : 6, .25); Sound.play('tornado_e', { vol: .55 });
+          B.fxGoofy('tornado', u, { radius: P.radius }); B.shake(hits.length >= 2 ? 11 : 6, .25); Sound.play('tornado_e', { vol: .55 });
         });
       }
     },

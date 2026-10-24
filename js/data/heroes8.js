@@ -65,7 +65,14 @@ function waxwellMeltFigure(u, target, B, damage) {
 function waxwellMakeFigure(u, target, B) {
   if (!u.waxFigureCap || !target || !target.alive) return;
   const old = (u.waxFigures || []).find(f => f.target === target);
-  if (old) { old.lastTargetX = target.x; old.lastTargetY = target.y; B.applyStatus(u, target, 'waxfigure', 999); return; }
+  if (old) {
+    old.lastTargetX = target.x; old.lastTargetY = target.y;
+    // A figure's long-lived status is already present on most refreshes.
+    // Reapplying it emits statusApplied and recomputes the target every time
+    // Soft Wax refreshes Slow, which can happen four times a second per foe.
+    if (!target.hasStatus('waxfigure')) B.applyStatus(u, target, 'waxfigure', 999);
+    return;
+  }
   u.waxFigures = u.waxFigures || [];
   while (u.waxFigures.length >= u.waxFigureCap) waxwellMeltFigure(u, u.waxFigures[0].target, B, 0);
   const x = clamp(u.x + u.face * (48 + u.waxFigures.length * 34), B.leftWall, B.rightWall);
@@ -74,6 +81,14 @@ function waxwellMakeFigure(u, target, B) {
   B.fxWaxwellFigure('spawn', u, record, target);
   B.applyStatus(u, target, 'waxfigure', 999);
   B.fxWaxwellSkill('figure', u, { target });
+}
+
+function waxwellKeepAura(u, target, B, id, duration) {
+  const active = target.statuses.find(s => s.id === id && s.src === u);
+  // The zone updates every .25s. A live aura only needs a refresh shortly
+  // before expiry; the skipped calls otherwise fan out through every status
+  // listener and mark the whole unit dirty even though nothing changed.
+  if (!active || active.t <= .30) B.applyStatus(u, target, id, duration);
 }
 
 function waxwellUpdate(u, B) {
@@ -89,7 +104,7 @@ function waxwellUpdate(u, B) {
     Object.keys(state.seen).forEach(id => { if (!activeZoneIds.has(Number(id))) delete state.seen[id]; });
     state.crosses = Object.keys(state.seen).length;
     if (soft) {
-      B.applyStatus(u, e, 'softwax', .55);
+      waxwellKeepAura(u, e, B, 'softwax', .55);
       state.dwell += .25;
       if (state.dwell >= (u.waxRootAfter || 2.5) && B.t - state.rootAt > 4) {
         state.rootAt = B.t; state.dwell = 0;
@@ -101,7 +116,7 @@ function waxwellUpdate(u, B) {
     }
     state.wasSoft = soft;
     if (flame) {
-      B.applyStatus(u, e, 'litup', .65);
+      waxwellKeepAura(u, e, B, 'litup', .65);
       if (B.t - state.burnAt >= 1) {
         state.burnAt = B.t;
         B.applyStatus(u, e, 'burn', 2, { val: u.st.mag * (u.waxTrailDot || .075) });
@@ -119,7 +134,7 @@ function waxwellUpdate(u, B) {
   B.alliesOf(u).forEach(a => {
     if (a === u || !zones.some(z => z.type === 'flame' && Math.abs(a.x - z.x) <= z.radius)) return;
     const fresh = !a.hasStatus('waxignited');
-    B.applyStatus(u, a, 'waxignited', .7);
+    waxwellKeepAura(u, a, B, 'waxignited', .7);
     if (fresh && u.waxNetwork) B.energy(u, u.waxAllyEnergy || 3);
   });
   (u.waxFigures || []).slice().forEach(f => {

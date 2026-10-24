@@ -90,8 +90,10 @@ const ENTRANCE_STYLES = {
   Brusha: { dur: 1.0, stagger: .13, ease: ease.out, hop: 0, bob: 5, jitter: 0, paintTrail: true },
   // jumps in like a cat: a short, low pounce rather than a walk
   Scraps: { dur: .55, stagger: .09, ease: ease.out, hop: 20, bob: 0, jitter: 0, pounce: true, heavy: true },
-  // teleports in: absent, then a flash and a hard cut to her spot
-  Astro: { dur: 1.0, stagger: .16, ease: ease.out, teleport: true, appearAt: .6, col: '#b9a4ff' },
+  // shuffles in half-asleep: slow, low steps with no bounce at all
+  Astro: { dur: 1.7, stagger: .22, ease: ease.out, hop: 0, bob: 2, jitter: 0 },
+  // hustles in with worried little steps, as if someone already needs him
+  Sprout: { dur: .95, stagger: .12, ease: ease.out, hop: 0, bob: 5, jitter: 0 },
   // stomps in like he's pissed: fast, heavy, aggressive footfalls
   Shrimpo: { dur: .8, stagger: .11, ease: t => t, hop: 0, bob: 4, jitter: 0, stomp: true, heavy: true },
   // walks slowly like she owns the place: unhurried, no bounce at all

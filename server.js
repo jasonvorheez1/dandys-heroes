@@ -1,4 +1,4 @@
-// Dandy's Heroes cloud save backend.
+// Dandy's Heroes cloud saves, arena defenses, and global rankings.
 // The database is private to this project; rows are attributed to the signed-in
 // Websim user so platform moderation can remove them when necessary.
 
@@ -57,6 +57,21 @@ function cleanText(value, max) {
 function cleanNumber(value, min, max, fallback) {
   const n = Number(value);
   return Number.isFinite(n) ? Math.max(min, Math.min(max, Math.floor(n))) : fallback;
+}
+
+function isFullTestSave(save) {
+  if (!save || typeof save !== 'object') return false;
+  if (save._saveKind === 'full-test') return true;
+  const resources = save.res || {};
+  const heroes = save.heroes || {};
+  // Older fixture exports had no marker. Their stocked economy and almost
+  // entirely maxed roster together identify them without excluding players
+  // who happen to reach one of these milestones in normal play.
+  return Number(save.bestFloor) >= 120 && Number(resources.ichor) >= 999999
+    && Number(resources.arenaCoin) >= 9999 && Number(resources.main) >= 999
+    && Number(save.shop && save.shop.level) >= 100
+    && Object.values(heroes).filter(hero => hero && Number(hero.level) >= 700
+      && Number(hero.rarity) === 6 && Number(hero.rarityPlus) >= 30).length >= 50;
 }
 
 function cleanDefenseTeam(team) {
@@ -127,6 +142,79 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
 
+    if (url.pathname === '/api/account') {
+      if (request.method !== 'GET') return jsonError('Method not allowed', 405);
+      const id = request.headers.get('x-websim-user-id');
+      const username = request.headers.get('x-websim-username');
+      const anonymous = request.headers.get('x-websim-user-is-anonymous') === 'true';
+      const user = id && username && !anonymous
+        ? { id, username, avatar_url: `https://images.websim.com/avatar/${encodeURIComponent(username)}` }
+        : null;
+      return Response.json({ user }, { headers: { 'cache-control': 'no-store' } });
+    }
+
+    if (url.pathname === '/api/leaderboard') {
+      if (request.method !== 'GET') return jsonError('Method not allowed', 405);
+      await env.DB.exec(SAVE_TABLE);
+      const legacyFixture = `(COALESCE(CAST(json_extract(s.save_json, '$.bestFloor') AS INTEGER), 0) >= 120
+        AND COALESCE(CAST(json_extract(s.save_json, '$.res.ichor') AS INTEGER), 0) >= 999999
+        AND COALESCE(CAST(json_extract(s.save_json, '$.res.arenaCoin') AS INTEGER), 0) >= 9999
+        AND COALESCE(CAST(json_extract(s.save_json, '$.res.main') AS INTEGER), 0) >= 999
+        AND COALESCE(CAST(json_extract(s.save_json, '$.shop.level') AS INTEGER), 0) >= 100
+        AND (SELECT COUNT(*) FROM json_each(s.save_json, '$.heroes') fixture_hero
+          WHERE CAST(json_extract(fixture_hero.value, '$.level') AS INTEGER) >= 700
+          AND CAST(json_extract(fixture_hero.value, '$.rarity') AS INTEGER) = 6
+          AND CAST(json_extract(fixture_hero.value, '$.rarityPlus') AS INTEGER) >= 30) >= 50)`;
+      const eligible = `json_valid(s.save_json) AND COALESCE(json_extract(s.save_json, '$._saveKind'), 'main') != 'full-test' AND NOT ${legacyFixture}`;
+      const namedPlayer = `${eligible} AND s.username IS NOT NULL AND s.username != ''`;
+      const stageScore = `
+        COALESCE((SELECT SUM(MIN(MAX(CAST(c.value AS INTEGER), 0), 20))
+          FROM json_each(s.save_json, '$.campaigns') c), 0)
+        + COALESCE((SELECT SUM(MIN(MAX(CAST(json_extract(t.value, '$.best') AS INTEGER), 0), 8))
+          FROM json_each(s.save_json, '$.trials') t), 0)
+        + COALESCE((SELECT COUNT(*) FROM json_each(s.save_json, '$.raid.clears') r
+          JOIN json_each(r.value) cleared WHERE cleared.value = 1), 0)
+        + COALESCE((SELECT SUM(MIN(MAX(CAST(old.value AS INTEGER), 0), 12))
+          FROM json_each(s.save_json, '$.raid.stages') old
+          WHERE NOT EXISTS (SELECT 1 FROM json_each(s.save_json, '$.raid.clears') r WHERE r.key = old.key)), 0)`;
+      const [toonRows, masteryRows, stageRows, arenaRows, floorRows, playerCountRow] = await Promise.all([
+        env.DB.prepare(`SELECT h.key AS toon_id,
+          SUM(MIN(MAX(CAST(json_extract(h.value, '$.battles') AS INTEGER), 0), 100000000)) AS score
+          FROM dandys_heroes_saves s, json_each(s.save_json, '$.heroes') h
+          WHERE ${eligible} AND json_type(h.value) = 'object'
+          GROUP BY h.key HAVING score > 0 ORDER BY score DESC, toon_id ASC`).all(),
+        env.DB.prepare(`SELECT s.user_id, s.username, MIN(MAX(s.mastery, 0), 800) AS score
+          FROM dandys_heroes_saves s WHERE ${namedPlayer}
+          ORDER BY score DESC, s.username COLLATE NOCASE ASC LIMIT 20`).all(),
+        env.DB.prepare(`SELECT s.user_id, s.username, ${stageScore} AS score
+          FROM dandys_heroes_saves s WHERE ${namedPlayer}
+          ORDER BY score DESC, s.username COLLATE NOCASE ASC LIMIT 20`).all(),
+        env.DB.prepare(`SELECT s.user_id, s.username,
+          MIN(MAX(CAST(json_extract(s.save_json, '$.arena.wins') AS INTEGER), 0), 100000000) AS score
+          FROM dandys_heroes_saves s WHERE ${namedPlayer}
+          ORDER BY score DESC, s.username COLLATE NOCASE ASC LIMIT 20`).all(),
+        env.DB.prepare(`SELECT s.user_id, s.username,
+          MIN(MAX(s.deepest_floor, 0), 100000000) AS score
+          FROM dandys_heroes_saves s WHERE ${namedPlayer}
+          ORDER BY score DESC, s.username COLLATE NOCASE ASC LIMIT 20`).all(),
+        env.DB.prepare(`SELECT COUNT(*) AS count FROM dandys_heroes_saves s WHERE ${namedPlayer}`).first()
+      ]);
+      const viewerId = request.headers.get('x-websim-user-id');
+      const players = rows => rows.results.map(row => ({
+        username: cleanText(row.username, 64) || 'Player',
+        score: Number(row.score) || 0,
+        you: !!viewerId && row.user_id === viewerId
+      }));
+      return Response.json({
+        toons: toonRows.results.map(row => ({ id: row.toon_id, score: Number(row.score) || 0 })),
+        mastery: players(masteryRows),
+        stages: players(stageRows).filter(row => row.score > 0),
+        arena: players(arenaRows).filter(row => row.score > 0),
+        floors: players(floorRows).filter(row => row.score > 0),
+        playerCount: Number(playerCountRow && playerCountRow.count) || 0
+      });
+    }
+
     if (url.pathname === '/api/arena/defenses') {
       await ensureArenaDefenseTable(env);
       if (request.method !== 'GET') return jsonError('Method not allowed', 405);
@@ -141,13 +229,14 @@ export default {
     if (url.pathname === '/api/arena/defense') {
       const userId = request.headers.get('x-websim-user-id');
       if (!userId) return jsonError('Sign in to publish a defense team', 401);
-      const resetCycle = await ensureArenaDefenseTable(env);
       if (request.method !== 'POST') return jsonError('Method not allowed', 405);
       let body;
       try { body = await request.json(); }
       catch (_) { return jsonError('Invalid JSON', 400); }
+      if (body && body.saveKind === 'full-test') return jsonError('Full Test Save cannot publish a defense', 400);
       const team = cleanDefenseTeam(body && body.team);
       if (!team) return jsonError('Choose at least one Hero for your defense', 400);
+      const resetCycle = await ensureArenaDefenseTable(env);
       const arenaRank = cleanNumber(body && body.arenaRank, 1, 99999, 2000);
       const username = cleanText(request.headers.get('x-websim-username') || 'Player', 64) || 'Player';
       const updatedAt = Date.now();
@@ -164,16 +253,15 @@ export default {
     if (url.pathname !== '/api/save') return new Response('Not found', { status: 404 });
 
     const userId = request.headers.get('x-websim-user-id');
-    if (!userId) return jsonError('Sign in to use cloud saves', 401);
-
-    await env.DB.exec(SAVE_TABLE);
+    if (!userId || request.headers.get('x-websim-user-is-anonymous') === 'true') return jsonError('Sign in to use cloud saves', 401);
 
     if (request.method === 'GET') {
+      await env.DB.exec(SAVE_TABLE);
       const row = await env.DB
         .prepare('SELECT username, save_json, mastery, heroes, deepest_floor, updated_at_ms FROM dandys_heroes_saves WHERE user_id = ?')
         .bind(userId)
         .first();
-      return Response.json({ save: row || null });
+      return Response.json({ save: row || null }, { headers: { 'cache-control': 'no-store' } });
     }
 
     if (request.method !== 'PUT' && request.method !== 'POST') {
@@ -188,9 +276,11 @@ export default {
     if (!save || typeof save !== 'object' || Array.isArray(save)) {
       return jsonError('Invalid save data', 400);
     }
-    if (save._saveKind === 'full-test') {
+    if (isFullTestSave(save) || (save._saveKind && save._saveKind !== 'main')) {
       return jsonError('Full Test Save cannot be stored in the cloud', 400);
     }
+    const baseAt = Number(body && body.base_updated_at_ms);
+    if (!Number.isSafeInteger(baseAt) || baseAt < 0) return jsonError('Cloud save revision is required', 400);
 
     const saveJson = JSON.stringify(save);
     if (saveJson.length > 120000) return jsonError('Save is too large', 413);
@@ -198,38 +288,41 @@ export default {
       return jsonError('Save is missing required data', 400);
     }
 
+    await env.DB.exec(SAVE_TABLE);
+
     const username = request.headers.get('x-websim-username') || '';
     const mastery = Number.isFinite(Number(save.mastery)) ? Math.max(0, Math.floor(Number(save.mastery))) : 0;
     const heroes = Object.keys(save.heroes).length;
     const deepestFloor = Number.isFinite(Number(save.bestFloor)) ? Math.max(0, Math.floor(Number(save.bestFloor))) : 0;
-    const updatedAt = Date.now();
-
-    // Do not let a delayed request from an older tab/device roll the account
-    // back. The client carries the last server timestamp in _updatedAt after
-    // a successful upload; a newer cloud row wins over an older snapshot.
+    // A write must name the exact cloud revision it was based on. This is
+    // independent of the player's device clock and guards the write itself,
+    // so simultaneous tabs cannot both replace one another.
     const existing = await env.DB
       .prepare('SELECT save_json, mastery, heroes, deepest_floor, updated_at_ms, username FROM dandys_heroes_saves WHERE user_id = ?')
       .bind(userId)
       .first();
-    const incomingAt = Number(save._updatedAt) || 0;
-    if (existing && (
-      incomingAt <= 0 ||
-      Number(existing.updated_at_ms) > incomingAt ||
-      (Number(existing.updated_at_ms) === incomingAt && existing.save_json !== saveJson)
-    )) {
+    if ((Number(existing && existing.updated_at_ms) || 0) !== baseAt) {
       return Response.json({
-        error: 'Cloud save is newer',
+        error: 'Cloud save changed on another device',
         save: existing
       }, { status: 409 });
     }
-
-    await env.DB
+    const updatedAt = Math.max(Date.now(), baseAt + 1);
+    const write = await env.DB
       .prepare(
         'INSERT INTO dandys_heroes_saves (user_id, username, save_json, mastery, heroes, deepest_floor, updated_at_ms) VALUES (?, ?, ?, ?, ?, ?, ?) ' +
-        'ON CONFLICT(user_id) DO UPDATE SET username = excluded.username, save_json = excluded.save_json, mastery = excluded.mastery, heroes = excluded.heroes, deepest_floor = excluded.deepest_floor, updated_at_ms = excluded.updated_at_ms'
+        'ON CONFLICT(user_id) DO UPDATE SET username = excluded.username, save_json = excluded.save_json, mastery = excluded.mastery, heroes = excluded.heroes, deepest_floor = excluded.deepest_floor, updated_at_ms = excluded.updated_at_ms ' +
+        'WHERE dandys_heroes_saves.updated_at_ms = ?'
       )
-      .bind(userId, username, saveJson, mastery, heroes, deepestFloor, updatedAt)
+      .bind(userId, username, saveJson, mastery, heroes, deepestFloor, updatedAt, baseAt)
       .run();
+    if (!write.meta || Number(write.meta.changes) !== 1) {
+      const latest = await env.DB
+        .prepare('SELECT save_json, mastery, heroes, deepest_floor, updated_at_ms, username FROM dandys_heroes_saves WHERE user_id = ?')
+        .bind(userId)
+        .first();
+      return Response.json({ error: 'Cloud save changed on another device', save: latest }, { status: 409 });
+    }
 
     return Response.json({
       ok: true,

@@ -33,11 +33,15 @@ function cookieHostSay(root,line,animate=false){
 }
 Object.assign(Screens,{
  cookieRun(s,ev){
-  this._cookieTab=this._cookieTab||'oven';this._raidStages=this._raidStages||{};
-  const stage=this._raidStages[ev.id]??Raid.nextStage(ev.id),wallet=CookieRun.state();
+  this._cookieTab=this._cookieTab||'battle';this._raidStages=this._raidStages||{};
+  let stage=this._raidStages[ev.id];
+  if(stage==null||!Raid.stageUnlocked(ev.id,stage))stage=Raid.nextStage(ev.id);
+  this._raidStages[ev.id]=stage;
+  const wallet=CookieRun.state();
   const page=el('section','cookie-event');
   page.innerHTML=`<header class="cookie-header"><button class="cookie-back" type="button" aria-label="Back to event board">← Events</button><h1>Cookie Run</h1><div class="cookie-wallet" aria-label="${fmt(wallet.cutters)} Cookie Cutters">${cookieCutterIcon()}<b>${fmt(wallet.cutters)}</b></div><button class="cookie-exit" type="button" aria-label="Exit Cookie Run to Home">⌂ <span>Home</span></button></header>
-   <div class="cookie-layout"><nav class="cookie-nav" aria-label="Cookie Run event"><button data-cookie-tab="oven">Shop</button><button data-cookie-tab="gacha">Gacha</button><button data-cookie-tab="battle">Battle</button></nav>
+   <div class="cookie-event-summary"><div><small>SELECTED STAGE</small><b>${stage+1}<em> / ${ev.stageLevels.length}</em></b></div><div><small>STAGES CLEARED</small><b>${Raid.stageProgress(ev.id)}<em> / ${ev.stageLevels.length}</em></b></div><div><small>EVERY CLEAR</small><b>${CookieRun.reward(stage)}<em> Cutters</em></b></div></div>
+   <div class="cookie-layout"><nav class="cookie-nav" aria-label="Cookie Run event"><button data-cookie-tab="battle"><i>⚔</i><span>Battle</span></button><button data-cookie-tab="oven"><i>▣</i><span>Shop</span></button><button data-cookie-tab="gacha"><i>✦</i><span>Gacha</span></button></nav>
    <div class="cookie-room"><div class="cookie-host"><button class="cookie-talk" aria-label="Talk to GingerBrave"><img class="cookie-host-img" src="${ASSET+COOKIE_BRAVE_EMOTIONS.neutral}" alt="GingerBrave"></button><button class="cookie-host-copy" type="button" aria-label="Hear more from GingerBrave"><b class="cookie-name">GingerBrave</b><span class="cookie-speech" role="status" aria-live="polite"></span></button></div><div class="cookie-content"></div></div></div>`;
   s.appendChild(page);
   page.querySelector('.cookie-back').onclick=()=>{this._raidDossier=null;this.go('raid');};
@@ -84,7 +88,7 @@ Object.assign(Screens,{
    const manualChance=1-.30-COOKIE_OBTAIN_ORDER.reduce((sum,c)=>sum+c.fullChance+c.shardChance,0);
    const pity=COOKIE_OBTAIN_ORDER.map(c=>`${c.name}: ${c.pityMax}`).join(' · ');
    const prices=COOKIE_OBTAIN_ORDER.map(c=>`${c.name}: ${c.shopCost}`).join(' · ');
-   const body=el('div','cookie-rates-body',`<p>Hardest → easiest. Base rates per bake; guarantees take priority. Each bake costs 1 Cookie Cutter.</p><table><tbody>${fullRows}${shardRows}<tr><td>3,000 EXP</td><td>30.0%</td></tr><tr><td>8 Training Manuals</td><td>${rate(manualChance)}</td></tr></tbody></table><p>Full recruit guarantees: ${pity}. Each hero has a separate counter. If several guarantees are due together, the rarest resolves first on consecutive bakes.</p><p>Targeted shop prices for 150 shards and 5,000 Ichor: ${prices} Cookie Cutters. Stage clears award 2–5 Cutters, including repeat clears.</p>`);
+   const body=el('div','cookie-rates-body',`<p>Hardest → easiest. Base rates per bake; guarantees take priority. Each bake costs 1 Cookie Cutter.</p><table><tbody>${fullRows}${shardRows}<tr><td>3,000 EXP</td><td>30.0%</td></tr><tr><td>8 Training Manuals</td><td>${rate(manualChance)}</td></tr></tbody></table><p>Full recruit guarantees: ${pity}. Each hero has a separate counter. If several guarantees are due together, the rarest resolves first on consecutive bakes.</p><p>Targeted shop prices for 150 shards and 5,000 Ichor: ${prices} Cookie Cutters. Stage clears award ${CookieRun.reward(0)}–${CookieRun.reward(CookieRun.event.stageLevels.length-1)} Cutters, including repeat clears.</p>`);
    UI.modal('Cookie gacha probabilities',body);
   };
  },
@@ -112,11 +116,19 @@ Object.assign(Screens,{
  },
  cookieBattles(content,page,ev,stage){
   const loan=CookieRun.loan(stage),level=Raid.stageLevel(stage,ev),owned=Save.owns('GingerBrave');
-  content.classList.add('cookie-battles');content.innerHTML=`<div class="cookie-section-heading"><h2>Battle</h2></div><div class="cookie-stages">${ev.stageLevels.map((lv,i)=>`<button data-stage="${i}" class="${i===stage?'selected':''}" aria-label="Stage ${i+1}, level ${lv}" aria-pressed="${i===stage}"><b>${Raid.stageCleared(ev.id,i)?'✓':i+1}</b><small>Lv ${lv}</small></button>`).join('')}</div>
+  const mutations=BattleMutations.forEvent(ev,stage,1);
+  content.classList.add('cookie-battles');content.innerHTML=`<div class="cookie-section-heading"><h2>Choose a stage</h2><span class="cookie-stage-threat">${mutations.length} mutations</span></div><div class="cookie-stages">${ev.stageLevels.map((lv,i)=>`<button data-stage="${i}" class="${i===stage?'selected':''}" aria-label="Stage ${i+1}, ${CookieRun.stageNames[i]}, level ${lv}, ${BattleMutations.forEvent(ev,i,1).length} mutations" title="${CookieRun.stageNames[i]}" aria-pressed="${i===stage}"><b>${Raid.stageCleared(ev.id,i)?'✓':i+1}</b><small>Lv ${lv}</small><em>${BattleMutations.forEvent(ev,i,1).length} MUTATIONS</em></button>`).join('')}</div>
+  <section class="event-mutation-stage cookie-mutation-stage"><div class="event-mutation-stage-head"><div><small>STAGE ${stage+1} · ${CookieRun.stageNames[stage]}</small><h2>Wave 1 mutations</h2><p>Mutations change each wave.</p></div><strong>${mutations.length} ACTIVE</strong></div><div class="event-mutation-cards">${BattleMutations.cards(mutations)}</div></section>
+  <div class="event-mutation-route">${[1,2,3].map(wave=>`<div><small>WAVE ${wave}</small><b>${BattleMutations.forEvent(ev,stage,wave).map(m=>`${m.name} (${m.short})`).join(' · ')}</b></div>`).join('')}</div><details class="event-mutation-guide"><summary>View all ${BattleMutations.catalog.length} battle mutations <span>⌄</span></summary><div class="event-mutation-cards">${BattleMutations.cards(BattleMutations.catalog)}</div></details>
   <div class="cookie-required"><img src="${ASSET+COOKIE_BRAVE_EMOTIONS.neutral}" alt="GingerBrave"><div><b>GingerBrave is required</b><small>${owned?'Your own GingerBrave joins each wave.':`Event loan · Lv ${loan.level} · Red ${loan.rarityPlus}`}</small><small>GingerBrave + up to 4 of your Toons</small></div><button class="cookie-kit">Skills</button></div>
   <div class="cookie-enemy-line">${['BerryBishop','PomegranateSnake','CookieScorpion','DangerInTheBox','PaperPuppetKnight','SkelecakeCook'].map(id=>`<button data-enemy="${id}" title="${HEROES[id].name}"><img src="${Art.hero(id)}" alt="${HEROES[id].name}"></button>`).join('')}</div>
-  <div class="cookie-wave-copy"><b>STAGE ${stage+1} · LV ${level} · SHADOW MILK BOSS</b></div>
+  <div class="cookie-wave-copy"><b>STAGE ${stage+1} · ${CookieRun.stageNames[stage]} · LV ${level} · SHADOW MILK BOSS</b></div>
   <div class="cookie-battle-reward"><span>Every clear</span><b>${cookieCutterIcon()} ${CookieRun.reward(stage)} Cookie Cutters</b></div><button class="cookie-fight">Choose team & battle <span>⚔ →</span></button><button class="cookie-sim">Use Raid Tickets</button>`;
+  const command=el('div','cookie-battle-command');
+  ['.cookie-required','.cookie-battle-reward','.cookie-fight','.cookie-sim'].forEach(selector=>command.appendChild(content.querySelector(selector)));
+  content.querySelector('.cookie-stages').after(command);
+  const stageStrip=content.querySelector('.cookie-stages'),selectedStage=stageStrip.querySelector('.selected');
+  stageStrip.scrollLeft=selectedStage.offsetLeft-stageStrip.offsetLeft-(stageStrip.clientWidth-selectedStage.offsetWidth)/2;
   content.querySelectorAll('[data-stage]').forEach(b=>b.onclick=()=>{this._raidStages[ev.id]=Number(b.dataset.stage);this.render();});
   content.querySelector('.cookie-kit').onclick=()=>this.cookieKit('GingerBrave',loan);
   content.querySelectorAll('[data-enemy]').forEach(b=>b.onclick=()=>{const h=HEROES[b.dataset.enemy];const body=el('div','cookie-enemy-info',`<img src="${Art.hero(h.id)}" alt="${h.name}"><p>${h.blurb}</p>${h.cookiePrey?`<p>Prioritizes ${h.cookiePrey}s. Poison ignores Defense and scales with the victim’s maximum HP.${h.id==='PomegranateSnake'?' Venomous Pursuit also inflicts 12% Max-HP Injury for eight seconds.':''}</p>`:''}${h.id==='BerryBishop'?'<p>Slams its staff to heal the ally with the lowest HP percentage. Occasionally summons smaller Healing Bots that heal less, but act faster. Neither can deal damage.</p>':''}${h.id==='DangerInTheBox'?'<p>Deals no damage. On defeat, applies two Status Corruption stacks within medium range for 10 seconds and spawns a Paper Puppet Knight. Each stack reduces healing received and Skill Haste by 10%.</p>':''}<p>Encounter only · B-tier combat strength</p>`);UI.modal(h.name,body);});

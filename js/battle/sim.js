@@ -1,12 +1,12 @@
 /* sim.js - the 5v5 real-time auto battler.
-   Fixed 60Hz logic stepping, adaptive DOM rendering, and the full API that
-   hero kits use. Handhelds render at 30 FPS so the large cutout stage does
-   not keep a phone's compositor working at full speed for the whole battle. */
+   Fixed-step logic, adaptive DOM rendering, and the full API that hero kits
+   use. Crowded battles step at 30Hz; smaller battles retain 60Hz. */
 'use strict';
 
 const TEAM_P = 0, TEAM_E = 1;
 const TICK = 1 / 60;
-const BATTLE_FPS = typeof matchMedia === 'function' && matchMedia('(max-width: 700px)').matches ? 30 : 60;
+const BATTLE_FPS = typeof matchMedia === 'function' &&
+  matchMedia('(max-width: 700px), (pointer: coarse)').matches ? 30 : 60;
 const BATTLE_FRAME_MS = 1000 / BATTLE_FPS;
 const COMBAT_TIME_SCALE = .76;
 
@@ -73,17 +73,17 @@ function orderedBattleStatuses(statuses) {
    are real game art, not emoji stand-ins. Brusha, Dyle and Rodger already own
    richer bespoke sequences, so they are intentionally omitted here. */
 const HERO_CINEMATICS = {
-  Astro:      { cast: 'BlessedEffect', impact: 'SleepEffect', col: '#b9a4ff', s1: 'magiccircle', s2: 'sparkle' },
+  Astro:      { cast: 'BlessedEffect', impact: 'SleepEffect', col: '#8d86e0', s1: 'magiccircle', s2: 'sparkle' },
   Scraps:     { signature: 'scraps', ally: key => key === 'W', col: '#ffd166', s1: 'cloth', s2: 'cloth' },
-  Cosmo:      { cast: 'HealEffect', impact: 'BlessedEffect', prop: { kind: 'item', img: 'Brownie' }, ally: true, col: '#ffd7a0', s1: 'get_food', s2: 'heal_soft' },
+  Cosmo:      { signature: 'cosmo', ally: true, col: '#ffd7a0', s1: 'get_food', s2: 'heal_soft' },
   Cocoa:      { signature: 'cocoa', ally: key => key !== 'B', col: '#c98a5a', s1: 'get_food', s2: 'sparkle' },
   Bobette:    { noSequence: true, col: '#e8536b' },
-  Boxten:     { cast: 'HasteEffect', impact: 'ShockEffect', col: '#6fe3c4', s1: 'ticktock', s2: 'hit_blunt' },
+  Boxten:     { signature: 'boxten', col: '#6fe3c4', s1: 'ticktock', s2: 'hit_blunt' },
   /* Brightney owns a readable lamp language: shade swings, bulb charge,
      defensive glare, and a narrow focused beam. The generic spell flipbook
      made every one of those actions look interchangeable. */
   Brightney:  { noSequence: true, col: '#fff3b0', s1: 'beam_charge', s2: 'beam_fire' },
-  Coal:       { cast: 'RageEffect', impact: 'BurnEffect', col: '#ff8a3d', s1: 'fire', s2: 'hit_heavy' },
+  Coal:       { signature: 'coal', col: '#b8a58a', s1: 'grab', s2: 'hit_heavy' },
   // Connie's kit owns its own phase/haunt choreography; the generic status
   // flipbook made every one of her skills look like the same purple burst.
   Connie:     { noSequence: true, col: '#bfe9ff', s1: 'spectral', s2: 'whisper' },
@@ -98,7 +98,7 @@ const HERO_CINEMATICS = {
      paint a false body, erect an invisible wall, then leave ink where enemies
      will regret standing. */
   Blot:       { noSequence: true, col: '#8f6bff', s1: 'blot_ink_cast', s2: 'blot_ink_burst' },
-  Looey:      { cast: 'ConfusionEffect', impact: 'FearEffect', prop: { kind: 'item', img: 'Pop' }, col: '#ffcf5a', s1: 'pop2', s2: 'gasp' },
+  Looey:      { cast: 'ConfusionEffect', impact: 'FearEffect', prop: { kind: 'item', img: 'Pop' }, col: '#ffcf5a', s1: 'pop2', s2: 'male_scream' },
   /* Rudie's charge, hoof string, and Momentum own their visuals; the generic
      status flipbook made a speed carry look like a frosty support cast. */
   Rudie:      { noSequence: true, col: '#ffd166', s1: 'rudie_wind', s2: 'hit_heavy' },
@@ -111,7 +111,7 @@ const HERO_CINEMATICS = {
   Poppy:      { signature: 'poppy', ally: key => key === 'G', col: '#ff9dca', s1: 'bounce', s2: 'pop2' },
   Gigi:       { cast: 'HasteEffect', impact: 'CharmEffect', prop: { kind: 'item', img: 'Gumballs' }, ally: true, col: '#ffb0e0', s1: 'get_item', s2: 'sparkle' },
   Squirm:     { cast: 'RageEffect', impact: 'PoisonBubble', col: '#e8d4a0', s1: 'grow', s2: 'hit_magic' },
-  Eggson:     { cast: 'ArmorEffect', impact: 'ShockEffect', prop: { kind: 'item', img: 'easteregg' }, col: '#c9a35a', s1: 'lock', s2: 'hit_blunt' },
+  Eggson:     { signature: 'eggson', col: '#e0b85a', s1: 'lock', s2: 'hit_blunt' },
   /* Soulvester owns his own protection language: armor locking, a guard
      tether, and a deliberate blade draw are clearer than the generic
      ArmorEffect/ShockEffect flipbook. */
@@ -122,7 +122,7 @@ const HERO_CINEMATICS = {
   Eclipse:    { noSequence: true, col: '#8a6bff', s1: 'spectral', s2: 'whisper' },
   /* Sprout's kit owns its own food-delivery, rush, oven, and save beats. */
   Sprout:     { noSequence: true, col: '#f4a261' },
-  Dandy:      { cast: 'RageEffect', impact: 'ShockEffect', prop: { kind: 'obj', img: 'Tape' }, col: '#ffd166', s1: 'warn', s2: 'hit_heavy' },
+  Dandy:      { cast: 'RageEffect', impact: 'ShockEffect', prop: { kind: 'obj', img: 'Tape' }, col: '#ffd166', s1: 'dandy_entrance', s2: 'hit_heavy' },
   Delilah:    { cast: 'CurseEffect', impact: 'SlowEffect', prop: { kind: 'obj', img: 'researchcapsule' }, col: '#caa2ff', s1: 'spectral', s2: 'lock' },
   RnD:        { cast: 'ConfusionEffect', impact: 'ShockEffect', col: '#d64b4b', s1: 'cloth', s2: 'hit_blunt' },
   Goob:       { cast: 'ShieldEffect', impact: 'HealEffect', ally: key => key !== 'B' && key !== 'basic', col: '#f3bd68', s1: 'grab', s2: 'heal_soft' },
@@ -187,8 +187,12 @@ const DAMAGE_RULES = Object.freeze({
   critChanceCap: .85
 });
 
-/* Critical hits have a readable two-step ceiling: the ordinary tier is 2x,
-   while one in five critical hits can spike into the 3x super-crit tier. */
+/* Global durability scale for every unit on both teams, so fights last
+   several seconds longer without touching relative balance. */
+const BATTLE_HP_SCALE = 2.2;
+
+/* Critical hits use the attacker's Crit Damage stat. Ordinary hits top out
+   at 2x; one in five crits can add another 1x, up to 3x. */
 const CRIT_RULES = Object.freeze({
   normalMultiplier: 2,
   superMultiplier: 3,
@@ -201,11 +205,15 @@ const CRIT_RULES = Object.freeze({
    composition and class bonuses. */
 const SHIELD_RULES = Object.freeze({
   allyCap: .38,
-  enemyCap: .26
+  enemyCap: .18
 });
 
 function statLevelMult(growth, level) {
   return 1 + Math.max(0, growth || 0) * Math.max(0, (level || 1) - 1);
+}
+
+function combatTempo(speed) {
+  return clamp(1 + ((Number(speed) || 110) - 110) / 300, .85, 1.15);
 }
 
 function defenseAnchor(attackerLevel, defenderLevel) {
@@ -311,6 +319,9 @@ class Unit {
     // the normal Depths version of that character.
     this.phantasiaBoss = !!spec.phantasiaBoss;
     this.unknownWorld = !!spec.unknownWorld;
+    // Voice, speech bubbles and cog skill sounds. A playable Big Wig has them
+    // without the event machines' crowd-control guard.
+    this.cogVoice = this.unknownWorld || !!(def && def.unknownWorld);
     this.collabBoss = !!spec.collabBoss;
     this.name = spec.name || def.name;
     this.level = spec.level || 1;
@@ -391,8 +402,12 @@ class Unit {
     ['hp', 'atk', 'def', 'mag', 'mdef'].forEach(k => {
       b[k] = d.base[k] * statLevelMult(g[k], lv) * starM * rarityM;
     });
-    ['spd', 'acc', 'eva'].forEach(k => { b[k] = d.base[k] * statLevelMult(.012, lv) * starM * rarityM; });
-    b.hp *= this.mult.hp;
+    // Speed is a tempo rate, like Attack Speed: levelling the whole roster
+    // should not multiply it into the thousands. Accuracy and Evasion still
+    // grow together so their matchup stays stable at equal progression.
+    b.spd = d.base.spd;
+    ['acc', 'eva'].forEach(k => { b[k] = d.base[k] * statLevelMult(.012, lv) * starM * rarityM; });
+    b.hp *= this.mult.hp * BATTLE_HP_SCALE;
     b.atk *= this.mult.atk;
     b.mag *= this.mult.mag == null ? this.mult.atk : this.mult.mag;
     b.def *= this.mult.def;
@@ -412,9 +427,9 @@ class Unit {
     // Tanks need a dependable baseline before their individual kits come
     // online. Their unique passives still define how they absorb pressure.
     if (d.role === 'Tank') {
-      b.hp *= 1.16;
-      b.def *= 1.14;
-      b.mdef *= 1.14;
+      b.hp *= 1.04;
+      b.def *= 1.04;
+      b.mdef *= 1.04;
       b.aggro += .9;
     }
     this.baseStats = b;
@@ -457,7 +472,7 @@ class Unit {
     st.spd = b.spd * (1 + m.spdP);
     st.acc = Math.max(1, b.acc * (1 + m.accP));
     st.eva = Math.max(0, b.eva * (1 + m.evaP));
-    st.aspd = Math.max(.15, b.aspd * (1 + m.aspdP));
+    st.aspd = Math.max(.15, b.aspd * (1 + (m.noAspdGain ? Math.min(m.aspdP, 0) : m.aspdP)));
     st.ms = Math.max(0, b.ms * (1 + (m.noMsGain ? Math.min(m.msP, 0) : m.msP)));
     // Combat ranges were authored for the 560px-wide arena. Scale them down
     // on narrow phones so ranged units still need to cross part of the field.
@@ -525,7 +540,7 @@ class Battle {
     this.listenersByTeam = [Object.create(null), Object.create(null)];
     this.timers = []; this.intervals = [];
     this.t = 0; this.over = false; this.result = null; this.timeLimit = 180;
-    this.speed = 1; this.paused = false;
+    this.speed = 1; this.paused = false; this.autoWhite = true;
     this.logLines = [];
     this.acc = 0; this.stopT = 0;
     this.el = {};
@@ -542,9 +557,23 @@ class Battle {
     this.offscreen = false;
   }
 
+  requestWhite(u) {
+    if (this.offscreen || this.over || !this.running || !u || !u.alive ||
+      u.team !== TEAM_P || u.noSkills || u.noEnergy || u.flags.noAct || u.flags.silenced ||
+      u.energy < u.energyMax || (u.cds.W || 0) > 0 ||
+      !u.def.skills || !u.def.skills.W || !u.def.skills.W.cast) return false;
+    // A tap during a committed swing or another cast is remembered until the
+    // next decision point. It never erases an already-started action.
+    u._manualWhite = true;
+    return true;
+  }
+
   /* ---------- setup ---------- */
   start(playerSpecs, enemySpecs, meta) {
     this.meta = meta || {};
+    this.mutations = typeof BattleMutations !== 'undefined' ? BattleMutations.resolve(this.meta.mutations) : [];
+    this._mutationPulseAt = Object.create(null);
+    this._mutationGlobalPulseAt = -10;
     this.offscreen = !!(this.opt && this.opt.offscreen) || !!(this.meta && this.meta.offscreen);
     if (this.offscreen) {
       // simulateOffscreen supplies detached FX hosts. Keep the battle marked
@@ -592,16 +621,17 @@ class Battle {
 
     playerSpecs.forEach((s, i) => this.addUnit(s, TEAM_P, i));
     enemySpecs.forEach((s, i) => this.addUnit(s, TEAM_E, i));
+    const statusMutation = this.mutations.find(m => m.family === 'wildStatus');
+    if (statusMutation) {
+      this.after(3, () => this.triggerStatusMutation(statusMutation));
+      this.every(null, statusMutation.amount, () => this.triggerStatusMutation(statusMutation));
+    }
 
-    // A full party is the expensive case: ten large cutouts plus their
-    // nameplates, bars and effects. Keep the fixed-step simulation at its
-    // normal rate, but let wider screens paint that visual layer at 30 FPS.
-    // Phones already use the 30 FPS battle cadence, so this only affects the
-    // desktop/tablet preview where the stage is still phone-frame sized.
-    // Eight or more cutouts already saturate a phone-sized compositor. Keep
-    // the fixed-step combat clock at 60 Hz, but paint the expensive DOM unit
-    // layer at 30 Hz for dense desktop fights too. FX and combat timing remain
-    // independent, so projectiles and hit windows do not lose precision.
+    // Ten max-skill fighters can spend more than a frame in AI/passive hooks.
+    // Their timers, movement and status durations all consume dt, so a 30Hz
+    // fixed step preserves battle time while halving that simulation work.
+    this._simTick = this.units.length >= 8 ? 1 / 30 : TICK;
+    // The crowded DOM unit layer also paints at 30 FPS on wider screens.
     this._renderEvery = (this.units.length >= 8 || FX.graphicsQuality < 67) && BATTLE_FPS >= 60 ? 2 : 1;
     this._denseCombat = this.units.length >= 8;
     this._renderFrame = 0;
@@ -782,7 +812,7 @@ class Battle {
     this.log('<b>' + (this.meta.title || 'Battle') + '</b> begins.');
     if (this.meta.machinePrelude) return;
     if (!this.meta.collabEntrance) Sound.encounter(this.units.filter(u => u.team === TEAM_E));
-    this.units.filter(u => u.unknownWorld).forEach((u, i) => setTimeout(() => {
+    this.units.filter(u => u.cogVoice).forEach((u, i) => setTimeout(() => {
       if (u.alive) this.unknownWorldDialogue(u, { force: true });
     }, 360 + i * 220));
     this._twistedAmbienceAt = 8 + rnd(0, 4);
@@ -1408,7 +1438,7 @@ class Battle {
         const key = ev.unit.uid;
         if (this.t < (u._tankGuardAt[key] || 0)) return;
         u._tankGuardAt[key] = this.t + 2.4;
-        this.shield(u, ev.unit, u.max.hp * .035, 2.5);
+        this.shield(u, ev.unit, u.max.hp * .02, 2.5);
         this.applyStatus(u, ev.src, 'taunt', 2.25);
       });
     }
@@ -1607,6 +1637,11 @@ class Battle {
     this.units.filter(u => u.team === TEAM_P && !u.minion).forEach(u => {
       const role = String((u.def && u.def.role) || 'Damage').toLowerCase();
       const c = el('div', `unitcard role-${role}`);
+      c.setAttribute('role', 'button');
+      c.setAttribute('tabindex', '0');
+      c.setAttribute('aria-label', `${u.name}: White skill charging`);
+      c.setAttribute('aria-disabled', 'true');
+      c.title = `${u.name}: White skill charging`;
       const stars = '★'.repeat(u.stars || 1);
       c.innerHTML = `
         <div class="uc-lv">${u.level}</div>
@@ -1615,8 +1650,24 @@ class Battle {
         <div class="uc-hpwrap"><i class="uc-hp" style="width:100%"></i></div>
         <div class="uc-enwrap" role="progressbar" aria-label="Energy" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" title="Energy"><i class="uc-en" style="width:0"></i></div>
         <div class="uc-sts"></div>`;
+      if (u.def.ff7) {
+        // FF7 party members get their own PlayStation-style status window.
+        c.classList.add('ff7-card');
+        c.insertAdjacentHTML('beforeend', `<div class="ff7c-name">${u.name}</div><div class="ff7c-hp"><span>HP</span><b>${Math.round(u.hp)}</b></div><div class="ff7c-limit">LIMIT</div>`);
+        u._ff7HpText = $('.ff7c-hp b', c);
+      }
       box.appendChild(c);
       u.bar = c; u.barHp = $('.uc-hp', c); u.barEn = $('.uc-en', c); u.barSts = $('.uc-sts', c);
+      const activate = e => {
+        if (e.target.closest && e.target.closest('.status-chip')) return;
+        if (this.requestWhite(u)) Sound.play('ui_move');
+      };
+      c.addEventListener('click', activate);
+      c.addEventListener('keydown', e => {
+        if ((e.key === 'Enter' || e.key === ' ') && e.target === c) {
+          e.preventDefault(); activate(e);
+        }
+      });
     });
   }
 
@@ -1748,9 +1799,10 @@ class Battle {
     // Dense fights should never spend an entire frame replaying a backlog;
     // dropping excess wall-clock catch-up is less harmful than turning one
     // missed frame into a visible freeze.
-    const maxSteps = this.units.length >= 8 ? 5 : 8;
-    while (this.acc >= TICK && steps < maxSteps) { this.step(TICK); this.acc -= TICK; steps++; }
-    if (steps >= maxSteps && this.acc > TICK * 2) this.acc = TICK * 2;
+    const simTick = this._simTick || TICK;
+    const maxSteps = this._denseCombat ? 3 : 8;
+    while (this.acc >= simTick && steps < maxSteps) { this.step(simTick); this.acc -= simTick; steps++; }
+    if (steps >= maxSteps && this.acc > simTick * 2) this.acc = simTick * 2;
     this.paintFrame(dt);
   }
 
@@ -1839,20 +1891,27 @@ class Battle {
     // shields
     for (let i = u.shields.length - 1; i >= 0; i--) {
       const sh = u.shields[i]; sh.t -= dt;
-      if (sh.t <= 0 || sh.amt <= 0) { u.shields.splice(i, 1); if (sh.amt <= 0) this.onShieldPopped(u, sh); }
+      if (sh.t <= 0 || sh.amt <= 0) {
+        u.shields.splice(i, 1);
+        if (sh.amt <= 0) this.onShieldPopped(u, sh);
+        else if (sh.onExpire) { try { sh.onExpire(); } catch (e) { console.warn(e); } }   // timed out unbroken
+      }
     }
     if (!u.shields.length && u.hasStatus('shield')) this.removeStatus(u, 'shield');
 
     // boss phases
     if (u.boss) this.stepBoss(u);
 
+    // Speed governs skill readiness; Attack Speed remains the basic-attack
+    // rate. Bound its effect so haste and cooldown bonuses cannot snowball.
+    const tempo = combatTempo(u.st.spd);
     // energy
     if (!u.flags.noAct && !u.noEnergy) {
-      u.energy = Math.min(u.energyMax, u.energy + 3.2 * dt * u.st.energyGen);
+      u.energy = Math.min(u.energyMax, u.energy + 3.2 * dt * u.st.energyGen * tempo);
     }
 
     // cooldowns
-    for (const k in u.cds) if (u.cds[k] > 0) u.cds[k] -= dt * (1 + u.st.cdr);
+    for (const k in u.cds) if (u.cds[k] > 0) u.cds[k] -= dt * (1 + u.st.cdr) * tempo;
 
     // dash / forced movement overrides everything
     if (u.dashUntil > this.t) {
@@ -1875,8 +1934,17 @@ class Battle {
       if (completedDash && completedDash.onEnd) completedDash.onEnd();
     }
 
-    if (u.flags.noAct && u.flags.noMove) { u.moving = false; return; }
+    if (u.flags.noAct && u.flags.noMove) {
+      AI.interruptDisabled(u);
+      u.moving = false;
+      return;
+    }
 
+    // Skill preview (LivePreview): dummies stand still and the previewed
+    // Hero only acts while the one move it was told to perform is in flight.
+    if (this.meta && this.meta.preview && (u.previewDummy || (u.previewHold && !u.casting && !u.pendingHit))) {
+      u.moving = false; return;
+    }
     // AI
     AI.think(u, this, dt);
     if (u.movingY) u.moving = true;   // walk cycle also plays for foreground/background travel
@@ -2191,6 +2259,59 @@ class Battle {
   }
 
   /* ---------- damage ---------- */
+  mutationFactor(family, src, tgt, opt) {
+    if (!this.mutations || !this.mutations.length) return 1;
+    const m = this.mutations.find(item => item.family === family);
+    if (!m) return 1;
+    let applies = false;
+    if (family === 'outgoing') applies = src && src.team === TEAM_P && tgt.team === TEAM_E;
+    else if (family === 'incoming') applies = src && src.team === TEAM_E && tgt.team === TEAM_P;
+    else if (family === 'resist') applies = tgt.team === TEAM_E && src && src.team === TEAM_P;
+    else if (family === 'basic') applies = src && src.team === TEAM_E && tgt.team === TEAM_P && opt.basic;
+    else if (family === 'crit') applies = src && src.team === TEAM_E && tgt.team === TEAM_P && opt.crit;
+    else if (family === 'heal' || family === 'shield' || family === 'energy') applies = tgt.team === TEAM_P;
+    else if (family === 'enemyHeal' || family === 'enemyEnergy') applies = tgt.team === TEAM_E;
+    if (!applies) return 1;
+    this.mutationPulse(m, tgt);
+    return 1 + m.amount / 100 * (['incoming', 'basic', 'crit', 'enemyHeal', 'enemyEnergy'].includes(family) ? 1 : -1);
+  }
+
+  mutationPulse(m, target) {
+    if (this.offscreen || this.over || !target || !Number.isFinite(target.x) || !Number.isFinite(target.y)) return;
+    if (this.t - (this._mutationPulseAt[m.id] == null ? -10 : this._mutationPulseAt[m.id]) < 4) return;
+    if (this.t - this._mutationGlobalPulseAt < .85) return;
+    this._mutationPulseAt[m.id] = this.t;
+    this._mutationGlobalPulseAt = this.t;
+    const host = $('#popLayer');
+    if (!host) return;
+    const pop = document.createElement('span');
+    pop.className = 'mutation-battle-pop';
+    pop.textContent = m.name;
+    pop.style.left = `${target.x}px`;
+    pop.style.top = `${target.y - 135}px`;
+    host.appendChild(pop);
+    setTimeout(() => pop.remove(), 1150);
+  }
+
+  triggerStatusMutation(m) {
+    const candidates = this.units.filter(u => u.alive && !u.minion);
+    if (this.over || candidates.length < 2) return [];
+    const count = Math.min(rndi(1, 3), candidates.length - 1);
+    const targets = pickN(candidates, count);
+    const heroDebuffs = ['slow', 'blind', 'weaken', 'defdown', 'silence', 'root'];
+    const foeBuffs = ['atkup', 'haste', 'speedup', 'lucky', 'fortify', 'inspire'];
+    for (const target of targets) {
+      const id = pick(target.team === TEAM_P ? heroDebuffs : foeBuffs);
+      this.applyStatus(target, target, id, m.tier + 3, { unresistable: true, ignoreGuards: true });
+      if (!this.offscreen) {
+        FX.ring(target.x, target.y - 42, 92, target.team === TEAM_P ? '#ef89fa' : '#ffe287', .42);
+        this.floatNum(target, -120, STATUS[id].name, target.team === TEAM_P ? 'block' : 'heal');
+      }
+    }
+    this.mutationPulse(m, targets[0]);
+    return targets;
+  }
+
   damage(src, tgt, amount, opt) {
     opt = opt || {};
     if (src && src.def && src.def.noDamage) return null;
@@ -2210,8 +2331,12 @@ class Battle {
 
     const applyCrit = () => {
       ev.crit = true;
+      if (src) this.emitTeam(src.team, 'crit', { unit: src, target: tgt });
       ev.superCrit = chance(CRIT_RULES.superChance);
-      ev.amount *= ev.superCrit ? CRIT_RULES.superMultiplier : CRIT_RULES.normalMultiplier;
+      const critDamage = clamp(src && src.st ? src.st.critDmg : 1.5, 1.1, CRIT_RULES.normalMultiplier);
+      ev.amount *= ev.superCrit
+        ? Math.min(CRIT_RULES.superMultiplier, critDamage + 1)
+        : critDamage;
     };
 
     if (src && src !== tgt && !ev.dot && !ev.selfharm) {
@@ -2221,10 +2346,13 @@ class Battle {
         if (tgt.dodgeGuard && tgt.dodgeGuard(ev)) {
           this.floatNum(tgt, -95, 'DODGE', 'miss');
           Sound.play('miss', { vol: .34, rate: rnd(.94, 1.08), throttle: 35 });
-          this.emitFor(tgt, 'dodged', { src, forced: true }); this.emitFor(src, 'missed', { target: tgt });
+          this.emitFor(tgt, 'dodged', { src, forced: true }); this.emitFor(src, 'missed', { target: tgt }); if (src) this.emitTeam(src.team, 'allyMissed', { unit: src });
           return null;
         }
-        let hitP = clamp(src.st.acc / (src.st.acc + tgt.st.eva * 1.15), .35, 1);
+        // Baseline combat should be reliable; Evasion specialists still force
+        // a meaningful miss rate. The old ratio missed about 40% against an
+        // ordinary target before blinds or dodge skills entered the fight.
+        let hitP = clamp(src.st.acc / (src.st.acc + tgt.st.eva * .35), .55, .96);
         // Clear View is deliberately positional: it should help allies hit
         // through Tisha's cloud, not give them free accuracy everywhere.
         if (src.hasStatus && tgt.hasStatus && src.hasStatus('cleanfocus') && tgt.hasStatus('dustcloud'))
@@ -2232,7 +2360,7 @@ class Battle {
         if (!chance(hitP)) {
           this.floatNum(tgt, -95, 'MISS', 'miss');
           Sound.play('miss', { vol: .34, rate: rnd(.94, 1.08), throttle: 35 });
-          this.emitFor(tgt, 'dodged', { src }); this.emitFor(src, 'missed', { target: tgt });
+          this.emitFor(tgt, 'dodged', { src }); this.emitFor(src, 'missed', { target: tgt }); if (src) this.emitTeam(src.team, 'allyMissed', { unit: src });
           return null;
         }
       }
@@ -2292,6 +2420,11 @@ class Battle {
     // A Failed Variable hurt a prior sample. Its next assigned sample keeps
     // the clinical record and resists that enemy specifically.
     if (tgt.delilahSample && tgt.failedVariable === src) ev.amount *= .55;
+
+    // Apply encounter rules after ordinary defense and status hooks, so the
+    // advertised percentage matches the final hit before shields absorb it.
+    for (const family of ['outgoing', 'incoming', 'resist', 'basic', 'crit'])
+      ev.amount *= this.mutationFactor(family, src, tgt, { basic: ev.basic, crit: ev.crit });
 
     let dmg = Math.max(0, Math.round(ev.amount));
     ev.amount = dmg;
@@ -2374,7 +2507,7 @@ class Battle {
     // Invalidate an in-progress activation before death hooks run. This keeps
     // a revive or delayed callback from inheriting a dead unit's windup.
     u._castId = (u._castId || 0) + 1;
-    u.casting = null; u.pendingHit = null; u.moving = false; u.movingY = false;
+    u.casting = null; u.pendingHit = null; u._manualWhite = false; u.moving = false; u.movingY = false;
     u.animState = 'idle'; u.animT = 0; u.animDur = 0; u.animStyle = null;
     if (u.poppyBubbleEl) this.poppyBubblePop(u, true);
     this._liveDirty = true;
@@ -2386,6 +2519,7 @@ class Battle {
       }
       const deathFxIndex = this._deathFxN++;
       const deathParts = deathFxIndex === 0 ? 14 : deathFxIndex === 1 ? 8 : 4;
+      const isFF7Enemy = u.team === TEAM_E && (!!u.def.ff7Enemy || u.id === 'Sephiroth');
       const isCollab = typeof COLLAB_AUDIO !== 'undefined' && !!COLLAB_AUDIO[u.id];
       const isUnknownWorld = !!u.unknownWorld;
       const isCookie = !!u.def.cookieRun;
@@ -2395,7 +2529,11 @@ class Battle {
       // never constructs every particle and starts every voice before painting.
       setTimeout(() => {
         if (deathFxIndex === 0) FX.trimParts(this.W <= 430 ? 40 : 90);
-        if (isCookie) {
+        if (isFF7Enemy) {
+          Sound.play('ff7_enemy_down', { vol: u.isBoss ? .78 : .58, throttle: 0,
+            tag: ':ff7:' + u.id + ':' + deathFxIndex, priority: u.isBoss || deathFxIndex < 2 });
+          FF7FX.ko(this, u);
+        } else if (isCookie) {
           Sound.play('down', { vol: .45 });
         } else if (isUnknownWorld) {
           Sound.play('unknown_world_explode', { vol: .9, rate: rnd(.82, 1.05), throttle: 0,
@@ -2425,9 +2563,20 @@ class Battle {
         u.cookieButterTigerBodyEl = null;
       }
       u.el.classList.add('dead');
-      u.el.style.transition = isCookie ? (Accessibility.enabled() ? 'opacity .25s' : 'transform .9s ease-in, opacity .2s .7s') : isUnknownWorld ? 'opacity .08s, transform .16s cubic-bezier(.1,1.5,.2,1)' : isCollab ? 'opacity .42s, transform .42s' : 'opacity .14s .04s, transform .2s cubic-bezier(.3,0,.8,.2)';
+      u.el.style.transition = isFF7Enemy ? 'filter .48s steps(5,end), opacity .48s steps(5,end), transform .48s steps(5,end)'
+        : isCookie ? (Accessibility.enabled() ? 'opacity .25s' : 'transform .9s ease-in, opacity .2s .7s') : isUnknownWorld ? 'opacity .08s, transform .16s cubic-bezier(.1,1.5,.2,1)' : isCollab ? 'opacity .42s, transform .42s' : 'opacity .14s .04s, transform .2s cubic-bezier(.3,0,.8,.2)';
       u.el.style.opacity = 0;
-      if (isCookie) {
+      if (isFF7Enemy) {
+        u.el.style.filter = 'brightness(2) saturate(0)';
+        u.el.style.transform += ' translateY(-18px) scale(.88)';
+        setTimeout(() => {
+          if (!u.alive && u.el) {
+            u.el.style.display = 'none';
+            if (u.naturalSprite && u.imgEl) u.imgEl.style.backgroundImage = 'none';
+            else if (u.imgEl) u.imgEl.removeAttribute('src');
+          }
+        }, 560);
+      } else if (isCookie) {
         if (!Accessibility.enabled()) u.el.style.transform += ' translate(' + (u.face * 450) + 'px,-850px) rotate(' + (u.face * 900) + 'deg)';
         setTimeout(() => { if (!u.alive && u.el) u.el.style.display = 'none'; }, 950);
       } else if (isUnknownWorld) {
@@ -2494,7 +2643,7 @@ class Battle {
     if (!opt.pure) amt *= tgt.st.healRecv;
     const ev = Object.assign({ src, target: tgt, amount: amt }, opt);
     tgt.statuses.slice().forEach(s => { const d = STATUS[s.id]; if (d.onHealed) d.onHealed(tgt, s, ev, this); });
-    amt = Math.max(0, ev.amount);
+    amt = Math.max(0, ev.amount) * this.mutationFactor(tgt.team === TEAM_P ? 'heal' : 'enemyHeal', src, tgt, opt);
     const missing = tgt.max.hp - tgt.hp;
     const applied = Math.min(missing, amt);
     const over = amt - applied;
@@ -2519,12 +2668,12 @@ class Battle {
   shield(src, tgt, amount, dur, opt) {
     opt = opt || {};
     if (!tgt || !tgt.alive) return;
-    const amt = amount * (src ? src.st.shieldPow : 1);
+    const amt = amount * (src ? src.st.shieldPow : 1) * this.mutationFactor('shield', src, tgt, opt);
     if (!Number.isFinite(amt) || amt <= 0) return;
     // A shield is represented by both a shield record and a positive status.
     // Ask the status gate first, before mutating the record, so Buff Sealed
-    // and Teagan’s Fatigue cannot leave behind an invisible working shield.
-    if (src && (tgt._teaganFatigue || tgt.statuses.some(s => s.id === 'buffsealed' && s.src && s.src.team !== src.team))) {
+    // cannot leave behind an invisible working shield.
+    if (src && tgt.statuses.some(s => s.id === 'buffsealed' && s.src && s.src.team !== src.team)) {
       this.applyStatus(src, tgt, 'shield', dur || 8);
       return;
     }
@@ -2535,8 +2684,8 @@ class Battle {
     // Recasting the same ordinary shield refreshes it instead of creating an
     // unlimited stack. Different protectors can still combine shields, and
     // authored redirect/on-break shields retain their individual behaviour.
-    const existing = !opt.redirect && !opt.onBreak
-      ? tgt.shields.find(sh => sh.src === src && !sh.redirect && !sh.onBreak)
+    const existing = !opt.redirect && !opt.onBreak && !opt.onExpire
+      ? tgt.shields.find(sh => sh.src === src && !sh.redirect && !sh.onBreak && !sh.onExpire)
       : null;
     const otherTotal = tgt.shieldTotal - (existing ? existing.amt : 0);
     const room = Math.max(0, cap - otherTotal);
@@ -2551,7 +2700,7 @@ class Battle {
       return;
     }
     if (cappedAmt <= 0) return;
-    tgt.shields.push({ amt: cappedAmt, t: dur || 8, src, onBreak: opt.onBreak, redirect: opt.redirect });
+    tgt.shields.push({ amt: cappedAmt, t: dur || 8, src, onBreak: opt.onBreak, onExpire: opt.onExpire, redirect: opt.redirect });
     this.applyStatus(src, tgt, 'shield', dur || 8);
     this.floatNum(tgt, -112, '+' + fmt(cappedAmt), 'shield');
     FX.ring(tgt.x, tgt.y - 40, 90, '#7be0ff', .35);
@@ -2628,10 +2777,6 @@ class Battle {
         this.emitAll('buffBlocked', { src, unit: tgt, id });
         return;
       }
-    }
-    if (d.kind === 'buff' && tgt._teaganFatigue) {
-      tgt._teaganFatigue = false; this.removeStatus(tgt, 'fatigue');
-      this.floatNum(tgt, -92, 'FATIGUED', 'block'); this.emitAll('buffBlocked', { src, unit: tgt, id }); return;
     }
     if (d.kind === 'buff' && tgt.flags && tgt.flags.cursed) { FX.floatIcon(tgt.x, tgt.y - 80, '🌑'); return; }
     // A generic block hook trinkets/passives can register into (e.g. a trinket
@@ -2770,6 +2915,8 @@ class Battle {
   energy(u, amt) {
     if (!u || !u.alive || u.noEnergy) return;
     if (amt < 0 && u.hasStatus('qom_energy_lock')) return;
+    if (amt < 0 && u.hasStatus('vee_superhaste')) return;
+    if (amt > 0) amt *= this.mutationFactor(u.team === TEAM_P ? 'energy' : 'enemyEnergy', u, u);
     const was = u.energy;
     u.energy = clamp(u.energy + amt * (amt > 0 ? u.st.energyGen : 1), 0, u.energyMax);
     if (amt < 0 && was > u.energy) {
@@ -2816,13 +2963,13 @@ class Battle {
   }
   pull(u, x, dur, depth, src) {
     if (src) this.emitFor(u, 'pullAttempt', { src, x });
-    if (u.immovable) return;
+    if (u.immovable || u.noDisplace) return;
     Sound.play('chain', { vol: .5 });
     this.dash(u, x, dur || .3, { depth });
   }
   knockback(src, tgt, dist) {
     this.emitFor(tgt, 'knockbackAttempt', { src, dist });
-    if (tgt.immovable) return;
+    if (tgt.immovable || tgt.noDisplace) return;
     const d = dist * (1 - (tgt.st ? tgt.st.kbRes : 0)) * (src ? (src.face || 1) : 1);
     if (Math.abs(d) < 4) return;
     this.dash(tgt, tgt.x + d, .22, {});
@@ -2875,7 +3022,7 @@ class Battle {
     this._liveDirty = true;
     if (!this.offscreen) this.buildUnitEl(m);
     if (def.tint && m.imgEl) {
-      m.imgEl.style.filter = `drop-shadow(0 0 8px ${def.tint})`;
+      m.imgEl.style.filter = (def.ghostly ? 'grayscale(1) brightness(1.7) contrast(.8) opacity(.5) ' : '') + `drop-shadow(0 0 8px ${def.tint})`;
       m.baseFilter = m.imgEl.style.filter;
       m._filterCache = m.baseFilter;
     }
@@ -2953,40 +3100,56 @@ class Battle {
       }
     }
   }
-  _fire(L, payload) { try { L.fn(payload); } catch (e) { console.warn('listener', L.evt, e); } }
+  _fire(L, payload) {
+    // Dense loadouts can make damage, shields and statuses trigger one another.
+    // Bound synchronous chains so a cyclic combination cannot hold the main
+    // thread forever. The counter resets on the next simulation tick.
+    if (this._eventBudgetT !== this.t) {
+      this._eventBudgetT = this.t;
+      this._eventCalls = 0;
+    }
+    if (this._eventDepth >= 32 || ++this._eventCalls > 1500) return;
+    this._eventDepth = (this._eventDepth || 0) + 1;
+    try { L.fn(payload); } catch (e) { console.warn('listener', L.evt, e); }
+    finally { this._eventDepth--; }
+  }
   emitFor(unit, evt, payload) {
     if (!unit) return;
     const list = unit._eventListeners && unit._eventListeners[evt];
     if (!list) return;
-    for (let i = 0; i < list.length; i++) {
+    const count = list.length;
+    for (let i = 0; i < count; i++) {
       const L = list[i];
       // Death callbacks run after kill() marks the unit dead.
-      if (L.owner === unit && (L.owner.alive || evt === 'death')) this._fire(L, payload);
+      if (L && !L.removed && L.owner === unit && (L.owner.alive || evt === 'death')) this._fire(L, payload);
     }
   }
   emitTeam(team, evt, payload) {
     const list = this.listenersByTeam[team] && this.listenersByTeam[team][evt];
     if (!list) return;
-    for (let i = 0; i < list.length; i++) {
+    const count = list.length;
+    for (let i = 0; i < count; i++) {
       const L = list[i];
-      if (L.owner && L.owner.team === team && L.owner.alive) this._fire(L, payload);
+      if (L && !L.removed && L.owner && L.owner.team === team && L.owner.alive) this._fire(L, payload);
     }
   }
   emitFoe(team, evt, payload) {
     const foeTeam = team === 0 ? 1 : 0;
     const list = this.listenersByTeam[foeTeam] && this.listenersByTeam[foeTeam][evt];
     if (!list) return;
-    for (let i = 0; i < list.length; i++) {
+    const count = list.length;
+    for (let i = 0; i < count; i++) {
       const L = list[i];
-      if (L.owner && L.owner.alive) this._fire(L, payload);
+      if (L && !L.removed && L.owner && L.owner.alive) this._fire(L, payload);
     }
   }
   emitAll(evt, payload) {
     const list = this.listenersByEvent[evt];
     if (!list) return;
-    for (let i = 0; i < list.length; i++) {
+    const count = list.length;
+    for (let i = 0; i < count; i++) {
       const L = list[i];
-      if (L.owner && L.owner.alive) this._fire(L, payload);
+      if (L && !L.removed && L.owner && L.owner.alive) this._fire(L, payload);
     }
   }
   teamAura(u, fn, extra) {
@@ -3010,16 +3173,16 @@ class Battle {
   /** Cocoa's stock. Capped, with a chance to refund on spend at Purple. */
   bonbon(u, n) {
     const max = u.bonbonMax || 4;
+    const wasFull = (u.bonbons || 0) >= max;
     u.bonbons = Math.min(max, (u.bonbons || 0) + n);
-    if (u.cocoaOverflow && u.bonbons >= max) {
+    if (u.cocoaOverflow && wasFull) {
       const a = this.lowestHp(this.alliesOf(u)) || u;
       if (a) {
         this.applyStatus(u, a, 'sugarrush', u.cocoaOverflowDur || 8);
         this.energy(a, 10);
         this.heal(u, a, u.max.hp * 0.12, { tag: 'Bonbon Overflow' });
         this.emitFor(u, 'bonbonDelivered', { target: a, repeated: true });
-        this.fxFloatIcon(a.x, a.y - 88, '🍬 SWEET OVERFLOW', '#c98a5a');
-        u.bonbons = max - 1;
+        this.fxCocoa('overflow', a);
       }
     }
   }
@@ -3119,16 +3282,18 @@ class Battle {
   }
 
   /** Gigi's roulette: charge tapes, roll a visible prize, then resolve it. */
-  gigiTicket(u) {
+  gigiTicket(u, quiet) {
+    if (!u || !u.alive) return false;
     const max = u.gigiMax || 3;
     u.gigiTickets = u.gigiTickets || 0;
     if (u.gigiTickets >= max) return false;
     u.gigiTickets++;
     FX.floatIcon(u.x, u.y - 92, `🎟 ${u.gigiTickets}`, '#ffe08a');
-    Sound.play('coin', { vol: .24, throttle: 420 });
+    Sound.play('gigi_ticket', { vol: quiet ? .2 : .32, throttle: 420 });
     return true;
   }
   gigiSpin(u, mult) {
+    if (!u || !u.alive) return [];
     const tapes = Math.max(1, Math.min(u.gigiMax || 3, u.gigiTickets || 0));
     u.gigiTickets = Math.max(0, (u.gigiTickets || 0) - tapes);
     const prizes = [];
@@ -3156,7 +3321,7 @@ class Battle {
       this.emitFor(u, 'gigiPrize', { ...prize, combo, strength });
     }
     this.anim(u, 'cast', .86, 'gigiWheel');
-    Sound.play('gigi_ability', { vol: .44, priority: true });
+    Sound.play('gigi_ability', { vol: .95, priority: true, throttle: 1500 });
     if (FX.gigiRoulette) FX.gigiRoulette(u.x, u.y - 12, prizes);
     return prizes;
   }
@@ -3176,6 +3341,9 @@ class Battle {
       allies.forEach(a => this.energy(a, 18 * mult));
     } else if (prize.id === 'power') {
       allies.forEach(a => this.applyStatus(u, a, 'atkup', 7, { stacks: 1 }));
+    } else if (prize.id === 'jinx' && !leader) {
+      // Nothing to jinx: don't waste the slice, patch up whoever is hurting.
+      this.heal(u, target, target.max.hp * .12 * mult, { tag: 'Lucky Spin' });
     } else if (prize.id === 'jinx') {
       if (leader) { this.damage(u, leader, u.st.mag * .55 * mult, { type: 'magic', tag: 'Jinx Prize' }); this.applyStatus(u, leader, 'weaken', 6, { stacks: 2 }); this.applyStatus(u, leader, 'blind', 4); }
     } else if (prize.id === 'double') {
@@ -3184,7 +3352,7 @@ class Battle {
     } else if (prize.id === 'jackpot') {
       allies.forEach(a => { this.heal(u, a, a.max.hp * .14 * mult, { tag: 'Jackpot' }); this.energy(a, 22); this.applyStatus(u, a, 'atkup', 9, { stacks: 2 }); this.applyStatus(u, a, 'lucky', 9); });
       foes.forEach(e => this.applyStatus(u, e, 'weaken', 5, { stacks: 1 }));
-      Sound.play('get_rare', { vol: .72, priority: true }); this.shake(5, .18);
+      this.shake(5, .18);
     }
     if (prize.id !== 'jackpot' && u.gigiFortune) allies.forEach(a => this.applyStatus(u, a, 'inspire', 4));
   }
@@ -3297,7 +3465,7 @@ class Battle {
   }
 
   unknownWorldDialogue(u, opt) {
-    if (!u || !u.unknownWorld || !u.alive || !UNKNOWN_WORLD_DIALOGUE.length) return null;
+    if (!u || !u.cogVoice || !u.alive || !UNKNOWN_WORLD_DIALOGUE.length) return null;
     opt = opt || {};
     const gap = opt.force ? 2.6 : 4.2;
     if (!opt.force && this.t - (u._unknownDialogueAt || -99) < gap) return null;
@@ -3313,7 +3481,8 @@ class Battle {
       tag: ':machine-speech:' + u.id
     });
     const a = this.unitFxAnchor(u);
-    return FX.machineDialogue(a.x, a.y + a.size * .42, pick(UNKNOWN_WORLD_DIALOGUE), { owner: u, face: u.face, size: a.size, duration: opt.force ? 1450 : 1180 });
+    const lines = opt.text ? [opt.text] : (UNKNOWN_WORLD_DIALOGUE_BY_ID[u.id] || UNKNOWN_WORLD_DIALOGUE);
+    return FX.machineDialogue(a.x, a.y + a.size * .42, pick(lines), { owner: u, face: u.face, size: a.size, duration: opt.force ? 1450 : 1180 });
   }
 
   log(txt) {
@@ -3347,6 +3516,13 @@ class Battle {
     FX.thunder(a.x, t.y - 18, opt);
   }
   fxRing(x, y, s, c, d) { FX.ring(x, y, s, c, d); }
+  fxDandy(kind, x, y, a, b) {
+    if (this.offscreen) return;
+    if (kind === 'spot') FX.dandySpotlight(x, y, a, b);
+    else if (kind === 'stars') FX.dandyStars(x, y, a, b);
+    else if (kind === 'stomp') FX.dandyStomp(x, y, a, b);
+    else if (kind === 'distort') FX.dandyDistort(x, y);
+  }
   fxQomSkill(kind, u, opt) {
     if (!this.offscreen && u) {
       FX.qomSkill(kind, u.x, u.y, Object.assign({ face: u.face }, opt || {}));
@@ -3355,6 +3531,7 @@ class Battle {
   }
   fxQomBasic(u, target, type) {
     if (!this.offscreen && u && target) FX.qomBasic(u.id, u.x, u.y, target.x, target.y, type);
+    if (!this.offscreen && u && target && u.id === 'QOMRibecca') FX.qomPerform('pulse', u.id, u.bodyEl, u.x, u.y, u.face, u.bodyW || 98);
   }
   fxGlistenMirror(x, y, s, face, opt) { if (!this.offscreen) FX.glistenMirror(x, y, s, face, opt); }
   fxSparkle(x, y, n, c) { if (!this.offscreen) FX.sparkle(x, y, n, c); }
@@ -3378,6 +3555,8 @@ class Battle {
   fxShellyFossil(x, y, s, opt) { if (!this.offscreen && FX.shellyFossilExcavation) FX.shellyFossilExcavation(x, y, s, opt); }
   fxShellyInspiration(x, y, dur) { if (!this.offscreen && FX.shellyInspirationWhistle) FX.shellyInspirationWhistle(x, y, dur); }
   fxShellyAmber(x, y, dur) { if (!this.offscreen && FX.shellyAmberStasis) FX.shellyAmberStasis(x, y, dur); }
+  fxShellyLens(x, y, col) { if (!this.offscreen && FX.shellyLens) FX.shellyLens(x, y, col); }
+  fxShellyEureka(x, y) { if (!this.offscreen && FX.shellyEureka) FX.shellyEureka(x, y); }
   fxCandyBurst(x, y, n) { if (!this.offscreen) FX.candyBurst(x, y, n); }
   fxGingerHeartBurst(x, y, s, opt) { if (!this.offscreen && FX.gingerHeartBurst) FX.gingerHeartBurst(x, y, s, opt); }
   fxGingerRoyalIcing(x, y, s, dur) { if (!this.offscreen && FX.gingerRoyalIcing) FX.gingerRoyalIcing(x, y, s, dur); }
@@ -3397,6 +3576,12 @@ class Battle {
     if (!u) return;
     const a = this.unitFxAnchor(u), o = opt || {};
     FX.statusBurst(a.x, a.y, folder, { size: o.size || a.size * (o.sizeMul || 1), layer: o.layer });
+  }
+  fxBigWig(kind, u, opt) {
+    if (!u) return;
+    const a = this.unitFxAnchor(u), o = Object.assign({ face: u.face, size: a.size }, opt || {});
+    if (o.target) { const t = this.unitFxAnchor(o.target); o.target = { x: t.x, y: t.y, size: t.size, alive: o.target.alive }; }
+    FX.bigWigSkill(kind, a.x, a.y, o);
   }
   fxConnieSkill(kind, u, opt) {
     if (!u) return;
@@ -3473,6 +3658,7 @@ class Battle {
   fxScrapsShards(e, radius) { if (e) FX.scrapsShards(e.x, e.y - 6, radius); }
   fxScrapsCraftSwap(u, craft) { if (u) FX.scrapsCraftSwap(u.x, u.y - 6, craft); }
   heroSequence(u, key, castId) {
+    if (this.offscreen || FX._denseVisualSafe) return;
     const c = HERO_CINEMATICS[u.id];
     if (!c || c.noSequence) return;
     const allyTarget = typeof c.ally === 'function' ? c.ally(key) : c.ally;
@@ -3532,9 +3718,9 @@ class Battle {
     u.face = t.x >= a.x ? 1 : -1; u._gigiWishTargetX = t.x; u.dirty = true;
     FX.gigiWish(a.x, a.y, t.x, t.y, Object.assign({ face: u.face, owner: u }, opt || {}));
   }
-  fxVeeSpotlight(u, foes, headline) { FX.veeSpotlight(u.x, u.y, u.face, foes, headline); }
-  fxVeeAudience(u, allies) { FX.veeAudience(u.x, u.y, u.face, allies); }
-  fxVeeCommercial(u, allies, enemies) { FX.veeCommercial(u.x, u.y, u.face, this.midX, this.ground, allies, enemies); }
+  fxVeeSpotlight(u, foes, headline) { if (!this.offscreen) FX.veeSpotlight(u.x, u.y, u.face, foes, headline); }
+  fxVeeAudience(u, allies) { if (!this.offscreen) FX.veeAudience(u.x, u.y, u.face, allies); }
+  fxVeeCommercial(u, allies, enemies) { if (!this.offscreen) FX.veeCommercial(u.x, u.y, u.face, this.midX, this.ground, allies, enemies); }
   fxFlyteGust(u, target, radius, dur) { FX.flyteGust(u.x, u.y, target.x, target.y, radius, dur); }
   fxFlyteRescue(u, target) { FX.flyteRescue(u.x, u.y, target.x, target.y); }
   fxFlyteClearWay(u, dest, dur) { FX.flyteClearWay(u.x, u.y, dest, dur); }
@@ -3598,9 +3784,17 @@ class Battle {
     }[treat.status] || 'Speedcandy';
     FX.gourdyTreat(u.x, u.y, target.x, target.y, candy, smaller);
   }
+  fxBoxten(kind, u, opt) { if (u) FX.boxtenFx(kind, u.x, u.y, Object.assign({ face: u.face }, opt || {})); }
+  fxPoppy(kind, u, opt) { if (u) FX.poppyFx(kind, u.x, u.y, opt); }
+  fxCocoa(kind, u, opt) { if (u) FX.cocoaFx(kind, u.x, u.y, opt); }
   fxSproutSkill(kind, u, target, targets, opt) {
     if (!u) return;
     FX.sproutSkill(kind, u.x, u.y, Object.assign({ face: u.face, target, targets }, opt || {}));
+  }
+  fxGoofy(kind, u, opt) {
+    if (!u) return;
+    const a = this.unitFxAnchor(u);
+    FX.goofySkill(kind, a.x, a.y, Object.assign({ face: u.face, size: a.size }, opt || {}));
   }
   fxAstroSkill(kind, u, target, targets, opt) {
     if (!u) return;
@@ -3682,7 +3876,9 @@ class Battle {
   fxWave(x, y, dir, col) { FX.wave(x, y, dir, col); }
   fxNet(u, foes) { if (foes.length) FX.net(u.x, foes[foes.length - 1].x, u.y); }
   fxLift(u, dur) { u.liftT = dur; }
+  fxSproutBeat(u) { if (u && u.alive) { u.animState = 'cast'; u.animT = u.animDur = .5; u.animStyle = 'sproutGuard'; } }
   fxStarfall(x, y, cb) { FX.starfall(x, y); this.after(.29, () => cb && cb()); }
+  fxAstroStar(x, y, cb) { FX.astroStar(x, y); this.after(.3, () => cb && cb()); }
   fxHeartLink(a, b) { FX.heartLink(a.x, a.y - 60, b.x, b.y - 60); }
   fxCrackAt(x, y) { FX.crack(x, y, 1); }
 
@@ -3729,7 +3925,7 @@ class Battle {
 
   /* ---------- end ---------- */
   checkEnd() {
-    if (this.over) return;
+    if (this.over || (this.meta && this.meta.preview)) return;
     const p = this.units.some(u => u.alive && u.team === TEAM_P && !u.minion);
     const e = this.units.some(u => u.alive && u.team === TEAM_E && !u.minion);
     if (p && e) {
@@ -3832,6 +4028,53 @@ class Battle {
         bob = -(mv.hover || 10) - Math.sin(u.bobT) * (mv.bob || 6) * .42;
         rot = Math.sin(u.bobT * .7) * (mv.sway || 3) * .45 * Math.PI / 180;
         lean = -speedRatio * (mv.lean || 4);
+      } else if (g === 'drowse') {
+        // Astro: a sleepy shuffle. Short heavy-lidded steps, the head sinks a
+        // little every stride, and at rest he slowly nods off then jerks awake.
+        const step = Math.abs(Math.sin(u.bobT * 1.5));
+        if (u.moving) {
+          bob = -step * (mv.bob || 3);
+          rot = Math.sin(u.bobT * 1.5) * .035 + u.face * .02;
+          lean = -speedRatio * (mv.lean || 5);
+          sqy = 1 - (1 - step) * .018; sqx = 2 - sqy;
+        } else {
+          const c = (u.bobT * .16 + (u.index || 0) * .37) % 1;
+          // 0..0.72 slow droop forward, then a quick startled straighten
+          const nod = c < .72 ? Math.pow(c / .72, 2) : Math.max(0, 1 - (c - .72) / .06);
+          rot = u.face * nod * .075; bob = nod * 3; lean = u.face * nod * 3;
+          sqy = 1 - nod * .018; sqx = 2 - sqy;
+        }
+      } else if (g === 'fret') {
+        // Sprout: a worried hustle. Quick little steps, body tipped toward
+        // whoever he's heading for; at rest he keeps glancing around the
+        // team, shifting weight and rocking on his heels like a nervous host.
+        const step = Math.abs(Math.sin(u.bobT * 2.1));
+        if (u.moving) {
+          bob = -step * (mv.bob || 4);
+          rot = Math.sin(u.bobT * 2.1) * .03;
+          lean = -speedRatio * (mv.lean || 6);
+          sqy = 1 + step * .02; sqx = 2 - sqy;
+        } else {
+          const c = (u.bobT * .22 + (u.index || 0) * .29) % 1;
+          // two quick checks left/right, then a settle
+          const look = c < .6 ? Math.sin(c / .6 * Math.PI * 2) * Math.sin(c / .6 * Math.PI) : 0;
+          rot = look * .045; lean = look * 3;
+          bob = -Math.max(0, Math.sin(u.bobT * 1.3)) * 1.6;
+        }
+      } else if (g === 'poise') {
+        // Vee: arms crossed, chin up. She never hurries; she glides on measured
+        // heel-toe steps with a slight hip sway, and when still she holds the
+        // pose, antennae drifting, tilting her head now and then as if unimpressed.
+        if (u.moving) {
+          const st = Math.sin(u.bobT * 1.4);
+          bob = -Math.abs(st) * (mv.bob || 2.5);
+          rot = st * .028; lean = -speedRatio * (mv.lean || 3);
+        } else {
+          const c = (u.bobT * .12 + (u.index || 0) * .41) % 1;
+          const tilt = c > .7 ? Math.sin((c - .7) / .3 * Math.PI) : 0;
+          rot = u.face * tilt * .05 + Math.sin(u.bobT * .6) * .006;
+          bob = -Math.sin(u.bobT * .5) * .8;
+        }
       } else if (g === 'bounce' || g === 'hop') {
         const step = Math.sin(u.bobT * 1.25), lift = Math.max(0, step);
         bob = -lift * (mv.bob || 10) * (u.moving ? .48 : .14);
@@ -3956,73 +4199,83 @@ class Battle {
           const show = Math.sin(phase * Math.PI * 4);
           bob -= Math.abs(show) * 8; rot += u.face * show * .035; sqx += Math.abs(show) * .08;
         } else if (!u.naturalSprite && u.animStyle === 'poppyBasicWind') {
-          const charge = Math.sin(phase * Math.PI);
-          bob += charge * 4; lean -= u.face * charge * 10;
-          sqx += charge * .10; sqy += charge * .08;
+          // Rubber-ball anticipation: squash down and back before the bump.
+          const charge = Math.sin(phase * Math.PI * .5);
+          bob += charge * 5; lean -= u.face * charge * 12; rot -= u.face * charge * .06;
+          sqx += charge * .13; sqy -= charge * .12;
         } else if (!u.naturalSprite && u.animStyle === 'poppyBasicBump') {
-          const bump = Math.sin(phase * Math.PI);
-          bob -= bump * 12; lean -= u.face * bump * 34;
-          sqx += bump * .16; sqy -= bump * .10;
+          // Boing forward, stretch at the apex, squash on contact.
+          const bump = Math.sin(phase * Math.PI), hit = phase > .55 ? Math.sin((phase - .55) / .45 * Math.PI) : 0;
+          bob -= bump * 14; lean += u.face * bump * 30; rot += u.face * bump * .07;
+          sqx += hit * .17 - bump * .04; sqy += bump * .09 - hit * .13;
         } else if (!u.naturalSprite && u.animStyle === 'poppyBounceRush') {
-          const wind = clamp(phase / .22, 0, 1);
-          const hops = phase > .18 ? Math.abs(Math.sin((phase - .18) / .82 * Math.PI * 4)) : 0;
-          const launch = phase > .18 ? Math.sin((phase - .18) / .82 * Math.PI) : 0;
-          bob += wind * 7 - hops * 20 - launch * 5;
-          lean -= u.face * wind * 18;
-          rot += u.face * Math.sin((phase - .18) * Math.PI * 8) * .08;
-          sqx += wind * .18 + hops * .12; sqy += wind * .14 - hops * .12;
+          // Crouch, then a string of springy pogo hops with stretch in the air
+          // and a flat squash on every landing.
+          const wind = phase < .18 ? Math.sin(phase / .18 * Math.PI * .5) : 0;
+          const hp = phase > .18 ? (phase - .18) / .82 * 5 : 0, f = hp % 1;
+          const hop = phase > .18 ? Math.sin(f * Math.PI) : 0, land = phase > .18 && f > .78 ? Math.sin((f - .78) / .22 * Math.PI) : 0;
+          bob += wind * 9 - hop * 26;
+          lean -= u.face * wind * 18; lean += u.face * hop * 10;
+          rot += u.face * Math.sin(f * Math.PI * 2) * .07;
+          sqx += wind * .2 - hop * .05 + land * .2; sqy -= wind * .2; sqy += hop * .12 - land * .16;
         } else if (!u.naturalSprite && u.animStyle === 'poppyBubbleGuard') {
-          const inflate = Math.sin(phase * Math.PI);
-          const pulse = Math.sin(phase * Math.PI * 4);
-          sqx += inflate * .30 + Math.max(0, pulse) * .035;
-          sqy += inflate * .25 - Math.max(0, pulse) * .025;
-          bob -= inflate * 8; rot += pulse * .025;
+          // Breathe in, puff up round, little squeak-wobble at the top.
+          const inflate = Math.sin(Math.min(1, phase / .6) * Math.PI * .5) * (phase > .85 ? 1 - (phase - .85) / .15 : 1);
+          const wobble = Math.sin(phase * Math.PI * 7) * Math.max(0, phase - .5) * .06;
+          sqx += inflate * .28 + wobble; sqy += inflate * .24 - wobble;
+          bob -= inflate * 10; rot += wobble * .5;
         } else if (!u.naturalSprite && u.animStyle === 'poppyPopShock') {
-          const charge = clamp(phase / .52, 0, 1);
+          // Squeeze tight like a pinched balloon, then let it all out at once.
+          const charge = clamp(phase / .52, 0, 1), shake = Math.sin(phase * Math.PI * 14) * charge * (phase < .52 ? 1 : 0);
           const burst = phase > .52 ? Math.sin((phase - .52) / .48 * Math.PI) : 0;
-          sqx -= charge * .26; sqy += charge * .32;
-          sqx += burst * .48; sqy -= burst * .34; bob += charge * 9 - burst * 21;
-          rot += u.face * burst * .12;
+          sqx -= charge * .24 - shake * .02; sqy += charge * .34;
+          sqx += burst * .56; sqy -= burst * .46; bob += charge * 10 - burst * 26;
+          rot += u.face * burst * .1;
         } else if (!u.naturalSprite && u.animStyle === 'poppyPressure') {
           const swell = Math.sin(phase * Math.PI);
-          sqx += swell * .24; sqy += swell * .18; bob -= swell * 10;
-          rot += u.face * Math.sin(phase * Math.PI * 2) * .045;
+          sqx += swell * .26; sqy += swell * .2; bob -= swell * 12;
+          rot += u.face * Math.sin(phase * Math.PI * 3) * swell * .05;
         } else if (!u.naturalSprite && u.animStyle === 'poppyBigBubble') {
-          bob -= 22 + Math.sin(phase * Math.PI * 4) * 7;
-          rot += Math.sin(phase * Math.PI * 3) * .07;
-          sqx += .12 + Math.sin(phase * Math.PI * 2) * .025;
-          sqy += .12 - Math.sin(phase * Math.PI * 2) * .025;
+          // Drifting inside the giant bubble: slow float, lazy tumble.
+          bob -= 24 + Math.sin(phase * Math.PI * 5) * 8;
+          rot += Math.sin(phase * Math.PI * 3) * .09;
+          sqx += .1 + Math.sin(phase * Math.PI * 6) * .03;
+          sqy += .1 - Math.sin(phase * Math.PI * 6) * .03;
         } else if (!u.naturalSprite && u.animStyle === 'poppyBurst') {
-          const burst = Math.sin(phase * Math.PI);
-          sqx += burst * .38; sqy += burst * .48; bob -= burst * 22;
+          const burst = Math.sin(Math.min(1, phase / .5) * Math.PI * .5), settle = phase > .5 ? Math.sin((phase - .5) / .5 * Math.PI) : 0;
+          sqx += burst * .3 * (1 - phase) + settle * .1; sqy += burst * .4 * (1 - phase); bob -= burst * 26 * (1 - phase);
         } else if (!u.naturalSprite && u.animStyle === 'cocoaBasicWind') {
-          const prep = Math.sin(phase * Math.PI);
-          bob += prep * 3; lean += u.face * prep * 12;
-          rot += u.face * prep * .035; sqx += prep * .06; sqy += prep * .04;
+          // Crouch low like a coiled spring before the toss.
+          const dip = Math.sin(phase * Math.PI * .5);
+          bob += dip * 4; lean -= u.face * dip * 8;
+          rot -= u.face * dip * .05; sqx += dip * .09; sqy -= dip * .08;
         } else if (!u.naturalSprite && u.animStyle === 'cocoaBasicFlick') {
-          const flick = Math.sin(phase * Math.PI);
-          bob -= flick * 7; lean -= u.face * flick * 26;
-          rot += u.face * flick * .07; sqx += flick * .13; sqy -= flick * .06;
+          // Spring up and underhand the sweet out, landing with a soft squash.
+          const air = Math.sin(phase * Math.PI), land = phase > .7 ? Math.sin((phase - .7) / .3 * Math.PI) : 0;
+          bob -= air * 11; lean += u.face * air * 20 - u.face * land * 6;
+          rot += u.face * air * .09; sqx += land * .12 - air * .05; sqy += air * .08 - land * .10;
         } else if (!u.naturalSprite && u.animStyle === 'cocoaBonbonBurst') {
-          const gather = Math.sin(Math.min(1, phase / .42) * Math.PI * .5);
-          const cheer = Math.sin(phase * Math.PI * 2) * Math.sin(phase * Math.PI);
-          bob -= gather * 12 + Math.max(0, cheer) * 4;
-          lean += u.face * gather * 16; rot += u.face * cheer * .045;
-          sqx += gather * .12; sqy -= gather * .10;
+          // Two happy hops with both arms up, basket flung wide on the second.
+          const h1 = Math.abs(Math.sin(Math.min(phase, .5) / .5 * Math.PI)) * (phase < .5 ? 1 : 0);
+          const h2 = phase >= .5 ? Math.abs(Math.sin((phase - .5) / .5 * Math.PI)) : 0;
+          const hop = h1 * .7 + h2;
+          bob -= hop * 20; lean += u.face * h2 * 14;
+          rot += u.face * Math.sin(phase * Math.PI * 4) * .05;
+          sqx += (1 - hop) * .02 - hop * .04; sqy += hop * .09 - (phase % .5 < .06 ? .08 : 0);
         } else if (!u.naturalSprite && (u.animStyle === 'cocoaShareShield' || u.animStyle === 'cocoaShareCleanse')) {
+          // A warm sway: lean in, rock side to side, ears swinging with her.
           const share = Math.sin(phase * Math.PI);
-          const pulse = Math.sin(phase * Math.PI * (u.animStyle === 'cocoaShareCleanse' ? 4 : 2));
-          bob -= share * 10; lean -= u.face * share * 13;
-          rot += u.face * pulse * share * .035;
-          sqx += share * .14 + Math.max(0, pulse) * .025;
-          sqy += share * .08 - Math.max(0, pulse) * .025;
+          const sway = Math.sin(phase * Math.PI * 3) * share;
+          bob -= share * 6 + Math.abs(sway) * 3; lean += u.face * share * 8;
+          rot += sway * .075; sqx += share * .07; sqy += share * .03 - Math.abs(sway) * .02;
         } else if (!u.naturalSprite && u.animStyle === 'cocoaChocolateToss') {
-          const wind = phase < .42 ? Math.sin(phase / .42 * Math.PI * .5) : 0;
-          const toss = phase >= .32 ? Math.sin(clamp((phase - .32) / .68, 0, 1) * Math.PI) : 0;
-          bob += wind * 5 - toss * 7;
-          lean += u.face * wind * 18 - u.face * toss * 35;
-          rot += u.face * (wind * .07 - toss * .11);
-          sqx += wind * .08 + toss * .17; sqy -= toss * .07;
+          // Big wind-up leaning back, then a lobbed two-handed heave.
+          const wind = phase < .42 ? Math.sin(phase / .42 * Math.PI * .5) : Math.max(0, 1 - (phase - .42) / .12);
+          const toss = phase >= .38 ? Math.sin(clamp((phase - .38) / .62, 0, 1) * Math.PI) : 0;
+          bob += wind * 7 - toss * 15;
+          lean -= u.face * wind * 18; lean += u.face * toss * 34;
+          rot -= u.face * wind * .1; rot += u.face * toss * .12;
+          sqx += wind * .1 - toss * .06; sqy -= wind * .1; sqy += toss * .1;
         } else if (!u.naturalSprite && u.animStyle === 'delilahNoteWind') {
           const focus = Math.sin(phase * Math.PI);
           bob += focus * 2; lean -= u.face * focus * 9;
@@ -4062,6 +4315,27 @@ class Battle {
           const snap = phase >= .42 ? Math.sin((phase - .42) / .58 * Math.PI) : 0;
           lean += u.face * wind * 24; lean -= u.face * snap * 48;
           bob -= snap * 9; sqx += snap * .14; sqy -= wind * .09;
+        } else if (!u.naturalSprite && u.animStyle === 'shellyDiscovery') {
+          /* crouch, then jab the find skyward */
+          const crouch = phase < .3 ? Math.sin(phase / .3 * Math.PI * .5) : Math.max(0, 1 - (phase - .3) / .12);
+          const up = phase >= .3 ? Math.sin(Math.min(1, (phase - .3) / .7) * Math.PI) : 0;
+          bob += crouch * 8 - up * 16; sqy += crouch * .12 - up * .08; sqx -= crouch * .06 - up * .08;
+          lean -= u.face * crouch * 10; lean += u.face * up * 12; rot += u.face * up * .06;
+        } else if (!u.naturalSprite && u.animStyle === 'shellyInspire') {
+          /* deep breath in, then a big whistle lean-back */
+          const inhale = phase < .4 ? Math.sin(phase / .4 * Math.PI * .5) : 0;
+          const blow = phase >= .4 ? Math.sin((phase - .4) / .6 * Math.PI) : 0;
+          sqx += inhale * .1 - blow * .05; sqy += inhale * .08; bob -= blow * 10;
+          lean -= u.face * blow * 14; rot -= u.face * blow * .05 + Math.sin(phase * Math.PI * 9) * blow * .018;
+        } else if (!u.naturalSprite && (u.animStyle === 'shellySolve' || u.animStyle === 'shellySolution')) {
+          /* peer closer, tilt head, snap upright */
+          const peer = phase < .55 ? Math.sin(phase / .55 * Math.PI * .5) : Math.max(0, 1 - (phase - .55) / .15);
+          const snap = phase >= .55 ? Math.sin((phase - .55) / .45 * Math.PI) : 0;
+          lean += u.face * peer * 20; rot += u.face * peer * .09 - u.face * snap * .05;
+          bob -= snap * 9; sqy -= peer * .05; sqx += snap * .08;
+        } else if (!u.naturalSprite && u.animStyle === 'shellyEureka') {
+          const j = Math.sin(phase * Math.PI), w = Math.sin(phase * Math.PI * 6);
+          bob -= j * 18; rot += w * j * .06; sqx += j * .1; sqy -= j * .09;
         } else if (!u.naturalSprite && u.animStyle === 'shellyRainbow') {
           const pulse = Math.sin(phase * Math.PI);
           bob -= pulse * 12; sqx += pulse * .16; sqy += pulse * .10;
@@ -4089,6 +4363,54 @@ class Battle {
           const jump = Math.sin(phase * Math.PI), sparkle = Math.sin(phase * Math.PI * 8);
           bob -= jump * 23; lean -= u.face * sparkle * jump * 8; rot += u.face * sparkle * jump * .055;
           sqx += jump * .18; sqy -= jump * .13;
+        } else if (!u.naturalSprite && u.animStyle === 'sproutToss') {
+          // underhand lob: dip, then flick the treat out
+          const dip = phase < .35 ? Math.sin(phase / .35 * Math.PI * .5) : 0;
+          const flick = phase >= .35 ? Math.sin((phase - .35) / .65 * Math.PI) : 0;
+          bob += dip * 4 - flick * 6; lean += u.face * flick * 12 - u.face * dip * 5;
+          rot += u.face * flick * .05; sqy -= dip * .05; sqx += dip * .04;
+        } else if (!u.naturalSprite && u.animStyle === 'sproutBake') {
+          // whips a treat together: quick crouch, a shake, then a proud present
+          const crouch = phase < .45 ? Math.sin(phase / .45 * Math.PI) : 0;
+          const shake = phase < .45 ? Math.sin(phase * Math.PI * 14) * crouch : 0;
+          const give = phase >= .45 ? Math.sin((phase - .45) / .55 * Math.PI) : 0;
+          bob += crouch * 5 - give * 9; rot += shake * .05 + u.face * give * .06;
+          lean += u.face * give * 16; sqy -= crouch * .08; sqx += crouch * .07;
+        } else if (!u.naturalSprite && u.animStyle === 'sproutRush') {
+          // bolts off the line with his whole body tipped forward
+          const go = Math.sin(phase * Math.PI);
+          lean += u.face * go * 26; rot += u.face * go * .13; bob -= go * 3;
+          sqx += go * .12; sqy -= go * .08;
+        } else if (!u.naturalSprite && u.animStyle === 'sproutOven') {
+          // opens the oven (lean back), pulls out the tray, hands both over
+          const open = phase < .4 ? Math.sin(phase / .4 * Math.PI * .5) : Math.max(0, 1 - (phase - .4) / .2);
+          const hand = phase >= .5 ? Math.sin((phase - .5) / .5 * Math.PI) : 0;
+          const two = hand * Math.abs(Math.sin(phase * Math.PI * 4));
+          lean -= u.face * open * 10; rot -= u.face * open * .05;
+          lean += u.face * hand * 18; bob -= two * 8; sqy += open * .03;
+        } else if (!u.naturalSprite && u.animStyle === 'sproutGuard') {
+          // throws himself in front of someone
+          const lunge = Math.sin(phase * Math.PI);
+          lean += u.face * lunge * 30; rot += u.face * lunge * .1; bob -= lunge * 7;
+          sqx += lunge * .15; sqy -= lunge * .1;
+        } else if (!u.naturalSprite && u.animStyle === 'astroLullaby') {
+          // basic: a lazy conducting sway, one hand drifting out to release the mote
+          const s1 = Math.sin(phase * Math.PI), rel = phase > .45 ? Math.sin((phase - .45) / .55 * Math.PI) : 0;
+          rot += u.face * (s1 * .05 - rel * .035); lean += u.face * rel * 8; bob -= s1 * 3;
+        } else if (!u.naturalSprite && u.animStyle === 'astroDreamPulse') {
+          // rise on tiptoe with a long inhale, then let the whole wave out in one exhale
+          const inhale = phase < .5 ? Math.sin(phase / .5 * Math.PI * .5) : 1 - (phase - .5) / .5;
+          const out = phase >= .5 ? Math.sin((phase - .5) / .5 * Math.PI) : 0;
+          bob -= inhale * 11; sqy += inhale * .05 - out * .03; sqx -= inhale * .035 - out * .06;
+          rot -= u.face * out * .03;
+        } else if (!u.naturalSprite && u.animStyle === 'astroSing') {
+          // a soft hum: head tilts back a hair, slow side-to-side lull
+          const hum = Math.sin(phase * Math.PI), lull = Math.sin(phase * Math.PI * 2);
+          rot += lull * .05 - u.face * hum * .03; bob -= hum * 4; lean -= u.face * hum * 5;
+        } else if (!u.naturalSprite && u.animStyle === 'astroWish') {
+          // looks up at the sky, rocks back on his heels, then settles
+          const up = Math.sin(phase * Math.PI), tw = Math.sin(phase * Math.PI * 5);
+          rot -= u.face * up * .075 + tw * up * .008; bob -= up * 6; sqy += up * .035; sqx -= up * .02;
         } else if (!u.naturalSprite && u.animStyle === 'astroNap') {
           const drift = Math.sin(phase * Math.PI * 2);
           bob -= 18 + drift * 5; rot += drift * .06; sqx += Math.abs(drift) * .06;
@@ -4253,6 +4575,29 @@ class Battle {
           const rise = Math.sin(phase * Math.PI), brace = Math.sin(phase * Math.PI * 9) * rise;
           bob -= rise * 15; lean -= u.face * rise * 9; rot += brace * .04;
           sqx += rise * .13; sqy += rise * .08;
+        } else if (!u.naturalSprite && u.animStyle === 'boxtenJab') {
+          // Clockwork: the jab advances in four ticks, no smooth in-betweens.
+          const k = Math.round(phase * 4) / 4, snap = Math.sin(k * Math.PI);
+          lean += u.face * snap * 22; bob -= snap * 4; rot += u.face * snap * .05;
+          sqx += snap * .05; sqy -= snap * .03;
+        } else if (!u.naturalSprite && u.animStyle === 'boxtenWindUp') {
+          // Torso cranks back in stepped turns, shivers, then lets go in a spin.
+          const crank = phase < .7 ? Math.round(phase / .7 * 6) / 6 : 1;
+          const spin = phase > .7 ? (phase - .7) / .3 : 0;
+          lean -= u.face * crank * (1 - spin) * 16; rot -= u.face * crank * (1 - spin) * .1;
+          rot += u.face * Math.sin(spin * Math.PI) * .35;
+          sqx += crank * (1 - spin) * .08 + Math.sin(spin * Math.PI) * .1; sqy -= crank * (1 - spin) * .06;
+          bob -= Math.sin(spin * Math.PI) * 12;
+        } else if (!u.naturalSprite && u.animStyle === 'boxtenMelody') {
+          // The lid pops: a rocking sway on the beat, small hops on each pluck.
+          const beat = Math.round(phase * 6) / 6, pluck = Math.abs(Math.sin(beat * Math.PI * 3));
+          rot += Math.sin(phase * Math.PI * 6) * .09; bob -= pluck * 7;
+          sqx += pluck * .06; sqy -= pluck * .04;
+        } else if (!u.naturalSprite && u.animStyle === 'boxtenFocus') {
+          // Plant, breathe, then settle into a steady metronome rock.
+          const set = Math.sin(Math.min(1, phase / .5) * Math.PI * .5);
+          rot += Math.sin(phase * Math.PI * 8) * .04 * set; bob += set * 3;
+          sqx += set * .06; sqy -= set * .05;
         } else if (!u.naturalSprite && u.animStyle === 'brightneyBash') {
           const wind = phase < .42 ? Math.sin(phase / .42 * Math.PI * .5) : 0;
           const swing = phase >= .34 ? Math.sin((phase - .34) / .66 * Math.PI) : 0;
@@ -4423,6 +4768,10 @@ class Battle {
         } else if (!u.naturalSprite && u.animStyle === 'finnSpill') {
           const tip = Math.sin(phase*Math.PI), shake = Math.sin(phase*Math.PI*6)*tip;
           bob += tip*4; lean += u.face*tip*17; rot += u.face*shake*.10; sqx += tip*.07; sqy -= tip*.06;
+        } else if (!u.naturalSprite && u.animStyle === 'veeStrike') {
+          // uncrosses one arm and snaps the wand out, then folds back
+          const snap = phase < .4 ? Math.sin(phase / .4 * Math.PI * .5) : Math.max(0, 1 - (phase - .4) / .6);
+          lean += u.face * snap * 16; rot += u.face * snap * .05; sqx += snap * .05; sqy -= snap * .03;
         } else if (!u.naturalSprite && u.animStyle === 'veeSpotlight') {
           const direct = Math.sin(phase * Math.PI), lock = Math.sin(Math.min(1, phase * 1.7) * Math.PI);
           bob -= direct * 8; lean -= u.face * direct * 11; rot -= u.face * lock * .06;
@@ -4449,24 +4798,32 @@ class Battle {
           bob -= sweep * 17 + flutter * sweep * 3; lean -= u.face * sweep * 48; rot += flutter * sweep * .07;
           sqx += sweep * .27; sqy -= sweep * .17;
         } else if (!u.naturalSprite && u.animStyle === 'yattaSwing') {
-          const bounce = phase < .34 ? Math.sin(phase / .34 * Math.PI * .5) : 0;
-          const swat = phase >= .24 ? Math.sin(clamp((phase - .24) / .60, 0, 1) * Math.PI) : 0;
-          bob -= bounce * 12 - swat * 5; lean += u.face * bounce * 15 - u.face * swat * 43;
-          rot += u.face * (bounce * .09 - swat * .18); sqx += bounce * .11 + swat * .16; sqy += bounce * .08 - swat * .07;
+          // A piñata on a rope: loads up behind, swings through, then rocks to rest.
+          const load = phase < .3 ? Math.sin(phase / .3 * Math.PI * .5) : 0;
+          const swing = phase >= .22 ? Math.sin(clamp((phase - .22) / .5, 0, 1) * Math.PI) : 0;
+          const rock = phase > .72 ? Math.sin((phase - .72) / .28 * Math.PI * 3) * (1 - (phase - .72) / .28) : 0;
+          bob -= load * 6 + swing * 8; lean -= u.face * load * 16; lean += u.face * swing * 46;
+          rot -= u.face * load * .12; rot += u.face * swing * .2 + rock * .06;
+          sqx += load * .06 + swing * .14; sqy -= load * .04; sqy += swing * .06;
         } else if (!u.naturalSprite && u.animStyle === 'yattaParty') {
-          const hop = Math.abs(Math.sin(phase * Math.PI * 4));
-          const tumble = Math.sin(phase * Math.PI * 4);
-          bob -= hop * 25; lean -= u.face * tumble * 25; rot += u.face * tumble * .16;
-          sqx += hop * .14; sqy += hop * .10;
+          // Pinball: quick staccato bounces, each landing a different tilt.
+          const k = phase * 8, f = k % 1, hop = Math.sin(f * Math.PI), tilt = (Math.floor(k) % 2 ? -1 : 1);
+          bob -= hop * 28; lean += u.face * tilt * hop * 26; rot += u.face * tilt * hop * .2 + u.face * Math.sin(k * Math.PI) * .04;
+          sqx += (f > .85 ? .18 : 0) - hop * .04; sqy += hop * .1 - (f > .85 ? .14 : 0);
         } else if (!u.naturalSprite && u.animStyle === 'yattaCrash') {
-          const coil = phase < .58 ? Math.sin(phase / .58 * Math.PI * .5) : 0;
-          const launch = phase >= .48 ? Math.sin((phase - .48) / .52 * Math.PI) : 0;
-          bob += coil * 10 - launch * 24; lean += u.face * coil * 22 - u.face * launch * 58;
-          rot += u.face * (coil * .10 - launch * .16); sqx += coil * .15 + launch * .28; sqy -= coil * .17 + launch * .18;
+          // Squat, wobble the coil, then fire like a loaded spring.
+          const coil = phase < .55 ? Math.sin(phase / .55 * Math.PI * .5) : 0;
+          const shiver = phase < .5 ? Math.sin(phase * Math.PI * 14) * coil * .03 : 0;
+          const launch = phase >= .5 ? Math.sin((phase - .5) / .5 * Math.PI) : 0;
+          bob += coil * 14 - launch * 26; lean += u.face * coil * 22 - u.face * launch * 60;
+          rot += u.face * (coil * .1 - launch * .2) + shiver; sqx += coil * .2 + launch * .3 + shiver; sqy -= coil * .26; sqy += launch * .22;
         } else if (!u.naturalSprite && u.animStyle === 'yattaSpring') {
-          const spring = Math.sin(phase * Math.PI), wobble = Math.sin(phase * Math.PI * 7) * spring;
-          bob -= spring * 20; rot += wobble * .14; lean += u.face * wobble * 15;
-          sqx += spring * .18; sqy += spring * .15;
+          // Boing: compress hard, shoot up, then settle with damped wobble.
+          const squash = phase < .25 ? Math.sin(phase / .25 * Math.PI * .5) : 0;
+          const rise = phase >= .2 && phase < .65 ? Math.sin((phase - .2) / .45 * Math.PI) : 0;
+          const settle = phase >= .65 ? Math.sin((phase - .65) / .35 * Math.PI * 4) * (1 - (phase - .65) / .35) : 0;
+          bob += squash * 8 - rise * 30; sqx += squash * .24 - rise * .1 + settle * .08; sqy -= squash * .26; sqy += rise * .2 - settle * .08;
+          rot += settle * .08;
         } else if (!u.naturalSprite && u.animStyle === 'eclipseRake') {
           const prowl = phase < .35 ? Math.sin(phase / .35 * Math.PI * .5) : 0;
           const rake = phase >= .26 ? Math.sin(clamp((phase - .26) / .60, 0, 1) * Math.PI) : 0;
@@ -4627,11 +4984,16 @@ class Battle {
         if (u.animT <= 0) u.animStyle = null;
       }
       if (u.naturalSprite) {
-        const naturalPhase = u.animT > 0 ? 1 - clamp(u.animT / Math.max(.01, u.animDur || 1), 0, 1) : null;
-        const naturalClip = u.animT > 0
-          ? (u.animState === 'cast' ? 'cast' : 'attack')
-          : u.moving ? 'move' : 'idle';
-        this.setNaturalSprite(u, naturalClip, naturalPhase);
+        if (u.def.ff7Sprite && typeof FF7Sprites !== 'undefined') {
+          const ff7 = FF7Sprites.pose(u, this);
+          if (ff7) this.setNaturalSprite(u, ff7.clip, ff7.phase);
+        } else {
+          const naturalPhase = u.animT > 0 ? 1 - clamp(u.animT / Math.max(.01, u.animDur || 1), 0, 1) : null;
+          const naturalClip = u.animT > 0
+            ? (u.animState === 'cast' ? 'cast' : 'attack')
+            : u.moving ? 'move' : 'idle';
+          this.setNaturalSprite(u, naturalClip, naturalPhase);
+        }
       }
       if (u.flags.untargetable) bodyOpacity = Math.min(bodyOpacity, .38);
       setStyleIfChanged(u.bodyEl, 'opacity', String(bodyOpacity));
@@ -4801,8 +5163,14 @@ class Battle {
         u._cookieEyeRendered = !!u._cookieEyeDeceit;
         u.cookieEyeEl.classList.toggle('deceit',u._cookieEyeRendered);
       }
+      // FF7 collaboration sprites resolve their own pose and canvas ratio.
+      let ff7PoseW = null;
+      if (u.def.ff7Sprite && !u.naturalSprite && !u.minion && typeof FF7Sprites !== 'undefined') {
+        const ff7 = FF7Sprites.pose(u, this);
+        if (ff7) { wantedArt = ASSET + ff7.src; ff7PoseW = u.bodyW * ff7.ratio; }
+      }
       if (wantedArt && u.shownArtSrc !== wantedArt) {
-        const poseW = cookieTigerPose ? u.bodyW * (cookieTigerPose === 'mountedSkill' ? 1.65 : cookieTigerPose === 'mountedRun' ? 1.55 : cookieTigerPose === 'mountedIdle' ? 1.55 : cookieTigerPose === 'skill' ? 1.24 : cookieTigerPose === 'run' ? 1.03 : 1)
+        const poseW = ff7PoseW ? ff7PoseW : cookieTigerPose ? u.bodyW * (cookieTigerPose === 'mountedSkill' ? 1.65 : cookieTigerPose === 'mountedRun' ? 1.55 : cookieTigerPose === 'mountedIdle' ? 1.55 : cookieTigerPose === 'skill' ? 1.24 : cookieTigerPose === 'run' ? 1.03 : 1)
           : cookieBrightPose ? u.bodyW * (cookieBrightPose === 'skill3' ? 1.48 : cookieBrightPose === 'skill2' ? 1.22 : cookieBrightPose === 'attack' ? 1.42 : 1)
           : cookieBravePose ? u.bodyW * (cookieBravePose === 'attack' ? 1.5 : cookieBravePose === 'run' ? .91 : 1)
           : cookieCreamPose ? u.bodyW * (cookieCreamPose === 'skill1' ? 1.35 : cookieCreamPose === 'skill2' ? 1.32 : cookieCreamPose === 'run' ? 1.17 : 1)
@@ -4959,6 +5327,16 @@ class Battle {
           if (u._renderUlt !== ult) {
             u._renderUlt = ult; u.bar.classList.toggle('ult-ready', ult);
           }
+          const canCast = ult && !u.noSkills && !u.noEnergy && !u.flags.noAct &&
+            !u.flags.silenced && !(u.cds.W > 0) && !!(u.def.skills && u.def.skills.W && u.def.skills.W.cast);
+          if (u._renderCanCast !== canCast) {
+            u._renderCanCast = canCast;
+            const label = `${u.name}: ${canCast ? 'White skill ready. Tap to cast' : ult ? 'White skill disabled' : 'White skill charging'}`;
+            u.bar.setAttribute('aria-label', label);
+            u.bar.setAttribute('aria-disabled', String(!canCast));
+            u.bar.title = label;
+            u.bar.classList.toggle('can-cast', canCast);
+          }
         }
         if (u.qomMeterEl) {
           const m = qomMeterHtml(u);
@@ -4980,14 +5358,22 @@ class Battle {
           if (u.stsEl) {
             const overheadShown = ordered.slice(0, 4);
             const overheadExtra = ordered.length - overheadShown.length;
-            u.stsEl.innerHTML = overheadShown.map(s => battleStatusChip(s, false)).join('') + (overheadExtra > 0 ? battleStatusOverflowChip(overheadExtra) : '');
-            this.bindStatusHold(u.stsEl, u);
+            const html = overheadShown.map(s => battleStatusChip(s, false)).join('') + (overheadExtra > 0 ? battleStatusOverflowChip(overheadExtra) : '');
+            if (u._renderOverheadStatusHtml !== html) {
+              u._renderOverheadStatusHtml = html;
+              u.stsEl.innerHTML = html;
+              this.bindStatusHold(u.stsEl, u);
+            }
           }
           if (u.barSts) {
             const shown = ordered.slice(0, 4);
             const extra = ordered.length - shown.length;
-            u.barSts.innerHTML = shown.map(s => battleStatusChip(s, true)).join('') + (extra > 0 ? battleStatusOverflowChip(extra) : '');
-            this.bindStatusHold(u.barSts, u);
+            const html = shown.map(s => battleStatusChip(s, true)).join('') + (extra > 0 ? battleStatusOverflowChip(extra) : '');
+            if (u._renderBarStatusHtml !== html) {
+              u._renderBarStatusHtml = html;
+              u.barSts.innerHTML = html;
+              this.bindStatusHold(u.barSts, u);
+            }
           }
         }
       }

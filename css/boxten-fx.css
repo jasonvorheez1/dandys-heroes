@@ -1,0 +1,58 @@
+/* Boxten: a wind-up music box. Plum purple, lilac light, brass key and
+   steel comb. Motion is clockwork: stepped, ticking, never smooth glow. */
+.bx-key,.bx-gear,.bx-note,.bx-ring,.bx-tooth,.bx-spark,.bx-tick{position:absolute;pointer-events:none}
+
+/* brass winding key: round-winged butterfly bow on a shaft */
+.bx-key{width:var(--s,34px);height:var(--s,34px);margin:calc(var(--s,34px)/-2) 0 0 calc(var(--s,34px)/-2);opacity:0;
+  animation:bxKey var(--life,.6s) steps(12,end) var(--d,0s) forwards;filter:drop-shadow(0 2px 0 #2a1238)}
+.bx-key::before,.bx-key::after{content:"";position:absolute;top:8%;width:46%;height:70%;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#fff1b0 0 12%,#d6a94a 40%,#8a6420 100%);box-shadow:inset 0 0 0 2px #6e4c16}
+.bx-key::before{left:0}.bx-key::after{right:0}
+.bx-key i{position:absolute;left:44%;top:0;width:12%;height:100%;border-radius:2px;background:linear-gradient(90deg,#8a6420,#f0cf7a 50%,#8a6420)}
+@keyframes bxKey{0%{opacity:0;transform:translateY(8px) rotateY(0) scale(.5)}15%{opacity:1;transform:translateY(0) rotateY(90deg) scale(1)}
+  85%{opacity:1;transform:translateY(-4px) rotateY(var(--turn,900deg)) scale(1)}100%{opacity:0;transform:translateY(-10px) rotateY(var(--turn,900deg)) scale(.8)}}
+
+/* cog: toothed ring cut with a conic repeat and a hollow centre */
+.bx-gear{width:var(--s,18px);height:var(--s,18px);margin:calc(var(--s,18px)/-2) 0 0 calc(var(--s,18px)/-2);border-radius:50%;opacity:0;
+  background:repeating-conic-gradient(var(--c,#d6a94a) 0 18deg,transparent 18deg 36deg);
+  -webkit-mask:radial-gradient(circle,transparent 0 26%,#000 28% 100%);mask:radial-gradient(circle,transparent 0 26%,#000 28% 100%);
+  animation:bxGear var(--life,.8s) steps(10,end) var(--d,0s) forwards}
+.bx-gear::after{content:"";position:absolute;inset:16%;border-radius:50%;background:var(--c,#d6a94a)}
+@keyframes bxGear{0%{opacity:0;transform:translate(0,0) rotate(0) scale(.4)}15%{opacity:1}
+  100%{opacity:0;transform:translate(var(--dx,0),var(--dy,-30px)) rotate(var(--r,200deg)) scale(1)}}
+
+/* drawn note: head, stem and flag, not an emoji */
+.bx-note{width:var(--s,14px);height:calc(var(--s,14px)*1.9);margin:calc(var(--s,14px)*-.95) 0 0 calc(var(--s,14px)/-2);opacity:0;
+  animation:bxNote var(--life,.9s) ease-out var(--d,0s) forwards;filter:drop-shadow(0 1px 0 #2a1238)}
+.bx-note::before{content:"";position:absolute;left:0;bottom:0;width:70%;height:36%;border-radius:50%;background:var(--c,#f1e3ff);transform:rotate(-20deg)}
+.bx-note::after{content:"";position:absolute;right:8%;bottom:14%;width:13%;height:78%;background:var(--c,#f1e3ff);
+  box-shadow:5px 0 0 -0px transparent}
+.bx-note.flag i{position:absolute;right:-30%;top:4%;width:55%;height:30%;border-radius:0 100% 0 100%;background:var(--c,#f1e3ff);transform:rotate(18deg)}
+@keyframes bxNote{0%{opacity:0;transform:translate(0,6px) rotate(0) scale(.4)}18%{opacity:1}
+  100%{opacity:0;transform:translate(var(--dx,0),var(--dy,-40px)) rotate(var(--r,12deg)) scale(1)}}
+
+/* sound ring: ticked dashes on the ground ellipse, like a record groove */
+.bx-ring{width:var(--w,200px);height:calc(var(--w,200px)*.3);margin:calc(var(--w,200px)*-.15) 0 0 calc(var(--w,200px)/-2);border-radius:50%;opacity:0;
+  border:3px dotted var(--c,#d9b8ff);box-shadow:0 0 0 2px #7a3fb866,inset 0 0 14px #b78cf055;
+  animation:bxRing var(--life,.6s) cubic-bezier(.2,.7,.3,1) var(--d,0s) forwards}
+.bx-ring.solid{border-style:solid;border-width:2px}
+@keyframes bxRing{0%{opacity:1;transform:scale(.15)}70%{opacity:.8}100%{opacity:0;transform:scale(1)}}
+
+/* steel comb tooth: plucked and quivering */
+.bx-tooth{width:5px;height:var(--h,22px);margin-left:-2.5px;transform-origin:50% 100%;opacity:0;border-radius:2px 2px 0 0;
+  background:linear-gradient(90deg,#8e8aa6,#f4f1ff 45%,#8e8aa6);box-shadow:0 1px 0 #2a1238;
+  animation:bxTooth .7s ease-out var(--d,0s) forwards}
+@keyframes bxTooth{0%{opacity:0;transform:scaleY(.2)}10%{opacity:1;transform:scaleY(1) rotate(5deg)}
+  25%{transform:rotate(-5deg)}40%{transform:rotate(3deg)}55%{transform:rotate(-2deg)}85%{opacity:1}100%{opacity:0;transform:rotate(0)}}
+
+/* cymbal-style hit spark for strikes */
+.bx-spark{width:var(--s,40px);height:var(--s,40px);margin:calc(var(--s,40px)/-2) 0 0 calc(var(--s,40px)/-2);opacity:0;
+  background:repeating-conic-gradient(#f4e6ff 0 6deg,transparent 6deg 30deg);
+  -webkit-mask:radial-gradient(circle,#000 0 14%,transparent 15% 100%);mask:radial-gradient(circle,#000 0 14%,transparent 15% 100%);
+  -webkit-mask-composite:source-over;animation:bxSpark .34s steps(5,end) forwards}
+@keyframes bxSpark{0%{opacity:1;transform:scale(.4) rotate(0)}100%{opacity:0;transform:scale(1.6) rotate(40deg)}}
+
+/* ticking pip: a stepped blink for tempo hits */
+.bx-tick{width:4px;height:10px;margin:-5px 0 0 -2px;background:#f1e3ff;border-radius:1px;opacity:0;transform-origin:50% 100%;
+  animation:bxTick .5s steps(4,end) var(--d,0s) forwards}
+@keyframes bxTick{0%{opacity:1;transform:rotate(var(--a)) translateY(-14px)}100%{opacity:0;transform:rotate(var(--a)) translateY(-36px)}}

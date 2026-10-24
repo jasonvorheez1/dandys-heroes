@@ -13,7 +13,7 @@ function profileIconVisual(selection) {
     return { text: BADGES[selection.id].icon, label: BADGES[selection.id].name };
   }
   const shopIcons = {
-    dandy: { src: ASSET + 'uploads/dandyhimself.png', label: 'Dandy' },
+    dandy: { src: ASSET + 'uploads/dandyhimself.webp', label: 'Dandy' },
     buds: { src: ASSET + 'uploads/dandysbudicon.png', label: "Dandy's Buds" },
     journal: { text: '📖', label: 'Journal' },
     ichor: { src: ASSET + 'uploads/ichor.png', label: 'Black Ichor' },
@@ -193,6 +193,9 @@ const WebsimAccount = {
   profilePage: 'identity',
   started: false,
   loading: null,
+  identityRetryTimer: null,
+  identityRetries: 0,
+  profileBody: null,
   syncing: false,
   pendingSync: false,
   syncTimer: null,
@@ -202,10 +205,33 @@ const WebsimAccount = {
   refreshRetryDelay: 5000,
   suppressAutosave: false,
   cloudError: null,
+  cloudConflict: false,
+  invalidCloud: false,
   eventsBound: false,
 
   cloudEligible() {
-    return !!this.user && typeof Save !== 'undefined' && Save.isMainSlot();
+    return !!this.user && typeof Save !== 'undefined' && Save.isAccountSave();
+  },
+
+  baseKey() { return this.user ? 'dandys-heroes-cloud-base-v1-' + this.user.id : ''; },
+  baseAt() {
+    try { return Number(localStorage.getItem(this.baseKey())) || 0; }
+    catch (_) { return 0; }
+  },
+  setBaseAt(at) {
+    if (!this.user || !Number.isSafeInteger(Number(at)) || Number(at) < 0) return;
+    try { localStorage.setItem(this.baseKey(), String(at)); }
+    catch (err) { console.warn('Cloud revision could not be cached locally', err); }
+  },
+  sameProgress(cloud) {
+    if (!cloud || !cloud.save_json) return false;
+    try {
+      const remote = JSON.parse(cloud.save_json);
+      const local = Object.assign({}, Save.data);
+      delete remote._updatedAt;
+      delete local._updatedAt;
+      return JSON.stringify(remote) === JSON.stringify(local);
+    } catch (_) { return false; }
   },
 
   init() {
@@ -217,28 +243,73 @@ const WebsimAccount = {
       };
       document.addEventListener('visibilitychange', () => {
         if (document.visibilityState === 'hidden') flush();
+        else if (!this.user) this.start();
       });
       window.addEventListener('pagehide', flush);
+      window.addEventListener('focus', () => { if (!this.user) this.start(); });
       this.eventsBound = true;
     }
     return this.start().then(() => this.drawButton());
   },
 
+  async lookupUser() {
+    const probes = [];
+    if (window.websim && typeof window.websim.getUser === 'function') {
+      probes.push((async () => {
+        let timeout;
+        try {
+          const user = await Promise.race([
+            window.websim.getUser(),
+            new Promise((_, reject) => { timeout = setTimeout(() => reject(new Error('account lookup timed out')), 6000); })
+          ]);
+          if (!user || !user.id || !user.username) throw new Error('No browser account');
+          return user;
+        } finally { clearTimeout(timeout); }
+      })());
+    }
+    probes.push((async () => {
+      const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
+      const timeout = setTimeout(() => controller && controller.abort(), 6000);
+      try {
+        const response = await fetch('/api/account', {
+          cache: 'no-store',
+          ...(controller ? { signal: controller.signal } : {})
+        });
+        if (!response.ok) throw new Error('account endpoint returned ' + response.status);
+        const { user } = await response.json();
+        if (!user || !user.id || !user.username) throw new Error('No backend account');
+        return user;
+      } finally { clearTimeout(timeout); }
+    })());
+    try { return await Promise.any(probes); }
+    catch (_) { return null; }
+  },
+
+  scheduleIdentityRetry() {
+    clearTimeout(this.identityRetryTimer);
+    if (this.user) return;
+    const delay = [1500, 5000, 15000][this.identityRetries++] || 30000;
+    this.identityRetryTimer = setTimeout(() => {
+      this.identityRetryTimer = null;
+      this.start();
+    }, delay);
+  },
+
   async start() {
     if (this.loading) return this.loading;
+    if (this.user) return;
     this.loading = (async () => {
       this.syncing = true;
       try {
-        this.user = window.websim
-          ? await Promise.race([
-              window.websim.getUser(),
-              new Promise((_, reject) => setTimeout(() => reject(new Error('account lookup timed out')), 6000))
-            ])
-          : null;
+        this.user = await this.lookupUser();
         if (this.user) {
-          await this.refreshCloud();
-          if (this.cloudEligible()) this.reconcileCloud();
-          else this.pendingSync = false;
+          clearTimeout(this.identityRetryTimer);
+          this.identityRetryTimer = null;
+          this.identityRetries = 0;
+          if (this.cloudEligible()) {
+            await this.refreshCloud();
+            this.reconcileCloud();
+          } else this.pendingSync = false;
         }
       } catch (err) {
         console.warn('Websim account unavailable', err);
@@ -246,18 +317,23 @@ const WebsimAccount = {
         this.started = true;
         this.syncing = false;
         if (this.pendingSync && this.cloudEligible()) this.scheduleUpload(350);
-        if (this.cloudError && this.user) this.scheduleCloudRefresh();
+        if (this.cloudError && this.cloudEligible()) this.scheduleCloudRefresh();
+        this.drawButton();
+        if (this.profileBody && this.profileBody.isConnected && this.profilePage === 'save') this.draw(this.profileBody);
       }
-    })();
+    })().finally(() => {
+      this.loading = null;
+      if (!this.user) this.scheduleIdentityRetry();
+    });
     return this.loading;
   },
 
   scheduleCloudRefresh(delay = this.refreshRetryDelay) {
     clearTimeout(this.refreshTimer);
-    if (!this.user) return;
+    if (!this.cloudEligible()) return;
     this.refreshTimer = setTimeout(async () => {
       this.refreshTimer = null;
-      if (!this.user) return;
+      if (!this.cloudEligible()) return;
       await this.refreshCloud();
       if (this.cloudError) {
         this.refreshRetryDelay = Math.min(this.refreshRetryDelay * 2, 60000);
@@ -271,7 +347,7 @@ const WebsimAccount = {
   },
 
   async refreshCloud() {
-    if (!this.user) { this.cloud = null; return; }
+    if (!this.cloudEligible()) return;
     const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
     const timeout = setTimeout(() => controller && controller.abort(), 7000);
     try {
@@ -283,13 +359,14 @@ const WebsimAccount = {
       if (!response.ok) throw new Error('cloud lookup returned ' + response.status);
       const body = await response.json();
       this.cloud = body.save || null;
+      this.invalidCloud = false;
       // A previous build could have accidentally put the local Full Test Save
       // in the account row. Never offer that fixture back as the player's
       // cloud save; reconcileCloud will replace it with Main Save instead.
       if (this.cloud && this.cloud.save_json) {
         try {
           const cloudData = JSON.parse(this.cloud.save_json);
-          if (Save.isTestData(cloudData)) this.cloud = null;
+          if (Save.isTestData(cloudData)) this.invalidCloud = true;
         } catch (_) { /* reconcileCloud will report an invalid cloud copy */ }
       }
       this.cloudError = null;
@@ -297,7 +374,8 @@ const WebsimAccount = {
     } catch (err) {
       console.warn('Cloud save lookup failed', err);
       this.cloudError = err;
-      this.cloud = null;
+      // Keep the last known revision so a temporary GET failure cannot make
+      // the next write look like a brand-new cloud save.
     } finally {
       clearTimeout(timeout);
     }
@@ -314,6 +392,8 @@ const WebsimAccount = {
       Save.write({ skipCloud: true, touch: false });
       this.cloud = cloud;
       this.pendingSync = false;
+      this.cloudConflict = false;
+      this.setBaseAt(Number(cloud.updated_at_ms) || 0);
       return true;
     } catch (err) {
       console.warn('Cloud save restore failed', err);
@@ -325,45 +405,62 @@ const WebsimAccount = {
 
   reconcileCloud() {
     if (!this.cloudEligible()) { this.pendingSync = false; return; }
-    // A failed lookup is not the same as an empty account. Never upload the
-    // local copy over a possibly existing cloud save just because the API was
-    // temporarily unavailable during startup.
+    // Never treat a failed lookup as an empty account.
     if (this.cloudError) {
       this.pendingSync = false;
       return;
     }
     const localAt = Number(Save.data && Save.data._updatedAt) || 0;
     const cloudAt = Number(this.cloud && this.cloud.updated_at_ms) || 0;
+    const baseAt = this.baseAt();
 
-    // Treat a leaked Full Test Save from an older build as invalid cloud data
-    // and repair the account from the real Main Save on this device.
-    if (this.cloud && this.cloud.save_json) {
-      try {
-        if (Save.isTestData(JSON.parse(this.cloud.save_json))) {
-          this.cloud = null;
-          this.pendingSync = true;
-          return;
-        }
-      } catch (_) { /* normal invalid-save handling below */ }
+    // Older builds could leak Full Test Save into the account row. Replace
+    // that invalid row using its real revision instead of assuming no row.
+    if (this.invalidCloud && this.cloud) {
+      this.setBaseAt(cloudAt);
+      this.cloudConflict = false;
+      this.pendingSync = true;
+      return;
     }
 
-    const cloudDiffers = this.cloud && this.cloud.save_json && (() => {
-      try { return this.cloud.save_json !== JSON.stringify(Save.data); }
-      catch (_) { return true; }
-    })();
-    if (this.cloud && this.cloud.save_json &&
-        (cloudAt > localAt || (cloudAt === localAt && cloudAt > 0 && cloudDiffers))) {
+    if (!this.cloud) {
+      this.cloudConflict = false;
+      this.pendingSync = true;
+      return;
+    }
+    if (this.sameProgress(this.cloud)) {
+      this.cloudConflict = false;
+      this.pendingSync = false;
+      this.setBaseAt(cloudAt);
+      if (localAt !== cloudAt) {
+        Save.data._updatedAt = cloudAt;
+        Save.write({ skipCloud: true, touch: false });
+      }
+      return;
+    }
+    // A clean local copy can follow an update from another device. A fresh
+    // local save can also safely load an existing cloud save.
+    if (localAt === 0 || (baseAt > 0 && localAt <= baseAt && cloudAt > baseAt)) {
       if (this.adoptCloud(this.cloud)) return;
     }
-
-    // No cloud save, or the local device has newer progress: sync local up.
-    this.pendingSync = !(this.cloud && cloudAt === localAt && !cloudDiffers);
+    if ((baseAt > 0 && cloudAt === baseAt) || (baseAt === 0 && cloudAt === localAt && cloudAt > 0)) {
+      this.cloudConflict = false;
+      this.pendingSync = true;
+      if (!baseAt) this.setBaseAt(cloudAt);
+      return;
+    }
+    // Both copies changed since the last shared revision. Keep the local
+    // autosave intact and let the player choose which one to keep.
+    this.cloudConflict = true;
+    this.pendingSync = false;
   },
 
   noteLocalChange() {
     if (!this.cloudEligible() || this.suppressAutosave) return;
     this.pendingSync = true;
     this.retryDelay = 3000;
+    if (this.cloudError) { this.scheduleCloudRefresh(); return; }
+    if (this.cloudConflict) return;
     if (!this.started || this.syncing) return;
     this.scheduleUpload();
   },
@@ -376,13 +473,16 @@ const WebsimAccount = {
     }, delay);
   },
 
-  async upload({ silent = false, keepalive = false } = {}) {
+  async upload({ silent = false, keepalive = false, force = false } = {}) {
     if (!this.cloudEligible()) return false;
+    if (this.cloudError) { this.scheduleCloudRefresh(0); return false; }
+    if (this.cloudConflict && !force) return false;
     if (this.uploadInFlight) return this.uploadInFlight;
 
-    const snapshot = JSON.parse(JSON.stringify(Save.data));
-    const snapshotAt = Number(Save.data && Save.data._updatedAt) || 0;
-    const requestBody = JSON.stringify({ save: snapshot });
+    const snapshotJson = JSON.stringify(Save.data);
+    const snapshot = JSON.parse(snapshotJson);
+    const baseAt = Number(this.cloud && this.cloud.updated_at_ms) || 0;
+    const requestBody = JSON.stringify({ save: snapshot, base_updated_at_ms: baseAt });
     this.uploadInFlight = (async () => {
       const controller = typeof AbortController !== 'undefined' ? new AbortController() : null;
       const timeout = setTimeout(() => controller && controller.abort(), 10000);
@@ -396,43 +496,54 @@ const WebsimAccount = {
         });
         const body = await response.json().catch(() => ({}));
         if (!response.ok) {
-          if (response.status === 409 && body.save) {
-            // Another device won with a newer revision. Adopt it immediately;
-            // retrying the same timestamp would otherwise loop forever.
-            this.cloud = body.save;
-            this.adoptCloud(body.save);
-            if (!silent) UI.toast('A newer cloud save was loaded');
+          if (response.status === 409 && Object.prototype.hasOwnProperty.call(body, 'save')) {
+            this.cloud = body.save || null;
+            this.cloudError = null;
+            this.reconcileCloud();
+            if (this.pendingSync && !this.cloudConflict) this.scheduleUpload(350);
+            if (!silent) UI.toast(this.cloudConflict ? 'Cloud changed elsewhere. Local save kept.' : 'Cloud save refreshed');
+            if (this.profileBody && this.profileBody.isConnected && this.profilePage === 'save') this.draw(this.profileBody);
             return false;
           }
           throw new Error(body.error || ('cloud upload returned ' + response.status));
         }
         this.cloud = body.save || null;
         this.cloudError = null;
-        this.pendingSync = false;
+        this.cloudConflict = false;
+        this.invalidCloud = false;
         this.retryDelay = 3000;
+        if (this.cloud) this.setBaseAt(Number(this.cloud.updated_at_ms) || 0);
 
         // Preserve a newer local edit made while the request was in flight.
-        if ((Number(Save.data && Save.data._updatedAt) || 0) === snapshotAt && this.cloud) {
+        if (JSON.stringify(Save.data) === snapshotJson && this.cloud) {
+          this.pendingSync = false;
           this.suppressAutosave = true;
-          Save.data._updatedAt = Number(this.cloud.updated_at_ms) || snapshotAt;
+          Save.data._updatedAt = Number(this.cloud.updated_at_ms) || Save.data._updatedAt;
           Save.write({ skipCloud: true, touch: false });
           this.suppressAutosave = false;
         } else {
           this.pendingSync = true;
+          // The cloud revision may be ahead of this device's clock. Keep the
+          // newer in-flight local edit visibly newer than its cloud base.
+          if (this.cloud) {
+            Save.data._updatedAt = Math.max(Number(Save.data._updatedAt) || 0, Number(this.cloud.updated_at_ms) + 1);
+            Save.write({ skipCloud: true, touch: false });
+          }
           this.scheduleUpload(350);
         }
+        if (this.profileBody && this.profileBody.isConnected && this.profilePage === 'save') this.draw(this.profileBody);
         if (!silent) { Sound.play('ui_ok'); UI.toast('Cloud save updated'); }
         return true;
       } catch (err) {
         console.warn('Cloud save upload failed', err);
-        // Keep the dirty state and retry transient failures. Without this, a
-        // single timeout silently leaves the account permanently stale until
-        // the player happens to make another edit.
+        this.cloudError = err;
+        // Keep the local save and retry after the cloud can be read again.
         this.pendingSync = true;
         if (this.cloudEligible()) {
-          this.scheduleUpload(this.retryDelay);
+          this.scheduleCloudRefresh(this.retryDelay);
           this.retryDelay = Math.min(this.retryDelay * 2, 30000);
         }
+        if (this.profileBody && this.profileBody.isConnected && this.profilePage === 'save') this.draw(this.profileBody);
         if (!silent) { Sound.play('ui_err'); UI.toast('Cloud save failed'); }
         return false;
       } finally {
@@ -449,12 +560,13 @@ const WebsimAccount = {
     const avatar = $('.profile-avatar', button), label = $('.profile-label', button);
     const profile = Save.data.profile || {};
     mountProfileIcon(avatar, profile.icon, 'profile-avatar');
-    label.textContent = profile.name || (this.user ? '@' + this.user.username : 'Profile');
+    label.textContent = Save.isTestSession() ? 'Full Test Save' : profile.name || (this.user ? '@' + this.user.username : 'Profile');
     button.title = this.user ? 'Open your Dandy\'s Heroes profile' : 'Customize your local Dandy\'s Heroes profile';
   },
 
   async open() {
     const body = el('div');
+    this.profileBody = body;
     body.appendChild(el('div', 'tiny muted', 'Connecting to your Websim account…'));
     UI.modal('Dandy Profile', body, { className: 'profile-modal' });
     await this.start();
@@ -464,7 +576,7 @@ const WebsimAccount = {
 
   async postProfile(button) {
     const profile = Save.data.profile || {}, fav = profile.favorites || {};
-    const name = profile.name || (this.user ? '@' + this.user.username : 'Player');
+    const name = profile.name || (Save.isTestSession() ? 'Full Test Save' : this.user ? '@' + this.user.username : 'Player');
 
     if (button) { button.disabled = true; button.textContent = 'MAKING IMAGE…'; }
     try {
@@ -505,7 +617,7 @@ const WebsimAccount = {
     profile.featuredAchievements = Array.isArray(profile.featuredAchievements) ? profile.featuredAchievements : [];
     profile.featuredAchievements = profile.featuredAchievements
       .filter(id => typeof ACHIEVEMENTS !== 'undefined' && ACHIEVEMENTS.some(a => a.id === id && Achievements.isUnlocked(a.id))).slice(0, 3);
-    const fallbackName = this.user ? '@' + this.user.username : 'Player';
+    const fallbackName = Save.isTestSession() ? 'Full Test Save' : this.user ? '@' + this.user.username : 'Player';
     const shell = el('div', 'profile-shell');
     const head = el('section', 'profile-head');
     const headIcon = el('div', 'profile-head-avatar'); mountProfileIcon(headIcon, profile.icon);
@@ -638,40 +750,86 @@ const WebsimAccount = {
       const intro = el('div', 'profile-page-intro');
       intro.innerHTML = '<b>Save connection</b><span>Cloud tools live here so they stay out of customization.</span>';
       page.appendChild(intro);
-      const fullTestSave = Save.isTestSlot();
-      const cloudSave = Save.isMainSlot();
+      const fullTestSave = Save.isTestSession();
+      const cloudSave = Save.isAccountSave();
       const account = el('div', 'profile-account-card');
-      if (this.user) {
+      if (fullTestSave) {
+        account.appendChild(el('div', 'grow', 'Full Test Save is a local testing slot. It does not use your Websim account or cloud save.'));
+      } else if (this.user) {
         const img = el('img'); img.src = this.user.avatar_url || ('https://images.websim.com/avatar/' + this.user.username); img.alt = '';
         const copy = el('div', 'grow'); copy.innerHTML = 'Posting as ';
         const link = el('a', '', '@' + this.user.username); link.href = 'https://websim.com/@' + encodeURIComponent(this.user.username); link.target = '_blank'; link.rel = 'noopener';
         copy.appendChild(link); copy.appendChild(el('div', 'profile-section-note', 'Your game profile stays in this save; Websim handles the account connection.'));
         account.appendChild(img); account.appendChild(copy);
-      } else account.textContent = 'No Websim account is available. Your profile and save remain stored locally on this device.';
+      } else {
+        account.appendChild(el('div', 'grow', Save.localSaveError
+          ? 'Websim has not connected a signed-in account to this page yet. Local saving also needs attention.'
+          : 'Websim has not connected a signed-in account to this page yet. Your progress remains stored locally.'));
+        const retry = el('button', 'btn tiny', '↻ Retry');
+        retry.type = 'button';
+        retry.onclick = async () => {
+          retry.disabled = true;
+          retry.textContent = 'Connecting…';
+          await this.start();
+          if (body.isConnected) this.draw(body);
+        };
+        account.appendChild(retry);
+      }
       page.appendChild(account);
 
       const cloud = el('div', 'cloud-card profile-cloud');
+      cloud.appendChild(el('div', 'cloud-state', Save.localSaveError
+        ? 'Local autosave failed. Check browser storage or download a backup in Settings.'
+        : 'Local autosave is on for this device.'));
       let state = 'No cloud save yet.';
       if (fullTestSave) state = 'Full Test Save is isolated from cloud saves.';
       else if (!cloudSave) state = 'Cloud saving is available for Main Save only.';
-      else if (this.cloudError) state = 'Cloud save is reconnecting. Local progress is safe.';
+      else if (!this.user) state = 'Connect to Websim to check your cloud save.';
+      else if (this.cloudError) state = 'Cloud save is reconnecting.';
+      else if (this.cloudConflict) state = 'Cloud changed elsewhere. This device kept its local save. Choose which copy to keep.';
+      else if (this.invalidCloud) state = 'An old test save is being replaced with this Main Save.';
+      else if (this.pendingSync) state = 'Saving local progress to Websim…';
       else if (this.cloud) {
         const when = this.cloud.updated_at_ms ? new Date(this.cloud.updated_at_ms).toLocaleString() : 'previous session';
         state = `Cloud save: Mastery ${fmt(this.cloud.mastery || 0)} · ${fmt(this.cloud.heroes || 0)} Heroes · ${when}`;
       }
       cloud.appendChild(el('div', 'cloud-state', state));
       const row = el('div', 'row');
-      const upload = el('button', 'btn gold grow tiny', fullTestSave ? '☁ Disabled for Full Save' : (!cloudSave ? '☁ Main Save only' : (this.user ? '☁ Save Now' : '☁ Sign in for Cloud Save')));
+      const uploadLabel = this.cloudError ? '↻ Retry Sync' : this.cloudConflict ? '↑ Replace Cloud' : '☁ Save Now';
+      const upload = el('button', 'btn gold grow tiny', fullTestSave ? '☁ Disabled for Full Save' : (!cloudSave ? '☁ Main Save only' : (this.user ? uploadLabel : '☁ Sign in for Cloud Save')));
       upload.disabled = !this.user || !cloudSave;
-      upload.onclick = async () => { upload.disabled = true; if (await this.upload()) this.draw(body); else upload.disabled = false; };
+      upload.onclick = async () => {
+        upload.disabled = true;
+        if (this.cloudError) {
+          await this.refreshCloud();
+          if (!this.cloudError) {
+            this.reconcileCloud();
+            if (this.pendingSync && !this.cloudConflict) await this.upload({ silent: true });
+          }
+          this.draw(body);
+          return;
+        }
+        if (this.cloudConflict) {
+          upload.disabled = false;
+          UI.confirm('Replace cloud save?', 'The current cloud copy will be replaced by this device’s local save.', async () => {
+            upload.disabled = true;
+            if (await this.upload({ force: true })) this.draw(body);
+            else if (upload.isConnected) upload.disabled = false;
+          });
+          return;
+        }
+        if (await this.upload()) this.draw(body);
+        else if (upload.isConnected) upload.disabled = false;
+      };
       const load = el('button', 'btn grow tiny', '↓ Load Cloud');
-      load.disabled = !this.user || !this.cloud || !cloudSave;
+      load.disabled = !this.user || !this.cloud || this.invalidCloud || !!this.cloudError || !cloudSave;
       load.onclick = () => UI.confirm('Load cloud save?', 'This replaces the save currently stored on this device.', () => {
         if (this.cloud && this.cloud.save_json) {
           this.suppressAutosave = true;
-          const ok = Save.import(this.cloud.save_json, { skipCloud: true, touch: false });
-          if (ok) { Save.data._updatedAt = Number(this.cloud.updated_at_ms) || Date.now(); Save.write({ skipCloud: true, touch: false }); location.reload(); }
-          this.suppressAutosave = false;
+          let ok = false;
+          try { ok = Save.import(this.cloud.save_json, { skipCloud: true, touch: false }); }
+          finally { this.suppressAutosave = false; }
+          if (ok) { Save.data._updatedAt = Number(this.cloud.updated_at_ms) || Date.now(); Save.write({ skipCloud: true, touch: false }); this.setBaseAt(Number(this.cloud.updated_at_ms) || 0); location.reload(); }
           if (!ok) { Sound.play('ui_err'); UI.toast('Cloud save is invalid'); }
         } else { Sound.play('ui_err'); UI.toast('Cloud save is invalid'); }
       });

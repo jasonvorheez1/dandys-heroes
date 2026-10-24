@@ -597,12 +597,10 @@ const Depths = {
     if (this.cardCount()) B.log(`<b>Depth Deck:</b> ${this.cardCount()} cards · ${Number(sum(allies.map(u => this.trinketRanksFor(u))).toFixed(1))} Trinket resonance.`);
   },
 
-  /* Enemy scaling is stretched across the full Depths journey. At Mastery
-     800, Floor 121 is now roughly Lv 260-280, while Floor 1000 reaches about
-     Lv 700 before the room/boss bump. The first twenty floors also blend in
-     the active team's real power: rarity, gear, skills, and training can put
-     a squad far ahead of its account-level cap, so a fixed Mastery-only curve
-     would otherwise leave Floor 20 fighting tutorial-strength enemies. */
+  /* Mastery sets the long-run floor curve. Team power also feeds the visible
+     enemy level so upgraded gear, skills, and rarity cannot leave the Depths
+     hundreds of thousands of power behind the active party. The opening
+     floors keep their gentler pressure; deep rooms close the gap gradually. */
   enemyLevel(floor, node) {
     const currentRun = Save.data && Save.data.depth;
     if (currentRun && currentRun.dandyConsequence && currentRun.dandyConsequenceFloor === floor) return 100;
@@ -620,9 +618,8 @@ const Depths = {
     const roomRamp = 2 + Math.min(12, Math.sqrt(floor) * .35);
     const masteryBase = Math.round(cap * floorTerm + node * roomRamp);
     // Mastery should make a run's later floors matter, not let a high-account
-    // player meet endgame levels in the onboarding stretch. This ceiling fades
-    // out naturally by Floor 100 and is already above the normal curve around
-    // the point where the Depths should become genuinely demanding.
+    // player meet endgame levels in the onboarding stretch. Its release is
+    // blended below so Floor 100 does not jump abruptly when it disappears.
     const earlyCeiling = depth < 100
       ? Math.round(14 + depth * 2 + Math.sqrt(Math.max(0, cap)) * .9 + node * roomRamp)
       : Infinity;
@@ -637,12 +634,36 @@ const Depths = {
     // curve before applying pressure. Raw power divided by a fixed constant
     // would make a high-Mastery squad inflate enemy levels by thousands.
     const powerLevel = Progress.powerEquivalentLevel(teamPower);
-    const pressure = .36 + Math.min(.18, depth / 1000);
+    // Around Floor 100 a developed party should face a meaningful power
+    // check. Ease into it across Floors 50-100, then let Floors 100-200
+    // approach parity. Deep floors can edge above an unchanged team so the
+    // run does not flatten out after one strong upgrade session.
+    const pressure = depth <= 50
+      ? .36 + depth * .0002
+      : depth < 100
+        ? .37 + .48 * (depth - 50) / 50
+        : .85 + .20 * clamp((depth - 100) / 100, 0, 1)
+          + .10 * clamp((depth - 200) / 600, 0, 1);
     const teamTarget = Math.round(powerLevel * pressure + node * roomRamp);
     const floorGate = clamp((depth - 8) / 28, 0, 1);
     const adaptive = Math.round(base + (teamTarget - base) * floorGate);
     const level = Math.max(base, adaptive);
-    return clamp(Math.min(level, earlyCeiling), 1, 4000);
+    const ceilingRelease = clamp((depth - 60) / 40, 0, 1);
+    const easedCeiling = depth < 100
+      ? earlyCeiling + Math.max(0, teamTarget - earlyCeiling) * ceilingRelease
+      : Infinity;
+    const encounterLevel = clamp(Math.min(level, easedCeiling), 1, 4000);
+    if (depth >= 100) return encounterLevel;
+
+    // A fresh descent can be replayed with a highly upgraded team. The
+    // opening-floor ceiling used to leave those enemies dozens of levels
+    // behind, so a whole room could disappear in the first attack. Catch up
+    // only when the team's power is far beyond the shown encounter target;
+    // new rosters and Dandy's Buds keep their gentle opening difficulty.
+    const powerGap = teamPower / Progress.recommendedPower(encounterLevel);
+    const catchUp = clamp((powerGap - 2) / 3, 0, 1);
+    return clamp(Math.max(encounterLevel,
+      Math.round(encounterLevel + (teamTarget - encounterLevel) * catchUp)), 1, 4000);
   },
 
   /** The first boss is an introduction to boss mechanics, not an endgame
@@ -667,7 +688,11 @@ const Depths = {
     if (floor > 5) {
       const ramp = clamp((floor - 6) / 24, 0, 1);
       return {
-        level: Math.min(standardLevel, Math.round(18 + floor * 1.55)),
+        // Keep the authored early cap for developing rosters. A veteran
+        // replaying these floors needs the boss to follow the now-visible
+        // room level, or the gate vanishes in a single opening hit.
+        level: Math.min(standardLevel,
+          Math.max(Math.round(18 + floor * 1.55), Math.round(baseLevel * .60))),
         stars: 3 + Math.round(ramp * 2),
         rarity: 4,
         rarityPlus: Math.round(5 + ramp * 7),
@@ -687,13 +712,19 @@ const Depths = {
       ? sum(team.map(hero => Math.max(1, Number(hero.level) || 1))) / team.length
       : 1;
     const beginnerCap = Math.max(5, Math.round(averageLevel * 1.8 + 2));
+    // Vee now fights from the backline. Preserve the Floor 5 boss's HP budget
+    // after her base HP moved from tank values to damage-dealer values.
+    const replayCap = averageLevel >= 50 ? Math.max(25, Math.round(baseLevel * .40)) : Infinity;
+    const bossLevel = Math.min(standardLevel, beginnerCap, replayCap);
+    const replayHp = averageLevel >= 50
+      ? clamp(Math.sqrt(baseLevel / Math.max(1, bossLevel)), 1, 1.8) : 1;
 
     return {
-      level: Math.min(standardLevel, beginnerCap),
+      level: bossLevel,
       // Red rarity still unlocks Vee's complete boss kit, but a lower rank and
       // star count prevent the first boss from inheriting endgame stat weight.
       stars: 3, rarityPlus: 5,
-      mult: { hp: 1.35, atk: .82, def: 1.05 },
+      mult: { hp: 1.9 * replayHp, atk: .82, def: 1.05 },
       addLevel: .70, trashLevel: .75, addCount: 2, trashCount: 0
     };
   },
@@ -722,6 +753,27 @@ const Depths = {
     const level = this.enemyLevel(floor, node);
     const id = this.mirrorTarget();
     return this.harden(makeTwisted(id, level + 4, 'elite'), floor, rng);
+  },
+
+  /** Event and collaboration Heroes visit the Depths in their own forms.
+      They never enter the regular Twisted pool or a boss's add pool. */
+  visitorElite(id, level, floor, rng) {
+    const training = enemyTraining(id, level, 'elite', `${id}-depth-visitor`);
+    const rarity = clamp(4 + Math.floor(level / 220), 4, 6);
+    const altClass = rarity >= 6 ? Object.keys(CLASSES).find(key => key !== training.cls) : null;
+    const altSubclass = rarity >= 6 ? Object.keys(SUBCLASSES).find(key => key !== training.subcls) : null;
+    return this.harden({
+      id, name: 'Elite ' + HEROES[id].name, level, kind: 'elite', elite: true,
+      twisted: false, artSrc: Art.hero(id), encounterOnly: true,
+      rarity, rarityPlus: rarityPlusForLevel(level, rarity, `${id}-depth-visitor`),
+      stars: clamp(1 + Math.floor(level / 70), 1, 5),
+      skillLv: enemySkillLevel(level, 'elite'),
+      mult: { hp: 1.30, atk: 1.16, def: 1.12 },
+      cls: training.cls, subcls: training.subcls,
+      classRank: training.classRank, subclassRank: training.subclassRank,
+      cls2: altClass, subcls2: altSubclass,
+      classRank2: rarity >= 6 ? 1 : 0, subclassRank2: rarity >= 6 ? 1 : 0
+    }, floor, rng);
   },
 
   makeEnemies(floor, node, type) {
@@ -789,20 +841,20 @@ const Depths = {
     const wIds = rng.shuffle(WEAKLING_IDS).slice(0, weak);
 
     const foes = tIds.map((id, i) => normalizeBudsEnemy(this.harden(makeTwisted(id, lv + (i === 0 ? 4 : 0), kind), floor, rng)));
-    // A Holloway can replace one foe in a regular elite room from floor 12
-    // onward. Roll separately so the room scan and battle agree without
-    // changing the other seeded enemy and equipment rolls.
-    if (type === 'elite' && floor >= 12 && foes.length) {
-      const hollowayRng = seeded(`depth-holloway:${r.seed}:${floor}:${node}`);
-      if (hollowayRng.chance(.01)) {
-        const id = hollowayRng.pick(['MrsHolloway', 'MrHolloway']);
-        const replaceAt = id === 'MrHolloway'
-          ? Math.max(0, foes.findIndex(foe => ['Tank', 'Support'].includes(HEROES[foe.id].role)))
-          : 0;
-        const holloway = makeTwisted(id, lv + 4, 'elite', {
-          name: 'Elite ' + HEROES[id].name, twisted: false, artSrc: Art.hero(id)
-        });
-        foes[replaceAt] = this.harden(holloway, floor, hollowayRng);
+    // An elite room can draw one visiting challenger. Use the actual floor,
+    // not the elite preview's floor + 4, for the unlock gates. A separate
+    // seed keeps the remaining enemies and their gear stable across previews.
+    if (type === 'elite' && floor >= 75 && foes.length) {
+      const visitorRng = seeded(`depth-visitor:${r.seed}:${floor}:${node}`);
+      if (visitorRng.chance(floor >= 100 ? .35 : .30)) {
+        const eventIds = Object.keys(HERO_OBTAIN).filter(id => HERO_OBTAIN[id] === 'Event' && HEROES[id]);
+        const collabIds = floor >= 100
+          ? Object.keys(HERO_OBTAIN).filter(id => HERO_OBTAIN[id] === 'Collab' && HEROES[id]) : [];
+        const choices = collabIds.length && visitorRng.chance(.5) ? collabIds : eventIds;
+        if (choices.length) {
+          const id = visitorRng.pick(choices);
+          foes[visitorRng.i(0, foes.length - 1)] = this.visitorElite(id, lv + 4, floor, visitorRng);
+        }
       }
     }
     wIds.forEach(id => foes.push(normalizeBudsEnemy(this.harden(makeWeakling(id, lv), floor, rng))));
@@ -952,7 +1004,7 @@ const Depths = {
         const tid = owned[0];
         got.push({ id: tid, rank: dropRank, res: Save.addTrinketCopy(tid, dropRank) });
       } else if (rng.chance(.20 + dropBonus)) {
-        const generic = TRINKET_IDS.filter(k => !TRINKETS[k].owner);
+        const generic = TRINKET_IDS.filter(k => !TRINKETS[k].owner && !TRINKETS[k].eventOnly);
         const tid = rng.pick(generic);
         got.push({ id: tid, rank: dropRank, res: Save.addTrinketCopy(tid, dropRank) });
       }
@@ -1017,12 +1069,8 @@ const Depths = {
     const r = this.run(), info = this.freeSkipInfo();
     return info.remaining >= n ? 0 : this.skipCost(r.floor, n);
   },
-  /** Guards against buying your way into a softlock: a fresh team spending
-      every spare Ichor on skips could otherwise land many floors past
-      anything it can survive, with no way back except abandoning the run.
-      Generous on purpose - this only blocks skips that are clearly reckless
-      (your average level under half of what that floor actually expects),
-      not ones that are merely risky. */
+  /** Guards against buying your way into a softlock while allowing geared
+      teams to skip even when their Hero levels trail their actual power. */
   skipPowerReady(targetFloor, n) {
     const team = Save.data.team.filter(Boolean);
     if (!team.length) return false;
@@ -1030,10 +1078,14 @@ const Depths = {
     const avgStars = team.reduce((s, id) => s + (Save.hero(id).stars || 0), 0) / team.length;
     // Threshold scales with how far you're skipping: min 65% at n=1, up to 90% cap
     const threshold = Math.min(0.90, 0.65 + (n || 1) * 0.025);
-    return avgLevel >= this.enemyLevel(targetFloor, 0) * threshold && avgStars >= 2;
+    const enemyLevel = this.enemyLevel(targetFloor, 0);
+    const levelReady = avgLevel >= enemyLevel * threshold;
+    const powerReady = Progress.teamPower(team) >= Progress.recommendedPower(enemyLevel) * threshold;
+    return (levelReady || powerReady) && avgStars >= 2;
   },
   canSkip(n) {
     const r = this.run();
+    if (r.pendingDraft) return false;
     const info = this.freeSkipInfo();
     const powerReady = info.remaining >= n || this.skipPowerReady(r.floor + n, n);
     return Save.can({ ichor: this.skipCharge(n) }) && powerReady;
@@ -1042,6 +1094,7 @@ const Depths = {
       the UI explain "why" instead of just greying the button out. */
   skipBlockReason(n) {
     const r = this.run();
+    if (r.pendingDraft) return 'Choose your waiting run card before skipping more floors.';
     if (this.budStage(r.floor)) return 'Dandy wants you to clear this lesson room by room.';
     const free = this.freeSkipInfo();
     const target = r.floor + n;
@@ -1049,7 +1102,7 @@ const Depths = {
       const team = Save.data.team.filter(Boolean);
       const avgStars = team.length ? team.reduce((s, id) => s + (Save.hero(id).stars || 0), 0) / team.length : 0;
       if (avgStars < 2) return `Your heroes need at least 2 stars on average before skipping floors.`;
-      return `Your team's too under-leveled for Floor ${target}. Level up more before skipping this far.`;
+      return `Your team needs more levels or power before skipping to Floor ${target}.`;
     }
     if (!Save.can({ ichor: this.skipCharge(n) })) return 'Not enough Ichor.';
     return null;
@@ -1080,6 +1133,7 @@ const Depths = {
   elevatorTicketBlockReason() {
     const r = this.run();
     const n = 5;
+    if (r.pendingDraft) return 'Choose your waiting run card before skipping more floors.';
     if (this.budStage(r.floor)) return 'Dandy wants you to clear this lesson room by room.';
     const target = r.floor + n;
     if (!this.skipPowerReady(target, n)) {
@@ -1093,6 +1147,9 @@ const Depths = {
   },
   applySkip(n) {
     const r = this.run();
+    // A skip earns a draft. Never let another skip stack on top of unresolved
+    // drafts: the old flow made it possible to queue an endless card-pick loop.
+    if (r.pendingDraft) return false;
     const fromFloor = r.floor;
     const payout = this.skipBossPayout(fromFloor, n);
     if (payout.bosses.length) {
@@ -1115,7 +1172,7 @@ const Depths = {
       point is skipping the grind, not farming it for free. */
   skipAhead(n) {
     const r = this.run();
-    if (this.budStage(r.floor)) return false;
+    if (r.pendingDraft || this.budStage(r.floor)) return false;
     const free = this.freeSkipInfo();
     const cost = this.skipCharge(n);
     if (!Save.can({ ichor: cost }) || (free.remaining < n && !this.skipPowerReady(r.floor + n, n))) return false;
@@ -1262,12 +1319,12 @@ const Campaign = {
     return this.team(camp, team, stageIdx).map(id => playerSpec(id));
   },
 
-  /** A loose, randomized enemy squad around the campaign's recommended level -
-      not floor-locked, since a campaign can be played the moment its two
-      Heroes are owned. */
+  /** Each chapter uses its own recommendation; the small encounter variance
+      keeps replays fresh without obscuring the stated difficulty. */
   foes(camp, stageIdx) {
     const rng = liveRng();
-    const lvl = Math.max(1, Math.round(camp.recLevel * (0.75 + rng.f() * 0.6)));
+    const recLevel = friendshipStageLevel(camp, stageIdx);
+    const lvl = clamp(Math.round(recLevel * (.95 + rng.f() * .10)), 1, SKILL_MAX_LEVEL);
     const pseudoFloor = clamp(Math.round(lvl / 3), 1, 200);
     const pool = twistedPool(pseudoFloor);
     const n = clamp(3 + Math.floor(stageIdx / 2), 3, 5);
@@ -1298,6 +1355,7 @@ const Campaign = {
       || stageIdx > Save.campaignStage(campId)) return false;
     const deployed = this.team(camp, team, stageIdx);
     const stage = camp.stages[stageIdx];
+    const recLevel = friendshipStageLevel(camp, stageIdx);
     const foes = this.foes(camp, stageIdx);
     BattleScreen.launch({
       team: this.teamSpecs(camp, deployed, stageIdx),
@@ -1306,18 +1364,18 @@ const Campaign = {
         title: camp.title + ' · ' + stage.name,
         floorLabel: 'Friendship: ' + stage.name,
         roomIdx: stageIdx + 1, roomTotal: camp.stages.length,
-        bg: bgForFloor(Math.max(1, Math.round(camp.recLevel / 4)), 0)
+        bg: bgForFloor(Math.max(1, Math.round(recLevel / 4)), 0)
       },
       postBanter: {
         id: campId + '-' + stageIdx, title: stage.name,
         label: `Chapter ${stageIdx + 1} cleared`, cast: stage.cast || [camp.a, camp.b], guests: stage.guests || camp.guests || [],
         lines: stage.lines, post: true
       },
-      rewards: () => masteryRewardBundle({ ichor: 300 + camp.recLevel * 8, exp: 250 + camp.recLevel * 6 }),
+      rewards: () => masteryRewardBundle({ ichor: 300 + recLevel * 8, exp: 250 + recLevel * 6 }),
       onDone: (res) => {
         if (res.win) {
           const wasDone = Save.campaignDone(campId);
-          payoutBattle(this.ownedTeam(camp, deployed, stageIdx), masteryRewardBundle({ ichor: 300 + camp.recLevel * 8, exp: 250 + camp.recLevel * 6 }),
+          payoutBattle(this.ownedTeam(camp, deployed, stageIdx), masteryRewardBundle({ ichor: 300 + recLevel * 8, exp: 250 + recLevel * 6 }),
             { mastery: 80, pass: 30 });
           /* Cleared chapters are replayable from the new story path. A replay
              still pays battle rewards, but only the current next chapter may
@@ -1336,7 +1394,16 @@ const Campaign = {
 /* Simulated ladder. Generated bots and saved player defenses share the daily
    lineup; bot opponents never contain duplicate heroes. */
 const Arena = {
-  TEAM_VERSION: 10,
+  TEAM_VERSION: 11,
+  LEAGUES: [
+    { name: 'BRONZE', icon: '🥉', floor: 1500, ceiling: 99999 },
+    { name: 'SILVER', icon: '🥈', floor: 1000, ceiling: 1499 },
+    { name: 'GOLD', icon: '🥇', floor: 700, ceiling: 999 },
+    { name: 'PLATINUM', icon: '💠', floor: 500, ceiling: 699 },
+    { name: 'DIAMOND', icon: '💎', floor: 300, ceiling: 499 },
+    { name: 'MASTER', icon: '👑', floor: 100, ceiling: 299 },
+    { name: 'CHAMPION', icon: '🏆', floor: 1, ceiling: 99 }
+  ],
   liveDefenses: [],
   liveDefenseSignature: '',
   // Arena uses a subjective roster read rather than copying the authored
@@ -1348,17 +1415,6 @@ const Arena = {
     A: ['Vee', 'Cosmo', 'Ginger', 'Bassie', 'Blot', 'Flyte', 'Eclipse', 'Soulvester', 'Goofy', 'Sora', 'Phantasia', 'Finn', 'Squirm', 'GladHander', 'LegalEagle', 'RobberBaron', 'PencilPusher'],
     B: ['Bobette', 'Brightney', 'Coal', 'Looey', 'Poppy', 'Ribecca', 'Gourdy', 'Eggson', 'RnD'],
     C: ['Rodger', 'Shrimpo', 'Boxten', 'Goob']
-  },
-  // Curated ladder cores keep the Arena readable and strategically distinct.
-  // They also make the personal tier list visible instead of relying only on
-  // random weighted picks to communicate the roster's strengths.
-  CURATED_TEAMS: {
-    balanced: ['Dandy', 'Cocoa', 'Scraps', 'Connie', 'Tisha'],
-    wall: ['Pebble', 'Soulvester', 'Astro', 'Blot', 'BigWig'],
-    rush: ['Rudie', 'Flutter', 'Eclipse', 'Yatta', 'Brusha'],
-    lock: ['Waxwell', 'Glisten', 'Teagan', 'Shelly', 'Delilah'],
-    whale: ['Dyle', 'Cocoa', 'Scraps', 'Astro', 'BigWig'],
-    visitors: ['Riku', 'Sora', 'Kairi', 'Goofy', 'Phantasia']
   },
   ARCHETYPES: [
     { key: 'balanced', label: 'Balanced', tag: '', roles: ['Tank', 'Damage', 'Damage', 'Support', 'Control'] },
@@ -1400,7 +1456,7 @@ const Arena = {
   },
 
   today() {
-    const a = Save.data.arena, d = dayIndex(), resetCycle = Math.floor(d / 2);
+    const a = Save.data.arena, d = dayIndex(), resetCycle = Math.floor(d / 28);
     if (a.resetCycle !== resetCycle) {
       a.resetCycle = resetCycle;
       a.rank = 2000;
@@ -1411,7 +1467,29 @@ const Arena = {
     if (a.day !== d || a.teamVersion !== this.TEAM_VERSION) {
       a.day = d; a.teamVersion = this.TEAM_VERSION; a.opponents = this.generate(d); Save.write();
     }
+    if (a.dailyWinsDay !== d) {
+      a.dailyWinsDay = d;
+      a.dailyWins = 0;
+      a.dailyClaimed = false;
+      a.featuredClaimed = false;
+      a.opponents.forEach((opp, i) => { opp.featured = i === d % a.opponents.length; });
+      Save.write();
+    } else if (Array.isArray(a.opponents)) {
+      a.opponents.forEach((opp, i) => { opp.featured = i === d % a.opponents.length; });
+    }
     return a;
+  },
+
+  league(rank) {
+    const value = clamp(Math.floor(Number(rank) || 2000), 1, 99999);
+    const index = this.LEAGUES.findIndex(item => value <= item.ceiling);
+    const league = this.LEAGUES[Math.max(0, index)];
+    const next = this.LEAGUES[index + 1] || null;
+    const span = league.ceiling >= 99999 ? 500 : league.ceiling - league.floor + 1;
+    const progress = league.ceiling >= 99999
+      ? clamp((2000 - value) / 500, 0, 1)
+      : clamp((league.ceiling - value + 1) / span, 0, 1);
+    return { ...league, next, progress, remaining: Math.max(0, value - league.floor + 1) };
   },
 
   roleTags(id) {
@@ -1438,25 +1516,21 @@ const Arena = {
     return 'D';
   },
 
-  rookieLadder() {
-    // Rank counts down toward #1. An established account climbing the top
-    // thousand should face stronger defenders, not return to rookie teams.
-    return Save.data.mastery <= 100;
+  rookieRank(rank) {
+    // Rookie accounts appear in the bottom of the ladder for everyone. Their
+    // roster is based on their own rating, never the current player's save.
+    return Number(rank) >= 1700;
   },
 
-  activeSkillLevel() {
-    const levels = (Save.data.team || []).filter(Boolean).flatMap(id => {
-      const h = Save.hero(id), d = HEROES[id];
-      if (!h || !d) return [];
-      return SKILL_ORDER.filter(key => d.skills[key] && h.rarity >= SKILL_RARITY[key])
-        .map(key => clamp(Number(h.skills[key]) || 1, 1, SKILL_MAX_LEVEL));
-    });
-    return levels.length ? Math.round(sum(levels) / levels.length) : 1;
-  },
-
-  rookieLevelCap(rank) {
-    // Keep early Mastery opponents in a readable Level 10-100 range.
-    return clamp(Math.round(10 + Math.min(1000, Math.max(1, rank)) * .09), 10, 100);
+  rankLevelCap(rank) {
+    const r = clamp(Math.floor(Number(rank) || 2000), 1, 99999);
+    if (r >= 1500) return clamp(Math.round(35 + (2000 - r) * .22), 12, 145);
+    if (r >= 1000) return clamp(Math.round(150 + (1499 - r) * .32), 150, 310);
+    if (r >= 700) return clamp(Math.round(310 + (999 - r) * .45), 310, 445);
+    if (r >= 500) return clamp(Math.round(445 + (699 - r) * .5), 445, 545);
+    if (r >= 300) return clamp(Math.round(545 + (499 - r) * .55), 545, 655);
+    if (r >= 100) return clamp(Math.round(655 + (299 - r) * .7), 655, 794);
+    return 800;
   },
 
   pickTeamHero(rng, pool, used, role, arch, appearances) {
@@ -1481,72 +1555,44 @@ const Arena = {
 
   generate(day) {
     const a = Save.data.arena;
-    const rookie = this.rookieLadder();
-    const rookieCap = this.rookieLevelCap(a.rank);
-    // Arena opponents must follow the squad actually entering the match, not
-    // account Mastery. Mastery can be far ahead of a newly levelled team,
-    // which previously produced level-100+ opponents for level-30 toons.
-    const activeTeam = (Save.data.team || []).map(id => Save.hero(id)).filter(Boolean);
-    const teamAverage = activeTeam.length
-      ? sum(activeTeam.map(h => Math.max(1, Number(h.level) || 1))) / activeTeam.length : 1;
-    const teamHighest = activeTeam.length
-      ? Math.max(...activeTeam.map(h => Math.max(1, Number(h.level) || 1))) : 1;
-    const trained = this.activeSkillLevel();
-    // Skills can now exceed Hero level. Reflect some of that investment in
-    // opponent levels without letting one maxed skill create a huge stat gap.
-    const skillPressure = Math.min(teamAverage * .25, Math.max(0, trained - teamAverage) * .08);
-    const ladderPressure = clamp((1000 - Math.min(1000, Math.max(1, a.rank))) / 250, 0, 4);
-    const teamCap = Math.max(5, Math.round(Math.max(
-      teamAverage * 1.12 + teamHighest * .10 + 3 + ladderPressure + skillPressure,
-      teamAverage + 8 + ladderPressure + skillPressure
-    )));
-    // Account-new players still get the readable rookie band. Established
-    // players are capped from their active squad, with a modest pressure
-    // bump for climbing the ladder rather than a Mastery-based level jump.
-    const cap = rookie
-      ? Math.min(teamCap, rookieCap, Save.data.mastery)
-      : Math.min(800, teamCap);
-    // Arena is a sparring service, not a live obtainment pool. Seasonal and
-    // collab Heroes belong here year-round, which lets visitors like Sora
-    // appear in normal ladder teams.
-    const pool = (rookie ? PLAYABLE_IDS.filter(id => obtainKey(id) === 'Common') : PLAYABLE_IDS)
-      .filter(id => HEROES[id] && !HEROES[id].twistedOnly);
+    // Bot accounts have their own fixed ladder progress, roster access, and
+    // training curves. Their strength never reads the visitor's team, Mastery,
+    // skill levels, or unlocked Heroes.
+    const pool = PLAYABLE_IDS.filter(id => HEROES[id] && !HEROES[id].twistedOnly);
     const out = [];
     const appearances = {};
-    const rotation = seeded('arena-archetypes-' + day + '-' + Math.floor(a.rank / 100))
-      .shuffle(rookie ? this.ROOKIE_ARCHETYPES : this.ARCHETYPES);
     for (let i = 0; i < 6; i++) {
       const rng = seeded('arena-' + day + '-' + i + '-' + Math.floor(a.rank / 100));
-      const arch = rotation[i % rotation.length];
+      const rank = clamp(a.rank + rng.i(-260, 180), 1, 99999);
+      const botRookie = this.rookieRank(rank);
+      const archPool = botRookie ? this.ROOKIE_ARCHETYPES : this.ARCHETYPES;
+      const arch = archPool[rng.i(0, archPool.length - 1)];
+      const cap = this.rankLevelCap(rank);
       const used = new Set();
-      const curated = !rookie && this.CURATED_TEAMS[arch.key]
-        ? this.CURATED_TEAMS[arch.key].filter(id => pool.includes(id))
-        : [];
-      const team = curated.length === 5 ? curated.slice() : [];
+      const botPool = botRookie ? pool.filter(id => obtainKey(id) === 'Common') : pool;
+      const team = [];
       let anchorUsed = false;
-      if (!team.length) arch.roles.forEach(role => {
+      arch.roles.forEach(role => {
         const anchorFits = arch.anchor && !anchorUsed && !used.has(arch.anchor) && this.roleTags(arch.anchor).includes(role.toLowerCase());
-        const id = anchorFits ? arch.anchor : this.pickTeamHero(rng, pool, used, role, arch, appearances);
+        const id = anchorFits ? arch.anchor : this.pickTeamHero(rng, botPool, used, role, arch, appearances);
         if (!id) return;
         if (id === arch.anchor) anchorUsed = true;
         used.add(id); team.push(id);
       });
       team.forEach(id => appearances[id] = (appearances[id] || 0) + 1);
-      // Teams can still have a weak link, but the core now stays competitive
-      // instead of rolling several near-empty roster slots.
-      const coreLv = rookie ? Math.round(cap * (.54 + rng.f() * .30))
-        : arch.key === 'whale' ? cap : Math.round(cap * (.68 + rng.f() * .24));
+      // Real accounts grow unevenly: a carry or favorite is often ahead while
+      // support picks trail a little behind.
+      const coreLv = Math.round(cap * (.64 + rng.f() * .24));
       const levels = team.map((id, j) => {
-        const minLevel = rookie ? 1 : 5;
-        if (arch.key === 'whale') return clamp(cap - rng.i(0, 6), minLevel, cap);
-        if (!rookie && rng.chance(.12) && j > 0) return clamp(Math.round(coreLv * (.58 + rng.f() * .15)), minLevel, cap);
-        return clamp(coreLv + rng.i(rookie ? -7 : -12, rookie ? 7 : 12), minLevel, cap);
+        const minLevel = botRookie ? 1 : 5;
+        if (j === 0 && rng.chance(.38)) return clamp(Math.round(cap * (.9 + rng.f() * .1)), minLevel, cap);
+        if (j > 0 && rng.chance(.18)) return clamp(Math.round(coreLv * (.55 + rng.f() * .2)), minLevel, cap);
+        return clamp(coreLv + rng.i(-Math.max(2, Math.round(cap * .12)), Math.max(2, Math.round(cap * .08))), minLevel, cap);
       });
       out.push({
         name: rng.pick(this.NAMES) + (rng.chance(.4) ? rng.i(2, 99) : ''),
         arch: arch.key, label: arch.label, tag: arch.tag,
-        team, levels,
-        rank: clamp(a.rank + rng.i(-260, 180), 1, 99999), rookie,
+        team, levels, rank, rookie: botRookie,
         beaten: false
       });
     }
@@ -1555,10 +1601,8 @@ const Arena = {
         if (!defense || !Array.isArray(defense.team) || !defense.team.length) return false;
         const slots = defense.team.filter(slot => slot && HEROES[slot.id]);
         if (!slots.length) return false;
-        const averageLevel = sum(slots.map(slot => Number(slot.level) || 1)) / slots.length;
-        const averageSkill = sum(slots.map(slot => Number(slot.skillLv) || 1)) / slots.length;
-        return averageLevel >= Math.max(1, cap * .55) && averageLevel <= Math.max(10, cap * 1.35)
-          && averageSkill <= Math.max(25, trained * 1.5, cap * 1.1);
+        const rank = clamp(Math.floor(Number(defense.arena_rank) || 2000), 1, 99999);
+        return Math.abs(rank - a.rank) <= 500;
       }))
       .slice(0, Math.min(2, out.length));
     saved.forEach((defense, index) => {
@@ -1577,16 +1621,10 @@ const Arena = {
 
   specs(opp) {
     if (opp && opp.savedDefense && typeof ArenaLive !== 'undefined') return ArenaLive.snapshotSpecs(opp.savedDefense);
-    const mastery = clamp(Number(Save.data.mastery) || 1, 1, SKILL_MAX_LEVEL);
-    const trained = this.activeSkillLevel();
     return opp.team.map((id, i) => {
       const level = opp.levels[i];
-      // Displayed level and the player's real skill investment both matter.
-      // A high-Mastery team with trained skills may meet skill ranks above
-      // the defender's Hero level, just as the player now can.
       const baseSkill = enemySkillLevel(level, opp.rookie ? 'weakling' : opp.arch === 'whale' ? 'elite' : 'rival');
-      const skillLv = clamp(Math.round((baseSkill + trained) * .5 *
-        (opp.arch === 'whale' ? 1.12 : opp.rookie ? .90 : 1)), 1, mastery);
+      const skillLv = clamp(Math.round(baseSkill * (opp.rookie ? .9 : 1)), 1, SKILL_MAX_LEVEL);
       const spec = rivalSpec(id, level, {
         buildSeed: `${opp.name}-${i}`,
         mult: { hp: 1, atk: 1, def: 1 },
@@ -1642,19 +1680,40 @@ const Arena = {
   resolve(opp, win, reward) {
     const a = Save.data.arena;
     if (win) {
+      if (opp.beaten) {
+        UI.toast('Friendly spar · first-clear rewards already claimed.');
+        return { firstClear: false, questComplete: false };
+      }
       a.wins++;
       const gain = Math.max(8, Math.round((a.rank - opp.rank) * .35) + 20);
       a.rank = Math.max(1, a.rank - gain);
       opp.beaten = true;
       Save.give(reward || this.rewards());
       Pass.addXp(80);
-      UI.toast('🏆 Rank ' + a.rank);
+      a.dailyWins = Math.min(3, (Number(a.dailyWins) || 0) + 1);
+      let questComplete = false;
+      if (opp.featured && !a.featuredClaimed) {
+        a.featuredClaimed = true;
+        Save.give({ arenaCoin: 18, exp: 3600, star: masteryRewardValue(55) });
+        UI.toast('🌟 Featured rival defeated! Bonus purse claimed.');
+      } else {
+        UI.toast('🏆 Rank ' + a.rank);
+      }
+      if (a.dailyWins >= 3 && !a.dailyClaimed) {
+        a.dailyClaimed = true;
+        questComplete = true;
+        Save.give({ arenaCoin: 45, exp: 9000, star: masteryRewardValue(150), core: 2 });
+        Pass.addXp(120);
+      }
+      Save.write();
+      return { firstClear: true, questComplete };
     } else {
       a.losses++;
       a.rank = Math.min(99999, a.rank + 30);
       Save.give(masteryRewardBundle({ ichor: 500, exp: 1200 }));
     }
     Save.write();
+    return { firstClear: false, questComplete: false };
   }
 };
 
@@ -1955,12 +2014,13 @@ const RaidTicket = {
       : event.bossIds.includes('Delilah')
         ? bgForMap(['warehouse', 'art-floor', 'library-floor'][wave - 1])
         : Art.bg(rng.pick(BACKGROUNDS));
-    const plan = Raid.wavePlan(event);
+    const plan = Raid.wavePlan(event, stage);
     return {
       title: `Event Stage ${stage + 1} · ${event.isCollab ? 'Endurance' : 'Wave ' + wave}`,
       floorLabel: `${event.title} · Stage ${stage + 1}`,
       roomIdx: wave, roomTotal: event.isCollab ? 1 : 3,
       bg, mods: (plan[wave - 1] && plan[wave - 1].mods) || [],
+      mutations: BattleMutations.forEvent(event, stage, wave).map(m => m.id),
       timeLimit: event.isCollab ? 300 : final ? 210 : 165,
       timeoutWin: !!event.isCollab,
       unknownWorld: !!event.isUnknownWorld, qom: !!event.isQOM,
@@ -1973,7 +2033,7 @@ const RaidTicket = {
   },
 
   async runEvent(event, stage, team) {
-    if (!event || !Number.isFinite(stage) || stage < 0 || stage >= Raid.STAGES) return null;
+    if (!event || !Number.isFinite(stage) || stage < 0 || stage >= Raid.stageCount(event)) return null;
     const ids = (team || []).filter(id => id && Save.owns(id)).slice(0, 5);
     if (!ids.length) return { win: false, why: 'No team selected', consumed: false };
     if (!Raid.canEnter(event.id, stage)) return { win: false, why: 'That event stage is locked', consumed: false };
@@ -2070,6 +2130,7 @@ const RaidTicket = {
     if (!Save.spend({ raidTicket: 1 })) return { win: false, why: 'No Raid Tickets', consumed: false };
 
     const stageDef = camp.stages[stage];
+    const recLevel = friendshipStageLevel(camp, stage);
     const battle = new Battle({ offscreen: true });
     let result;
     try {
@@ -2080,7 +2141,7 @@ const RaidTicket = {
           title: camp.title + ' · ' + stageDef.name + ' · Raid Ticket',
           floorLabel: 'Friendship: ' + stageDef.name + ' · Raid Sim',
           roomIdx: stage + 1, roomTotal: camp.stages.length,
-          bg: bgForFloor(Math.max(1, Math.round(camp.recLevel / 4)), 0),
+          bg: bgForFloor(Math.max(1, Math.round(recLevel / 4)), 0),
           timeLimit: 180
         },
         {}
@@ -2097,7 +2158,7 @@ const RaidTicket = {
     let badgeEarned = false;
     if (result && result.win) {
       shardDrops = collectTwistedShardDrops(battle);
-      rewards = masteryRewardBundle({ ichor: 300 + camp.recLevel * 8, exp: 250 + camp.recLevel * 6 });
+      rewards = masteryRewardBundle({ ichor: 300 + recLevel * 8, exp: 250 + recLevel * 6 });
       const wasDone = Save.campaignDone(camp.id);
       const wasNext = Save.campaignStage(camp.id) === stage;
       payoutBattle(Campaign.ownedTeam(camp, ids, stage), rewards, { mastery: 80, pass: 30 });
@@ -2116,7 +2177,7 @@ const RaidTicket = {
 };
 
 /* ============================================================ EVENT RAID */
-/* An eight-stage event campaign. Every stage is a three-wave run at a fixed
+/* Event campaigns. Every stage is a three-wave run at a fixed
    enemy level and costs one shared Stamina to enter. Victories pay persistent
    Event Tokens, which the player spends on the current featured Heroes rather
    than receiving a predetermined shard drop.
@@ -2142,7 +2203,7 @@ function weeklyEvents(week) {
   const qomEvent = {
     id: 'queens-of-mischief', label: 'Queens of Mischief', kind: 'qom', isQOM: true,
     bossIds: QOM_IDS, featuredIds: QOM_IDS, tag: 'LIVE PERFORMANCE', minMastery: 40,
-    stageLevels: [44, 62, 86, 118, 160, 218, 292, 386], rewardMult: 1.2,
+    stageLevels: [44, 62, 86, 118, 160, 218, 292, 386, 490, 600, 700, 800], rewardMult: 1.2,
     title: 'Queens of Mischief',
     blurb: 'The band takes the stage. Gourdy keeps the beat, Ribecca holds the line, Soulvester intercepts threats, and Eclipse and Connie bring the guitars. Fight three escalating sets to earn Backstage Passes and recruit the five event variants.'
   };
@@ -2157,7 +2218,7 @@ function weeklyEvents(week) {
     id: 'draw-parents-event', label: "Draw Parents", kind: 'draw-parents', isDrawParents: true,
     bossIds: [], featuredIds: ['MrsHolloway', 'MrHolloway'], tag: 'FADED MEMORIES', minMastery: 1,
     title: "Draw Gourdy's Parents",
-    blurb: "Sketch Gourdy's parents on paper using Scratch Tickets! Every click has chances for Memory Lockets (5%), Holloway Shards (2%), and Full Recruits (0.1%)."
+    blurb: "Sketch Gourdy's parents using Scratch Tickets. Every stroke grants Mastery XP, and completed portraits pay a repeatable bonus alongside Memory Lockets and Holloway Shards."
   };
   return [drawParentsEvent, COOKIE_EVENT, qomEvent, phantasiaEvent, unknownWorldEvent,
     { id: 'collab-door-opens', label: 'The Door Opens', kind: 'collab', isCollab: true,
@@ -2263,26 +2324,26 @@ const EVENT_MODIFIERS = [
 
 const COLLAB_BOSS_PHASES = {
   Sora: { id: 'Sora', title: 'The Combo Master', phases: [
-    { at: 1, name: 'Let’s Go', mods: { dmgTaken: -.08 } },
-    { at: .72, name: 'Drive Form', mods: { atkP: .28, aspdP: .22, cdr: .18, dmgTaken: -.12 }, onEnter: (u, B) => { collabVoice(u, 'skill', { priority: true }); B.energy(u, 45); } },
-    { at: .40, name: 'This Is It', mods: { atkP: .55, aspdP: .38, cdr: .35, dmgTaken: -.20 }, onEnter: (u, B) => { collabVoice(u, 'limit', { priority: true }); B.playerTeam().forEach(t => B.applyStatus(u, t, 'comboed', 8, { stacks: 3 })); } },
-    { at: .15, name: 'Final Form', mods: { atkP: .88, cdr: .58, armorPen: .28, dmgTaken: -.28 }, onEnter: (u, B) => { B.energy(u, 100); B.flash('#e9fbff', .5, .3); } }
+    { at: 1, name: 'Let’s Go', mods: { dmgTaken: -.04 } },
+    { at: .72, name: 'Drive Form', mods: { atkP: .28, aspdP: .22, cdr: .18, dmgTaken: -.07 }, onEnter: (u, B) => { collabVoice(u, 'skill', { priority: true }); B.energy(u, 45); } },
+    { at: .40, name: 'This Is It', mods: { atkP: .55, aspdP: .38, cdr: .35, dmgTaken: -.11 }, onEnter: (u, B) => { collabVoice(u, 'limit', { priority: true }); B.playerTeam().forEach(t => B.applyStatus(u, t, 'comboed', 8, { stacks: 3 })); } },
+    { at: .15, name: 'Final Form', mods: { atkP: .88, cdr: .58, armorPen: .28, dmgTaken: -.15 }, onEnter: (u, B) => { B.energy(u, 100); B.flash('#e9fbff', .5, .3); } }
   ] },
   Riku: { id: 'Riku', title: 'The Road to Dawn', phases: [
-    { at: 1, name: 'Dark Guard', mods: { dmgTaken: -.12 } },
-    { at: .68, name: 'Controlled Darkness', mods: { defP: .30, mdefP: .30, cdr: .20, dmgTaken: -.18 }, onEnter: (u, B) => { collabVoice(u, 'guard', { priority: true }); B.shield(u, u, u.max.hp * .18, 12); } },
-    { at: .34, name: 'Road to Dawn', mods: { atkP: .44, defP: .46, mdefP: .46, cdr: .38, dmgTaken: -.26 }, onEnter: (u, B) => { B.applyStatus(u, u, 'resolve', 999, { stacks: 6 }); B.energy(u, 100); } }
+    { at: 1, name: 'Dark Guard', mods: { dmgTaken: -.07 } },
+    { at: .68, name: 'Controlled Darkness', mods: { defP: .30, mdefP: .30, cdr: .20, dmgTaken: -.10 }, onEnter: (u, B) => { collabVoice(u, 'guard', { priority: true }); B.shield(u, u, u.max.hp * .18, 12); } },
+    { at: .34, name: 'Road to Dawn', mods: { atkP: .44, defP: .46, mdefP: .46, cdr: .38, dmgTaken: -.14 }, onEnter: (u, B) => { B.applyStatus(u, u, 'resolve', 999, { stacks: 6 }); B.energy(u, 100); } }
   ] },
   Kairi: { id: 'Kairi', title: 'The Oath of Light', phases: [
-    { at: 1, name: 'Radiant Circle', mods: { dmgTaken: -.08 } },
-    { at: .65, name: 'Princess of Heart', mods: { magP: .32, cdr: .24, dmgTaken: -.15 }, onEnter: (u, B) => { collabVoice(u, 'protect', { priority: true }); B.foeTeam().forEach(a => B.shield(u, a, u.max.hp * .10, 9)); } },
-    { at: .30, name: 'Oath of Light', mods: { atkP: .35, magP: .58, cdr: .46, dmgTaken: -.24 }, onEnter: (u, B) => { B.playerTeam().forEach(t => kairiGleam(u, t, B, 3)); B.energy(u, 100); } }
+    { at: 1, name: 'Radiant Circle', mods: { dmgTaken: -.04 } },
+    { at: .65, name: 'Princess of Heart', mods: { magP: .32, cdr: .24, dmgTaken: -.08 }, onEnter: (u, B) => { collabVoice(u, 'protect', { priority: true }); B.foeTeam().forEach(a => B.shield(u, a, u.max.hp * .10, 9)); } },
+    { at: .30, name: 'Oath of Light', mods: { atkP: .35, magP: .58, cdr: .46, dmgTaken: -.13 }, onEnter: (u, B) => { B.playerTeam().forEach(t => kairiGleam(u, t, B, 3)); B.energy(u, 100); } }
   ] }
 };
 
 const Raid = {
   SHOP_BUNDLE: 5,
-  STAGES: 8,
+  STAGES: 8, // default for events without their own stageLevels
   STAGE_LEVELS: [20, 55, 105, 180, 280, 410, 575, 760],
 
   events() { return weeklyEvents(currentWeek()); },
@@ -2321,7 +2382,7 @@ const Raid = {
     const r = this.state();
     if (!r.clears[id]) {
       r.clears[id] = {};
-      const legacy = clamp(r.stages[id] || 0, 0, this.STAGES);
+      const legacy = clamp(r.stages[id] || 0, 0, this.stageCount(id));
       for (let i = 0; i < legacy; i++) r.clears[id][i] = true;
     }
     return r.clears[id];
@@ -2330,16 +2391,16 @@ const Raid = {
   stageProgress(id) {
     const record = this.clearRecord(id);
     let total = 0;
-    for (let i = 0; i < this.STAGES; i++) if (record[i]) total++;
+    for (let i = 0; i < this.stageCount(id); i++) if (record[i]) total++;
     return total;
   },
   nextStage(id) {
-    for (let i = 0; i < this.STAGES; i++) if (!this.stageCleared(id, i)) return i;
-    return this.STAGES - 1;
+    for (let i = 0; i < this.stageCount(id); i++) if (!this.stageCleared(id, i)) return i;
+    return this.stageCount(id) - 1;
   },
   stageUnlocked(id, stage) {
     const e = this.event(id);
-    if (!e || stage < 0 || stage >= this.STAGES) return false;
+    if (!e || !Number.isInteger(stage) || stage < 0 || stage >= this.stageCount(e)) return false;
     // Every event stage is selectable from the dossier. Difficulty and the
     // normal event mastery gate still matter, but clearing an earlier stage is
     // not required before trying a later one.
@@ -2349,8 +2410,10 @@ const Raid = {
     const e = typeof eventOrId === 'string' ? this.event(eventOrId) : eventOrId;
     return e && e.stageLevels ? e.stageLevels : this.STAGE_LEVELS;
   },
+  stageCount(eventOrId) { return this.stageLevels(eventOrId).length; },
   stageLevel(stage, eventOrId) {
-    return this.stageLevels(eventOrId)[clamp(stage, 0, this.STAGES - 1)];
+    const levels = this.stageLevels(eventOrId);
+    return levels[clamp(stage, 0, levels.length - 1)];
   },
 
   stageRewards(event, stage) {
@@ -2368,7 +2431,7 @@ const Raid = {
   tokenReward(e, stage) {
     if (e.isCookieRun) return CookieRun.reward(stage);
     const base = e.isQOM ? 32 : e.isPhantasia ? 34 : e.isUnknownWorld ? 38 : e.isCollab ? 42 : e.bossIds.includes('Delilah') ? 30 : e.tag === 'LETHAL SPOTLIGHT' ? 22 : e.kind === 'group' ? 20 : 14;
-    const stageMult = 1 + clamp(stage || 0, 0, this.STAGES - 1) * .20;
+    const stageMult = 1 + clamp(stage || 0, 0, this.stageCount(e) - 1) * .20;
     return masteryRewardValue(Math.round(base * stageMult * (e.rewardMult || 1)));
   },
 
@@ -2384,8 +2447,8 @@ const Raid = {
     return out;
   },
 
-  wavePlan(e) {
-    if (e.isCookieRun) return CookieRun.plan();
+  wavePlan(e, stage) {
+    if (e.isCookieRun) return CookieRun.plan(stage);
     if (e.isQOM) return [
       { wave: 1, desc: 'Opening Act · Gourdy drums while Soulvester guards him. Interrupt the rhythm before it accelerates.', mods: ['event_momentum'] },
       { wave: 2, desc: 'Second Set · Ribecca raises keytar barriers while Eclipse builds Amplification with her guitar.', mods: ['event_attrition'] },
@@ -2504,9 +2567,9 @@ const Raid = {
 
   makeCollabFoes(level, eventSnapshot) {
     const stage = Math.max(0, this.stageLevels(eventSnapshot).indexOf(level));
-    const endurance = 2.8 + stage * .42;
+    const endurance = 1.3 + stage * .2;
     const attack = 1.25 + stage * .07;
-    const defense = 1.35 + stage * .06;
+    const defense = 1.2 + stage * .05;
     const tune = {
       Sora: { hp: 1, atk: 1.10, def: 1 },
       Riku: { hp: 1.18, atk: .92, def: 1.18 },
@@ -2529,8 +2592,8 @@ const Raid = {
       return ids.map((id,i) => ({ id, name: HEROES[id].name, level, stars: 4 + (stage >= 4 ? 1 : 0),
         rarity: stage >= 5 ? 5 : stage >= 2 ? 4 : 3, rarityPlus: 3 + Math.min(12,stage*2),
         skillLv: clamp(enemySkillLevel(level, wave === 3 ? 'boss' : 'elite'), 35, SKILL_MAX_LEVEL), kind: wave === 3 ? 'boss' : 'elite', elite: wave !== 3,
-        mult: { hp: wave === 3 ? .94 + stage*.11 : 1.3 + stage*.12,
-          atk: .84 + stage*.065, mag: .84 + stage*.065, def: 1.02 + stage*.05, mdef: 1.02 + stage*.05 },
+        mult: { hp: wave === 3 ? .62 + stage*.06 : .8 + stage*.06,
+          atk: .78 + stage*.05, mag: .78 + stage*.05, def: .85 + stage*.035, mdef: .85 + stage*.035 },
         artSrc: Art.hero(id), twisted: false, formationLine: id === 'QOMGourdy' || id === 'QOMConnie' ? 2 : 0,
         encounterOnly: true }));
     }
@@ -2572,7 +2635,7 @@ const Raid = {
     const r = this.state();
     if (!this.stageUnlocked(id, stage)) return false;
     this.clearRecord(id)[stage] = true;
-    r.stages[id] = Math.max(r.stages[id] || 0, Math.min(this.STAGES, stage + 1));
+    r.stages[id] = Math.max(r.stages[id] || 0, Math.min(this.stageCount(id), stage + 1));
     Save.write();
     return true;
   },

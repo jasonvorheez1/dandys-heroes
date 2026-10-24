@@ -122,7 +122,8 @@ const Gacha = {
       const [lo, hi] = obtainOf(id).shardRange;
       const bonus = kind === 'main' ? 5.5 : kind === 'diamond' ? 3.6 : 2.3;
       const n = this.rewardValue(rndi(lo, hi) * bonus, kind, lv);
-      const got = Save.giveShards(id, n);
+      // The crate bench presents new recruits in its own inline reveal.
+      const got = Save.giveShards(id, n, true);
       return finish({ type: 'hero', id, n, isNew: got === 'new', banked: got === 'bank' });
     }
     if (bucket === 'shards') {
@@ -130,7 +131,7 @@ const Gacha = {
       if (id) {
         const [lo, hi] = obtainOf(id).shardRange;
         const n = this.rewardValue(rndi(lo, hi) * (kind === 'main' ? 4.2 : kind === 'diamond' ? 2.8 : 1.7), kind, lv);
-        const got = Save.giveShards(id, n);
+        const got = Save.giveShards(id, n, true);
         return finish({ type: 'shards', id, n, isNew: got === 'new', banked: got === 'bank' });
       }
     }
@@ -149,13 +150,16 @@ const Gacha = {
     const have = Save.res(kind);
     n = Math.min(n, have);
     if (n <= 0) { UI.toast('No ' + RES[kind].name + 's'); Sound.play('ui_err'); return null; }
-    Save.spend({ [kind]: n });
     const out = [];
-    for (let i = 0; i < n; i++) {
-      out.push(this.roll(kind));
-      Save.data.crates[this.pullKey(kind)]++;
-    }
-    Save.write();
+    // A bulk opening changes the save hundreds of times; persist it once.
+    Save.batchWrite(() => {
+      Save.spend({ [kind]: n });
+      for (let i = 0; i < n; i++) {
+        out.push(this.roll(kind));
+        Save.data.crates[this.pullKey(kind)]++;
+      }
+      Save.write();
+    });
     return out;
   },
 

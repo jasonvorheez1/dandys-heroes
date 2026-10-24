@@ -4,21 +4,21 @@ function qomDrumBeat(u, B, fast) {
   if (!u.alive) return [];
   const beat = u._qomBeat = (u._qomBeat || 0) % 4 + 1;
   const encoreStacks = qomStacks(u, 'qom_encore');
-  const bandBoost = qomAllies(B, u).some(a => a !== u && (a.id.startsWith('QOM') || a.id.includes('Holloway'))) ? 1.25 : 1.0;
-  const finalPower = (1 + encoreStacks * 0.08) * bandBoost;
+  const bandBoost = qomAllies(B, u).some(a => a !== u && (a.id.startsWith('QOM') || a.id.includes('Holloway'))) ? 1.10 : 1.0;
+  const finalPower = (1 + encoreStacks * 0.05) * bandBoost;
   qomShow(B, 'beat', u, null, { beat });
   if (B.fxQomDrum) B.fxQomDrum(u.x, u.y, beat, finalPower);
   const interrupted = [];
 
   if (beat === 1) {
-    Sound.play('qom_snare', { vol: .42, throttle: 180 });
+    Sound.play('powerline_beat1', { vol: .5, throttle: 180 });
     qomAllies(B, u).forEach(a => {
-      B.energy(a, Math.round(8 * finalPower));
-      B.shield(u, a, u.max.hp * .06 * finalPower, 5);
+      B.energy(a, Math.round(6 * finalPower));
+      B.shield(u, a, u.max.hp * .045 * finalPower, 5);
     });
   }
   if (beat === 2) {
-    Sound.play('qom_snare', { vol: .45, throttle: 180 });
+    Sound.play('powerline_beat2', { vol: .5, throttle: 180 });
     qomFoes(B, u).forEach(e => {
       B.applyStatus(u, e, 'armslow', 4);
       B.applyStatus(u, e, 'magdown', 4);
@@ -27,7 +27,7 @@ function qomDrumBeat(u, B, fast) {
   if (beat === 3) {
     Sound.play('qom_bone', { vol: .48, throttle: 180 });
     qomAllies(B, u).forEach(a => {
-      B.reduceCd(a, .50 * finalPower);
+      B.reduceCd(a, .35 * finalPower);
       B.applyStatus(u, a, 'haste', 4);
     });
     const low = qomLow(qomAllies(B, u));
@@ -35,6 +35,7 @@ function qomDrumBeat(u, B, fast) {
   }
   if (beat === 4) {
     Sound.play('qom_crash', { vol: .75, throttle: 220 });
+    Sound.play('drum_hit', { vol: .6, throttle: 220 });
     qomWave(B, u, (u._qomDrumRatio || .85) * finalPower, 'magic', 'Fourth Beat Crash');
     qomFoes(B, u).forEach(e => {
       if (e.casting) { interrupted.push(e); B.interrupt(e); }
@@ -43,11 +44,11 @@ function qomDrumBeat(u, B, fast) {
     B.applyStatus(u, u, 'qom_encore', 999);
     u._qomMeasures = (u._qomMeasures || 0) + 1;
 
-    if (encoreStacks >= 5) {
+    if (encoreStacks >= 4) {
       qomFoes(B, u).forEach(e => B.applyStatus(u, e, 'blind', 2));
     }
-    if (encoreStacks >= 10) {
-      qomWave(B, u, (u._qomDrumRatio || .85) * .45 * finalPower, 'magic', 'Encore Echo');
+    if (encoreStacks >= 8) {
+      qomWave(B, u, (u._qomDrumRatio || .85) * .25 * finalPower, 'magic', 'Encore Echo');
     }
 
     if (u.rarity >= 5) {
@@ -90,7 +91,7 @@ function qomDrumChorus(u, B, final) {
     if (!u.alive) return;
     qomDrumBeat(u, B, true).forEach(e => interrupted.add(e));
     if (final && (i === 3 || i === 7)) {
-      qomWave(B, u, (u._qomDrumRatio || .85) * 1.15, 'magic', 'Grand Finale Blast');
+      qomWave(B, u, (u._qomDrumRatio || .85) * 1.0, 'magic', 'Grand Finale Blast');
       qomFoes(B, u).forEach(e => {
         if (e.casting) { interrupted.add(e); B.interrupt(e); }
         B.applyStatus(u, e, 'stun', 1.0);
@@ -123,25 +124,25 @@ QOM_GOURDY.basic.onHit = (u, target, B) => {
   u._qomGourdyBasics = (u._qomGourdyBasics || 0) + 1;
   if (u._qomGourdyBasics % 2 === 0) {
     const ally = qomLow(qomAllies(B, u)) || u;
-    const shieldVal = u.max.hp * .07 + u.st.mag * .25;
+    const shieldVal = u.max.hp * .055 + u.st.mag * .20;
     B.shield(u, ally, shieldVal, 5.0);
-    B.energy(ally, 12);
+    B.energy(ally, 8);
     Sound.play('qom_snare', { vol: .45, throttle: 180 });
     B.fxSparkle(ally.x, ally.y - 45, 6, '#bcf87b');
-    B.fxFloatIcon(ally.x, ally.y - 100, '🥁 BASS SHIELD +12⚡', '#bcf87b');
+    B.fxFloatIcon(ally.x, ally.y - 100, '🥁 BASS SHIELD +8⚡', '#bcf87b');
   }
 };
 
 QOM_GOURDY.skills = {
   W: {
     name: 'Queens of Mischief', type: 'Magic Damage / Control / Support', energy: 100,
-    v: { ratio: .85, haste: .35 }, p: { beat: 1.08, encoreMax: 10 },
-    desc: (S, P) => `<span class="sk-pas">Passive: Gourdy's four-beat drum measure powers the concert every <em>${(P && P.beat != null ? Number(P.beat).toFixed(2) : '1.08')}s</em> (even through control).<br>
-• <b>Beat 1 (Bass)</b>: All allies gain <em>8+</em> Energy and a 🛡️ Bass Shield (<em>${pcn(S.ratio * 8)}% Max HP</em>) for 5s.<br>
+    v: { ratio: .58, haste: .35 }, p: { beat: 1.30, encoreMax: 8 }, fixedP: ['encoreMax'],
+    desc: (S, P) => `<span class="sk-pas">Passive: Gourdy's four-beat drum measure powers the concert every <em>${(P && P.beat != null ? Number(P.beat).toFixed(2) : '1.30')}s</em> (even through control).<br>
+• <b>Beat 1 (Bass)</b>: All allies gain <em>6+</em> Energy and a 🛡️ Bass Shield for 5s.<br>
 • <b>Beat 2 (Hi-Hat)</b>: Enemies suffer -25% Attack Speed and -30% Magic Defense for 4s.<br>
-• <b>Beat 3 (Tom)</b>: All allies gain +30% Haste, 0.5s Cooldown Refund, and lowest ally is healed for <em>${pcn(S.ratio * 40)}% Magic</em>.<br>
-• <b>Beat 4 (Crash)</b>: Deals <em>${pcn(S.ratio * 100)}%</em> area Magic Damage, interrupts casting, knocks foes back, and stacks 💥 Encore (+8% beat power, max ${P && P.encoreMax || 10}). At 5+ Encore, Beat 4 Blinds for 2s; at 10+, beats echo twice. Bandmates increase beat potency by 25%.</span><br>
-Active: Gourdy unleashes a double-tempo drum solo! Strikes all enemies 8 times in rapid succession, knocks them back, and grants the entire band Headliner Haste (+40% Move Speed, <em>+${pcn(S.haste * 100)}%</em> AtkSpd) and CC Immunity.`,
+• <b>Beat 3 (Tom)</b>: All allies gain +30% Haste, 0.35s Cooldown Refund, and the lowest ally is healed.<br>
+• <b>Beat 4 (Crash)</b>: Deals <em>${pcn(S.ratio * 100)}%</em> area Magic Damage, interrupts casting, knocks foes back, and stacks 💥 Encore (+5% beat power, max ${P.encoreMax}). At 4+ Encore, Beat 4 Blinds for 2s; at 8, it echoes. Bandmates increase beat potency by 10%.</span><br>
+Active: Gourdy unleashes an eight-beat, double-tempo drum solo. Crash beats strike and knock back enemies while the band gains Haste and Move Speed.`,
     passive(u, B, S, P) {
       u._qomBeat = 0; u._qomMeasures = 0;
       u._qomDrumRatio = S.ratio;
@@ -149,9 +150,9 @@ Active: Gourdy unleashes a double-tempo drum solo! Strikes all enemies 8 times i
       B.applyStatus(u, u, 'planted', 999);
       B.every(u, P.beat, () => qomDrumBeat(u, B));
       B.on(u, 'allyCast', ally => {
-        if (!ally || !ally.alive || B.t < (ally._qomTreatBeatAt || 0)) return;
+        if (!ally || !ally.alive || B.t < (u._qomTreatBeatAt || 0)) return;
         if (!ally.statuses.some(s => s.id.startsWith('qom_') && ['qom_treat', 'qom_sweet_surprise', 'qom_sugar_rush', 'qom_candy_coating', 'qom_second_helping'].includes(s.id))) return;
-        ally._qomTreatBeatAt = B.t + .65;
+        u._qomTreatBeatAt = B.t + 1.8;
         qomDrumBeat(u, B);
       });
     },
@@ -184,7 +185,7 @@ Active: Gourdy unleashes a double-tempo drum solo! Strikes all enemies 8 times i
   },
   B: {
     name: 'Trick or Treat!', type: 'Support / Shield / Control', cd: 9, v: { shield: .25, atkBonus: .25 }, p: { dur: 8, silence: 2.0 },
-    desc: (S, P) => `Throws glowing VIP passes and rock candies to the 2 lowest-HP or lowest-Energy allies. Each gains a 🛡️ Sound Shield (<em>${pcn(S.shield * 100)}% Max HP</em>), <em>+${pcn(S.atkBonus * 100)}%</em> Attack & Magic, Ward (-30% damage taken), and a <b>Treat</b> buff for ${P.dur}s. Whenever a protected ally casts a Skill, it instantly triggers an extra Drum Beat! In addition, the highest-Energy foe is <b>Tricked</b>, drained of 15 Energy, and Silenced for ${P.silence}s.`,
+    desc: (S, P) => `Throws glowing VIP passes and rock candies to the 2 lowest-HP or lowest-Energy allies. Each gains a 🛡️ Sound Shield (<em>${pcn(S.shield * 100)}% Max HP</em>), <em>+${pcn(S.atkBonus * 100)}%</em> Attack & Magic, Ward (-30% damage taken), and a <b>Treat</b> buff for ${P.dur}s. A protected ally's Skill triggers an extra Drum Beat, at most once every 1.8s. In addition, the highest-Energy foe is <b>Tricked</b>, drained of 15 Energy, and Silenced for ${P.silence}s.`,
     cast(u, B, S, P) {
       const allies = qomAllies(B, u).sort((a, b) => (a.hpPct + a.energy / 100) - (b.hpPct + b.energy / 100)).slice(0, 2);
       allies.forEach(a => {
@@ -212,7 +213,7 @@ Active: Gourdy unleashes a double-tempo drum solo! Strikes all enemies 8 times i
   },
   P: {
     name: 'Keep the Beat', type: 'Support / Control / Teamwork', v: { haste: .15, energy: 5, power: .25 }, p: { cdRefund: 1.5 },
-    desc: (S, P) => `<span class="sk-pas">The rock rhythm continues uninterrupted through crowd control. Gourdy gains <em>+${pcn(S.haste * 100)}%</em> CDR. Allied Skills cast on Beat 4 gain <em>+${pcn(S.power * 100)}%</em> potency, ${P.cdRefund}s Cooldown Refund, and <em>+${Math.round(S.energy)}</em> Energy. Enemy Skills attempted on Beat 4 backfire: their caster loses 15 Energy and suffers <b>Weaken</b> (-25% damage dealt) for 5s. QOM bandmates and Holloway family members increase drum beat potency by +25% and build Encore stacks twice as fast.</span>`,
+    desc: (S, P) => `<span class="sk-pas">The rock rhythm continues uninterrupted through crowd control. Gourdy gains Skill Haste. Allied Skills started on Beat 4 gain On Beat damage, a ${P.cdRefund}s Cooldown Refund, and Energy. Enemy Skills attempted on Beat 4 backfire: their caster loses 15 Energy and suffers Weaken for 5s. QOM bandmates and Holloway family members increase drum beat potency by 10%.</span>`,
     passive(u, B, S) {
       u.flat.cdrqomP = Math.min(.22, .10 + S.haste * .2); u.dirty = true;
       B.on(u, 'allySkillStarting', start => {
@@ -234,11 +235,11 @@ Active: Gourdy unleashes a double-tempo drum solo! Strikes all enemies 8 times i
     }
   },
   R: {
-    name: 'One Last Encore', type: 'Support / Magic Damage / Ultimate', v: { mag: .15, shield: .15, overcharge: .35 }, p: { measures: 4 },
-    desc: (S, P) => `<span class="sk-pas">Gourdy permanently gains <em>+${pcn(S.mag * 100)}%</em> Magic Attack and +15% Cooldown Reduction. Beat 4 dynamically adapts: grants emergency shields (<em>${pcn(S.shield * 100)}% Max HP</em>) to wounded allies (<50% HP), silences high-energy foes (>=65 Energy), or showers healthy allies with Treats. After ${P.measures} completed measures (or once per wave), unleashes the <b>Grand Stadium Finale</b>: a double-tempo drum storm granting team Invulnerability, Overcharge (<em>+${pcn(S.overcharge * 100)}%</em> Attack/Magic), Haste, and a devastating stadium explosion!</span>`,
+    name: 'One Last Encore', type: 'Support / Magic Damage / Ultimate', v: { mag: .15, shield: .15, overcharge: .35 }, p: { measures: 4 }, fixedP: ['measures'],
+    desc: (S, P) => `<span class="sk-pas">Gourdy permanently gains <em>+${pcn(S.mag * 100)}%</em> Magic Attack and +10% Cooldown Reduction. Beat 4 dynamically adapts: grants emergency shields (<em>${pcn(S.shield * 100)}% Max HP</em>) to wounded allies (<50% HP), silences high-energy foes (>=65 Energy), or showers healthy allies with Treats. After ${P.measures} completed measures, once per battle, unleashes the <b>Grand Stadium Finale</b>: a double-tempo drum storm granting team Ward, Overcharge, Haste, and a stadium explosion!</span>`,
     passive(u, B, S) {
       u.flat.magPqom = S.mag;
-      u.flat.cdrqom = .15;
+      u.flat.cdrqom = .10;
       u._qomFinalShield = S.shield;
       u.dirty = true;
       B.on(u, 'allyBasic', () => {

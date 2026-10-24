@@ -55,8 +55,8 @@ const TRINKETS = {};
    keepsake changes a build without replacing the character who wears it. */
 const TRINKET_SIGNATURES = {
   Teagan: {
-    name: 'Etiquette',
-    desc: 'The wearer occasionally blocks a debuff; blocking it Fatigues the source and restores a little health.',
+    name: 'Tea Service',
+    desc: 'The wearer occasionally blocks a debuff and takes a restorative sip.',
     apply(u, B, r) {
       u.flat.ccRes = (u.flat.ccRes || 0) + .018 * r;
       u.guards = u.guards || [];
@@ -66,9 +66,8 @@ const TRINKET_SIGNATURES = {
         return true;
       });
       B.on(u, 'debuffBlocked', ev => {
-        if (ev.unit !== u || !ev.src || !ev.src.alive) return;
-        B.applyStatus(u, ev.src, 'fatigue', 2.5 + r * .7);
-        B.heal(u, u, u.max.hp * (.012 + r * .008), { tag: 'Etiquette' });
+        if (ev.unit !== u) return;
+        B.heal(u, u, u.max.hp * (.012 + r * .008), { tag: 'Tea Service' });
       });
     }
   },
@@ -668,13 +667,11 @@ defTrinket({ id: 'alarm', name: 'Alarm', owner: null, file: 'Alarm.png',
 defTrinket({ id: 'fancypurse', name: 'Fancy Purse', owner: 'Teagan', file: 'TEAGAN_FancyPurse.png',
   desc: 'A polished purse Teagan keeps stocked for every guest, every emergency, and one more cup of tea.',
   stat: r => `+${(r * 2.5).toFixed(1)}% Max HP`,
-  effect: 'The first Shield you create each battle also applies Etiquette to an enemy and restores a little Energy.',
+  effect: 'The first Shield you create each battle gives its recipient a little more cover and restores Energy.',
   apply(u, B, r) { u.flat.hpP = (u.flat.hpP || 0) + r * .025; u.dirty = true; u._purseUsed = false;
     B.on(u, 'statusApplied', ev => {
       if (ev.id !== 'shield' || ev.src !== u || u._purseUsed) return;
       u._purseUsed = true;
-      const target = B.highestEnergy(B.enemiesOf(u));
-      if (target) B.applyStatus(u, target, 'etiquette', 3.5 + r);
       B.energy(u, 5 + r * 2);
       B.shield(u, ev.unit || u, u.max.hp * (.04 + r * .015), 6);
       B.fxFloatIcon(u.x, u.y - 105, '👜', '#d6a765');
@@ -991,14 +988,13 @@ trinketRework('tisha_featherduster', r => `+${(r * 1.2).toFixed(1)}% Accuracy`,
   });
 
 trinketRework('vee_veemote', r => `+${(r * 1.2).toFixed(1)}% Accuracy`,
-  'Basic Attacks can Expose and Burn a target; hitting an already Exposed target grants Focus.',
+  'Basic Attacks can add Signal Interference and Burn; hitting a target at full Interference grants Focus.',
   (u, B, r) => {
     u.flat.accP = (u.flat.accP || 0) + r * .012; u.dirty = true;
     trinketBasicProc(u, B, r, .08, (t) => {
-      const exposed = t.hasStatus('exposed');
-      B.applyStatus(u, t, 'exposed', 3.5 + r * .25);
-      B.applyStatus(u, t, 'burn', 3.5 + r * .25, { val: u.st.atk * (.018 + r * .005) });
-      if (exposed) B.applyStatus(u, u, 'focus', 2.5 + r * .2);
+      B.applyStatus(u, t, 'vee_static', 3.5 + r * .25);
+      B.applyStatus(u, t, 'burn', 3.5 + r * .25, { val: u.st.mag * (.018 + r * .005) });
+      if ((t.getStatus('vee_static') || {}).stacks >= 3) B.applyStatus(u, u, 'focus', 2.5 + r * .2);
     });
   });
 
@@ -1428,13 +1424,14 @@ trinketRework('alarm', r => `+${(r * 1.2).toFixed(1)}% Energy Generation`,
   });
 
 trinketRework('fancypurse', r => `+${(r * 1.8).toFixed(1)}% Max HP`,
-  'The first Shield created each battle also Convicts an enemy, grants Energy, and applies a short Defense Down.',
+  'The first Shield created each battle also gives its recipient Haste and extra cover, and restores Energy to the wearer.',
   (u, B, r) => {
     u.flat.hpP = (u.flat.hpP || 0) + r * .018; u.dirty = true; u._purseUsed = false;
     B.on(u, 'shieldDone', ev => {
       if (u._purseUsed || !ev.target) return;
-      u._purseUsed = true; const t = B.highestEnergy(B.enemiesOf(u));
-      if (t) { B.applyStatus(u, t, 'convicted', 3.5 + r * .25); B.applyStatus(u, t, 'defdown', 3 + r * .2); }
+      u._purseUsed = true;
+      B.applyStatus(u, ev.target, 'haste', 3.5 + r * .25);
+      B.shield(u, ev.target, u.max.hp * (.04 + r * .01), 5);
       B.energy(u, 5 + r * 2);
     });
   });
