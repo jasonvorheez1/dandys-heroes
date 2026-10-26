@@ -142,14 +142,14 @@ const KHSnd = {
       Sound.play(cue, { vol: vol == null ? KH_UPLOAD_SFX_VOL[key] : vol });
   }
 };
-MUSIC_TRACKS.khMenu = ASSET + 'uploads/2-09_A_Piece_of_Peace.mp3';
-MUSIC_TRACKS.khTown = ASSET + 'uploads/2-12_This_is_Halloween.mp3';
-MUSIC_TRACKS.khDearly = ASSET + 'uploads/1-01_Dearly_Beloved.mp3';
-MUSIC_TRACKS.khNight = ASSET + 'uploads/2-21_Scherzo_Di_Notte.mp3';
-MUSIC_TRACKS.khBattle = ASSET + 'uploads/KHhalloweenbattle.mp3';
-MUSIC_TRACKS.khGardenBattle = ASSET + 'uploads/KHbattlegardenview.mp3';
-MUSIC_TRACKS.khBoss = ASSET + 'uploads/Khboss.mp3';
-MUSIC_TRACKS.khEscapade = ASSET + 'uploads/1-35._Winnie_the_Pooh.mp3';
+MUSIC_TRACKS.khMenu = uploadUrl('2-09_A_Piece_of_Peace.mp3');
+MUSIC_TRACKS.khTown = uploadUrl('2-12_This_is_Halloween.mp3');
+MUSIC_TRACKS.khDearly = uploadUrl('1-01_Dearly_Beloved.mp3');
+MUSIC_TRACKS.khNight = uploadUrl('2-21_Scherzo_Di_Notte.mp3');
+MUSIC_TRACKS.khBattle = uploadUrl('KHhalloweenbattle.mp3');
+MUSIC_TRACKS.khGardenBattle = uploadUrl('KHbattlegardenview.mp3');
+MUSIC_TRACKS.khBoss = uploadUrl('Khboss.mp3');
+MUSIC_TRACKS.khEscapade = uploadUrl('1-35._Winnie_the_Pooh.mp3');
 Object.assign(MUSIC_TRACK_TRIMS, { khEscapade: .6, khMenu: .8, khTown: .72, khDearly: .8, khNight: .75, khBattle: .72, khGardenBattle: .72, khBoss: .75 });
 
 /* ---------- effects ---------- */

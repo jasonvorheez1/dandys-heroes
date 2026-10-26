@@ -32,5 +32,5 @@ Object.assign(ST_STATUS_ICON, {
 });
 
 /* Christmas floor tracks: Silent Night for the hideout and the epilogue, Carol of the Bells for the workshop fight. */
-Object.assign(MUSIC_TRACKS, { stSilentNight: ASSET + 'audio/silent-night.mp3', stCarol: ASSET + 'audio/carol-of-the-bells.mp3' });
+Object.assign(MUSIC_TRACKS, { stSilentNight: githubAsset('audio/silent-night.mp3'), stCarol: githubAsset('audio/carol-of-the-bells.mp3') });
 Object.assign(ST_MUSIC, { silentnight: 'stSilentNight', carol: 'stCarol' });

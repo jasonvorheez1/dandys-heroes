@@ -6,8 +6,8 @@
 
 /* ------------------------------------------------------------ registrations */
 Object.assign(MUSIC_TRACKS, {
-  stNeutral: ASSET + 'uploads/storyneutral.mp3', stInteresting: ASSET + 'uploads/storyinteresting.mp3',
-  stEmotional: ASSET + 'uploads/storyemotional.mp3', stBattle: ASSET + 'uploads/storybattle.mp3',
+  stNeutral: uploadUrl('storyneutral.mp3'), stInteresting: uploadUrl('storyinteresting.mp3'),
+  stEmotional: uploadUrl('storyemotional.mp3'), stBattle: uploadUrl('storybattle.mp3'),
   stClair: MUSIC_TRACKS.navigationClairDeLune, stShop: MUSIC_TRACKS.shop, stDelilah: MUSIC_TRACKS.delilahEvent,
   stJournal: MUSIC_TRACKS.journal, stGlossary: MUSIC_TRACKS.glossary, stBossa: MUSIC_TRACKS.phantasiaShop,
   stTwisted: MUSIC_TRACKS.eventBattle, stNormal: MUSIC_TRACKS.battle, stNormal2: uploadUrl('battletheme2.mp3'),
