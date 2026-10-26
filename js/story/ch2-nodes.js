@@ -1,5 +1,5 @@
 /* ch2-nodes.js - Main Story · Chapter 2 "Business as Usual" path, Dandy's Shop
-   and the lore Tapes. Twelve battles and eighteen scenes across July 6-7, 2002,
+   and the lore Tapes. Twelve battles and eighteen scenes across July 6-8, 2002,
    after a lost week. The party is only ever the Toons; the Handlers are gone.
    Enemies start at level 26, two levels above the Chapter 1 finale. */
 'use strict';
@@ -99,8 +99,10 @@ const ST2_START_ITEMS = { bandage: 2, pop: 1 };
 
 /* ------------------------------------------------------------ Dandy's Shop */
 const ST2_SHOP = [
-  { id: 'bandage', price: 900 }, { id: 'pop', price: 700 }, { id: 'speed', price: 1200 }, { id: 'medkit', price: 2400 },
-  { id: 'jumper', price: 2800 }, { id: 'jawbreaker', price: 1800 }, { id: 'stealth', price: 2200 }, { id: 'tonic', price: 2600 }
+  { id: 'bandage', price: 900 }, { id: 'pop', price: 700 },
+  { id: 'speed', price: 1200, unlock: 'k5' }, { id: 'medkit', price: 2400, unlock: 'k5' },
+  { id: 'jumper', price: 2800, unlock: 'k7' }, { id: 'jawbreaker', price: 1800, unlock: 'k7', hard: true },
+  { id: 'stealth', price: 2200, unlock: 'k9' }, { id: 'tonic', price: 2600, unlock: 'k10' }
 ];
 const ST2_SHOP_CAP = 9;
 const ST2_DANDY_LINES = [

@@ -165,7 +165,14 @@ const MainStory = {
   sceneReward(i) { return this.ch === 2 ? masteryRewardBundle({ ichor: 520 + i * 50, notes: 8 + Math.round(i / 2) }) : masteryRewardBundle({ ichor: 260 + i * 30, notes: 4 + Math.round(i / 3) }); },
   /* ----- Chapter 2: Dandy's Shop stock and Tapes ----- */
   stock(id) { return (this.ch === 2 && this.state().shop.items[id]) || 0; },
-  tapeOpen(t) { return t.hard ? this.hardDone(t.unlock) : (this.nodeIdx(t.unlock) >= 0 ? this.done(this.nodeIdx(t.unlock)) : this.seen(t.unlock)); },
+  rewardOpen(reward) { return reward.hard ? this.hardDone(reward.unlock) : (this.nodeIdx(reward.unlock) >= 0 ? this.done(this.nodeIdx(reward.unlock)) : this.seen(reward.unlock)); },
+  rewardHint(reward) {
+    const n = this.nodes.find(node => node.id === reward.unlock || node.scene === reward.unlock);
+    if (!n) return 'Continue the story';
+    return n.type === 'battle' ? `Clear ${n.name}${reward.hard ? ' on Hard' : ''}` : `Read ${ST_STORY[n.scene].title}`;
+  },
+  tapeOpen(t) { return this.rewardOpen(t); },
+  shopItemOpen(p) { return this.shopOpen() && (!p.unlock || this.rewardOpen(p)); },
   shopOpen() { return this.ch === 2 && this.seen('c2s8'); }
 };
 
@@ -708,23 +715,25 @@ StoryUI.shopTab = function (body) {
         <em>${RES.ichor.icon}<span>${fmt(ichor)}</span></em></div></div>
       <p class="ms-shop-note">Stock you buy here rides along in every battle and is used after the free supplies. You can carry ${ST2_SHOP_CAP} of each.</p>
       <div class="ms-shop-grid">${ST2_SHOP.map(p => {
-        const it = ST_ITEMS[p.id], own = MainStory.stock(p.id), afford = ichor >= p.price && own < ST2_SHOP_CAP;
-        return `<article class="ms-shop-item"><img src="${ASSET + it.icon}" alt=""><div><b>${it.name}</b><p>${it.desc}</p></div>
-          <button data-buy="${p.id}" ${afford ? '' : 'disabled'}>${RES.ichor.icon}<span>${fmt(p.price)}</span></button><i>×${own}</i></article>`;
+        const it = ST_ITEMS[p.id], own = MainStory.stock(p.id), open = MainStory.shopItemOpen(p);
+        const afford = open && ichor >= p.price && own < ST2_SHOP_CAP;
+        return `<article class="ms-shop-item${open ? '' : ' locked'}"><img src="${ASSET + it.icon}" alt=""><div><b>${it.name}</b><p>${open ? it.desc : '🔒 ' + MainStory.rewardHint(p)}</p></div>
+          <button data-buy="${p.id}" ${afford ? '' : 'disabled'}>${open ? RES.ichor.icon + '<span>' + fmt(p.price) + '</span>' : '🔒'}</button><i>×${own}</i></article>`;
       }).join('')}</div>
       <h4 class="ms-shop-sub">TAPES</h4>
       <div class="ms-tapes">${ST2_TAPES.map(t => {
         const open = MainStory.tapeOpen(t);
-        return `<button class="ms-tape${open ? '' : ' locked'}" data-tape="${t.id}" ${open ? '' : 'disabled'}><span>📼</span><div><b>${open ? t.title : '? ? ?'}</b><small>${open ? t.place : (t.hard ? 'Clear the final fight on Hard' : 'Not found yet')}</small></div></button>`;
+        return `<button class="ms-tape${open ? '' : ' locked'}" data-tape="${t.id}" ${open ? '' : 'disabled'}><span>📼</span><div><b>${open ? t.title : '? ? ?'}</b><small>${open ? t.place : MainStory.rewardHint(t)}</small></div></button>`;
       }).join('')}</div>`;
     box.querySelectorAll('[data-buy]').forEach(b => b.onclick = () => {
       const p = ST2_SHOP.find(x => x.id === b.dataset.buy);
-      if (b.disabled || !Save.spend({ ichor: p.price })) return Sound.play('ui_err');
+      if (!p || !MainStory.shopItemOpen(p) || MainStory.stock(p.id) >= ST2_SHOP_CAP || ichor < p.price || !Save.spend({ ichor: p.price })) return Sound.play('ui_err');
       st.shop.items[p.id] = (st.shop.items[p.id] || 0) + 1; Save.write();
       Sound.play('get_item', { vol: .5 }); this._dandyLine = ST2_DANDY_LINES[Math.floor(Math.random() * ST2_DANDY_LINES.length)]; draw();
     });
     box.querySelectorAll('[data-tape]').forEach(b => b.onclick = () => {
       const t = ST2_TAPES.find(x => x.id === b.dataset.tape);
+      if (!t || !MainStory.tapeOpen(t)) return Sound.play('ui_err');
       Sound.play('choose', { vol: .4 });
       const v = el('div', 'ms-tape-view');
       v.innerHTML = `<small>${t.place.toUpperCase()}</small>${t.lines.map(l => `<p>${l}</p>`).join('')}`;

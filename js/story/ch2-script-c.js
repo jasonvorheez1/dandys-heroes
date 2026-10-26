@@ -300,15 +300,19 @@ Tisha [shock] (tremble): The lobby. Rodger, that's where Boxten is right now.
 Rodger [dots]: Yes.
 Tisha [dots]: Which Boxten?
 Rodger [dots]: I don't know. The ledger doesn't say.
-> He turns the page. A second table. TISHA. UNIT ONE. POD 22. A circled note: GROWING. DAY 3/5.
+Tisha [anger]: Then we warn him. We warn everyone in the lobby.
+Rodger [dots]: Vee's signal dies between the tanks. We have to get back upstairs.
+> He turns the page. A second table. TISHA. UNIT THREE. POD 22. A circled note: GROWING. DAY 3/5.
 Tisha [shock]: That's...
 Rodger [dots]: A third you. Currently under construction.
 Tisha [tears]: I'm being made?
-Rodger [dots]: One of you is. I haven't decided which.
+Rodger [dots]: Someone is making another Tisha. That is all the ledger can tell us about you.
 @fx shake
 > Behind the desk, a pod hums. Inside it, a smear of dark liquid takes the vague shape of a tissue box.
 Tisha [dots]: I'm sorry. I'm... I need a moment.
 Rodger [dots]: Take it. I'll keep reading.
+Tisha [dots]: And if she wakes up, we don't leave her here. She didn't ask for this either.
+Rodger [dots]: Agreed.
 > He reads. He reads for a long time. The corners of his mouth do not move.
 Rodger [dots]: Forty-one Toons. Sixty-three entries. Twenty-seven released. Four recovered. The rest are in the tanks, waiting.
 Tisha [dots]: Sixty-three.
@@ -323,13 +327,13 @@ Rodger [dots]: Somebody wrote him into the ledger. In the same hand. That's all 
 > Behind them, the glass booth rattles. A tall figure steps out of the shadow between the tanks, a long coat of black petals trailing behind it.
 @enter TwistedDandy center
 @fx alarm
-TwistedDandy [dots]: Unit One. First on the list. Last to be told.
+TwistedDandy [dots]: Dandy. Unit One. First on the list. Last to be told.
 Rodger [dots]: Dandy.
 TwistedDandy [sparkle]: Dandy. Yes. That's the name on the label. I wasn't sure it would fit.
 Tisha [dots]: You're not the one from the shop.
 TwistedDandy [dots]: Nobody is. That's the joke.
 > He lifts a brass stamp. It reads, in crossed-seven handwriting, EVERYTHING MUST GO.
-TwistedDandy [anger]: I have been counting for a week. Forty-one names. Forty-one pods. One by one, I put you back to sleep. And every one of you woke up.
+TwistedDandy [anger]: I have been counting for a week. Forty-one names. Sixty-three places to fill. Every time I put one of you back to sleep, another woke up.
 Rodger [dots]: Why?
 TwistedDandy [dots]: Because that is what you're for.
 @fx shake
@@ -368,10 +372,13 @@ Rodger [dots]: Please.
 Rodger [dots]: ...It's notched.
 Boxten [?]: Is that good?
 Rodger [dots]: It is very good.
+Tisha [dots]: The copy in the maintenance wing had a smooth key. Yours still has the little mark from when you dropped it.
 Boxten [heart]: Then I'm happy for you!
 Tisha [tears]: Thank you for being you.
 Boxten [blush]: I try. It's not very hard.
 @exit Boxten
+Rodger [dots]: Unit Four is still unaccounted for. We tell Vee, then we tell everyone.
+Tisha [dots]: And if we find him, we listen before we fight. He may be as frightened as we were.
 @enter Dandy center
 @sfx dandy_text
 Dandy [dots]: There you are. You were gone a long while.

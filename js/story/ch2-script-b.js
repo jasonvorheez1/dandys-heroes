@@ -84,9 +84,9 @@ Sprout [tears]: Cosmo, we don't have anything to feed anyone tomorrow.
 Dandy [sparkle]: Fear not, bakers! The shop opens in precisely ninety seconds.
 Cosmo [?]: The shop?
 Dandy [sparkle]: My shop! The finest selection of everything. Prices are fair. Rules are simple.
-> He lays out a green ledger, a cash register and a row of small lacquered boxes. A hand-lettered sign swings from the counter. DANDY'S SHOP. NOW OPEN.
+> He lays out a green ledger, a cash register and a row of small lacquered boxes. Several boxes are sealed with strips of paper. A hand-lettered sign swings from the counter. DANDY'S SHOP. NOW OPEN.
 Rodger [dots]: You have supplies?
-Dandy [dots]: The shelves were full when I came to. Bandages, candy, tonic. I did not stock them.
+Dandy [dots]: The shelves were full when I came to. Bandages, candy. More in the sealed boxes. I did not stock any of it.
 Vee [?]: You didn't?
 Dandy [dots]: I woke up to a restocked shop. Isn't that nice? It is almost as if someone had been looking after me.
 > Rodger looks at the price tags. Every seven has a small crossbar through it.
@@ -96,6 +96,10 @@ Rodger [dots]: These are crossed.
 Dandy [dots]: Then somebody else has been writing in my shop.
 > Neither of them says what that means.
 @enter Tisha farright
+Tisha [?]: Why are those boxes sealed?
+Dandy [dots]: The register won't let me sell what's inside. Each seal names a room downstairs. One even says HARD, in very stern letters.
+Rodger [dots]: A shop with a map of our route. Convenient.
+Dandy [dots]: I didn't say I liked it.
 Tisha [dots]: And what do we pay with?
 Dandy [sparkle]: Ichor, naturally! Black Ichor. The only currency a Toon can truly spend.
 Shelly [?]: We don't have any Ichor.
@@ -103,7 +107,7 @@ Dandy [dots]: You carry more than you think. It is in your boots. It is in your 
 Vee [dots]: That is the creepiest sales pitch I have ever heard.
 Dandy [sparkle]: Thank you. I have been rehearsing.
 Sprout [dots]: Dandy... can we afford flour?
-Dandy [heart]: Flour, butter, honey, sugar. And for the heroes of the afternoon, a bandage. A tonic. A jawbreaker, if you like.
+Dandy [heart]: Flour, butter, honey, sugar. And for the heroes of the afternoon, bandages and candy. The rest will have to wait for those seals.
 Cosmo [dots]: And... if we need it?
 Dandy [sparkle]: Then I will find a way to have it. I always do.
 > He taps the register. It makes a very cheerful sound. A thin strip of paper curls out.
