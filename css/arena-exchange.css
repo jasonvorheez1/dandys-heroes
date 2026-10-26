@@ -1,0 +1,151 @@
+/* Arena Exchange: compact reward tiles with a legible coin price. */
+.arena-exchange {
+  margin-top: 22px;
+  padding: 17px;
+  border: 1px solid #b3a56e;
+  border-radius: 16px;
+  background:
+    radial-gradient(circle at 100% 0, #8c8c5030, transparent 40%),
+    linear-gradient(145deg, #28392f, #17251f 75%);
+  box-shadow: inset 0 1px #ffffff46, inset 0 0 0 1px #ffffff0b, 0 7px 19px #050908a3;
+}
+
+.arena-exchange header {
+  gap: 14px;
+  margin-bottom: 15px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #c8bd8245;
+}
+
+.arena-exchange header small {
+  color: #bed9a2;
+  font-size: 9px;
+  letter-spacing: 1.8px;
+}
+
+.arena-exchange h2 {
+  margin-top: 4px;
+  color: #fff4d3;
+  font: 1000 23px/1 Georgia, serif;
+  letter-spacing: .025em;
+  text-shadow: 0 2px #0e1b15;
+}
+
+.arena-exchange header > b {
+  flex: 0 0 auto;
+  padding: 8px 12px;
+  border: 1px solid #ebd78b;
+  border-radius: 999px;
+  background: linear-gradient(180deg, #514b2b, #302f20);
+  box-shadow: inset 0 1px #fff7, 0 2px 0 #111c15;
+  color: #fff2b8;
+  font: 900 15px/1 Arial, sans-serif;
+  white-space: nowrap;
+}
+
+.arena-exchange-offers {
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 10px;
+}
+
+.arena-exchange-offer {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 72px;
+  padding: 10px;
+  border: 1px solid #819b76;
+  border-radius: 11px;
+  background: linear-gradient(155deg, #3a5142, #273a30);
+  box-shadow: inset 0 1px #ffffff45, 0 3px 0 #0e1b14;
+  transition: transform .15s ease, border-color .15s ease, box-shadow .15s ease;
+}
+
+.arena-exchange-offer:hover:not(:disabled) {
+  border-color: #f4df9b;
+  box-shadow: inset 0 1px #ffffff70, 0 5px 0 #0e1b14, 0 8px 14px #0a150d99;
+  filter: none;
+  transform: translateY(-2px);
+}
+
+.arena-exchange-offer:active:not(:disabled) {
+  box-shadow: inset 0 1px #ffffff45, 0 1px 0 #0e1b14;
+  transform: translateY(2px);
+}
+
+.arena-exchange-offer:focus-visible {
+  outline: 3px solid #fff4b5;
+  outline-offset: 2px;
+}
+
+.arena-exchange-offer > i {
+  flex: 0 0 42px;
+  width: 42px;
+  height: 42px;
+  border: 1px solid #c3b5798c;
+  border-radius: 10px;
+  background: radial-gradient(circle at 35% 25%, #647353, #344936 72%);
+  box-shadow: inset 0 1px #ffffff5c, 0 2px 4px #101d16a8;
+  color: #ffe6a1;
+  font-size: 25px;
+  line-height: 1;
+}
+
+.arena-exchange-offer > i .currency-icon {
+  width: 31px;
+  height: 31px;
+  object-fit: contain;
+}
+
+.arena-exchange-offer span {
+  flex: 1;
+  min-width: 0;
+}
+
+.arena-exchange-offer span b {
+  color: #fff8e8;
+  font-size: 12px;
+  line-height: 1.2;
+  text-shadow: 0 1px #172519;
+}
+
+.arena-exchange-offer span small {
+  display: inline-block;
+  max-width: 100%;
+  margin-top: 7px;
+  padding: 4px 7px;
+  border: 1px solid #b9a6688c;
+  border-radius: 999px;
+  background: #17251ce8;
+  color: #ffe29b;
+  font-size: 10px;
+  line-height: 1;
+}
+
+.arena-exchange-offer:disabled {
+  opacity: .72;
+  filter: saturate(.55);
+  cursor: not-allowed;
+}
+
+.arena-exchange-offer:disabled span small {
+  border-color: #a6857880;
+  color: #efbdac;
+}
+
+@media (max-width: 520px) {
+  .arena-exchange { padding: 12px; }
+  .arena-exchange h2 { font-size: 19px; }
+  .arena-exchange header > b { padding: 7px 9px; font-size: 12px; }
+  .arena-exchange-offers { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 7px; }
+  .arena-exchange-offer { min-height: 68px; gap: 7px; padding: 7px; }
+  .arena-exchange-offer > i { flex-basis: 35px; width: 35px; height: 35px; font-size: 21px; }
+  .arena-exchange-offer > i .currency-icon { width: 27px; height: 27px; }
+  .arena-exchange-offer span b { font-size: 10px; }
+  .arena-exchange-offer span small { margin-top: 5px; font-size: 9px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .arena-exchange-offer { transition: none; }
+}

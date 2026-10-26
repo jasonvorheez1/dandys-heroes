@@ -13,7 +13,10 @@
       let own;
       Object.defineProperty(window, 'websim', {
         configurable: true,
-        get() { return own !== undefined ? own : window.parent.websim; },
+        get() {
+          if (own !== undefined) return own;
+          try { return window.parent.websim; } catch (e) { return undefined; }
+        },
         set(v) { own = v; }
       });
     } catch (e) { /* cross-origin parent: nothing to share */ }

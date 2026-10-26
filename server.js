@@ -46,6 +46,22 @@ async function ensureArenaDefenseTable(env) {
   return cycle;
 }
 
+const PLUSH_TABLE = `
+  CREATE TABLE IF NOT EXISTS plush_scores (
+    user_id TEXT NOT NULL,
+    username TEXT,
+    mode TEXT NOT NULL,
+    week INTEGER NOT NULL,
+    score INTEGER NOT NULL DEFAULT 0,
+    updated_at_ms INTEGER NOT NULL,
+    PRIMARY KEY (user_id, mode, week)
+  )
+`;
+const PLUSH_WEEK_MS = 7 * 86400000;
+function plushWeek(now) {
+  return Math.floor(((Number(now) || Date.now()) - ARENA_RESET_EPOCH_MS) / PLUSH_WEEK_MS);
+}
+
 function jsonError(message, status) {
   return Response.json({ error: message }, { status });
 }
@@ -57,6 +73,11 @@ function cleanText(value, max) {
 function cleanNumber(value, min, max, fallback) {
   const n = Number(value);
   return Number.isFinite(n) ? Math.max(min, Math.min(max, Math.floor(n))) : fallback;
+}
+
+function cleanCostume(value) {
+  const id = cleanText(value, 48);
+  return /^[A-Za-z0-9_-]+$/.test(id) ? id : null;
 }
 
 function isFullTestSave(save) {
@@ -82,6 +103,7 @@ function cleanDefenseTeam(team) {
     if (!/^[A-Za-z0-9_-]+$/.test(id)) return null;
     const copy = {
       id,
+      costume: cleanCostume(slot.costume),
       level: cleanNumber(slot.level, 1, 800, 1),
       stars: cleanNumber(slot.stars, 1, 5, 1),
       rarity: cleanNumber(slot.rarity, 1, 6, 1),
@@ -125,10 +147,19 @@ function cleanDefenseTeam(team) {
 }
 
 function parseDefense(row) {
-  let team;
-  try { team = cleanDefenseTeam(JSON.parse(row.team_json)); }
+  let team, savedTeam;
+  try { savedTeam = JSON.parse(row.team_json); team = cleanDefenseTeam(savedTeam); }
   catch (_) { return null; }
   if (!Array.isArray(team) || !team.length) return null;
+  // Older defense records did not store costumes, so use the owner's saved
+  // looks immediately. New snapshots remain authoritative until a later save.
+  const hasCostumeSnapshot = savedTeam.some(slot => slot && Object.prototype.hasOwnProperty.call(slot, 'costume'));
+  if (row.live_costumes && (!hasCostumeSnapshot || Number(row.save_updated_at_ms) > Number(row.updated_at_ms))) {
+    try {
+      const worn = JSON.parse(row.live_costumes);
+      team.forEach(slot => { slot.costume = cleanCostume(worn[slot.id]); });
+    } catch (_) { /* retain the published costume choices */ }
+  }
   return {
     user_id: row.user_id,
     username: row.username || 'Player',
@@ -212,16 +243,25 @@ export default {
         arena: players(arenaRows).filter(row => row.score > 0),
         floors: players(floorRows).filter(row => row.score > 0),
         playerCount: Number(playerCountRow && playerCountRow.count) || 0
-      });
+      }, { headers: { 'cache-control': 'no-store' } });
     }
 
     if (url.pathname === '/api/arena/defenses') {
       await ensureArenaDefenseTable(env);
+      await env.DB.exec(SAVE_TABLE);
       if (request.method !== 'GET') return jsonError('Method not allowed', 405);
       const viewerId = request.headers.get('x-websim-user-id');
+      const select = `SELECT d.user_id, d.username, d.team_json, d.arena_rank, d.updated_at_ms,
+        s.updated_at_ms AS save_updated_at_ms,
+        CASE WHEN json_valid(s.save_json) THEN (
+          SELECT json_group_object(t.id,
+            json_extract(s.save_json, '$.heroes."' || t.id || '".costume'))
+          FROM (SELECT json_extract(value, '$.id') AS id FROM json_each(d.team_json)) t
+        ) ELSE NULL END AS live_costumes
+        FROM arena_defenses d LEFT JOIN dandys_heroes_saves s ON s.user_id = d.user_id`;
       const query = viewerId
-        ? env.DB.prepare('SELECT user_id, username, team_json, arena_rank, updated_at_ms FROM arena_defenses WHERE user_id != ? ORDER BY updated_at_ms DESC LIMIT 40').bind(viewerId)
-        : env.DB.prepare('SELECT user_id, username, team_json, arena_rank, updated_at_ms FROM arena_defenses ORDER BY updated_at_ms DESC LIMIT 40');
+        ? env.DB.prepare(select + ' WHERE d.user_id != ? ORDER BY d.updated_at_ms DESC LIMIT 40').bind(viewerId)
+        : env.DB.prepare(select + ' ORDER BY d.updated_at_ms DESC LIMIT 40');
       const { results } = await query.all();
       return Response.json({ defenses: results.map(parseDefense).filter(Boolean) });
     }
@@ -248,6 +288,56 @@ export default {
         .bind(userId, username, JSON.stringify(team), arenaRank, resetCycle, updatedAt)
         .run();
       return Response.json({ ok: true, defense: { user_id: userId, username, team, arena_rank: arenaRank, updated_at_ms: updatedAt } });
+    }
+
+    // Dandy's Plush Challenge: best damage per player, per mode, per week.
+    if (url.pathname === '/api/plush/score') {
+      if (request.method !== 'POST') return jsonError('Method not allowed', 405);
+      const userId = request.headers.get('x-websim-user-id');
+      if (!userId || request.headers.get('x-websim-user-is-anonymous') === 'true') return jsonError('Sign in to join the weekly board', 401);
+      let body;
+      try { body = await request.json(); }
+      catch (_) { return jsonError('Invalid JSON', 400); }
+      const mode = body && body.mode;
+      if (mode !== 'easy' && mode !== 'hard') return jsonError('Unknown mode', 400);
+      const week = plushWeek();
+      if (cleanNumber(body.week, -1, 1e6, -1) !== week) return jsonError('That week has already closed', 409);
+      const score = cleanNumber(body.score, 0, 4000000000, 0);
+      if (!score) return jsonError('No score to submit', 400);
+      const username = cleanText(request.headers.get('x-websim-username') || 'Player', 64) || 'Player';
+      await env.DB.exec(PLUSH_TABLE);
+      await env.DB
+        .prepare(
+          'INSERT INTO plush_scores (user_id, username, mode, week, score, updated_at_ms) VALUES (?, ?, ?, ?, ?, ?) ' +
+          'ON CONFLICT(user_id, mode, week) DO UPDATE SET username = excluded.username, ' +
+          'score = MAX(plush_scores.score, excluded.score), updated_at_ms = excluded.updated_at_ms'
+        )
+        .bind(userId, username, mode, week, score, Date.now())
+        .run();
+      return Response.json({ ok: true });
+    }
+
+    if (url.pathname === '/api/plush/board') {
+      if (request.method !== 'GET') return jsonError('Method not allowed', 405);
+      const mode = url.searchParams.get('mode');
+      if (mode !== 'easy' && mode !== 'hard') return jsonError('Unknown mode', 400);
+      const week = cleanNumber(url.searchParams.get('week'), -1, 1e6, plushWeek());
+      await env.DB.exec(PLUSH_TABLE);
+      const viewerId = request.headers.get('x-websim-user-id');
+      const [top, totalRow, mine] = await Promise.all([
+        env.DB.prepare('SELECT user_id, username, score FROM plush_scores WHERE mode = ? AND week = ? ORDER BY score DESC, updated_at_ms ASC LIMIT 20').bind(mode, week).all(),
+        env.DB.prepare('SELECT COUNT(*) AS n FROM plush_scores WHERE mode = ? AND week = ?').bind(mode, week).first(),
+        viewerId ? env.DB.prepare('SELECT score FROM plush_scores WHERE user_id = ? AND mode = ? AND week = ?').bind(viewerId, mode, week).first() : Promise.resolve(null)
+      ]);
+      let you = null;
+      if (mine && mine.score > 0) {
+        const ahead = await env.DB.prepare('SELECT COUNT(*) AS n FROM plush_scores WHERE mode = ? AND week = ? AND score > ?').bind(mode, week, mine.score).first();
+        you = { score: Number(mine.score) || 0, rank: (Number(ahead && ahead.n) || 0) + 1 };
+      }
+      return Response.json({
+        week, mode, total: Number(totalRow && totalRow.n) || 0, you,
+        top: top.results.map((row, i) => ({ rank: i + 1, username: cleanText(row.username, 64) || 'Player', score: Number(row.score) || 0, you: !!viewerId && row.user_id === viewerId }))
+      }, { headers: { 'cache-control': 'no-store' } });
     }
 
     if (url.pathname !== '/api/save') return new Response('Not found', { status: 404 });
@@ -283,7 +373,8 @@ export default {
     if (!Number.isSafeInteger(baseAt) || baseAt < 0) return jsonError('Cloud save revision is required', 400);
 
     const saveJson = JSON.stringify(save);
-    if (saveJson.length > 120000) return jsonError('Save is too large', 413);
+    // D1 rows top out at 2 MB; stay under that with headroom.
+    if (saveJson.length > 1500000) return jsonError('Save is too large', 413);
     if (!save.heroes || !save.res || typeof save.heroes !== 'object' || typeof save.res !== 'object') {
       return jsonError('Save is missing required data', 400);
     }

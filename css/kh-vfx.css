@@ -1,0 +1,80 @@
+/* Halloween Town spells: compact silhouettes and short impact windows. */
+#battle .kh-vfx,
+#battle .kh-vfx-shot,
+#battle .kh-vfx-arc,
+#battle .kh-vfx-present,
+#battle .kh-vfx-duck { position:absolute; z-index:62; pointer-events:none; }
+#battle .kh-vfx {
+  --v-color:#ff9b30; --v-hot:#fff0a6;
+  width:var(--v-size); height:var(--v-size);
+  margin:calc(var(--v-size) * -.5) 0 0 calc(var(--v-size) * -.5);
+  filter:drop-shadow(0 0 9px var(--v-color));
+}
+#battle .kh-vfx::before,
+#battle .kh-vfx::after { content:""; position:absolute; inset:12%; border-radius:50%; }
+#battle .kh-vfx::before {
+  border:3px solid var(--v-hot); box-shadow:0 0 0 3px var(--v-color), inset 0 0 16px var(--v-color), 0 0 24px var(--v-color);
+  animation:kh-vfx-ring var(--v-dur) cubic-bezier(.13,.6,.24,1) both;
+}
+#battle .kh-vfx::after {
+  inset:27%; background:radial-gradient(circle,var(--v-hot) 0 16%,var(--v-color) 35%,transparent 70%);
+  animation:kh-vfx-flash var(--v-dur) ease-out both;
+}
+#battle .kh-vfx b { position:absolute; inset:24%; z-index:2; background:center/contain no-repeat; animation:kh-vfx-icon var(--v-dur) ease-out both; }
+#battle .kh-vfx i {
+  position:absolute; z-index:3; left:50%; top:50%; width:7px; height:17px;
+  margin:-8px 0 0 -3px; background:linear-gradient(var(--v-hot),var(--v-color) 65%,transparent);
+  border-radius:50% 50% 30% 30%; box-shadow:0 0 6px var(--v-hot);
+  animation:kh-vfx-spark var(--v-dur) cubic-bezier(.1,.5,.3,1) both;
+}
+#battle .kh-vfx.aura::before { inset:3%; border-style:dashed; animation:kh-vfx-aura var(--v-dur) ease-out both; }
+#battle .kh-vfx.aura::after { inset:18%; opacity:.5; }
+#battle .kh-vfx-jack { --v-color:#ff7727; --v-hot:#ffe6a0; }
+#battle .kh-vfx-jack b { background-image:url('../assets/kh/fx/pumpkin.svg'); }
+#battle .kh-vfx-jack i { border-radius:50% 50% 10% 10%; transform-origin:50% 100%; }
+#battle .kh-vfx-oogie { --v-color:#91e954; --v-hot:#eaff9c; }
+#battle .kh-vfx-oogie::after { background:radial-gradient(circle,#dcff93 0 8%,#9edc67 28%,#64318b99 55%,transparent 72%); }
+#battle .kh-vfx-oogie b { background-image:url('../assets/kh/fx/dice.svg'); }
+#battle .kh-vfx-oogie i { width:12px; height:12px; border-radius:46% 55% 40% 60%; background:#98d971; }
+#battle .kh-vfx-thunder { --v-color:#72b7ff; --v-hot:#f6ffff; }
+#battle .kh-vfx-thunder::before { border-radius:20%; transform:rotate(45deg); }
+#battle .kh-vfx-thunder b,
+#battle .kh-vfx-ice b,
+#battle .kh-vfx-cure b,
+#battle .kh-vfx-surge b { background-image:url('../assets/kh/fx/spell-star.svg'); }
+#battle .kh-vfx-ice { --v-color:#83dfff; --v-hot:#f1ffff; }
+#battle .kh-vfx-ice i { width:5px; height:22px; clip-path:polygon(50% 0,100% 52%,50% 100%,0 52%); }
+#battle .kh-vfx-cure { --v-color:#66eba9; --v-hot:#edffed; }
+#battle .kh-vfx-cure::before { border-style:double; border-width:6px; }
+#battle .kh-vfx-surge { --v-color:#8d99ff; --v-hot:#fff6bf; }
+#battle .kh-vfx-shot { --v-color:#ff922a; --v-hot:#fff2ac; width:var(--v-size); height:var(--v-size);
+  margin:calc(var(--v-size) * -.5); background:center/contain no-repeat;
+  filter:drop-shadow(0 0 10px var(--v-color));
+  animation:kh-vfx-flight var(--v-dur) cubic-bezier(.25,.08,.75,.95) both;
+}
+#battle .kh-vfx-shot::after { content:""; position:absolute; top:42%; right:65%; width:75%; height:16%; border-radius:100%; background:linear-gradient(90deg,transparent,var(--v-hot)); filter:blur(2px); }
+#battle .kh-vfx-shot-jack { background-image:url('../assets/kh/fx/pumpkin.svg'); }
+#battle .kh-vfx-shot-oogie { --v-color:#8edb62; --v-hot:#dfff9e; background-image:url('../assets/kh/fx/dice.svg'); }
+#battle .kh-vfx-shot-ice { --v-color:#85dafa; --v-hot:#fff; background-image:url('../assets/kh/fx/spell-star.svg'); }
+#battle .kh-vfx-shot-thunder { --v-color:#74baff; --v-hot:#fff; background-image:url('../assets/kh/fx/spell-star.svg'); }
+#battle .kh-vfx-arc { --v-color:#ff912d; height:4px; transform-origin:left center; background:linear-gradient(90deg,transparent,var(--v-color) 15% 85%,transparent); box-shadow:0 0 8px 2px var(--v-color); animation:kh-vfx-beam var(--v-dur) ease-out both; }
+#battle .kh-vfx-arc-oogie { --v-color:#acff73; }
+#battle .kh-vfx-arc-thunder { --v-color:#b5e6ff; height:6px; clip-path:polygon(0 35%,35% 35%,45% 0,55% 65%,70% 20%,100% 45%,100% 100%,68% 85%,54% 100%,43% 55%,35% 75%,0 75%); }
+#battle .kh-vfx-arc-ice { --v-color:#a8efff; }
+#battle .kh-vfx-present { width:66px; height:66px; margin:-66px 0 0 -33px; background:url('../assets/kh/fx/pumpkin.svg') center/contain no-repeat; filter:drop-shadow(0 0 12px #ff7d30); animation:kh-vfx-drop .5s ease-out both; }
+#battle .kh-vfx-present::after { content:"?"; position:absolute; left:24px; top:11px; font:900 28px/1 sans-serif; color:#fff3bd; text-shadow:0 0 8px #b34600; }
+#battle .kh-vfx-duck { width:84px; height:64px; margin:-62px 0 0 -42px; background:url('../assets/kh/fx/toy-duck.svg') center/contain no-repeat; filter:drop-shadow(0 0 8px #ff9a29); transition:left .075s linear,top .075s linear; animation:kh-vfx-waddle .15s ease-in-out infinite alternate; }
+#battle .kh-vfx-duck.flip { scale:-1 1; }
+@keyframes kh-vfx-ring { 0% { opacity:.95; scale:.2; rotate:-18deg; } 55% { opacity:1; } 100% { opacity:0; scale:1.7; rotate:24deg; } }
+@keyframes kh-vfx-aura { 0% { opacity:0; scale:.45; rotate:-45deg; } 25% { opacity:1; } 100% { opacity:0; scale:1.2; rotate:95deg; } }
+@keyframes kh-vfx-flash { 0% { opacity:0; scale:.15; } 22% { opacity:.9; } 100% { opacity:0; scale:1.5; } }
+@keyframes kh-vfx-icon { 0% { opacity:0; scale:.25; rotate:-25deg; } 25% { opacity:1; scale:1.2; } 65% { opacity:.9; scale:.92; } 100% { opacity:0; scale:1.5; rotate:18deg; } }
+@keyframes kh-vfx-spark { 0% { opacity:0; translate:0 0; rotate:0; scale:.2; } 20% { opacity:1; } 100% { opacity:0; translate:var(--dx) var(--dy); rotate:var(--turn); scale:.8; } }
+@keyframes kh-vfx-flight { 0% { opacity:0; transform:translate(0,0) scale(.5) rotate(-30deg); } 12% { opacity:1; } 80% { opacity:1; } 100% { opacity:0; transform:translate(var(--dx),var(--dy)) scale(1.4) rotate(180deg); } }
+@keyframes kh-vfx-beam { 0% { opacity:0; scale:0 1; } 20% { opacity:1; scale:1 1; } 72% { opacity:.95; } 100% { opacity:0; scale:1 2.5; } }
+@keyframes kh-vfx-drop { from { opacity:0; translate:0 -90px; rotate:-20deg; scale:.5; } to { opacity:1; translate:0 0; rotate:0; scale:1; } }
+@keyframes kh-vfx-waddle { to { translate:0 -8px; rotate:5deg; } }
+@media (prefers-reduced-motion:reduce) {
+  #battle .kh-vfx, #battle .kh-vfx-shot, #battle .kh-vfx-arc { animation-duration:.15s; }
+  #battle .kh-vfx *, #battle .kh-vfx::before, #battle .kh-vfx::after, #battle .kh-vfx-duck { animation-duration:.15s; }
+}

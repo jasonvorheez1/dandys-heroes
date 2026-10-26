@@ -1,0 +1,9 @@
+.codebase-battle-hud{position:absolute;z-index:10;top:calc(61px + env(safe-area-inset-top,0px));left:8px;right:8px;padding:7px 9px 6px;border:2px solid #dba9eb;border-radius:9px;color:#fff;background:linear-gradient(90deg,#25183ce8,#2e4260e8);box-shadow:0 4px 12px #0009;pointer-events:none}
+.codebase-battle-line{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:10px;letter-spacing:.6px}
+.codebase-battle-line b{color:#ffd0f7}.codebase-battle-line strong{color:#bdf2ff;font-size:9px}
+.codebase-rage-track{height:7px;margin:5px 0 3px;overflow:hidden;border:1px solid #070d20;border-radius:9px;background:#09101c}
+.codebase-rage-track i{display:block;width:0;height:100%;border-radius:9px;background:linear-gradient(90deg,#80dbf5,#c690e9,#ffaf7c);box-shadow:0 0 9px #f3b0dd;transition:width .15s ease}
+.codebase-battle-hud small{display:block;color:#e4d9f4;font-size:8px;font-weight:800}
+.codebase-card:disabled,.codebase-enter:disabled{opacity:.52}
+.trials-beginner>.codebase-card,.trials-screen>.codebase-card{width:min(172px,60vw);margin:4px auto 12px;height:340px}
+.codebase-battle-hud small+small{margin-top:1px;color:#ffe3a2}

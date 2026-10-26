@@ -1,0 +1,85 @@
+/* Heroes menu: compact portrait roster inspired by game collection screens. */
+#app:has(.hero-roster-page){background:#19142d}
+#app:has(.hero-roster-page) #topbar{background:#211a39;border-bottom:1px solid #453865;box-shadow:none}
+#app:has(.hero-roster-page) .tb-right{flex-wrap:nowrap;min-width:0;overflow-x:auto;scrollbar-width:none}
+#app:has(.hero-roster-page) .tb-right::-webkit-scrollbar{display:none}
+#app:has(.hero-roster-page) .res{flex:0 0 auto;background:#130f25;border:1px solid #51456d;box-shadow:none}
+#app:has(.hero-roster-page) #navbar{background:#171329;border-top:1px solid #53446d;box-shadow:none}
+#app:has(.hero-roster-page) #navbar button i{border-color:#080717;background:#39304f;box-shadow:none}
+#app:has(.hero-roster-page) #navbar button.on i{background:#347eac;border-color:#69c8ee;transform:none}
+
+.hero-roster-page{min-height:100%;margin:-10px -10px -18px;padding:16px 13px 26px;color:#f5f2ff;background:radial-gradient(ellipse at 84% 2%,#6d4f91 0,#40275e 28%,#231a39 62%,#171329 100%)}
+.hero-roster-heading{display:flex;justify-content:space-between;align-items:end;gap:8px;margin-bottom:13px}
+.hero-roster-kicker{display:block;color:#bcb2cf;font:800 10px/1.1 Arial,sans-serif;letter-spacing:1.8px}
+.hero-roster-heading h1{margin-top:3px;color:#fff;font:900 30px/.96 Arial,sans-serif;letter-spacing:-1.1px}
+.hero-roster-total{align-self:end;color:#e2d6ee;font:700 13px/1 Arial,sans-serif;white-space:nowrap}
+.hero-roster-total strong{color:#fff;font-size:22px}
+.hero-roster-total small{font-size:12px}
+.hero-roster-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.hero-roster-actions button{min-height:38px;padding:7px 10px;border:1px solid #83cbe9;border-radius:4px;color:#fff;background:#246b96;box-shadow:inset 0 1px #ffffff30,0 3px 0 #10263e;font:800 12px/1.1 Arial,sans-serif;text-transform:uppercase;letter-spacing:.25px}
+.hero-roster-actions button+button{border-color:#80729d;background:#44385f;box-shadow:inset 0 1px #ffffff1e,0 3px 0 #1a132e}
+.hero-roster-actions button:active{transform:translateY(2px);box-shadow:none}
+.hero-roster-controls{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+.hero-roster-sort{display:flex;align-items:center;gap:8px;color:#e5dcf0;font:800 12px Arial,sans-serif;text-transform:uppercase;letter-spacing:.5px}
+.hero-roster-sort select{min-width:124px;height:36px;padding:0 25px 0 10px;border:1px solid #7dc7eb;border-radius:4px;color:#fff;background:#286e9c;font:800 12px Arial,sans-serif;text-transform:uppercase;outline:none}
+.hero-roster-view{display:flex;gap:5px}
+.hero-roster-view button{display:grid;place-items:center;width:37px;height:36px;border:1px solid #62557e;border-radius:4px;color:#b5aaca;background:#302645;font:900 23px/1 Arial,sans-serif}
+.hero-roster-view button[aria-pressed=true]{color:#fff;border-color:#73c7ee;background:#2d83b8}
+.roster-grid-icon{display:block;width:16px;height:16px;background:linear-gradient(currentColor,currentColor) left top/7px 7px no-repeat,linear-gradient(currentColor,currentColor) right top/7px 7px no-repeat,linear-gradient(currentColor,currentColor) left bottom/7px 7px no-repeat,linear-gradient(currentColor,currentColor) right bottom/7px 7px no-repeat}
+.roster-list-icon{display:block;width:17px;height:15px;background:linear-gradient(currentColor,currentColor) left top/17px 3px no-repeat,linear-gradient(currentColor,currentColor) left center/17px 3px no-repeat,linear-gradient(currentColor,currentColor) left bottom/17px 3px no-repeat}
+.hero-roster-search-wrap{display:flex;align-items:center;gap:8px;margin-bottom:9px}
+.hero-roster-search-wrap input{min-width:0;flex:1;height:37px;padding:0 11px;border:1px solid #62557e;border-radius:4px;color:#fff;background:#17132a;font:700 13px Arial,sans-serif;outline:none;user-select:text}
+.hero-roster-search-wrap input::placeholder{color:#ac9fc0}
+.hero-roster-search-wrap input:focus,.hero-roster-sort select:focus-visible{border-color:#78d3f8;box-shadow:0 0 0 2px #78d3f844}
+.hero-roster-search-wrap span{color:#c6b9d7;font:700 10px Arial,sans-serif;white-space:nowrap}
+.hero-roster-filters{display:flex;gap:6px;overflow-x:auto;margin-bottom:12px;scrollbar-width:none}
+.hero-roster-filters::-webkit-scrollbar{display:none}
+.hero-roster-filters button{flex:0 0 auto;padding:6px 9px;border:1px solid #62557e;border-radius:4px;color:#d4c9e2;background:#302645;font:800 10px/1 Arial,sans-serif;text-transform:uppercase;white-space:nowrap}
+.hero-roster-filters button[aria-pressed=true]{border-color:#7acdf0;color:#fff;background:#226c99}
+.hero-roster-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;align-content:start}
+.hero-roster-card{position:relative;display:flex;flex-direction:column;min-width:0;padding:0;border:2px solid #4ec9e7;border-radius:4px;overflow:hidden;color:#fff;background:#151126;box-shadow:0 3px 0 #0a0716;text-align:left;transition:transform .13s,border-color .13s,box-shadow .13s}
+.hero-roster-card:hover{z-index:1;transform:translateY(-2px);border-color:#b6edff;box-shadow:0 5px 8px #09061688}
+.hero-roster-card:active{transform:translateY(1px);box-shadow:none}
+.hero-roster-card:focus-visible{outline:3px solid #fff;outline-offset:2px}
+.hero-roster-portrait{position:relative;display:block;width:100%;aspect-ratio:1/.92;overflow:hidden;background:radial-gradient(circle at 50% 35%,#8295a8 0,#486585 52%,#253951 100%)}
+.hero-roster-portrait:after{content:"";position:absolute;inset:0;pointer-events:none;box-shadow:inset 0 0 0 1px #fff4,inset 0 -16px 22px #07061155}
+.hero-roster-portrait img{width:100%;height:100%;object-fit:contain;object-position:center bottom;filter:drop-shadow(0 4px 3px #0b0a1b88)}
+.hero-roster-card[data-rarity="1"] .hero-roster-portrait{background:radial-gradient(circle at 50% 35%,#8a92a8,#4c607e 70%,#27334f)}
+.hero-roster-card[data-rarity="2"] .hero-roster-portrait{background:radial-gradient(circle at 50% 35%,#82b1a7,#386d71 70%,#1c404b)}
+.hero-roster-card[data-rarity="3"] .hero-roster-portrait{background:radial-gradient(circle at 50% 35%,#79add1,#315e9c 70%,#193453)}
+.hero-roster-card[data-rarity="4"] .hero-roster-portrait{background:radial-gradient(circle at 50% 35%,#a78acf,#674197 70%,#382653)}
+.hero-roster-card[data-rarity="5"] .hero-roster-portrait{background:radial-gradient(circle at 50% 35%,#d698ae,#934866 70%,#562b47)}
+.hero-roster-card[data-rarity="6"] .hero-roster-portrait{background:radial-gradient(circle at 50% 35%,#dbb981,#92744c 70%,#554532)}
+.hero-roster-level,.hero-roster-team-badge,.hero-roster-ready,.hero-roster-lock{position:absolute;z-index:2;font:900 10px/1 Arial,sans-serif}
+.hero-roster-level{top:0;left:0;min-width:24px;padding:4px 5px;color:#fff;background:#1aa7d0;text-align:center}
+.hero-roster-team-badge{top:3px;right:3px;padding:3px 4px;border-radius:2px;color:#181029;background:#f5d06e;font-size:8px}
+.hero-roster-ready{right:3px;bottom:3px;display:grid;place-items:center;width:19px;height:19px;border-radius:50%;color:#153320;background:#a8e875;font-size:16px}
+.hero-roster-lock{top:5px;left:5px;padding:4px;color:#d7cce5;background:#2a2339;font-size:8px}
+.hero-roster-caption{position:relative;display:block;min-height:31px;padding:5px 5px 4px;background:#161228}
+.hero-roster-caption strong{display:block;overflow:hidden;color:#fff;font:800 11px/1.1 Arial,sans-serif;text-overflow:ellipsis;white-space:nowrap}
+.hero-roster-sub{display:none;color:#baaed0;font:700 10px/1.2 Arial,sans-serif}
+.hero-roster-stars{position:absolute;right:4px;bottom:4px;color:#f8d965;font:900 10px/1 Arial,sans-serif;letter-spacing:-1px;text-shadow:0 1px #24172b}
+.hero-roster-card.is-missing{border-color:#655874;box-shadow:0 2px 0 #0b0715}
+.hero-roster-card.is-missing .hero-roster-portrait{background:#393349}
+.hero-roster-card.is-missing img{filter:grayscale(1) brightness(.68);opacity:.75}
+.hero-roster-card.is-missing .hero-roster-caption strong{color:#c7bfd3}
+.hero-roster-empty{padding:23px 12px;border:1px dashed #716385;border-radius:4px;color:#d1c5dc;font:700 12px/1.4 Arial,sans-serif;text-align:center}
+.hero-roster-missing-section{margin-top:18px}
+.hero-roster-missing-toggle{display:flex;align-items:center;justify-content:space-between;width:100%;padding:10px 2px;border-top:1px solid #75668d;color:#eee7f7;font:800 12px Arial,sans-serif;text-align:left;text-transform:uppercase}
+.hero-roster-missing-toggle small{margin-left:5px;color:#bdb1ce;font-size:11px}
+.hero-roster-chevron{font-size:21px;line-height:.6;transition:transform .15s}
+.hero-roster-missing-toggle[aria-expanded=true] .hero-roster-chevron{transform:rotate(180deg)}
+.hero-roster-missing-section .hero-roster-grid{padding-top:3px}
+
+.hero-roster-list-view .hero-roster-grid{grid-template-columns:1fr;gap:7px}
+.hero-roster-list-view .hero-roster-card{display:grid;grid-template-columns:68px minmax(0,1fr);min-height:70px}
+.hero-roster-list-view .hero-roster-portrait{height:100%;aspect-ratio:auto}
+.hero-roster-list-view .hero-roster-caption{display:flex;flex-direction:column;justify-content:center;min-height:66px;padding:7px 12px}
+.hero-roster-list-view .hero-roster-caption strong{font-size:14px}
+.hero-roster-list-view .hero-roster-sub{display:block;margin-top:5px}
+.hero-roster-list-view .hero-roster-stars{top:8px;right:9px;bottom:auto;font-size:10px}
+.hero-roster-list-view .hero-roster-team-badge{display:none}
+
+@media(max-width:345px){.hero-roster-page{padding-inline:9px}.hero-roster-grid{gap:6px}.hero-roster-caption strong{font-size:10px}}
+@media(min-width:550px){.hero-roster-grid{grid-template-columns:repeat(4,minmax(0,1fr))}.hero-roster-list-view .hero-roster-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(prefers-reduced-motion:reduce){.hero-roster-page *{transition:none!important}}

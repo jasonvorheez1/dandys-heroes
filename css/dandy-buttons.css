@@ -1,0 +1,47 @@
+/* Charcoal controls and a single green action color, based on the supplied UI reference. */
+:root{--dw-button-ink:#080909;--dw-button-face:#343434;--dw-button-rim:#4a4a4a;--dw-button-green:#76e56a}
+
+.btn{border:3px solid var(--dw-button-ink);border-radius:11px;background:repeating-linear-gradient(132deg,#383838 0 14px,#343434 14px 28px);color:#fafafa;box-shadow:inset 0 0 0 2px #505050,0 3px 0 #080909;font-family:"Fredoka Journal","Arial Black",Arial,sans-serif;font-weight:900;letter-spacing:-.025em;text-transform:uppercase;-webkit-text-stroke:1px #171717;text-shadow:0 1px #111;transition:transform .1s,background-color .1s,box-shadow .1s}
+.btn:hover{background:#484848;filter:none}
+.btn:active{transform:translateY(3px);box-shadow:inset 0 0 0 2px #505050,0 0 0 #080909}
+.btn.pri,.btn.go,.btn.gold{border-color:#060b07;background:var(--dw-button-green);color:#19461c;box-shadow:inset 0 0 0 2px #a4f297,0 3px 0 #071109;-webkit-text-stroke:0;text-shadow:none}
+.btn.pri:hover,.btn.go:hover,.btn.gold:hover{background:#91ef86}
+.btn.pri:active,.btn.go:active,.btn.gold:active{box-shadow:inset 0 0 0 2px #a4f297,0 0 0 #071109}
+.btn:focus-visible,#navbar button:focus-visible,.tp-act:focus-visible,.tp-seg-btn:focus-visible,.launcher-play:focus-visible{outline:3px solid #e9f2b8;outline-offset:2px}
+
+#navbar{gap:4px;border-top:3px solid #080909;background:#292929;box-shadow:inset 0 2px #484848}
+#navbar button,#navbar .nav-main{min-height:66px;margin-top:0;padding:4px 2px 2px;border:2px solid #080909;border-radius:10px;background:repeating-linear-gradient(132deg,#383838 0 13px,#343434 13px 26px);box-shadow:inset 0 0 0 2px #494949,0 2px 0 #080909;color:#f4f4f4}
+#navbar button i,#navbar .nav-main i{width:38px;height:38px;border:0;border-radius:5px;background:#1d1d1d;box-shadow:inset 0 0 0 2px #292929;color:#ededed;font:900 23px/1 Arial,sans-serif;transform:none}
+#navbar button span{color:#f5f5f5;font-family:"Fredoka Journal","Arial Black",Arial,sans-serif;font-weight:900;letter-spacing:-.035em;-webkit-text-stroke:1px #080909;text-shadow:0 1px #080909;text-transform:uppercase}
+#navbar button:after{content:none}
+#navbar button:hover,#navbar button:focus-visible{background:#494949;border-color:#080909}
+#navbar button.on,#navbar .nav-main.on{border-color:#080909;background:#484848;box-shadow:inset 0 0 0 2px #666,0 2px 0 #080909;color:#fff}
+#navbar button.on i,#navbar .nav-main.on i{border:2px solid #090d09;background:var(--dw-button-green);box-shadow:inset 0 0 0 1px #b4f6aa;color:#19461c;transform:none}
+#navbar button:active,#navbar .nav-main:active{transform:translateY(2px);box-shadow:inset 0 0 0 2px #494949}
+#navbar button:active i,#navbar .nav-main:active i{transform:none;box-shadow:inset 0 0 0 2px #292929}
+
+.launcher-play{border:4px solid #080909;border-radius:14px;background:var(--dw-button-green);box-shadow:inset 0 0 0 2px #a4f297,0 4px 0 #080909;color:#19461c;font-family:"Fredoka Journal","Arial Black",Arial,sans-serif;font-weight:900;letter-spacing:-.03em;text-transform:uppercase}
+.launcher-play:hover{background:#91ef86;box-shadow:inset 0 0 0 2px #bbf8b3,0 4px 0 #080909}
+.launcher-play:active{transform:translateY(3px);box-shadow:inset 0 0 0 2px #a4f297,0 1px 0 #080909}
+.profile-btn{border:2px solid #080909;border-radius:10px;background:#383838;box-shadow:inset 0 0 0 1px #555,0 2px #080909;font-family:"Fredoka Journal","Arial Black",Arial,sans-serif;text-transform:uppercase}
+
+.home-continue{border-color:#080909!important;border-radius:12px!important;background:var(--dw-button-green)!important;box-shadow:inset 0 0 0 2px #a4f297,0 4px 0 #080909!important}
+.home-continue:hover{box-shadow:inset 0 0 0 2px #b8f6ae,0 4px 0 #080909!important;filter:none}
+.home-continue:active{box-shadow:inset 0 0 0 2px #a4f297,0 1px 0 #080909!important}
+.home-continue b,.home-continue strong{color:#19461c;text-shadow:none}
+.home-continue em{color:#225529}
+.home-continue-icon{border-color:#123a18;border-radius:8px;background:#b8f5ae;color:#19461c;box-shadow:none}
+.home-continue-icon:before{content:none}
+
+.tp-act{border:2px solid #080909;border-radius:8px;background:#383838;color:#fff;box-shadow:inset 0 0 0 1px #555,0 2px #080909;font-family:"Fredoka Journal","Arial Black",Arial,sans-serif;font-weight:900;text-transform:uppercase}
+.tp-act:hover{border-color:#080909;background:#4b4b4b}
+.tp-act:active{transform:translateY(2px);box-shadow:inset 0 0 0 1px #555}
+.tp-seg{border:2px solid #080909;border-radius:8px;background:#282828}
+.tp-seg-btn{border-right:2px solid #080909;background:#383838;color:#eee;font-family:"Fredoka Journal","Arial Black",Arial,sans-serif;font-weight:900;text-transform:uppercase}
+.tp-seg-btn.on{background:var(--dw-button-green);color:#19461c;box-shadow:none}
+.tp-row{border-color:#080909;border-left-color:var(--role,#555);background:#343434;box-shadow:inset 0 0 0 1px #505050}
+.tp-row:hover{border-color:#080909;border-left-color:var(--role,#555);background:#444}
+.tp-row.on{border-color:#080909;border-left-color:var(--dw-button-green);background:#414141;box-shadow:inset 0 0 0 1px #76e56a}
+.tp-row-side em{border:1px solid #080909;border-radius:6px;background:var(--dw-button-green);color:#19461c}
+
+@media(max-width:430px){#navbar{gap:2px;padding:7px 4px calc(7px + var(--safe-b))}#navbar button,#navbar .nav-main{min-height:62px;grid-template-rows:37px auto;margin-top:0;padding:3px 0 1px}#navbar button i,#navbar .nav-main i{width:32px;height:32px;font-size:20px}#navbar button span{font-size:8px;-webkit-text-stroke:.7px #080909}}

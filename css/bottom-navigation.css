@@ -1,0 +1,149 @@
+/* The six destinations share one compact gamepad-style control language. */
+#navbar {
+  gap: 7px;
+  padding: 9px 10px calc(10px + var(--safe-b));
+  border-top: 1px solid #68717c;
+  background: linear-gradient(180deg, #303747, #202632);
+  box-shadow: inset 0 1px #ffffff26, 0 -5px 18px #080b13a6;
+}
+
+#navbar button,
+#navbar .nav-main {
+  --nav-accent: #b9ddc6;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  min-width: 0;
+  min-height: 60px;
+  margin: 0;
+  padding: 7px 8px;
+  border: 1px solid #616c7b;
+  border-radius: 12px;
+  background: linear-gradient(160deg, #414958, #2c3341);
+  box-shadow: inset 0 1px #ffffff40, inset 0 -1px #0e132840, 0 4px 0 #111722;
+  color: #f2f5f7;
+  transition: transform .16s ease, border-color .16s ease, background .16s ease, box-shadow .16s ease;
+}
+
+#navbar button[data-nav="depths"] { --nav-accent: #c5adfa; }
+#navbar button[data-nav="roster"] { --nav-accent: #82d5f3; }
+#navbar button[data-nav="raid"] { --nav-accent: #f5b8d0; }
+#navbar button[data-nav="home"] { --nav-accent: #b9ed9f; }
+#navbar button[data-nav="crates"] { --nav-accent: #f6ca94; }
+#navbar button[data-nav="events"] { --nav-accent: #a2e6d7; }
+
+#navbar button i,
+#navbar .nav-main i,
+#app:has(.hero-roster-page) #navbar button i {
+  flex: 0 0 38px;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border: 1px solid color-mix(in srgb, var(--nav-accent) 58%, #2b3445);
+  border-radius: 9px;
+  background: linear-gradient(160deg, #343d4e, #252c3b);
+  box-shadow: inset 0 1px #ffffff28, 0 2px 3px #11172270;
+  color: var(--nav-accent);
+  font-size: 0;
+  transform: none;
+}
+
+#navbar button i svg {
+  display: block;
+  width: 22px;
+  height: 22px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+#navbar button span {
+  display: block;
+  min-width: 0;
+  color: #f2f5f7;
+  font: 900 12px/1 "Fredoka Journal", "Arial Black", Arial, sans-serif;
+  letter-spacing: .015em;
+  text-shadow: 0 1px #121824;
+  -webkit-text-stroke: 0;
+  white-space: nowrap;
+}
+
+#navbar button:hover,
+#navbar button:focus-visible {
+  border-color: var(--nav-accent);
+  background: linear-gradient(160deg, #4d5868, #343d4d);
+  box-shadow: inset 0 1px #ffffff5c, 0 4px 0 #111722, 0 0 0 1px color-mix(in srgb, var(--nav-accent) 35%, transparent);
+  transform: translateY(-2px);
+}
+
+#navbar button.on,
+#navbar .nav-main.on {
+  border-color: var(--nav-accent);
+  background: linear-gradient(160deg, color-mix(in srgb, var(--nav-accent) 24%, #424b5a), #2c3846);
+  box-shadow: inset 0 1px #ffffff75, inset 0 0 0 1px color-mix(in srgb, var(--nav-accent) 33%, transparent), 0 4px 0 #111722;
+}
+
+#navbar button.on i,
+#navbar .nav-main.on i,
+#app:has(.hero-roster-page) #navbar button.on i {
+  border-color: color-mix(in srgb, var(--nav-accent) 80%, white);
+  background: var(--nav-accent);
+  box-shadow: inset 0 1px #ffffffad, 0 2px 5px #0b111666;
+  color: #202938;
+  transform: none;
+}
+
+#navbar button.on span { color: #fff; }
+
+#navbar button:active,
+#navbar .nav-main:active {
+  transform: translateY(2px);
+  box-shadow: inset 0 1px #ffffff40, 0 1px 0 #111722;
+}
+
+#navbar button:active i,
+#navbar .nav-main:active i { transform: none; }
+
+#navbar button:focus-visible { outline: 2px solid #f8f6cb; outline-offset: 2px; }
+
+#app:has(.hero-roster-page) #navbar {
+  border-top-color: #5a546f;
+  background: linear-gradient(180deg, #302b42, #201c30);
+  box-shadow: inset 0 1px #ffffff24, 0 -5px 18px #090713a6;
+}
+
+@media (max-width: 620px) {
+  #navbar { gap: 4px; padding: 8px 5px calc(9px + var(--safe-b)); }
+  #navbar button,
+  #navbar .nav-main {
+    flex-direction: column;
+    gap: 4px;
+    min-height: 70px;
+    padding: 5px 1px 4px;
+    border-radius: 10px;
+  }
+  #navbar button i,
+  #navbar .nav-main i,
+  #app:has(.hero-roster-page) #navbar button i {
+    flex-basis: 35px;
+    width: 35px;
+    height: 35px;
+    border-radius: 8px;
+  }
+  #navbar button i svg { width: 21px; height: 21px; }
+  #navbar button span { font-size: 10px; line-height: 1; }
+}
+
+@media (max-width: 390px) {
+  #navbar { gap: 3px; padding-inline: 4px; }
+  #navbar button span { font-size: 9px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #navbar button { transition: none; }
+}

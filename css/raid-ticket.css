@@ -1,0 +1,18 @@
+.raid-ticket-quantity .rtq-held{color:#f6d35f;font-size:10px;font-weight:900}
+.rtq-stepper{display:grid;grid-template-columns:44px 1fr 44px;gap:6px}
+.rtq-step,.rtq-preset{border:2px solid #d6b94d;border-radius:9px;color:#211c0b;background:linear-gradient(180deg,#fff1a7,#c9a43b);box-shadow:0 3px #101415;font:900 18px/1 Arial,sans-serif;cursor:pointer}
+.rtq-step:active,.rtq-preset:active{transform:translateY(2px);box-shadow:0 1px #101415}
+.rtq-presets{display:flex;gap:6px;justify-content:center;flex-wrap:wrap}
+.rtq-preset{min-width:44px;padding:7px 10px;font-size:10px}
+.rtq-check{display:flex;align-items:center;justify-content:center;gap:7px;color:#eaf4ee;font-size:10px;font-weight:800;cursor:pointer}
+.raid-ticket-quantity .rtq-check input{width:auto;padding:0;box-shadow:none}
+.rtr-bar{height:8px;margin:10px 0 6px;overflow:hidden;border:2px solid #202b2c;border-radius:9px;background:#0d1415}
+.rtr-bar i{display:block;width:0;height:100%;background:linear-gradient(90deg,#fff1a7,#c9a43b);transition:width .2s ease}
+.rtr-count{color:#dce8e1;font-size:9px;font-weight:800}
+.rtr-stop{margin-top:10px}
+.raid-ticket-result-icon.part{color:#2b2208;background:linear-gradient(145deg,#ffe9a0,#d9a93a);border-color:#f6d35f}
+.rt-pips{display:flex;justify-content:center;flex-wrap:wrap;gap:3px;margin:4px 0 8px}
+.rt-pips i{width:9px;height:9px;border-radius:50%;background:#76bb52}
+.rt-pips i.l{background:#bf5e62}
+.raid-ticket-batch-warning{margin:4px 0;color:#ffd37b;font-size:8px;font-weight:800}
+.rt-result-actions{margin-top:10px}
