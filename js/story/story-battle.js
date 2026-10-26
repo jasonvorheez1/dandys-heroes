@@ -553,6 +553,7 @@ const StoryBattleUI = {
     const r = this.run, n = r.n, c = MainStory.state().cleared[r.i] || {}, first = !c[r.mode];
     this.settleStock();
     const tapesBefore = MainStory.ch === 2 ? ST2_TAPES.filter(t => MainStory.tapeOpen(t)).length : 0;
+    const stockBefore = MainStory.ch === 2 ? new Set(ST2_SHOP.filter(p => MainStory.shopItemOpen(p)).map(p => p.id)) : null;
     const ups = {};
     r.ids.forEach(id => { ups[id] = MainStory.addExp(id, r.exp); });
     const rew = MainStory.rewards(n, r.mode, first);
@@ -561,6 +562,10 @@ const StoryBattleUI = {
     const skin = r.mode === 'hard' && first && n.skin ? ST_SKINS[n.skin] : null;
     Sound.play('arena_fanfare', { vol: .5 });
     if (MainStory.ch === 2) ST2_TAPES.filter(t => MainStory.tapeOpen(t)).slice(tapesBefore).forEach((t, k) => setTimeout(() => UI.toast(`📼 New tape: ${t.title}`), 1200 + k * 600));
+    if (stockBefore) {
+      const newStock = ST2_SHOP.filter(p => !stockBefore.has(p.id) && MainStory.shopItemOpen(p)).map(p => ST_ITEMS[p.id].name);
+      if (newStock.length) setTimeout(() => UI.toast(`🔓 Dandy’s Shop: ${newStock.join(', ')}`), 1900);
+    }
     this.closeBattle();
     StoryUI.sel = MainStory.nodes[r.i + 1] ? r.i + 1 : r.i;
     StoryUI.pendingResult = { win: true, n, mode: r.mode, first, rew, ups, exp: Math.round(r.exp), ids: r.ids, skin, next: first && r.mode === 'easy' && MainStory.nodes[r.i + 1] ? r.i + 1 : null };
