@@ -263,11 +263,15 @@ img.ink, .inky img { filter: grayscale(1) brightness(.28) contrast(1.8) drop-sha
 .ms-bust img { position: absolute; bottom: 0; left: 50%; height: 100%; width: auto; max-width: 150%; object-fit: contain; object-position: bottom; transform: translateX(-50%); filter: drop-shadow(0 6px 10px #000a); }
 .ms-bust.handler img { height: 112%; bottom: -14%; }
 .ms-bust.vnart img { height: 108%; bottom: -8%; }
+.ms-bust .ms-story-rig { position: absolute; bottom: 0; left: 50%; width: 150%; height: 100%; transform: translateX(-50%); filter: drop-shadow(0 6px 10px #000a); }
+.ms-bust .ms-story-rig .rig-svg { display: block; width: 100%; height: 100%; overflow: visible; }
+.ms-bust.vnart .ms-story-rig { height: 108%; bottom: -8%; }
 .ms-bust.in { opacity: 1; transform: translateX(-50%); }
 .ms-bust.out { opacity: 0; transform: translateX(-50%) translateY(20px); }
 .ms-bust.dim { filter: brightness(.48) saturate(.7); z-index: 1; }
 .ms-bust.talk { z-index: 4; filter: none; }
 .ms-bust.talk img { animation: msTalk .35s ease-out; }
+.ms-bust.talk .ms-story-rig { animation: msTalk .35s ease-out; }
 .ms-bust.twisted img { filter: drop-shadow(0 0 14px #ff3b4e88) drop-shadow(0 6px 10px #000); animation: msTwitch 3s steps(1) infinite; }
 .ms-bust.a-shake { animation: msShakeX .4s; }
 .ms-bust.a-jump { animation: msJump .45s cubic-bezier(.3, 1.6, .5, 1); }

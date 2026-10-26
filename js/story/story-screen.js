@@ -378,6 +378,28 @@ const StoryUI = {
     const slots = { farleft: 13, left: 31, center: 50, right: 69, farright: 87 };
     const cast = {}, log = [];
     let at = 0, typing = null, full = '', waiting = false, closed = false, choice = 0, auto = false, autoT = null, curBg = '';
+    let rigFrame = 0, rigLast = 0;
+    const showStill = c => {
+      c.rig = null;
+      c.node.classList.remove('rigged');
+      c.node.querySelector('.ms-story-rig')?.remove();
+      const img = el('img'); img.src = c.art; img.alt = msWho(c.who);
+      c.node.insertBefore(img, c.node.firstChild);
+    };
+    const tickRigs = now => {
+      if (closed || !vn.isConnected) { rigFrame = 0; return; }
+      const dt = Math.min(Math.max((now - (rigLast || now)) / 1000, 0), .05);
+      rigLast = now;
+      Object.values(cast).forEach(c => {
+        if (!c.rig) return;
+        try { c.rig.update(c.unit, dt, null); }
+        catch (e) { console.warn('Story rig failed for ' + c.who, e); showStill(c); }
+      });
+      rigFrame = Object.values(cast).some(c => c.rig) ? requestAnimationFrame(tickRigs) : 0;
+    };
+    const startRigLoop = () => {
+      if (!rigFrame) { rigLast = 0; rigFrame = requestAnimationFrame(tickRigs); }
+    };
     const setBg = key => {
       const url = stBg(key);
       vn.classList.remove('fx-blackout');
@@ -387,7 +409,7 @@ const StoryUI = {
       bg.classList.remove('pan'); void bg.offsetWidth; bg.classList.add('pan');
     };
     const freeSlot = () => ['center', 'left', 'right', 'farleft', 'farright'].find(sl => !Object.values(cast).some(c => c.slot === sl)) || 'center';
-    const exit = who => { const c = cast[who]; if (!c) return; delete cast[who]; c.node.classList.remove('in'); c.node.classList.add('out'); setTimeout(() => c.node.remove(), 450); };
+    const exit = who => { const c = cast[who]; if (!c) return; delete cast[who]; clearTimeout(c.emT); c.node.classList.remove('in'); c.node.classList.add('out'); setTimeout(() => c.node.remove(), 450); };
     const enter = (who, slot) => {
       const art = stPortrait(who); if (!art) return null;
       let c = cast[who];
@@ -395,9 +417,22 @@ const StoryUI = {
         const present = Object.keys(cast);
         if (present.length >= 5) exit(present.sort((a, b) => (cast[a].talked || 0) - (cast[b].talked || 0))[0]);
         const node = el('div', 'ms-bust' + (/^Twisted/.test(who) ? ' twisted' : '') + (ST_HANDLERS[who] ? ' handler' : '') + (ST_VN_ART[who] ? ' vnart' : ''));
-        node.innerHTML = `<img src="${art}" alt="${msWho(who)}"><span class="ms-emote"></span>`;
+        node.innerHTML = '<span class="ms-emote"></span>';
         stage.appendChild(node);
-        c = cast[who] = { node, slot: slot || freeSlot() };
+        c = cast[who] = { node, slot: slot || freeSlot(), who, art, rig: null };
+        const kit = !/^Twisted/.test(who) && !ST_HANDLERS[who] && rigKitFor(who);
+        if (kit && kit.enabled()) {
+          const host = el('div', 'ms-story-rig');
+          node.insertBefore(host, node.firstChild);
+          try {
+            c.rig = kit.create(host);
+            host.querySelector('svg')?.setAttribute('preserveAspectRatio', 'xMidYMax meet');
+            c.unit = { id: who, face: 1, moving: false, vx: 0, vy: 0, animState: 'idle', animT: 0, animDur: 0,
+              casting: false, hitT: 0, visualSleep: false, visualStun: false, hasStatus: () => false };
+            node.classList.add('rigged');
+            startRigLoop();
+          } catch (e) { console.warn('Story rig could not start for ' + who, e); showStill(c); }
+        } else showStill(c);
         requestAnimationFrame(() => node.classList.add('in'));
       }
       if (slot) c.slot = slot;
@@ -467,7 +502,8 @@ const StoryUI = {
       });
     };
     const finish = skipped => {
-      if (closed) return; closed = true; clearInterval(typing); clearTimeout(autoT);
+      if (closed) return; closed = true; clearInterval(typing); clearTimeout(autoT); cancelAnimationFrame(rigFrame);
+      document.removeEventListener('keydown', key);
       vn.classList.add('closing'); this.overlay = false;
       setTimeout(() => vn.remove(), 520);
       const first = !MainStory.done(i);
