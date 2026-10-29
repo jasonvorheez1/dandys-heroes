@@ -10,34 +10,19 @@ SPECIAL_HERO_ICONS.WhisperingFlower = CODEBASE_ART;
 // collection counts, random Twisted pools, or raid simulations.
 defHero({
   id: 'WhisperingFlower', name: 'Whispering Flower', icon: 'WhisperingFlower',
-<<<<<<< HEAD
   folder: null, file: null, twistedOnly: true, role: 'Control', tier: 'SS',
   element: 'Fire / Earth', scale: 3.6, // a giant that towers over the field
   base: { hp: 5400, atk: 420, def: 480, mag: 700, mdef: 480, spd: 120, acc: 220, eva: 70 },
   growth: { hp: .09, atk: .075, def: .08, mag: .09, mdef: .08 },
   hidden: { range: 480, aspd: 1.05, ms: 48, aggro: 2, crit: .05, critDmg: 1.5,
-=======
-  folder: null, file: null, twistedOnly: true, role: 'Control', tier: 'S',
-  element: 'Fire / Water', scale: 1.18,
-  base: { hp: 5400, atk: 190, def: 220, mag: 305, mdef: 225, spd: 95, acc: 180, eva: 70 },
-  growth: { hp: .09, atk: .075, def: .08, mag: .09, mdef: .08 },
-  hidden: { range: 315, aspd: .78, ms: 48, aggro: 2, crit: .05, critDmg: 1.5,
->>>>>>> ccb31b9f96fec6e5b5e1509b31b66f6b3cb024e0
     healPow: 1, shieldPow: 1, cdr: 0, ccRes: .78, kbRes: 1,
     armorPen: 0, magPen: .1 },
   move: { gait: 'float', bob: 4, freq: .9, lean: 3, squash: .03,
     idle: 'breathe', step: 'step', particles: 'sparkle', pcol: '#9f80df', brake: .8 },
-<<<<<<< HEAD
   basic: { name: 'Water Whisper', type: 'magic', ratio: .9, range: 480,
     proj: 'orb', pcol: '#74d9ef', sfx: 'whoosh', hit: 'hit_magic', wind: .28,
     onHit: (u, target, battle) => {
       if (chance(.4)) battle.applyStatus(u, target, 'slow', 3);
-=======
-  basic: { name: 'Water Whisper', type: 'magic', ratio: .65, range: 315,
-    proj: 'orb', pcol: '#74d9ef', sfx: 'whoosh', hit: 'hit_magic', wind: .32,
-    onHit: (u, target, battle) => {
-      if (chance(.28)) battle.applyStatus(u, target, 'slow', 3);
->>>>>>> ccb31b9f96fec6e5b5e1509b31b66f6b3cb024e0
     } },
   skills: {}
 });
@@ -45,12 +30,9 @@ defHero({
 const Codebase = {
   LIMIT: 3,
   MAX_RAGE: 30,
-<<<<<<< HEAD
   MIN_MASTERY: 100,
   unlocked() { return (Number(Save.data.mastery) || 1) >= this.MIN_MASTERY; },
   REWARD_MULT: 2.5,
-=======
->>>>>>> ccb31b9f96fec6e5b5e1509b31b66f6b3cb024e0
 
   state() {
     const today = dayIndex();
@@ -75,7 +57,6 @@ const Codebase = {
     return true;
   },
   flowerSpec() {
-<<<<<<< HEAD
     const level = clamp(Math.round((Number(Save.data.mastery) || 1) * 1.15), 1, 800);
     return { id: 'WhisperingFlower', name: 'Whispering Flower', level,
       kind: 'boss', rarity: 4, rarityPlus: 1, stars: 3, skillLv: level,
@@ -101,33 +82,12 @@ const Codebase = {
     { x: 320, rewards: { exp: 56, ichor: 38, core: 20, diamond: 8, raidTicket: 8 } },
     { x: 450, rewards: { exp: 72, ichor: 48, core: 25, main: 3, manual: 40, elevatorTicket: 3 } },
     { x: 600, rewards: { exp: 100, ichor: 65, core: 35, diamond: 12, main: 5, raidTicket: 12 } }
-=======
-    const level = clamp(Math.round((Number(Save.data.mastery) || 1) * .85), 1, 800);
-    return { id: 'WhisperingFlower', name: 'Whispering Flower', level,
-      kind: 'boss', rarity: 4, rarityPlus: 1, stars: 3, skillLv: level,
-      immovable: true, artSrc: ASSET + CODEBASE_ART,
-      mult: { hp: 1.25, atk: .9, mag: .9, def: 1, mdef: 1 } };
-  },
-  MILESTONES: [
-    { x: 3, rewards: { exp: 1, ichor: 1 } },
-    { x: 8, rewards: { exp: 1.6, ichor: 1.4, manual: 3 } },
-    { x: 16, rewards: { exp: 2.4, ichor: 2, core: 1, star: 8 } },
-    { x: 30, rewards: { exp: 3.6, ichor: 3, core: 2, manual: 6 } },
-    { x: 55, rewards: { exp: 5.4, ichor: 4.5, core: 3, diamond: 1 } },
-    { x: 100, rewards: { exp: 8, ichor: 7, core: 4, manual: 10, diamond: 2 } },
-    { x: 180, rewards: { exp: 12, ichor: 10, core: 6, diamond: 3 } },
-    { x: 320, rewards: { exp: 18, ichor: 15, core: 8, manual: 16, diamond: 5 } }
->>>>>>> ccb31b9f96fec6e5b5e1509b31b66f6b3cb024e0
   ],
   expUnit() { return 60000 + Math.round(clamp(Number(Save.data.mastery) || 1, 1, 800) * 1500); },
   milestoneGoal(boss, i) { return Math.round(boss.max.hp * this.MILESTONES[i].x); },
   newRun(attempt) {
     return { day: dayIndex(), attempt, rage: 0, damage: 0, total: 0, milestone: 0,
-<<<<<<< HEAD
       rewards: { exp: 0, ichor: 0, tape: 0, notes: 0, star: 0, core: 0, manual: 0, diamond: 0, gold: 0, main: 0, ticket: 0, raidTicket: 0, elevatorTicket: 0, counterToken: 0 },
-=======
-      rewards: { exp: 0, ichor: 0, tape: 0, notes: 0, star: 0, core: 0, manual: 0, diamond: 0 },
->>>>>>> ccb31b9f96fec6e5b5e1509b31b66f6b3cb024e0
       rng: seeded(`codebase:${dayIndex()}:${attempt}:${Save.data.mastery}`), castTurn: 0 };
   },
   threshold(boss, rage) {
@@ -137,7 +97,6 @@ const Codebase = {
     const fifth = rage % 5 === 0;
     const mastery = clamp(Number(Save.data.mastery) || 1, 1, 800);
     const reward = run.rewards;
-<<<<<<< HEAD
     const mult = this.REWARD_MULT;
     reward.exp += Math.round((1 + rage * .35 + (fifth ? 6 + rage * .5 : 0)) * (4200 + mastery * 95) * mult);
     reward.ichor += Math.round((1 + rage * .3) * (1400 + mastery * 30) * mult);
@@ -147,26 +106,12 @@ const Codebase = {
       reward.core += Math.round((1 + Math.floor(rage / 10)) * mult);
       reward.manual += Math.round((2 + Math.floor(rage / 5)) * mult);
       if (rage >= 10) reward.diamond += Math.round(mult);
-=======
-    reward.exp += Math.round((1 + rage * .35 + (fifth ? 6 + rage * .5 : 0)) * (4200 + mastery * 95));
-    reward.ichor += Math.round((1 + rage * .3) * (1400 + mastery * 30));
-    const extra = run.rng.pick(['tape', 'notes', 'star']);
-    reward[extra] += fifth ? 12 + rage * 2 : 3 + Math.ceil(rage / 2);
-    if (fifth) {
-      reward.core += 1 + Math.floor(rage / 10);
-      reward.manual += 2 + Math.floor(rage / 5);
-      if (rage >= 10) reward.diamond += 1;
->>>>>>> ccb31b9f96fec6e5b5e1509b31b66f6b3cb024e0
     }
   },
   rewardForMilestone(run, i) {
     const unit = this.expUnit();
     Object.entries(this.MILESTONES[i].rewards).forEach(([key, n]) => {
-<<<<<<< HEAD
       run.rewards[key] += Math.round((key === 'exp' || key === 'ichor' ? n * unit * (key === 'exp' ? 1 : .35) : n) * this.REWARD_MULT);
-=======
-      run.rewards[key] += key === 'exp' || key === 'ichor' ? Math.round(n * unit * (key === 'exp' ? 1 : .35)) : n;
->>>>>>> ccb31b9f96fec6e5b5e1509b31b66f6b3cb024e0
     });
   },
   rewards(run) {
@@ -228,11 +173,7 @@ const Codebase = {
         climbed++;
         this.rewardForLevel(run, run.rage);
         const stat = run.rng.pick(['atkP', 'magP', 'defP', 'mdefP', 'aspdP']);
-<<<<<<< HEAD
         boss.flat[stat] = (boss.flat[stat] || 0) + (stat === 'aspdP' ? .026 : .05);
-=======
-        boss.flat[stat] = (boss.flat[stat] || 0) + (stat === 'aspdP' ? .018 : .035);
->>>>>>> ccb31b9f96fec6e5b5e1509b31b66f6b3cb024e0
         boss.dirty = true;
         battle.timeLimit = Math.min(145, battle.timeLimit + (run.rage % 5 === 0 ? 7 : 2));
         battle.meta.survivedLabel = `Rage ${run.rage} / ${this.MAX_RAGE}`;
@@ -250,7 +191,6 @@ const Codebase = {
       update();
     });
 
-<<<<<<< HEAD
     // Its normal attack is Water Whisper. Between attacks it throws fire and
     // earth; every fifth Rage level adds another move to the rotation.
     battle.every(boss, 5, () => {
@@ -261,25 +201,12 @@ const Codebase = {
       if (run.rage >= 15) unlocked.push('rootwall');
       if (run.rage >= 20) unlocked.push('magma');
       if (run.rage >= 25) unlocked.push('avalanche');
-=======
-    // Its normal attack is Water Whisper. Fire arrives even at low Rage;
-    // every fifth level expands the rotating special attack list.
-    battle.every(boss, 8, () => {
-      if (battle.over || !boss.alive) return;
-      const unlocked = ['ember'];
-      if (run.rage >= 5) unlocked.push('rain');
-      if (run.rage >= 10) unlocked.push('steam');
-      if (run.rage >= 15) unlocked.push('wildfire');
-      if (run.rage >= 20) unlocked.push('flood');
-      if (run.rage >= 25) unlocked.push('boil');
->>>>>>> ccb31b9f96fec6e5b5e1509b31b66f6b3cb024e0
       if (run.rage >= 30) unlocked.push('finale');
       this.cast(battle, boss, unlocked[run.castTurn++ % unlocked.length], run.rage);
     });
     update();
   },
 
-<<<<<<< HEAD
   /* SS-tier Fire / Earth moveset: embers, thorns, quakes and a final eruption. */
   cast(battle, boss, kind, rage) {
     const foes = battle.enemiesOf(boss).filter(u => u.alive);
@@ -330,31 +257,6 @@ const Codebase = {
         hit(live, 1.25);
         live.forEach(t => { battle.applyStatus(boss, t, 'burn', 5, { stacks: 3 }); battle.applyStatus(boss, t, 'stun', 1.8); });
       }
-=======
-  cast(battle, boss, kind, rage) {
-    const foes = battle.enemiesOf(boss).filter(u => u.alive);
-    if (!foes.length) return;
-    const fire = ['ember', 'wildfire', 'boil', 'finale'].includes(kind);
-    const color = fire ? '#ff9360' : '#76d8ee';
-    const names = { ember: 'Ember Pollen', rain: 'Scalding Rain', steam: 'Steam Veil',
-      wildfire: 'Wildfire Bloom', flood: 'Floodline', boil: 'Boiling Bloom', finale: 'Last Petal' };
-    const picked = ['ember', 'steam'].includes(kind) ? [battle.lowestHp(foes) || foes[0]] : foes;
-    const power = { ember: .48, rain: .42, steam: .72, wildfire: .78,
-      flood: .68, boil: .95, finale: 1.12 }[kind];
-    battle.anim(boss, 'cast', .68);
-    battle.log(`<b>${boss.name}:</b> ${names[kind]}`);
-    battle.fxFloatIcon(boss.x, boss.y - 108, fire ? '🔥' : '💧', color);
-    battle.after(.42, () => {
-      if (!boss.alive || battle.over) return;
-      picked.forEach(target => {
-        if (!target.alive) return;
-        battle.fxSparkle(target.x, target.y - 50, 9, color);
-        battle.damage(boss, target, boss.st.mag * power * (1 + rage * .012),
-          { type: 'magic', tag: names[kind] });
-        if (fire) battle.applyStatus(boss, target, 'burn', 4, { stacks: kind === 'finale' ? 3 : 1 });
-        else battle.applyStatus(boss, target, 'slow', 3.5, { stacks: kind === 'flood' ? 2 : 1 });
-      });
->>>>>>> ccb31b9f96fec6e5b5e1509b31b66f6b3cb024e0
       if (!battle.offscreen) Sound.play(fire ? 'hit_magic' : 'paint_splash', { vol: .5, throttle: 100 });
     });
   }

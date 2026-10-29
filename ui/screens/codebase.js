@@ -4,11 +4,7 @@
 Object.assign(Screens, {
   codebaseCard() {
     const state = Codebase.state();
-<<<<<<< HEAD
     const remaining = Codebase.LIMIT - state.attempts, open = Codebase.unlocked();
-=======
-    const remaining = Codebase.LIMIT - state.attempts;
->>>>>>> ccb31b9f96fec6e5b5e1509b31b66f6b3cb024e0
     const card = el('article', 'trial-card codebase-card');
     card.style.setProperty('--trial-accent', '#c690e9');
     card.style.setProperty('--trial-deep', '#2a1d45');
@@ -21,21 +17,14 @@ Object.assign(Screens, {
         <div class="trial-rule">Deal as much damage as you can. Rage levels and damage milestones pay EXP and rewards.</div>
         <div class="trial-count">${remaining} / ${Codebase.LIMIT} TRIES · BEST RAGE ${state.best} / ${Codebase.MAX_RAGE}</div>
         <div class="trial-count">RESETS IN <b id="codebaseReset">--</b></div>
-<<<<<<< HEAD
         <button type="button" class="trial-play codebase-enter${open && remaining && Save.ownedIds().length ? '' : ' need'}" ${open && remaining && Save.ownedIds().length ? '' : 'disabled'}>${remaining ? 'ENTER' : 'BACK TOMORROW'}</button>
-=======
-        <button type="button" class="trial-play codebase-enter${remaining && Save.ownedIds().length ? '' : ' need'}" ${remaining && Save.ownedIds().length ? '' : 'disabled'}>${remaining ? 'ENTER' : 'BACK TOMORROW'}</button>
->>>>>>> ccb31b9f96fec6e5b5e1509b31b66f6b3cb024e0
       </div>`;
     $('.codebase-enter', card).onclick = () => this.codebaseSetup();
     return card;
   },
 
   codebaseSetup() {
-<<<<<<< HEAD
     if (!Codebase.unlocked()) { UI.toast(`Petal Rush opens at Mastery ${Codebase.MIN_MASTERY}`); Sound.play('ui_err'); return; }
-=======
->>>>>>> ccb31b9f96fec6e5b5e1509b31b66f6b3cb024e0
     if (!Codebase.remaining()) { UI.toast('All three Petal Rush attempts used today'); Sound.play('ui_err'); return; }
     if (!Save.ownedIds().length) { UI.toast('Recruit a Hero first'); Sound.play('ui_err'); return; }
     this.openTeamEditor(() => true, team => this.codebaseFight(team), 'Petal Rush · Any Hero',
@@ -43,10 +32,7 @@ Object.assign(Screens, {
   },
 
   codebaseFight(team) {
-<<<<<<< HEAD
     if (!Codebase.unlocked()) { UI.toast(`Petal Rush opens at Mastery ${Codebase.MIN_MASTERY}`); this.render(); return; }
-=======
->>>>>>> ccb31b9f96fec6e5b5e1509b31b66f6b3cb024e0
     if (!Codebase.remaining()) { UI.toast('All three Petal Rush attempts used today'); this.render(); return; }
     const chosen = (team || []).filter(id => id && Save.owns(id)).slice(0, 5);
     if (!chosen.length) { UI.toast('Pick at least one Hero'); this.render(); return; }

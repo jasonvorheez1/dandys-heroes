@@ -8,11 +8,7 @@ const GigiRigs = (() => {
   const ease = n => { n = clamp(n, 0, 1); return n * n * (3 - 2 * n); };
   const pulse = n => Math.sin(Math.PI * clamp(n, 0, 1));
   const segment = (start, end, value) => ease((value - start) / (end - start));
-<<<<<<< HEAD
   const itemUrl = name => ItemSheet.url(name || 'Gumballs');
-=======
-  const itemUrl = name => (typeof ASSET === 'string' ? ASSET : './') + 'item/' + (name || 'Gumballs') + '.png';
->>>>>>> ccb31b9f96fec6e5b5e1509b31b66f6b3cb024e0
   function itemMotion(node, unit, time, progress, start, end, size, lid) {
     const active = unit._gigiLidUntil > (unit._rigBattleTime || 0) && unit.animStyle === 'gigiWheel';
     const lift = active ? segment(.13, .43, progress) : 0;

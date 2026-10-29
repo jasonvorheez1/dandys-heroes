@@ -152,11 +152,8 @@ Object.assign(Screens, {
       ? `<span>${ctx.currencyIcon || ''} <b>+${fmt(r.tokenReward)}</b> ${ctx.currencyName}</span>` : '';
     const trinkets = (r.results || []).reduce((n, x) => n + (x.trinkets || 0), 0);
     const trinketLine = trinkets ? `<span>🔧 <b>+${fmt(trinkets)}</b> Trinket${trinkets === 1 ? '' : 's'}</span>` : '';
-<<<<<<< HEAD
     const modLines = Mods.rewardRows(r.modHaul).map(row =>
       `<span>${row.icon} <b>+${fmt(row.amount)}</b> ${row.name}${row.mod && row.amount !== 1 ? 's' : ''}</span>`).join('');
-=======
->>>>>>> ccb31b9f96fec6e5b5e1509b31b66f6b3cb024e0
     const campaignLines = ctx.friendship
       ? (r.campaignAdvanced ? '<span>🤝 <b>Chapter cleared</b> Friendship Campaign progress</span>' : '')
         + (r.badgeEarned ? '<span>🤝 <b>Friendship Badge earned</b></span>' : '') : '';
@@ -173,11 +170,7 @@ Object.assign(Screens, {
     const pips = (r.outcomes || []).length > 1
       ? `<div class="rt-pips">${r.outcomes.slice(0, 60).map(w => `<i class="${w ? 'w' : 'l'}"></i>`).join('')}</div>` : '';
     const ticketLine = r.ticketsEarned ? `<span>⚡ <b>+${fmt(r.ticketsEarned)}</b> Raid Ticket${r.ticketsEarned === 1 ? '' : 's'} earned</span>` : '';
-<<<<<<< HEAD
     const loot = ticketLine + tokenLine + shardLines + rewardLines + trinketLine + modLines + campaignLines;
-=======
-    const loot = ticketLine + tokenLine + shardLines + rewardLines + trinketLine + campaignLines;
->>>>>>> ccb31b9f96fec6e5b5e1509b31b66f6b3cb024e0
     const body = el('div', 'raid-ticket-result');
     body.innerHTML = `<div class="raid-ticket-result-icon ${state === 'win' ? 'win' : state === 'part' ? 'part' : 'loss'}">${state === 'win' ? '✓' : state === 'part' ? '½' : '×'}</div>
       <h3>${head}</h3><p>${sub}</p>${pips}

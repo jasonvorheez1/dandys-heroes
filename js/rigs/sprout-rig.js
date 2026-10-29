@@ -153,7 +153,6 @@ const SproutRig = PuppetRig.define({
       c.prop('treat', rs * 1.2); c.set('grin');
       if (jump > .15 && Math.random() < c.dt * 12) c.emit(143 + L.rnd(-70, 70), 180 + L.rnd(-50, 40), L.rnd(-8, 8), L.rnd(-34, -14), L.rnd(.7, 1.1), L.rnd(4, 8));
     },
-<<<<<<< HEAD
     // Named poses use the same channel targets as idle and walk. They add
     // skill vocabulary without creating another SVG or a separate timer.
     skills: {
@@ -190,8 +189,6 @@ const SproutRig = PuppetRig.define({
         P.headR = -6 * brace; P.lookX = 1; c.set('determined');
       }
     },
-=======
->>>>>>> ccb31b9f96fec6e5b5e1509b31b66f6b3cb024e0
     sleep(c) { const { P } = c; P.headR = 18; P.torso += 5; P.headY += 5; P.aL = 3; P.aR = -2; P.lookX = 0; },
     stun(c) { const { P, T } = c; P.headR += Math.sin(T * 4.5) * 9; P.torso += Math.sin(T * 4.5) * 5; }
   }

@@ -2,7 +2,6 @@
 'use strict';
 
 function rigKitFor(id) {
-<<<<<<< HEAD
   if(typeof ReviewedCareBearRigs!=='undefined'&&ReviewedCareBearRigs[id])return ReviewedCareBearRigs[id];
   // Caramel Drizzle has its own painted cutout. Default Cosmo uses the
   // canonical sprite rig below; the costume kit disables itself otherwise.
@@ -20,10 +19,6 @@ function rigKitFor(id) {
     Dango: typeof DangoRig !== 'undefined' ? DangoRig : null,
     Scraps: typeof ScrapsRig !== 'undefined' ? ScrapsRig : null,
     Cosmo: typeof CosmoCaramelRig !== 'undefined' ? CosmoCaramelRig : null,
-=======
-  const kits = {
-    Scraps: typeof ScrapsRig !== 'undefined' ? ScrapsRig : null,
->>>>>>> ccb31b9f96fec6e5b5e1509b31b66f6b3cb024e0
     Astro: typeof AstroRigs !== 'undefined' ? AstroRigs.Astro : null,
     BedtimeAstro: typeof AstroRigs !== 'undefined' ? AstroRigs.BedtimeAstro : null,
     Shelly: typeof ShellyRigs !== 'undefined' ? ShellyRigs.Shelly : null,
@@ -47,7 +42,6 @@ function rigKitFor(id) {
     QOMGourdy: typeof QOMGourdyRig !== 'undefined' ? QOMGourdyRig : null,
     Connie: typeof ConnieRig !== 'undefined' ? ConnieRig : null,
     QOMConnie: typeof QOMConnieRig !== 'undefined' ? QOMConnieRig : null,
-<<<<<<< HEAD
     Cocoa: typeof CocoaRig !== 'undefined' ? CocoaRig : null,
     Jessie: typeof JessieRig !== 'undefined' ? JessieRig : null,
     TenderheartSprout: typeof ToonCutoutRigs !== 'undefined' ? ToonCutoutRigs.TenderheartSprout : null,
@@ -161,9 +155,3 @@ const RigMotion = (() => {
   }
   return { register, update };
 })();
-=======
-    Cocoa: typeof CocoaRig !== 'undefined' ? CocoaRig : null
-  };
-  return kits[id] || null;
-}
->>>>>>> ccb31b9f96fec6e5b5e1509b31b66f6b3cb024e0

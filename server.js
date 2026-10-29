@@ -310,13 +310,8 @@ export default {
       if (mode !== 'easy' && mode !== 'hard') return jsonError('Unknown mode', 400);
       const week = plushWeek();
       if (cleanNumber(body.week, -1, 1e6, -1) !== week) return jsonError('That week has already closed', 409);
-<<<<<<< HEAD
       const score = Number(body.score);
       if (!Number.isSafeInteger(score) || score <= 0) return jsonError('Submit a valid score', 400);
-=======
-      const score = cleanNumber(body.score, 0, 4000000000, 0);
-      if (!score) return jsonError('No score to submit', 400);
->>>>>>> ccb31b9f96fec6e5b5e1509b31b66f6b3cb024e0
       const username = cleanText(request.headers.get('x-websim-username') || 'Player', 64) || 'Player';
       await env.DB.exec(PLUSH_TABLE);
       await env.DB

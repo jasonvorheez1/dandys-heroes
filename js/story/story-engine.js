@@ -110,7 +110,6 @@ function stChar(k) { return ST_HANDLERS[k] || ST_TOONS[k]; }
 
 /* ------------------------------------------------------------ ITEMS */
 const ST_ITEMS = {
-<<<<<<< HEAD
   bandage: { name: 'Bandage', icon: ItemSheet.url('bandage'), target: 'ally', desc: 'Restore 40% HP.' },
   medkit: { name: 'Med Kit', icon: ItemSheet.url('Medkit'), target: 'allies', desc: 'Restore 35% HP to the whole party.' },
   pop: { name: 'Bottle o’ Pop', icon: ItemSheet.url('Bottleopop'), target: 'ally', desc: 'Restore 18 FP.' },
@@ -120,16 +119,6 @@ const ST_ITEMS = {
   tonic: { name: 'Clean Tonic', icon: ItemSheet.url('Marmalade'), target: 'allies', desc: 'Wash off every ailment and restore 20% HP to the whole party.' },
   barrier: { name: 'Barrier Sign', icon: 'uploads/barriersign.png', target: 'allies', desc: 'Plant it in front of everyone: counts as a Tank for 3 turns, with Ward 25%.' },
   stealth: { name: 'Stealth Candy', icon: ItemSheet.url('Stealthcandy'), target: 'ally', desc: 'The ally can’t be singled out for 2 turns.' }
-=======
-  bandage: { name: 'Bandage', icon: 'item/bandage.png', target: 'ally', desc: 'Restore 40% HP.' },
-  medkit: { name: 'Med Kit', icon: 'item/Medkit.png', target: 'allies', desc: 'Restore 35% HP to the whole party.' },
-  pop: { name: 'Bottle o’ Pop', icon: 'item/Bottleopop.png', target: 'ally', desc: 'Restore 18 FP.' },
-  speed: { name: 'Speed Candy', icon: 'item/Speedcandy.png', target: 'ally', desc: 'Haste for 3 turns.' },
-  jumper: { name: 'Jumper Cable', icon: 'item/Jumpercable.png', target: 'ko', desc: 'Revive a fallen ally at 45% HP.' },
-  jawbreaker: { name: 'Jawbreaker', icon: 'item/jawbreaker.png', target: 'ally', desc: 'A Shield worth 30% of the ally’s Max HP for 3 turns.' },
-  tonic: { name: 'Clean Tonic', icon: 'item/Marmalade.png', target: 'allies', desc: 'Wash off every ailment and restore 20% HP to the whole party.' },
-  stealth: { name: 'Stealth Candy', icon: 'item/Stealthcandy.png', target: 'ally', desc: 'The ally can’t be singled out for 2 turns.' }
->>>>>>> ccb31b9f96fec6e5b5e1509b31b66f6b3cb024e0
 };
 
 /* ------------------------------------------------------------ ENEMIES
@@ -256,10 +245,7 @@ class StoryBattle {
     this.over = false; this.win = false;
     this.uid = 0;
     this.phaseHooks = [];
-<<<<<<< HEAD
     this.tier = opt.tier || 0;   // Chapter 3: how far along the enemy ramp this fight sits
-=======
->>>>>>> ccb31b9f96fec6e5b5e1509b31b66f6b3cb024e0
     (opt.party || []).forEach(p => this.addHandler(p, opt));
     (opt.foes || []).forEach(f => this.addFoe(f[0], f[1], f[2] || {}));
     this.units.forEach(u => { u.ct = 1000 / u.s.spd * this.rng.range(.25, 1); });
@@ -283,11 +269,7 @@ class StoryBattle {
     const u = {
       uid: ++this.uid, key, side: 'e', name: extra.name || e.name, lv, row: 'front', def: e,
       max: { hp: s.hp, fp: 0 }, hp: s.hp, fp: 0, s, st: {}, alive: true, boss: !!(e.boss || extra.boss),
-<<<<<<< HEAD
       stagger: { max: e.stagger * (extra.boss ? 1.4 : 1), cur: 0, broken: 0 }, tele: null, cds: {}, phaseDone: {}, exp: e.exp, mult: extra.mult
-=======
-      stagger: { max: e.stagger * (extra.boss ? 1.4 : 1), cur: 0, broken: 0 }, tele: null, cds: {}, phaseDone: {}, exp: e.exp
->>>>>>> ccb31b9f96fec6e5b5e1509b31b66f6b3cb024e0
     };
     this.units.push(u); return u;
   }
@@ -488,11 +470,7 @@ class StoryBattle {
 
   summon(src, key, ev) {
     if (this.living('e').length >= ST_MAX_FOES) return null;
-<<<<<<< HEAD
     const f = this.addFoe(key, Math.max(1, src.lv - 1), { mult: src.mult });
-=======
-    const f = this.addFoe(key, Math.max(1, src.lv - 1), {});
->>>>>>> ccb31b9f96fec6e5b5e1509b31b66f6b3cb024e0
     f.ct = this.delay(f) * this.rng.range(.4, .9);
     ev.push({ t: 'summon', target: f.uid, by: src.uid });
     return f;
@@ -503,10 +481,7 @@ class StoryBattle {
     u.alive = false; u.hp = 0; u.st = {}; u.tele = null;
     if (u.stagger) u.stagger.broken = 0;
     ev.push({ t: 'ko', target: u.uid });
-<<<<<<< HEAD
     if (u.side === 'e' && u.def && u.def.split && !u.noSplit) for (let k = 0; k < 2; k++) { const f = this.summon(u, u.def.split, ev); if (f) f.noSplit = true; }
-=======
->>>>>>> ccb31b9f96fec6e5b5e1509b31b66f6b3cb024e0
   }
 
   healRaw(u, amt, ev, tag) {
@@ -568,7 +543,6 @@ class StoryBattle {
       else if (action.id === 'jawbreaker') this.apply(u, tgt, 'shield', 3, { v: Math.round(tgt.max.hp * .3) }, ev);
       else if (action.id === 'tonic') { this.living('p').forEach(x => { this.cleanse(x, ev); this.healRaw(x, x.max.hp * .2, ev, 'Tonic'); }); }
       else if (action.id === 'stealth') this.apply(u, tgt, 'veil', 2, null, ev);
-<<<<<<< HEAD
       else if (action.id === 'barrier') this.living('p').forEach(x => { this.apply(u, x, 'barrier', 3, null, ev); this.apply(u, x, 'ward', 3, { v: .25 }, ev); });
       delayMult = .85;
     } else if (action.type === 'skill') {
@@ -576,13 +550,6 @@ class StoryBattle {
       if (!sk || u.fp < sk.fp || this.has(u, 'silence') || (sk.once && u.used && u.used[sk.id])) return ev;
       u.fp -= sk.fp;
       if (sk.once) (u.used = u.used || {})[sk.id] = true;
-=======
-      delayMult = .85;
-    } else if (action.type === 'skill') {
-      const sk = u.skills.find(s => s.id === action.id);
-      if (!sk || u.fp < sk.fp) return ev;
-      u.fp -= sk.fp;
->>>>>>> ccb31b9f96fec6e5b5e1509b31b66f6b3cb024e0
       ev.push({ t: 'act', actor: u.uid, name: sk.name, kind: 'skill', skill: sk.id });
       this.skill(u, sk, T, ev);
       u.bond = Math.min(100, u.bond + 6);
@@ -709,11 +676,7 @@ class StoryBattle {
       if (move.tele && this.toonInterrupt && this.toonInterrupt(u, move, ev)) { this.endTurn(u, ev, .9); return ev; }
       if (move.tele) {
         u.tele = move;
-<<<<<<< HEAD
         ev.push({ t: 'charge', actor: u.uid, name: move.name, text: move.tele, lethal: !!move.lethal });
-=======
-        ev.push({ t: 'charge', actor: u.uid, name: move.name, text: move.tele });
->>>>>>> ccb31b9f96fec6e5b5e1509b31b66f6b3cb024e0
         this.endTurn(u, ev, .75);
         return ev;
       }
@@ -722,10 +685,7 @@ class StoryBattle {
     const hits = move.hits || 1;
     const doHit = tgt => {
       if (!tgt || !tgt.alive) return;
-<<<<<<< HEAD
       if (move.lethal && this.lethalStrike && this.lethalStrike(u, tgt, move, ev)) return;
-=======
->>>>>>> ccb31b9f96fec6e5b5e1509b31b66f6b3cb024e0
       const dmg = this.hit(u, tgt, move.power, move.kind === 'gamble' ? 'phys' : move.kind, ev, { stagger: 0, aoe: move.target === 'all' });
       if (!tgt.alive) return;
       if (move.ink && this.rng() < move.ink) this.apply(u, tgt, 'ink', 3, null, ev);
@@ -733,11 +693,8 @@ class StoryBattle {
       if (move.stun && this.rng() < move.stun) this.apply(u, tgt, 'stun', 1, null, ev);
       if (move.slow && this.rng() < move.slow) this.apply(u, tgt, 'slow', 2, null, ev);
       if (move.debuff) this.apply(u, tgt, move.debuff, 3, null, ev);
-<<<<<<< HEAD
       if (move.silence && this.rng() < move.silence) this.apply(u, tgt, 'silence', 1, null, ev);
       if (move.fpdrain && tgt.alive) { const n = Math.min(tgt.fp, move.fpdrain); if (n > 0) { tgt.fp -= n; ev.push({ t: 'fp', target: tgt.uid, amount: -n }); } }
-=======
->>>>>>> ccb31b9f96fec6e5b5e1509b31b66f6b3cb024e0
       if (move.drain && dmg) this.healRaw(u, dmg * move.drain, ev, 'Drain');
     };
     switch (move.kind) {
@@ -767,18 +724,11 @@ class StoryBattle {
   /* ---------- autoplay (balance tests and the Auto button) ---------- */
   autoAction(u) {
     const foes = this.living('e'), allies = this.living('p'), ko = this.party().filter(x => !x.alive);
-<<<<<<< HEAD
     const has = id => !this.has(u, 'silence') && u.skills.find(s => s.id === id && u.fp >= s.fp && !(s.once && u.used && u.used[s.id]));
     const lowest = allies.slice().sort((a, b) => a.hp / a.max.hp - b.hp / b.max.hp)[0];
     const charging = foes.find(f => f.tele);
     const target = charging || foes.slice().sort((a, b) => (b.boss ? 1 : 0) - (a.boss ? 1 : 0) || a.hp - b.hp)[0];
     if (charging && charging.tele.lethal && !this.living('p').some(x => this.isTank && this.isTank(x)) && this.items.barrier > 0 && !allies.some(a => this.has(a, 'barrier'))) return { type: 'item', id: 'barrier' };
-=======
-    const has = id => u.skills.find(s => s.id === id && u.fp >= s.fp);
-    const lowest = allies.slice().sort((a, b) => a.hp / a.max.hp - b.hp / b.max.hp)[0];
-    const charging = foes.find(f => f.tele);
-    const target = charging || foes.slice().sort((a, b) => (b.boss ? 1 : 0) - (a.boss ? 1 : 0) || a.hp - b.hp)[0];
->>>>>>> ccb31b9f96fec6e5b5e1509b31b66f6b3cb024e0
     if (u.bond >= 100) return { type: 'bond' };
     if (ko.length && has('batch')) return { type: 'skill', id: 'batch', target: ko[0].uid };
     if (ko.length && this.items.jumper > 0) return { type: 'item', id: 'jumper', target: ko[0].uid };

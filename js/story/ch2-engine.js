@@ -197,11 +197,7 @@
       if (k === 'Rudie') dmg *= 1 + .06 * (src.mom || 0);
       if (k === 'Tisha' && tgt.def && tgt.def.art && tgt.def.art[0] === 'w') dmg *= 1.25;
       if (o.skill && k !== 'Shelly' && this.living('p').some(x => x.key === 'Shelly')) {
-<<<<<<< HEAD
         dmg *= (this.has(tgt, 'mark') || this.has(tgt, 'exposed') || tgt.research >= 1) ? 1.1 : 1.05;
-=======
-        dmg *= (this.has(tgt, 'mark') || this.has(tgt, 'exposed') || tgt.research >= 1) ? 1.2 : 1.1;
->>>>>>> ccb31b9f96fec6e5b5e1509b31b66f6b3cb024e0
       }
       if (tgt.side === 'e' && this.has(tgt, 'exposed')) dmg *= 1.15;
     } else if (tgt.side === 'p') {
