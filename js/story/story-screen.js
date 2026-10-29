@@ -615,6 +615,7 @@ const StoryUI = {
     const finish = skipped => {
       if (closed) return; closed = true; clearInterval(typing); clearTimeout(autoT);
       document.removeEventListener('keydown', key); picToken++;
+      if (external && external.onDispose) external.onDispose(vn);
       vn.classList.add('closing'); this.overlay = false;
       setTimeout(() => vn.remove(), 520);
       // External event scenes share the renderer without granting main-story progress or rewards.
@@ -681,7 +682,16 @@ const StoryUI = {
           else if (cmd === 'image') showPicture(arg);
           else if (cmd === 'horror') showHorror(arg);
           else if (cmd === 'imgoff') hidePicture();
-          else if (external && external.onCommand) external.onCommand(cmd, arg, vn);
+          else if (external && external.onCommand) {
+            const job = external.onCommand(cmd, arg, vn, { resuming: at <= (external.startLine || 0) });
+            if (job && typeof job.then === 'function') {
+              waiting = true;
+              job.then(() => { waiting = false; if (!closed) step(); }, error => {
+                console.warn('Scene animation failed', error); waiting = false; if (!closed) step();
+              });
+              return;
+            }
+          }
           continue;
         }
         if (external && at <= (external.startLine || 0)) continue;

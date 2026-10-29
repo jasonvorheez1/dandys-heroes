@@ -697,3 +697,223 @@
   color: #fde047;
   cursor: default;
 }
+
+
+/* Storybook Chapters */
+.dw-story-hub {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.dw-story-note {
+  font-size: 0.88rem;
+  color: #fbcfe8;
+  background: rgba(35, 15, 45, 0.6);
+  padding: 10px 14px;
+  border-radius: 8px;
+  border-left: 3px solid #f472b6;
+  margin: 0;
+}
+.dw-continue-btn {
+  background: linear-gradient(135deg, #fbbf24, #f59e0b);
+  color: #1f1303;
+  font-weight: 900;
+  font-size: 0.95rem;
+  padding: 12px 20px;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  box-shadow: 0 4px 16px rgba(251, 191, 36, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  transition: transform 0.2s;
+}
+.dw-continue-btn:hover {
+  transform: translateY(-2px);
+  background: #fde047;
+}
+.dw-story-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.dw-story-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 12px 18px;
+  background: rgba(35, 15, 45, 0.85);
+  border: 1px solid rgba(244, 114, 182, 0.3);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.dw-story-card:hover:not(.locked) {
+  background: rgba(50, 22, 65, 0.95);
+  border-color: #f472b6;
+  transform: translateX(4px);
+}
+.dw-story-card.locked {
+  opacity: 0.5;
+  cursor: not-allowed;
+  border-color: rgba(255, 255, 255, 0.15);
+}
+.dw-story-card.read {
+  border-color: rgba(251, 191, 36, 0.4);
+}
+.dw-story-info {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.dw-story-num {
+  font-size: 0.72rem;
+  font-weight: 800;
+  color: #f472b6;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.dw-story-title {
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: #fff;
+}
+.dw-story-place {
+  font-size: 0.78rem;
+  color: #e9d5ff;
+}
+.dw-story-status {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.dw-story-pill {
+  font-size: 0.78rem;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: rgba(244, 114, 182, 0.2);
+  color: #fbcfe8;
+}
+.dw-story-pill.done {
+  background: rgba(251, 191, 36, 0.2);
+  color: #fde047;
+  border: 1px solid rgba(251, 191, 36, 0.4);
+}
+.dw-story-reward-badge {
+  font-size: 0.78rem;
+  font-weight: 800;
+  color: #fde047;
+}
+
+/* Bonus Memories Grid */
+.dw-bonus-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 14px;
+}
+.dw-bonus-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px;
+  background: rgba(35, 15, 45, 0.85);
+  border: 1px solid rgba(244, 114, 182, 0.3);
+  border-radius: 12px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+}
+.dw-bonus-card-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.dw-bonus-art {
+  width: 52px;
+  height: 52px;
+  border-radius: 10px;
+  object-fit: cover;
+  border: 1px solid rgba(244, 114, 182, 0.4);
+  background: #1f0b2a;
+}
+.dw-bonus-info {
+  flex: 1;
+}
+.dw-bonus-info h4 {
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: #fff;
+  margin: 0;
+}
+.dw-bonus-info small {
+  font-size: 0.74rem;
+  color: #fbcfe8;
+}
+.dw-bonus-action-btn {
+  background: linear-gradient(135deg, #f472b6, #ec4899);
+  color: #17091f;
+  font-weight: 900;
+  font-size: 0.82rem;
+  padding: 8px 12px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+}
+.dw-bonus-action-btn:hover {
+  background: #f687c1;
+}
+.dw-bonus-action-btn.replay {
+  background: rgba(251, 191, 36, 0.2);
+  border: 1px solid rgba(251, 191, 36, 0.4);
+  color: #fde047;
+}
+
+/* Poster Wall Grid */
+.dw-posters-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 18px;
+}
+.dw-poster-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+  background: rgba(30, 13, 38, 0.9);
+  border: 2px solid rgba(244, 114, 182, 0.35);
+  border-radius: 14px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+}
+.dw-poster-img {
+  width: 100%;
+  height: 240px;
+  object-fit: contain;
+  background: #15071d;
+  border-radius: 10px;
+  border: 1px solid rgba(244, 114, 182, 0.2);
+}
+.dw-poster-card figcaption {
+  font-size: 0.88rem;
+  font-weight: 800;
+  color: #fde047;
+  text-align: center;
+}
+.dw-poster-locked {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 240px;
+  background: rgba(18, 7, 24, 0.8);
+  border-radius: 10px;
+  color: #94a3b8;
+  font-size: 0.85rem;
+  text-align: center;
+  padding: 20px;
+  border: 1px dashed rgba(255, 255, 255, 0.2);
+}

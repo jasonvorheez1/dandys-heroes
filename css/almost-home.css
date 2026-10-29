@@ -23,3 +23,57 @@
 @keyframes ahSteam{0%,100%{opacity:.35;translate:0 3px}50%{opacity:.8;translate:0 -5px}}
 @media(prefers-reduced-motion:reduce){.ah-steam{animation:none}.ah-vn .ms-vn-bg{transition:none}.ah-vn .ms-vn-bg.pan{animation:none}}
 @media(max-width:560px){.ah-tea{width:135px;left:0;bottom:145px}.ah-mic{right:12%;bottom:145px}.ah-curtain{bottom:145px}.ah-lights{top:35px;height:14%}}
+
+/* Brief scripted inserts pause the dialogue, retaining the main-story controls. */
+.ah-cut{position:absolute;inset:0;z-index:15;overflow:hidden;isolation:isolate;background:#f3ddbe18;animation:ahCutFade var(--ah-cut-time) linear both}
+.ah-cinematic .ms-vn-box,.ah-cinematic .ms-vn-next{opacity:0;pointer-events:none}
+.ah-vn .ms-vn-stage{transition:opacity .2s}
+.ah-cinematic .ms-vn-stage{opacity:0}
+.ah-cinematic .ms-vn-bar.bottom{z-index:25}
+.ah-cut-skip{position:absolute;z-index:12;right:14px;bottom:48px;border:1px solid #fff9;border-radius:8px;padding:9px 13px;color:#fff8e7;background:#352c3ac9;font:700 12px 'Trebuchet MS',sans-serif;cursor:pointer}
+.ah-door-wall{position:absolute;inset:0;background:repeating-linear-gradient(0deg,#b6817690 0 2px,transparent 2px 85px),linear-gradient(110deg,#927a80,#beaaa0 45%,#8a707d);animation:ahWallOut var(--ah-cut-time) both}
+.ah-door-space{position:absolute;left:50%;top:10%;width:min(42vw,350px);height:80%;perspective:1000px;transform:translateX(-50%);animation:ahWalkThrough var(--ah-cut-time) both}
+.ah-door-view{position:absolute;inset:0;background-size:cover;background-position:center;box-shadow:0 0 50px #fff1c2}
+.ah-door-leaf{position:absolute;inset:0;transform-origin:left center;background:linear-gradient(100deg,#c7a176,#e3c8a0 55%,#ae8c6c);border:8px solid #66505a;box-shadow:inset 0 0 0 3px #f9dfb1;backface-visibility:hidden;animation:ahDoorSwing var(--ah-cut-time) cubic-bezier(.3,.15,.25,1) both}
+.ah-door-panel{position:absolute;inset:44% 11% 9%;border:5px ridge #bd9574;border-radius:4px}
+.ah-door-sign{position:absolute;top:22%;left:12%;right:12%;padding:13px 5px;text-align:center;border:3px solid #725358;border-radius:7px;color:#604950;background:#fff1cc;font:900 clamp(13px,2.4vw,25px) 'Trebuchet MS',sans-serif;letter-spacing:3px}
+.ah-door-handle{position:absolute;top:49%;right:5%;height:12px;width:34px;background:linear-gradient(#ffe3a3,#b68c53);border:2px solid #80694c;border-radius:6px;transform-origin:right;animation:ahHandleTurn var(--ah-cut-time) both}
+.ah-door-trim{position:absolute;inset:-12px;border:12px ridge #e6cbb0;pointer-events:none}
+.ah-door-light{position:absolute;inset:0;background:radial-gradient(ellipse at center,#fff1c266,transparent 70%);opacity:0;animation:ahDoorLight var(--ah-cut-time) both;pointer-events:none}
+.ah-cut-toon{position:absolute;bottom:16%;height:65%;max-width:48%;object-fit:contain;filter:drop-shadow(4px 8px 8px #281c3a66)}
+.ah-cut-left{left:5%}.ah-cut-right{right:5%;animation:ahCatch var(--ah-cut-time) both}
+.ah-cut-table{position:absolute;left:0;right:0;bottom:9%;height:25%;background:repeating-linear-gradient(90deg,#ebc0cf,#ebc0cf 40px,#f7d9db 40px,#f7d9db 80px);transform:perspective(500px) rotateX(25deg)}
+.ah-pour{position:absolute;width:min(60vw,650px);height:67%;right:8%;bottom:11%;filter:drop-shadow(0 8px 8px #38253a66)}
+.ah-pot{transform-origin:135px 130px;animation:ahPour var(--ah-cut-time) both}.ah-tea-stream{stroke-dasharray:130;stroke-dashoffset:130;animation:ahStream var(--ah-cut-time) both}
+.ah-fan{position:absolute;height:45%;width:30%;left:38%;bottom:12%;transform-origin:center bottom;animation:ahFanTip var(--ah-cut-time) both}
+.ah-fan-blades{transform-origin:90px 88px;animation:ahSpin .3s linear infinite}
+.ah-flying-paper{position:absolute;left:49%;top:48%;width:50px;height:35px;background:#fff2c6;border:2px solid #b89477;animation:ahPaperFly var(--ah-cut-time) both}.ah-flying-paper.p2{top:55%;animation-delay:.12s}.ah-flying-paper.p3{top:40%;animation-delay:.2s}
+.ah-cut-stage-light{position:absolute;inset:0;background:radial-gradient(ellipse at 50% 45%,#ffe7a36b,transparent 60%)}
+.ah-cut-performer{left:50%;transform:translateX(-50%);height:73%;animation:ahPerformerBow var(--ah-cut-time) both}
+.ah-cut-curtain{position:absolute;top:0;bottom:0;width:51%;background:repeating-linear-gradient(90deg,#76344b,#b05c70 10%,#d07b84 18%,#76344b 27%);box-shadow:0 0 20px #231125aa}
+.ah-cut-curtain.left{left:0;animation:ahCurtainLeft var(--ah-cut-time) both}.ah-cut-curtain.right{right:0;animation:ahCurtainRight var(--ah-cut-time) both}
+.ah-cut-shelf{position:absolute;right:0;bottom:14%;height:27%;width:50%;background:linear-gradient(#b68f74,#87664f);border-top:12px solid #c6a384;box-shadow:0 -8px #6e514d}
+.ah-cut-ruler{position:absolute;right:21%;bottom:13%;width:39%;height:16px;background:repeating-linear-gradient(90deg,#e8c86d 0 8px,#785a43 8px 9px);transform-origin:left;animation:ahRulerReach var(--ah-cut-time) both}
+.ah-cut-token{position:absolute;right:27%;bottom:12%;border:4px ridge #e5b15f;border-radius:50%;width:38px;height:38px;text-align:center;line-height:30px;color:#976b35;background:#ffdf7c;animation:ahTokenRoll var(--ah-cut-time) both}
+@keyframes ahCutFade{0%{opacity:0}9%,89%{opacity:1}100%{opacity:0}}
+@keyframes ahDoorSwing{0%,13%{transform:rotateY(0)}23%{transform:rotateY(-7deg)}30%{transform:rotateY(-4deg)}67%,100%{transform:rotateY(-110deg)}}
+@keyframes ahHandleTurn{0%,10%{rotate:0deg}18%,32%{rotate:24deg}45%,100%{rotate:0deg}}
+@keyframes ahWalkThrough{0%,55%{transform:translateX(-50%) scale(1)}100%{transform:translateX(-50%) scale(2.7)}}
+@keyframes ahWallOut{0%,55%{opacity:1}100%{opacity:0}}
+@keyframes ahDoorLight{0%,30%{opacity:0}60%{opacity:1}100%{opacity:0}}
+@keyframes ahPour{0%,15%,87%,100%{rotate:0deg}36%,67%{rotate:26deg}}
+@keyframes ahStream{0%,30%{stroke-dashoffset:130;opacity:0}40%,65%{stroke-dashoffset:0;opacity:1}76%,100%{stroke-dashoffset:0;opacity:0}}
+@keyframes ahFanTip{0%,15%{rotate:0deg}37%{rotate:25deg}50%{rotate:16deg}67%,100%{rotate:0deg}}
+@keyframes ahCatch{0%,22%{translate:8% 0}43%,70%{translate:-10% 0}100%{translate:0 0}}
+@keyframes ahSpin{to{rotate:360deg}}
+@keyframes ahPaperFly{0%,28%{translate:0 0;rotate:0deg;opacity:0}35%{opacity:1}80%,100%{translate:27vw -10vh;rotate:160deg;opacity:0}}
+@keyframes ahCurtainLeft{0%,12%{translate:0}67%,100%{translate:-88%}}
+@keyframes ahCurtainRight{0%,12%{translate:0}67%,100%{translate:88%}}
+@keyframes ahPerformerBow{0%,50%{transform:translateX(-50%) rotate(0)}67%{transform:translateX(-50%) rotate(9deg) translateY(12px)}83%,100%{transform:translateX(-50%) rotate(0)}}
+@keyframes ahRulerReach{0%,20%{translate:-30% 0}55%{translate:12% 0}82%,100%{translate:-40% 0}}
+@keyframes ahTokenRoll{0%,52%{translate:0;rotate:0deg}86%,100%{translate:-29vw 0;rotate:-380deg}}
+@media(max-width:560px){.ah-door-space{width:64vw;height:72%;top:12%}.ah-cut-toon{height:54%;bottom:20%}.ah-pour{width:75vw;right:0;bottom:15%}.ah-fan{height:40%;bottom:20%}}
+@media(prefers-reduced-motion:reduce){.ah-cut,.ah-cut *{animation:none!important;transition:none!important}.ah-door-leaf{transform:rotateY(-85deg)}.ah-cut-curtain.left{translate:-88%}.ah-cut-curtain.right{translate:88%}.ah-tea-stream{opacity:1;stroke-dashoffset:0}}
+
+/* Dango festival UI */
+.df-challenge{display:grid;grid-template-columns:80px 1fr;gap:15px;padding:16px;margin:14px 0;border:3px solid #493640;border-radius:17px;background:linear-gradient(120deg,#e6f5e9,#f9e3eb)}.df-challenge>img{width:80px;height:110px;object-fit:contain}.df-challenge h3{margin:5px 0}.df-challenge p{font-size:13px;line-height:1.5}.df-challenge small{font-size:10px;letter-spacing:1px}.df-challenge b{font-size:12px}.df-actions{grid-column:1/-1;display:flex;gap:10px;flex-wrap:wrap}.df-prep{font:14px/1.5 'Trebuchet MS',sans-serif}.df-notice,.df-rules{font-size:12px;opacity:.8}.df-modes,.df-team{display:flex;gap:7px;flex-wrap:wrap;margin:14px 0}.df-prep button{color:#342536;background:#f2e4ec;border:2px solid #8c6a81;border-radius:9px;padding:9px;cursor:pointer}.df-prep button.selected{background:#bce6d3;border-color:#508b77;box-shadow:inset 0 0 0 2px #fff7}.df-team button{display:grid;width:calc(25% - 6px);place-items:center;font-size:10px}.df-team img{height:65px;max-width:100%;object-fit:contain}.df-payout{padding:12px;background:#fff1c822;color:#ffe7a4;border-radius:10px}.df-primary{width:100%;font-weight:bold}.market-dango .market-stage{background:linear-gradient(150deg,#bad9d4,#e2bdcb 65%,#b09ac5)}.market-dango .market-counter{background:repeating-linear-gradient(90deg,#bc8198 0 50px,#cd98ac 50px 100px);border-top-color:#eee0c0}.market-dango .market-speaker{color:#b9ebd6}.market-dango .market-keeper-still{max-height:100%;object-fit:contain}.market-dango .market-keeper svg{height:100%;width:100%}.df-speech{font:600 15px/1.6 'Trebuchet MS',sans-serif;color:#ffeddd;min-height:65px;margin:10px 0}.df-wallet{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;padding:16px;border:2px solid #a5cdbf;border-radius:12px;background:#273f3c;color:#e6fff4;margin:12px 0}.df-wallet span{font-size:11px}.df-upgrade{padding:15px;margin:0 0 14px;background:#fff1;border-radius:12px}.df-upgrade p{font-size:12px}.df-upgrade button,.df-chat{padding:12px;border:2px solid #9fbbad;border-radius:10px;background:#c9e2d3;color:#273830;cursor:pointer}.df-chat{display:block;width:100%;text-align:left;margin:8px 0}.market-dango .shop-item-copy p{font-size:12px;line-height:1.5}.market-dango button:disabled{opacity:.45;cursor:default}.market-dango button:focus-visible,.df-prep button:focus-visible{outline:3px solid #f7d887;outline-offset:3px}@media(max-width:560px){.df-speech{font-size:13px}.df-challenge{grid-template-columns:55px 1fr;padding:10px}.df-challenge>img{width:55px;height:80px}.df-actions button{width:100%}.market-dango .market-keepers{grid-template-columns:repeat(3,minmax(0,1fr))}.df-wallet{padding:12px}}

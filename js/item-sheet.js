@@ -134,7 +134,8 @@ const ItemSheet = (() => {
     "js/story/story-battle.js",
     "js/story/ch2-ui.js",
     "js/story/ch3-ui.js",
-    "js/almost-home.js"
+    "js/almost-home.js",
+    "js/shop/dango-festival.js"
   ];
   ready.then(() => GAME_SCRIPTS.reduce((chain, src) => chain.then(() => new Promise(resolve => {
     const s = document.createElement('script');

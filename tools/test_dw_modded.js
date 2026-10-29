@@ -25,11 +25,41 @@ const sandbox = {
     removeItem: k => { delete storage[k]; }
   },
   document: {
-    createElement: () => ({ appendChild: () => {}, setAttribute: () => {}, style: {}, classList: { add: () => {}, remove: () => {} } }),
+    createElement: (tag) => {
+      const el = {
+        tagName: (tag || 'DIV').toUpperCase(),
+        children: [],
+        style: {},
+        classList: {
+          _list: new Set(),
+          add: (...cls) => cls.forEach(c => el.classList._list.add(c)),
+          remove: (...cls) => cls.forEach(c => el.classList._list.delete(c)),
+          contains: c => el.classList._list.has(c),
+          toggle: (c, force) => {
+            if (force === undefined) {
+              if (el.classList._list.has(c)) el.classList._list.delete(c);
+              else el.classList._list.add(c);
+            } else if (force) {
+              el.classList._list.add(c);
+            } else {
+              el.classList._list.delete(c);
+            }
+          }
+        },
+        appendChild: child => { el.children.push(child); return child; },
+        append: (...children) => { children.forEach(c => el.children.push(c)); },
+        setAttribute: () => {},
+        getAttribute: () => null,
+        querySelector: () => null,
+        querySelectorAll: () => []
+      };
+      return el;
+    },
     querySelector: () => ({ textContent: '', style: {}, parentElement: { classList: { add: () => {}, remove: () => {} }, offsetWidth: 0 } }),
     querySelectorAll: () => [],
     head: { appendChild: () => {} },
     body: { appendChild: () => {} },
+    documentElement: { dataset: {}, classList: { toggle: () => {} } },
     addEventListener: () => {}
   },
   console: console,
@@ -162,8 +192,41 @@ const testScript = `
     console.log('ToonSkillMotion validated for:', id);
   });
 
+  console.log('--- 12. Testing Almost Home Merged Storybook & Writing Guidelines ---');
+  if (typeof AlmostHome === 'undefined') throw new Error('AlmostHome is undefined');
+  if (AlmostHome.story.length !== 6) throw new Error('Expected 6 story chapters');
+  if (AlmostHome.bonus.length !== 4) throw new Error('Expected 4 bonus memories');
+
+  const allStory = AlmostHome.story.map(s => s.script).join('\\n');
+  const allBonus = AlmostHome.bonus.map(b => b.script).join('\\n');
+  const fullText = allStory + '\\n' + allBonus;
+
+  // Characterization assertions:
+  if (!fullText.includes('filthy peasant') && !fullText.includes('filthy peasants')) throw new Error('Missing "filthy peasant"');
+  if (!fullText.includes('My Space')) throw new Error('Missing "My Space"');
+  if (!fullText.includes('7/24/1998')) throw new Error('Missing "7/24/1998"');
+  if (!fullText.toLowerCase().includes('chains are fashion') && !fullText.toLowerCase().includes('fashion statement')) throw new Error('Missing chains as fashion');
+  if (!fullText.toLowerCase().includes('boyfriend')) throw new Error('Missing Cody/Nugget boyfriend dynamic');
+  if (!fullText.includes('hot dog') && !fullText.includes('hot dogs')) throw new Error('Missing Nugget hot dogs');
+  if (!fullText.includes('Dango') || !fullText.includes('tea')) throw new Error('Missing Dango tea');
+  if (!fullText.includes('Vee') || !fullText.includes('Bassie') || !fullText.includes('Shelly') || !fullText.includes('Gigi')) throw new Error('Missing Gardenview crew');
+  console.log('✓ Character dialogue and relationship guidelines validated');
+
+  console.log('--- 13. Testing Unified Dossier All 5 Tabs Render ---');
+  const container = document.createElement('div');
+  ['story', 'stages', 'bonus', 'boutique', 'posters'].forEach(tab => {
+    Screens._dwTab = tab;
+    container.children = [];
+    Screens.dwModdedDossier(container, dw);
+    if (container.children.length === 0) throw new Error('Dossier failed to render tab: ' + tab);
+  });
+  console.log('✓ All 5 dossier tabs rendered without errors');
+
   console.log('ALL TESTS PASSED SUCCESSFULLY! ✓');
 })();
 `;
+
+// Load AlmostHome script into VM before running testScript
+vm.runInContext(fs.readFileSync('js/almost-home.js', 'utf8'), ctx);
 
 vm.runInContext(testScript, ctx);
