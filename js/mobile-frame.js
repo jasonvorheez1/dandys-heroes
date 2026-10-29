@@ -22,7 +22,7 @@
     } catch (e) { /* cross-origin parent: nothing to share */ }
     return;
   }
-  if (/[?&]desktop\b/.test(location.search) || window.innerWidth <= 500) return;
+  if (location.protocol === 'file:' || /[?&]desktop\b/.test(location.search) || window.innerWidth <= 500) return;
 
   // Stop the outer copy of the game from booting; the frame loads its own.
   window.stop();

@@ -1,0 +1,1456 @@
+/* ==========================================================================
+   DANDY'S HEROES - FLAGSHIP MOBILE UI & ERGONOMICS (css/phone.css)
+   Comprehensive mobile design system: touch-first ergonomics, safe-area adaptation,
+   glassmorphism aesthetics, legible typography, and console-grade navigation.
+   ========================================================================== */
+
+:root {
+  --safe-t: max(env(safe-area-inset-top, 0px), 8px);
+  --safe-b: max(env(safe-area-inset-bottom, 0px), 10px);
+  --safe-l: max(env(safe-area-inset-left, 0px), 0px);
+  --safe-r: max(env(safe-area-inset-right, 0px), 0px);
+}
+
+@media (max-width: 600px), (pointer: coarse) and (max-width: 768px) {
+
+  /* --------------------------------------------------------------------------
+     1. GLOBAL SYSTEM & TOUCH ERGONOMICS
+     -------------------------------------------------------------------------- */
+  html, body {
+    -webkit-tap-highlight-color: transparent;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    overscroll-behavior: none;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+
+  button, a, input, select, textarea, [role="button"], [tabindex="0"] {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  /* Ensure #app and #battle take full mobile screen without overflowing desktop box-shadows */
+  #app, #battle {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    margin: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    overflow-x: hidden;
+  }
+
+  /* Keep route changes immediate and avoid competing full-screen blend layers on phone GPUs */
+  #screen > * { animation: none; }
+  #stage::after, #bgLayer::before { display: none; }
+
+  /* Smooth scroll container with safe padding so bottom dock never occludes content */
+  #screen {
+    padding: 10px 10px calc(88px + var(--safe-b));
+    scroll-padding-top: calc(10px + var(--safe-t));
+    scroll-padding-bottom: calc(88px + var(--safe-b));
+    overscroll-behavior-y: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* --------------------------------------------------------------------------
+     2. TOPBAR & CURRENCY TRAY
+     -------------------------------------------------------------------------- */
+  #topbar {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 7px;
+    padding: calc(7px + env(safe-area-inset-top, 0px)) 10px 8px;
+    background: linear-gradient(180deg, rgba(28, 36, 38, 0.98), rgba(18, 24, 26, 0.96));
+    border-bottom: 2px solid rgba(82, 102, 95, 0.45);
+    box-shadow: 0 4px 18px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+
+  #topbar .tb-left {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 44px;
+    gap: 8px;
+  }
+
+  /* Player Mastery Badge */
+  #topbar .tb-lvl {
+    display: grid;
+    place-items: center;
+    min-width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: linear-gradient(145deg, #44534f, #222d2f);
+    border: 2px solid #6b857d;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.22), 0 3px 6px rgba(0, 0, 0, 0.4);
+    line-height: 1;
+    position: relative;
+  }
+
+  #topbar .tb-lvl span {
+    font-size: 16px;
+    font-weight: 900;
+    color: #e5ff8a;
+    -webkit-text-stroke: 0;
+    text-shadow: 0 0 10px rgba(229, 255, 138, 0.4);
+  }
+
+  #topbar .tb-lvl small {
+    font-size: 8px;
+    font-weight: 900;
+    letter-spacing: 0.6px;
+    color: #a4beaf;
+    text-transform: uppercase;
+    margin-top: 1px;
+  }
+
+  /* Profile Button */
+  #topbar .profile-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 44px;
+    padding: 4px 14px 4px 5px;
+    border-radius: 99px;
+    background: linear-gradient(145deg, rgba(56, 70, 67, 0.8), rgba(28, 38, 39, 0.95));
+    border: 1.5px solid rgba(142, 190, 172, 0.35);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.16), 0 3px 8px rgba(0, 0, 0, 0.35);
+    color: #f2fbf6;
+    transition: transform 0.12s ease, border-color 0.12s ease;
+  }
+
+  #topbar .profile-btn:active {
+    transform: scale(0.96);
+  }
+
+  #topbar .profile-avatar {
+    display: grid;
+    place-items: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background: linear-gradient(145deg, #2a3836, #141c1d);
+    border: 1.5px solid #82a89c;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    font-size: 17px;
+    overflow: hidden;
+  }
+
+  #topbar .profile-label {
+    display: inline-block;
+    max-width: 120px;
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.2px;
+    color: #f5fcf8;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* Currency Ribbon: Smooth touch-scrollable pill tray */
+  #topbar .tb-right {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 6px;
+    width: 100%;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    padding: 2px 2px 4px;
+    mask-image: linear-gradient(90deg, #000 0%, #000 92%, transparent 100%);
+    -webkit-mask-image: linear-gradient(90deg, #000 0%, #000 92%, transparent 100%);
+  }
+
+  #topbar .tb-right::-webkit-scrollbar {
+    display: none;
+  }
+
+  #topbar .res {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    min-height: 34px;
+    padding: 4px 10px 4px 7px;
+    border-radius: 99px;
+    background: linear-gradient(180deg, rgba(46, 58, 60, 0.9), rgba(24, 32, 34, 0.98));
+    border: 1.5px solid rgba(135, 168, 158, 0.28);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14), 0 2px 6px rgba(0, 0, 0, 0.35);
+    transition: transform 0.12s ease;
+  }
+
+  #topbar .res:active {
+    transform: scale(0.95);
+  }
+
+  #topbar .res i {
+    font-style: normal;
+    font-size: 14px;
+    line-height: 1;
+    display: grid;
+    place-items: center;
+  }
+
+  #topbar .res .currency-icon {
+    width: 16px;
+    height: 16px;
+    object-fit: contain;
+    filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.5));
+  }
+
+  #topbar .res span {
+    font-size: 11.5px;
+    font-weight: 900;
+    letter-spacing: 0.1px;
+    -webkit-text-stroke: 0;
+    line-height: 1;
+  }
+
+  /* High contrast colors for currencies without muddy strokes */
+  #topbar .res[data-res="ichor"] span { color: #ff5b5b; text-shadow: 0 0 8px rgba(255, 91, 91, 0.35); }
+  #topbar .res[data-res="tape"] span { color: #5eff8f; text-shadow: 0 0 8px rgba(94, 255, 143, 0.35); }
+  #topbar .res[data-res="notes"] span { color: #e1b3ff; text-shadow: 0 0 8px rgba(225, 179, 255, 0.35); }
+  #topbar .res[data-res="star"] span { color: #ffd85e; text-shadow: 0 0 8px rgba(255, 216, 94, 0.35); }
+  #topbar .res[data-res="ticket"] span { color: #ffaa5e; text-shadow: 0 0 8px rgba(255, 170, 94, 0.35); }
+  #topbar .res[data-res="raidTicket"] span { color: #ffea78; text-shadow: 0 0 8px rgba(255, 234, 120, 0.35); }
+  #topbar .res[data-res="counterToken"] span { color: #6ee7ff; text-shadow: 0 0 8px rgba(110, 231, 255, 0.35); }
+
+  /* --------------------------------------------------------------------------
+     3. BOTTOM NAVIGATION DOCK (#navbar)
+     -------------------------------------------------------------------------- */
+  #navbar {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    z-index: 120;
+    display: grid;
+    grid-template-columns: repeat(6, minmax(0, 1fr));
+    gap: 3px;
+    padding: 7px 5px calc(9px + var(--safe-b));
+    background: linear-gradient(180deg, rgba(20, 28, 30, 0.97), rgba(9, 13, 15, 0.99));
+    border-top: 1.5px solid rgba(122, 220, 150, 0.28);
+    box-shadow: 0 -8px 28px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.09);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+  }
+
+  #navbar button {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    min-height: 64px;
+    margin: 0;
+    padding: 4px 1px 3px;
+    border: none;
+    border-radius: 12px;
+    background: transparent;
+    color: #9cb1a9;
+    transition: transform 0.12s cubic-bezier(0.2, 0.8, 0.2, 1), color 0.12s ease;
+  }
+
+  #navbar button:active {
+    transform: scale(0.92);
+  }
+
+  /* Nav Icon Squircle */
+  #navbar button i,
+  #app:has(.hero-roster-page) #navbar button i {
+    flex: 0 0 36px;
+    width: 36px;
+    height: 36px;
+    display: grid;
+    place-items: center;
+    border-radius: 11px;
+    background: linear-gradient(145deg, rgba(58, 72, 70, 0.6), rgba(30, 39, 41, 0.85));
+    border: 1.5px solid rgba(255, 255, 255, 0.08);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.14), 0 3px 6px rgba(0, 0, 0, 0.35);
+    color: #b5ccc2;
+    transition: all 0.16s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  #navbar button i svg {
+    width: 19px;
+    height: 19px;
+    stroke-width: 2.2;
+  }
+
+  #navbar button span {
+    font-size: 10px;
+    font-weight: 800;
+    line-height: 1.1;
+    letter-spacing: 0.15px;
+    color: inherit;
+    -webkit-text-stroke: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  #navbar button span small {
+    display: none !important;
+  }
+
+  /* Active Tab State: Radiant energized neon-lime glow */
+  #navbar button.on {
+    color: #eaff9e;
+  }
+
+  #navbar button.on i {
+    background: linear-gradient(145deg, #d8ff66, #4bb842);
+    border-color: #f2ffb5;
+    color: #0b1d0e;
+    box-shadow: 0 4px 16px rgba(120, 230, 70, 0.45), inset 0 2px 0 rgba(255, 255, 255, 0.75);
+    transform: translateY(-2px);
+  }
+
+  #navbar button.on:after {
+    content: '';
+    position: absolute;
+    bottom: 0px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 16px;
+    height: 3px;
+    border-radius: 99px;
+    background: #d8ff66;
+    box-shadow: 0 0 10px #d8ff66;
+  }
+
+  /* Centerpiece Floating "Home" Tab */
+  #navbar .nav-main {
+    min-height: 72px;
+    margin-top: -14px;
+    padding-top: 2px;
+  }
+
+  #navbar .nav-main i {
+    flex: 0 0 46px;
+    width: 46px;
+    height: 46px;
+    border-radius: 14px;
+    background: linear-gradient(145deg, #2b3936, #162222);
+    border: 2px solid rgba(135, 220, 150, 0.4);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.6), inset 0 2px 0 rgba(255, 255, 255, 0.2);
+    color: #d6fae8;
+  }
+
+  #navbar .nav-main i svg {
+    width: 24px;
+    height: 24px;
+  }
+
+  #navbar .nav-main.on i {
+    background: linear-gradient(145deg, #f5ff98, #52cc42);
+    border-color: #ffffff;
+    color: #0b1e0f;
+    box-shadow: 0 6px 20px rgba(120, 240, 80, 0.55), inset 0 2px 0 rgba(255, 255, 255, 0.8);
+    transform: translateY(-4px) scale(1.05);
+  }
+
+  /* --------------------------------------------------------------------------
+     4. HOME HUB SCREEN (.home-hub)
+     -------------------------------------------------------------------------- */
+  .home-hub {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  /* Hero Showcase Stage */
+  .home-stage {
+    height: 220px !important;
+    border-radius: 18px !important;
+    overflow: hidden;
+    position: relative;
+    border: 2px solid rgba(85, 115, 105, 0.35);
+    background: radial-gradient(ellipse at 50% 85%, rgba(100, 180, 130, 0.22), transparent 72%),
+                linear-gradient(180deg, #253335, #141d1f) !important;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+  }
+
+  .home-stage-party {
+    position: absolute;
+    right: 6px;
+    bottom: 8px;
+    width: 65%;
+    height: 165px;
+    display: flex;
+    align-items: flex-end;
+    justify-content: flex-end;
+  }
+
+  .home-stage-toon {
+    width: clamp(48px, 14vw, 68px);
+    height: 148px;
+    filter: drop-shadow(0 6px 10px rgba(0, 0, 0, 0.55));
+  }
+
+  .home-stage-toon img {
+    height: 128px;
+    object-fit: contain;
+  }
+
+  .home-stage-toon.lead {
+    width: clamp(58px, 17vw, 84px);
+    height: 168px;
+    z-index: 5;
+  }
+
+  .home-stage-toon.lead img {
+    height: 148px;
+  }
+
+  .home-stage-dashboard {
+    bottom: 12px;
+    left: 12px;
+    display: flex;
+    gap: 6px;
+  }
+
+  .home-stage-dashboard > span {
+    padding: 5px 9px;
+    border-radius: 10px;
+    background: rgba(14, 21, 23, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    backdrop-filter: blur(10px);
+    font-size: 11px;
+    font-weight: 800;
+    color: #eafbf3;
+  }
+
+  .home-stage-edit {
+    right: 10px !important;
+    bottom: 10px !important;
+    min-width: 44px;
+    min-height: 44px;
+    border-radius: 12px;
+    background: rgba(18, 27, 29, 0.85);
+    border: 1.5px solid rgba(135, 185, 170, 0.35);
+    backdrop-filter: blur(12px);
+    color: #eafbf3;
+  }
+
+  /* Dandy's Buds Card */
+  .home-buds {
+    display: grid !important;
+    grid-template-columns: 52px minmax(0, 1fr) auto !important;
+    align-items: center;
+    gap: 10px !important;
+    min-height: 84px !important;
+    padding: 10px 12px !important;
+    border-radius: 16px !important;
+    background: linear-gradient(135deg, #24352f, #14201b) !important;
+    border: 2px solid rgba(110, 185, 140, 0.35) !important;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.15) !important;
+  }
+
+  .home-buds-mark {
+    width: 52px;
+    height: 64px;
+    object-fit: contain;
+    filter: drop-shadow(0 3px 6px rgba(0, 0, 0, 0.45));
+  }
+
+  .home-buds-copy b {
+    font-size: 14px;
+    font-weight: 800;
+    line-height: 1.2;
+    color: #f7ffdc;
+  }
+
+  .home-buds-copy > span:not(.home-buds-progress) {
+    font-size: 11px;
+    color: #cde6d8;
+    margin-top: 2px;
+  }
+
+  .home-buds-progress {
+    height: 6px;
+    border-radius: 99px;
+    background: rgba(0, 0, 0, 0.45);
+    margin-top: 5px;
+    overflow: hidden;
+  }
+
+  .home-buds-progress > i {
+    background: linear-gradient(90deg, #6ade68, #d8ff66);
+    box-shadow: 0 0 8px #d8ff66;
+  }
+
+  .home-buds-action {
+    min-width: 64px;
+    min-height: 44px;
+    padding: 8px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 800;
+  }
+
+  /* Continue / Quick Play Banner */
+  .home-continue {
+    min-height: 82px;
+    padding: 12px 14px;
+    border-radius: 16px;
+    background: linear-gradient(135deg, #37463a, #1a2723);
+    border: 2px solid rgba(135, 210, 150, 0.35);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.18);
+  }
+
+  .home-continue b {
+    font-size: 16px;
+    font-weight: 900;
+    color: #f5ffdc;
+  }
+
+  .home-continue small, .home-continue em {
+    font-size: 11.5px;
+    color: #d1eadb;
+  }
+
+  /* Section Grids (Play, Grow, Collect) */
+  .home-section {
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+  }
+
+  .home-section header {
+    padding: 4px 2px 4px;
+  }
+
+  .home-section header b {
+    font-size: 16px;
+    font-weight: 900;
+    letter-spacing: 0.3px;
+    color: #f4fbf7;
+  }
+
+  .home-play-grid, .home-grow-grid, .home-collect-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 9px;
+  }
+
+  .home-play-card, .home-grow-card, .home-collect-card {
+    min-height: 86px;
+    padding: 11px;
+    border-radius: 14px;
+    border: 1.5px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+    transition: transform 0.12s ease;
+  }
+
+  .home-play-card:active, .home-grow-card:active, .home-collect-card:active {
+    transform: scale(0.96);
+  }
+
+  .home-play-card b, .home-grow-card b, .home-collect-card b {
+    font-size: 13.5px;
+    font-weight: 800;
+    line-height: 1.2;
+    color: #ffffff;
+  }
+
+  .home-play-card small, .home-grow-card small, .home-collect-card small {
+    font-size: 11px;
+    line-height: 1.3;
+    color: #c9dbd3;
+  }
+
+  .home-grow-card i, .home-collect-card i {
+    flex-basis: 36px;
+    width: 36px;
+    height: 36px;
+    font-size: 20px;
+    border-radius: 10px;
+  }
+
+  .home-settings {
+    min-height: 48px;
+    border-radius: 12px;
+    background: linear-gradient(145deg, #303e3b, #1e2a28);
+    border: 1.5px solid #5a7068;
+    color: #f2fcf7;
+    font-size: 13px;
+    font-weight: 800;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  }
+
+  /* --------------------------------------------------------------------------
+     5. HERO ROSTER & COLLECTION (.hero-roster-page)
+     -------------------------------------------------------------------------- */
+  .hero-roster-page {
+    padding: 2px 2px 24px;
+  }
+
+  .hero-roster-heading {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+    margin-bottom: 12px;
+  }
+
+  .hero-roster-heading h1 {
+    font-size: 22px;
+    font-weight: 900;
+    color: #ffffff;
+    margin: 0;
+  }
+
+  .hero-roster-kicker {
+    font-size: 10px;
+    font-weight: 900;
+    letter-spacing: 0.8px;
+    color: #8ce4bd;
+  }
+
+  .hero-roster-total {
+    padding: 5px 10px;
+    border-radius: 99px;
+    background: rgba(25, 36, 38, 0.85);
+    border: 1.5px solid rgba(135, 185, 170, 0.3);
+    font-size: 12px;
+  }
+
+  .hero-roster-total strong {
+    font-size: 14px;
+    color: #e9ff8c;
+  }
+
+  /* Primary Action Buttons */
+  .hero-roster-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .hero-roster-actions button {
+    min-height: 44px;
+    padding: 8px 12px;
+    border-radius: 12px;
+    font-size: 12.5px;
+    font-weight: 800;
+    letter-spacing: 0.3px;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  }
+
+  /* Search & Sort Controls */
+  .hero-roster-controls {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    margin-bottom: 10px;
+  }
+
+  .hero-roster-sort {
+    flex: 1;
+    font-size: 12px;
+    font-weight: 800;
+    color: #d1e2db;
+  }
+
+  .hero-roster-sort select {
+    min-height: 42px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 700;
+    padding-inline: 8px;
+  }
+
+  .hero-roster-view button {
+    min-width: 42px;
+    min-height: 42px;
+    border-radius: 10px;
+  }
+
+  .hero-roster-search-wrap input {
+    min-height: 42px;
+    border-radius: 10px;
+    font-size: 14px; /* Prevents auto-zoom on iOS */
+    padding-inline: 12px;
+  }
+
+  /* Filter Ribbon: Horizontal scrolling chips */
+  .hero-roster-filters {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 8px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    padding: 2px 2px 10px;
+    margin-bottom: 10px;
+  }
+
+  .hero-roster-filters::-webkit-scrollbar {
+    display: none;
+  }
+
+  .hero-roster-filters button {
+    flex: 0 0 auto;
+    min-height: 38px;
+    padding: 6px 14px;
+    border-radius: 99px;
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: none;
+    letter-spacing: 0.2px;
+    background: linear-gradient(145deg, #2b3936, #1c2725);
+    border: 1.5px solid rgba(120, 165, 150, 0.3);
+    color: #d8ece4;
+    transition: all 0.12s ease;
+  }
+
+  .hero-roster-filters button[aria-pressed="true"] {
+    background: linear-gradient(145deg, #3aa757, #1e7037);
+    border-color: #a8ffb2;
+    color: #ffffff;
+    box-shadow: 0 3px 10px rgba(58, 167, 87, 0.4);
+  }
+
+  /* Hero Cards Grid */
+  .hero-roster-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(104px, 1fr));
+    gap: 8px;
+  }
+
+  .hero-roster-card {
+    border-radius: 12px;
+    border-width: 2px;
+    overflow: hidden;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+    transition: transform 0.12s ease;
+  }
+
+  .hero-roster-card:active {
+    transform: scale(0.95);
+  }
+
+  .hero-roster-caption {
+    padding: 5px 6px 6px;
+  }
+
+  .hero-roster-caption strong {
+    font-size: 11.5px;
+    font-weight: 800;
+    line-height: 1.2;
+  }
+
+  .hero-roster-caption small {
+    font-size: 10px;
+    font-weight: 700;
+  }
+
+  /* --------------------------------------------------------------------------
+     6. HERO PROFILE SHEET & INSPECTION DRAWER (.hero-profile-box)
+     -------------------------------------------------------------------------- */
+  .hero-profile-box {
+    width: 100vw !important;
+    height: 100dvh !important;
+    padding: 0 !important;
+  }
+
+  .hero-profile-top {
+    min-height: 52px !important;
+    padding: calc(6px + env(safe-area-inset-top, 0px)) 10px 8px !important;
+  }
+
+  .hero-prev, .hero-next, .hero-close {
+    width: 44px !important;
+    height: 44px !important;
+    min-width: 44px !important;
+    min-height: 44px !important;
+  }
+
+  .hero-profile-tabs {
+    display: flex;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    gap: 6px;
+    padding: 2px 8px 6px;
+  }
+
+  .hero-profile-tabs button {
+    flex: 0 0 auto;
+    min-height: 44px !important;
+    font-size: 13px !important;
+    font-weight: 800;
+    padding: 8px 16px !important;
+    border-radius: 12px;
+  }
+
+  .hero-skill-actions button, .hero-growth-actions button {
+    min-height: 46px !important;
+    font-size: 13px !important;
+    font-weight: 800;
+    border-radius: 12px;
+  }
+
+  .hero-skill-pick {
+    min-height: 48px !important;
+    font-size: 12px !important;
+  }
+
+  .hero-skill-detail h2 {
+    font-size: 18px !important;
+  }
+
+  .hero-skill-detail p {
+    font-size: 12.5px !important;
+    line-height: 1.4 !important;
+  }
+
+  /* --------------------------------------------------------------------------
+     7. BATTLE SCREEN & COMBAT CONTROLS (#battle & #battleHud)
+     -------------------------------------------------------------------------- */
+  #battleHud {
+    padding: calc(9px + env(safe-area-inset-top, 0px)) 10px calc(8px + var(--safe-b));
+  }
+
+  #hudTop {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    min-height: 44px;
+    gap: 6px;
+  }
+
+  #waveInfo, #hudTimer {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    min-height: 36px;
+    padding: 4px 10px;
+    border-radius: 99px;
+    background: rgba(14, 21, 23, 0.85);
+    border: 1.5px solid rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(12px);
+    font-size: 12px;
+    font-weight: 800;
+    color: #ffffff;
+  }
+
+  /* Battle Action Controls: Enlarged touch targets (min 42x42px) */
+  #hudBtns {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  #hudBtns button,
+  #battle:not(.kh-battle):not(.unknown-world-battle) #hudBtns button {
+    width: 42px !important;
+    height: 42px !important;
+    min-width: 42px !important;
+    min-height: 42px !important;
+    border-radius: 12px !important;
+    display: grid !important;
+    place-items: center !important;
+    background: linear-gradient(145deg, #3d4f4e, #202c2e) !important;
+    border: 2px solid #66837c !important;
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.25) !important;
+    transition: transform 0.1s ease !important;
+  }
+
+  #hudBtns button:active {
+    transform: scale(0.92) !important;
+  }
+
+  #hudBtns button i {
+    font-size: 13px !important;
+    font-weight: 900 !important;
+    -webkit-text-stroke: 0 !important;
+  }
+
+  /* Auto Button with Glowing State */
+  #btnAuto i {
+    font-size: 11px !important;
+    letter-spacing: 0 !important;
+  }
+
+  #hudBtns button.on,
+  #hudBtns #btnAuto.on,
+  #battle:not(.kh-battle):not(.unknown-world-battle) #hudBtns button.on {
+    background: linear-gradient(145deg, #ffdc69, #d49528) !important;
+    border-color: #fff6a8 !important;
+    box-shadow: 0 4px 14px rgba(255, 212, 70, 0.5), inset 0 2px 0 rgba(255, 255, 255, 0.7) !important;
+  }
+
+  #hudBtns button.on i,
+  #hudBtns #btnAuto.on i {
+    color: #2b1803 !important;
+    text-shadow: none !important;
+  }
+
+  /* Ally Command Deck */
+  #allyDock,
+  #battle:not(.kh-battle):not(.unknown-world-battle) #allyDock {
+    position: absolute;
+    left: 6px;
+    right: 6px;
+    bottom: calc(8px + var(--safe-b));
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+    padding: 16px 6px 8px;
+    border-radius: 16px;
+    background: linear-gradient(180deg, rgba(30, 42, 44, 0.94), rgba(15, 22, 24, 0.98));
+    border: 2px solid rgba(120, 195, 160, 0.35);
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.65), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(16px);
+  }
+
+  #allyDock:before {
+    font-size: 8px !important;
+    letter-spacing: 0.6px !important;
+    padding: 2px 8px !important;
+    border-radius: 6px !important;
+  }
+
+  /* Unit Hero Cards */
+  .unitcard,
+  #battle:not(.kh-battle):not(.unknown-world-battle) .unitcard {
+    width: calc((100vw - 38px) / 5) !important;
+    flex-basis: calc((100vw - 38px) / 5) !important;
+    min-width: 56px !important;
+    max-width: 72px !important;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    touch-action: manipulation;
+  }
+
+  .uc-port {
+    width: 48px !important;
+    height: 48px !important;
+    border-radius: 13px !important;
+    border-width: 2.5px !important;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.45) !important;
+    transition: transform 0.12s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  .unitcard:active .uc-port {
+    transform: scale(0.92);
+  }
+
+  .uc-lv {
+    font-size: 10px !important;
+    padding: 1px 5px !important;
+    border-radius: 6px !important;
+    top: -5px !important;
+    left: -3px !important;
+  }
+
+  .uc-hpwrap {
+    width: 48px !important;
+    height: 6px !important;
+    border-radius: 99px !important;
+    border-width: 1.5px !important;
+    margin-top: 3px !important;
+  }
+
+  .uc-enwrap {
+    width: 48px !important;
+    height: 5px !important;
+    border-radius: 99px !important;
+  }
+
+  /* Radiant Skill Ready State */
+  .unitcard.ready .uc-port {
+    border-color: #fffb87 !important;
+    box-shadow: 0 0 16px rgba(255, 240, 90, 0.75), inset 0 0 10px rgba(255, 240, 90, 0.4) !important;
+    animation: unitReadyPulse 1.2s ease-in-out infinite alternate !important;
+  }
+
+  @keyframes unitReadyPulse {
+    0% { transform: scale(1); filter: brightness(1); }
+    100% { transform: scale(1.06); filter: brightness(1.22); }
+  }
+
+  /* --------------------------------------------------------------------------
+     8. VISUAL NOVEL & STORY BANTER (.banterBox & .vn-cast)
+     -------------------------------------------------------------------------- */
+  .vn-top {
+    top: calc(8px + env(safe-area-inset-top, 0px)) !important;
+  }
+
+  .vn-cast {
+    top: calc(52px + env(safe-area-inset-top, 0px)) !important;
+    bottom: 38vh !important;
+    height: auto !important;
+    pointer-events: none;
+  }
+
+  .banterBox, .banterBox[data-align="center"] {
+    position: fixed !important;
+    bottom: calc(14px + var(--safe-b)) !important;
+    top: auto !important;
+    left: 10px !important;
+    right: 10px !important;
+    width: calc(100vw - 20px) !important;
+    max-height: 38vh !important;
+    padding: 12px 14px 12px 64px !important;
+    border-radius: 16px !important;
+    background: linear-gradient(155deg, rgba(28, 38, 41, 0.96), rgba(16, 22, 24, 0.98)) !important;
+    border: 2px solid rgba(135, 195, 175, 0.4) !important;
+    backdrop-filter: blur(16px) !important;
+    -webkit-backdrop-filter: blur(16px) !important;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.75) !important;
+    z-index: 600;
+  }
+
+  .bb-speaker {
+    width: 52px !important;
+    height: 52px !important;
+    left: 8px !important;
+    bottom: 8px !important;
+  }
+
+  .bb-speaker .bb-icon {
+    width: 44px !important;
+    height: 44px !important;
+  }
+
+  .banterBox .bb-text {
+    font-size: 13.5px !important;
+    line-height: 1.45 !important;
+    color: #f7fffb !important;
+  }
+
+  /* --------------------------------------------------------------------------
+     9. TRIALS SCREEN & STAGES
+     -------------------------------------------------------------------------- */
+  .trial-deck {
+    grid-auto-columns: min(52vw, 210px) !important;
+    gap: 10px !important;
+    height: clamp(385px, calc(100dvh - 215px), 485px) !important;
+  }
+
+  .trial-play {
+    min-height: 44px !important;
+    font-size: 12px !important;
+    font-weight: 800 !important;
+  }
+
+  .trial-stage-action-row {
+    grid-template-columns: minmax(0, 1fr) 56px !important;
+    gap: 6px !important;
+  }
+
+  .trial-stage-action-row .trial-stage-row {
+    grid-template-columns: 52px minmax(0, 1fr) 48px !important;
+    min-height: 104px !important;
+  }
+
+  .trial-stage-action-row .trial-stage-thumb {
+    min-height: 104px !important;
+    padding: 6px !important;
+  }
+
+  .trial-stage-thumb b { font-size: 22px !important; }
+  .trial-stage-thumb small { font-size: 10px !important; }
+  .trial-stage-action-row .trial-stage-copy { padding: 6px 8px !important; }
+  .trial-stage-action-row .trial-stage-copy > b { font-size: 12px !important; line-height: 1.2 !important; }
+  .trial-stage-copy > small, .trial-stage-action-row .trial-stage-copy > i { font-size: 10.5px !important; }
+  .trial-stage-challenge, .trial-stage-pressure { font-size: 10px !important; }
+  .trial-stage-rewards > small { font-size: 10px !important; }
+  .trial-stage-rewards > i b { font-size: 10px !important; }
+  .trial-stage-raid { font-size: 11px !important; min-height: 42px !important; }
+  .trial-grind-play { min-height: 46px !important; font-size: 13px !important; }
+  .trial-grind-raid { min-height: 42px !important; font-size: 11px !important; }
+
+  /* --------------------------------------------------------------------------
+     10. ARENA / COLOSSEUM SCREEN
+     -------------------------------------------------------------------------- */
+  .arena-colosseum {
+    padding: 14px 8px 32px !important;
+    max-width: 100% !important;
+  }
+
+  .arena-marquee {
+    grid-template-columns: 44px minmax(0, 1fr) auto !important;
+    gap: 8px !important;
+    max-width: 100% !important;
+  }
+
+  .arena-challenges {
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+    max-width: 100% !important;
+  }
+
+  .arena-briefing, .arena-exchange {
+    max-width: 100% !important;
+  }
+
+  .arena-versus {
+    grid-template-columns: 1fr 54px 1fr !important;
+    gap: 8px !important;
+    width: calc(100vw - 20px) !important;
+  }
+
+  .arena-versus > strong {
+    width: 52px !important;
+    height: 52px !important;
+    font-size: 20px !important;
+  }
+
+  .arena-live-actions button { min-height: 42px !important; font-size: 12px !important; font-weight: 800 !important; }
+  .arena-live-attack, .arena-defense-attack { min-height: 42px !important; font-size: 12px !important; font-weight: 800 !important; }
+  .arena-fight { min-height: 44px !important; font-size: 13px !important; font-weight: 900 !important; }
+  .arena-refresh small { font-size: 10px !important; }
+  .arena-record > span, .arena-record .arena-promotion-hint { font-size: 11px !important; }
+  .arena-live-player small, .arena-defense-head > small { font-size: 11px !important; }
+  .arena-role-pill { font-size: 10.5px !important; }
+
+  /* --------------------------------------------------------------------------
+     11. CRATES & GACHA SCREEN (.crates-screen)
+     -------------------------------------------------------------------------- */
+  .crate-actions {
+    gap: 8px !important;
+    max-width: 100% !important;
+  }
+
+  .crate-actions button {
+    min-height: 44px !important;
+    font-size: 13px !important;
+    font-weight: 800 !important;
+    border-radius: 12px !important;
+  }
+
+  .crate-actions .crate-buy {
+    min-height: 44px !important;
+    font-size: 13px !important;
+    font-weight: 800 !important;
+    border-radius: 12px !important;
+  }
+
+  .crate-eyebrow { font-size: 11px !important; }
+  .crate-body b small { font-size: 11px !important; }
+  .crate-tag { font-size: 11px !important; }
+  .crate-find em { font-size: 11.5px !important; }
+  .cookie-shard-offer button { min-height: 42px !important; font-size: 12px !important; }
+
+  /* --------------------------------------------------------------------------
+     12. DEPTHS & ENDLESS RUN (.depth-elevator, .depth-draft-modal)
+     -------------------------------------------------------------------------- */
+  .depth-elevator {
+    padding: 12px !important;
+    max-width: 100% !important;
+    border-radius: 14px !important;
+  }
+
+  .depth-draft-modal {
+    width: 100vw !important;
+    max-height: calc(100dvh - 10px) !important;
+  }
+
+  .depth-draft-close {
+    width: 42px !important;
+    height: 42px !important;
+    flex-basis: 42px !important;
+  }
+
+  .depth-card-desc { font-size: 12px !important; line-height: 1.35 !important; }
+  .depth-draft-hint { font-size: 11px !important; }
+  .depth-door small, .depth-gumballs small, .depth-pocket small, .depth-armed small { font-size: 11px !important; }
+  .depth-reroll { min-height: 42px !important; font-size: 12px !important; }
+
+  /* --------------------------------------------------------------------------
+     13. DAILY & QUESTS SCREEN
+     -------------------------------------------------------------------------- */
+  .daily-overview-copy small, .daily-overview-metrics small { font-size: 11px !important; }
+  .daily-cache-card header strong, .daily-deliveries header > span { font-size: 11px !important; }
+  .daily-reward-chips small { font-size: 10.5px !important; }
+  .daily-day-head small, .daily-day-head b { font-size: 11.5px !important; }
+  .daily-feature-card .scratch-preview-burst { font-size: 11px !important; }
+  .daily-feature-card .scratch-ticket-count small { font-size: 10px !important; }
+
+  /* --------------------------------------------------------------------------
+     14. EVENTS & DOSSIERS (Raid, Phantasia, QOM)
+     -------------------------------------------------------------------------- */
+  .event-copy small { font-size: 11px !important; }
+  .stage-power-label, .stage-power-status, .stage-power-item small { font-size: 11px !important; }
+  .event-dossier-prize span, .event-dossier-prize small { font-size: 11px !important; }
+  .event-team-hero-lv { font-size: 10.5px !important; }
+  .event-stage small { font-size: 11px !important; }
+  .event-condition small { font-size: 11.5px !important; }
+  .event-dossier-back-btn, .event-dossier-pager-btn { min-height: 44px !important; }
+  .event-interior-battle .event-jump-btn, .event-interior-battle .event-team-edit-btn { min-height: 42px !important; }
+
+  /* --------------------------------------------------------------------------
+     15. SEASON PASS & LEADERBOARDS
+     -------------------------------------------------------------------------- */
+  .pass-tool-button, .pass-claim-all {
+    min-height: 44px !important;
+    font-size: 13px !important;
+    font-weight: 800 !important;
+    border-radius: 12px !important;
+  }
+
+  .bp-seal { font-size: 11px !important; }
+  .bp-hold-tag { font-size: 10.5px !important; }
+
+  .leaderboard-tabs button { min-height: 44px !important; font-size: 13px !important; }
+  .leaderboard-you, .leaderboard-podium-unit, .leaderboard-score small, .leaderboard-brand small, .leaderboard-audience {
+    font-size: 11px !important;
+  }
+
+  /* --------------------------------------------------------------------------
+     16. DANDY'S SHOP SCREEN (.shop-screen)
+     -------------------------------------------------------------------------- */
+  .shop-screen {
+    padding-bottom: 24px;
+  }
+
+  .shop-stage {
+    min-height: 190px !important;
+  }
+
+  .shop-dialogue {
+    padding: 10px 14px !important;
+    border-radius: 14px !important;
+  }
+
+  .shop-dialogue p {
+    font-size: 13px !important;
+    line-height: 1.4 !important;
+    min-height: 42px !important;
+  }
+
+  .shop-speaker {
+    font-size: 11px !important;
+  }
+
+  .shop-tabs {
+    display: flex;
+    gap: 7px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    padding: 2px 2px 8px;
+  }
+
+  .shop-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .shop-tab {
+    flex: 0 0 auto;
+    min-height: 42px;
+    padding: 8px 14px;
+    border-radius: 99px;
+    font-size: 12px;
+    font-weight: 800;
+  }
+
+  .shop-upgrade-btn {
+    min-height: 44px;
+    font-size: 12px;
+    font-weight: 800;
+  }
+
+  .shop-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+  }
+
+  .shop-item {
+    padding: 10px !important;
+    border-radius: 14px !important;
+  }
+
+  .shop-item-name {
+    font-size: 13px !important;
+    font-weight: 800 !important;
+  }
+
+  .shop-item-desc {
+    font-size: 11px !important;
+    line-height: 1.3 !important;
+  }
+
+  .shop-buy {
+    min-height: 42px !important;
+    font-size: 12px !important;
+    font-weight: 800 !important;
+    border-radius: 10px !important;
+  }
+
+  /* --------------------------------------------------------------------------
+     17. MODALS & BOTTOM SHEETS (#modalBox)
+     -------------------------------------------------------------------------- */
+  #modal {
+    padding: 10px;
+    background: rgba(4, 7, 8, 0.75);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+
+  #modalBox {
+    width: min(94vw, 440px) !important;
+    max-height: calc(90dvh - var(--safe-b)) !important;
+    padding: 14px !important;
+    border-radius: 20px !important;
+    background: linear-gradient(155deg, #273738, #162022) !important;
+    border: 2px solid rgba(135, 195, 175, 0.35) !important;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.75), inset 0 1px 0 rgba(255, 255, 255, 0.18) !important;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  #modalBox.st-modal {
+    width: min(94vw, 440px) !important;
+    max-height: calc(90dvh - var(--safe-b)) !important;
+    padding: 14px !important;
+  }
+
+  /* Sticky modal header with prominent 44px close button */
+  #modalBox > .row:first-child,
+  #modalBox.st-modal > .row:first-child,
+  #modalBox.settings-modal > .row:first-child {
+    position: sticky;
+    top: -14px;
+    z-index: 10;
+    margin: -14px -14px 12px !important;
+    padding: 12px 14px;
+    background: rgba(22, 32, 34, 0.96);
+    border-bottom: 1.5px solid rgba(90, 125, 115, 0.4);
+    backdrop-filter: blur(14px);
+  }
+
+  .st-tab, .st-btn, .st-switch, .st-seg-btn, .st-select {
+    min-height: 46px !important;
+    font-size: 13px !important;
+    border-radius: 12px !important;
+  }
+
+  /* Gacha Cookie Reveal Modal */
+  #modalBox.cookie-reveal-modal {
+    width: 96vw !important;
+    max-height: 94dvh !important;
+  }
+
+  #modalBox.cookie-reveal-modal .cookie-results {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 8px !important;
+  }
+
+  /* Team Editor Modal */
+  #modalBox.team-editor-modal {
+    width: 96vw !important;
+    height: calc(94dvh - var(--safe-b)) !important;
+    padding: 10px !important;
+  }
+
+  .team-stage {
+    min-height: 140px !important;
+  }
+
+  /* --------------------------------------------------------------------------
+     18. MICRO-FONT OVERRIDES & TYPOGRAPHY RESCUE (Eliminating legacy 4px-8px text)
+     -------------------------------------------------------------------------- */
+  .enemy-preview-move-desc { font-size: 11px !important; line-height: 1.35 !important; }
+  .enemy-preview-move-top > b { font-size: 13px !important; }
+
+  .bud-choice-label { font-size: 10px !important; padding: 4px 6px !important; }
+  .bud-hero-choice > b { font-size: 15px !important; }
+  .bud-hero-choice > small { font-size: 11px !important; }
+  .bud-hero-choice > em { font-size: 11.5px !important; padding: 6px 4px !important; }
+
+  .dandy-battle-coach p { font-size: 12px !important; line-height: 1.35 !important; }
+  .dandy-battle-coach b { font-size: 14px !important; }
+  .dandy-battle-coach small { font-size: 10px !important; }
+  .dandy-battle-coach button { font-size: 11px !important; min-height: 32px !important; padding: 4px 8px !important; }
+
+  .main-character-select-option b { font-size: 13px !important; }
+  .main-character-select-option small { font-size: 11px !important; }
+  .main-character-select-option em { font-size: 11px !important; }
+  .main-character-select-confirm { font-size: 12px !important; min-height: 42px !important; }
+
+  .prize-wall-meter small, .prize-wall-stage small, .prize-wall-grand-count small { font-size: 10px !important; }
+  .prize-wall-tile small { font-size: 10.5px !important; }
+  .prize-wall-preview-copy small { font-size: 10.5px !important; }
+  .prize-wall-preview-copy em { font-size: 11.5px !important; }
+  .prize-wall-preview-tickets small { font-size: 10px !important; }
+  .prize-wall-note { font-size: 11px !important; }
+
+  .event-difficulty span, .event-difficulty small { font-size: 11px !important; }
+  .event-difficulty b { font-size: 13px !important; }
+  .event-wave-card p { font-size: 11.5px !important; }
+
+  .class-ui-actions .btn, .class-ui-active-note { font-size: 11px !important; padding: 5px 8px !important; min-height: 40px !important; }
+
+  .load-mascot span { font-size: 11px !important; }
+  .pl-banner-body small, .pl-mode em, .pl-best small, .pl-live small { font-size: 11px !important; }
+  .ff7c-limit { font-size: 11px !important; }
+  .ff7-commands button, .ff7-modes button, .ff7-btn { min-height: 44px !important; }
+  .kh-modes button, .kh-cmd button, .kh-shop .kh-btn { min-height: 44px !important; }
+  .tp-tabs button { min-height: 42px !important; font-size: 12px !important; }
+
+  /* --------------------------------------------------------------------------
+     19. FLOATING TOASTS NOTIFICATIONS (#toasts)
+     -------------------------------------------------------------------------- */
+  #toasts {
+    position: fixed;
+    top: calc(72px + var(--safe-t));
+    left: 12px;
+    right: 12px;
+    z-index: 250;
+    pointer-events: none;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .toast {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    max-width: 92vw;
+    padding: 10px 16px;
+    border-radius: 99px;
+    background: linear-gradient(145deg, rgba(34, 46, 48, 0.95), rgba(18, 25, 27, 0.98));
+    border: 1.5px solid rgba(135, 215, 175, 0.4);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.55), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(14px);
+    color: #f7ffea;
+    font-size: 12.5px;
+    font-weight: 800;
+    letter-spacing: 0.2px;
+    animation: toastPop 0.26s cubic-bezier(0.2, 1.4, 0.4, 1) both;
+  }
+
+  @keyframes toastPop {
+    from { opacity: 0; transform: translateY(-12px) scale(0.92); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+  }
+}
+
+/* Extra compact screens (<= 380px, e.g. iPhone SE / Galaxy Z Flip folded) */
+@media (max-width: 380px) {
+  #navbar button span { font-size: 9px; }
+  #topbar .tb-lvl { min-width: 40px; height: 40px; }
+  #topbar .profile-btn { min-height: 40px; padding-inline: 8px 4px; }
+  #topbar .profile-avatar { width: 30px; height: 30px; }
+  .home-play-card, .home-grow-card, .home-collect-card { min-height: 80px; padding: 9px; }
+  .hero-roster-grid { grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); }
+  .banterBox, .banterBox[data-align="center"] { padding-left: 54px !important; }
+  .bb-speaker { width: 44px !important; height: 44px !important; }
+}

@@ -153,6 +153,45 @@ const SproutRig = PuppetRig.define({
       c.prop('treat', rs * 1.2); c.set('grin');
       if (jump > .15 && Math.random() < c.dt * 12) c.emit(143 + L.rnd(-70, 70), 180 + L.rnd(-50, 40), L.rnd(-8, 8), L.rnd(-34, -14), L.rnd(.7, 1.1), L.rnd(4, 8));
     },
+<<<<<<< HEAD
+    // Named poses use the same channel targets as idle and walk. They add
+    // skill vocabulary without creating another SVG or a separate timer.
+    skills: {
+      sproutToss(c) {
+        const { P, ph, lib: L } = c;
+        const prep = 1 - L.seg(.22, .52, ph), throwBeat = Math.sin(L.seg(.22, .72, ph) * Math.PI);
+        P.aR = 65 * prep - 105 * throwBeat; P.aL = 16 * prep - 24 * throwBeat;
+        P.torso = -10 * prep + 16 * throwBeat; P.x += 10 * throwBeat;
+        P.headR = 5 * prep - 8 * throwBeat; P.crouch = .45 * prep;
+        c.prop('treat', 1 - L.seg(.35, .56, ph)); c.set('determined');
+      },
+      sproutBake(c) {
+        const { P, ph, lib: L } = c, hold = Math.sin(L.clamp(ph, 0, 1) * Math.PI);
+        P.crouch = .55 * hold; P.aL = 58 * hold; P.fL = -38 * hold; P.aR = -55 * hold;
+        P.headR = 9 * hold; P.lookY = .4; P.sy -= .07 * hold;
+        c.prop('treat', hold); c.set('content');
+      },
+      sproutRush(c) {
+        const { P, ph, lib: L } = c, leap = Math.sin(L.clamp(ph, 0, 1) * Math.PI);
+        P.x += 16 * leap; P.air = 19 * leap; P.torso = 24 * leap;
+        P.aL = -55 * leap; P.aR = 68 * leap; P.legF = -30 * leap; P.legB = 22 * leap;
+        P.leaf = -18 * leap; c.set('determined');
+      },
+      sproutOven(c) {
+        const { P, ph, lib: L } = c, rise = Math.sin(L.clamp(ph, 0, 1) * Math.PI);
+        P.crouch = .3 * rise; P.air = 8 * rise; P.aL = 105 * rise;
+        P.aR = -110 * rise; P.fL = 24 * rise; P.headR = -9 * rise;
+        P.leaf = 14 * rise; c.set('excited');
+      },
+      sproutGuard(c) {
+        const { P, ph, lib: L } = c, brace = Math.sin(L.clamp(ph, 0, 1) * Math.PI);
+        P.crouch = .5 * brace; P.sx += .1 * brace; P.sy -= .08 * brace;
+        P.aL = -48 * brace; P.fL = -45 * brace; P.aR = -65 * brace;
+        P.headR = -6 * brace; P.lookX = 1; c.set('determined');
+      }
+    },
+=======
+>>>>>>> ccb31b9f96fec6e5b5e1509b31b66f6b3cb024e0
     sleep(c) { const { P } = c; P.headR = 18; P.torso += 5; P.headY += 5; P.aL = 3; P.aR = -2; P.lookX = 0; },
     stun(c) { const { P, T } = c; P.headR += Math.sin(T * 4.5) * 9; P.torso += Math.sin(T * 4.5) * 5; }
   }

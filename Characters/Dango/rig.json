@@ -1,0 +1,234 @@
+{
+  "name": "Dango",
+  "width": 640,
+  "height": 800,
+  "ground": 760,
+  "parts": [
+    {
+      "name": "head",
+      "parent": "torso",
+      "pivot": [
+        329.59,
+        346.77
+      ],
+      "rect": [
+        218,
+        128,
+        450,
+        361
+      ],
+      "src": "parts/head.png"
+    },
+    {
+      "name": "torso",
+      "parent": "root",
+      "pivot": [
+        362.47,
+        497.64
+      ],
+      "rect": [
+        269,
+        335,
+        465,
+        533
+      ],
+      "src": "parts/torso.png"
+    },
+    {
+      "name": "dango",
+      "parent": "head",
+      "pivot": [
+        239.41,
+        195.76
+      ],
+      "rect": [
+        4,
+        111,
+        310,
+        519
+      ],
+      "src": "parts/dango.png"
+    },
+    {
+      "name": "hair",
+      "parent": "head",
+      "pivot": [
+        363.92,
+        204.93
+      ],
+      "rect": [
+        267,
+        103,
+        509,
+        428
+      ],
+      "src": "parts/hair.png"
+    },
+    {
+      "name": "armL",
+      "parent": "torso",
+      "pivot": [
+        290.77,
+        384.08
+      ],
+      "rect": [
+        255,
+        347,
+        321,
+        448
+      ],
+      "src": "parts/armL.png"
+    },
+    {
+      "name": "armR",
+      "parent": "torso",
+      "pivot": [
+        402.32,
+        365.09
+      ],
+      "rect": [
+        349,
+        336,
+        463,
+        423
+      ],
+      "src": "parts/armR.png"
+    },
+    {
+      "name": "forearmL",
+      "parent": "armL",
+      "pivot": [
+        278.9,
+        426.51
+      ],
+      "rect": [
+        270,
+        417,
+        373,
+        514
+      ],
+      "src": "parts/forearmL.png"
+    },
+    {
+      "name": "forearmR",
+      "parent": "armR",
+      "pivot": [
+        445.11,
+        405.23
+      ],
+      "rect": [
+        385,
+        397,
+        462,
+        503
+      ],
+      "src": "parts/forearmR.png"
+    },
+    {
+      "name": "legL",
+      "parent": "root",
+      "pivot": [
+        348.09,
+        498.16
+      ],
+      "rect": [
+        328,
+        462,
+        373,
+        570
+      ],
+      "src": "parts/legL.png"
+    },
+    {
+      "name": "legR",
+      "parent": "root",
+      "pivot": [
+        394.9,
+        492.96
+      ],
+      "rect": [
+        371,
+        456,
+        416,
+        564
+      ],
+      "src": "parts/legR.png"
+    },
+    {
+      "name": "shinL",
+      "parent": "legL",
+      "pivot": [
+        341.2,
+        570.54
+      ],
+      "rect": [
+        293,
+        546,
+        393,
+        701
+      ],
+      "src": "parts/shinL.png"
+    },
+    {
+      "name": "shinR",
+      "parent": "legR",
+      "pivot": [
+        392.01,
+        564.94
+      ],
+      "rect": [
+        337,
+        540,
+        437,
+        695
+      ],
+      "src": "parts/shinR.png"
+    },
+    {
+      "name": "footL",
+      "parent": "shinL",
+      "pivot": [
+        342.79,
+        690.15
+      ],
+      "rect": [
+        308,
+        646,
+        389,
+        736
+      ],
+      "src": "parts/footL.png"
+    },
+    {
+      "name": "footR",
+      "parent": "shinR",
+      "pivot": [
+        395.99,
+        684.3
+      ],
+      "rect": [
+        362,
+        639,
+        443,
+        729
+      ],
+      "src": "parts/footR.png"
+    }
+  ],
+  "drawOrder": [
+    "legL",
+    "shinL",
+    "footL",
+    "legR",
+    "shinR",
+    "footR",
+    "torso",
+    "armL",
+    "forearmL",
+    "armR",
+    "forearmR",
+    "hair",
+    "dango",
+    "head"
+  ]
+}

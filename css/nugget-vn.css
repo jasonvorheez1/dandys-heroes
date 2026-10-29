@@ -1,0 +1,8 @@
+/* Full-body VN artwork only in scenes containing a supplied VN portrait. */
+.banterScene .vn-cast.full-portraits{top:120px;bottom:165px;left:3%;right:3%;height:auto;width:auto;transform:none;align-items:flex-end;gap:8px}
+.banterScene .vn-cast.full-portraits .vn-portrait{height:100%;width:auto;max-width:180px;min-width:0;flex:1 1 0;border:0;border-radius:0;background:none;box-shadow:none;overflow:visible;opacity:.48;transform:translateY(7px);filter:none}
+.banterScene .vn-cast.full-portraits .vn-portrait img{inset:0;width:100%;height:100%;object-fit:contain;object-position:center bottom;filter:drop-shadow(0 4px 3px #0008)}
+.banterScene .vn-cast.full-portraits .vn-portrait.active{opacity:1;transform:translateY(0)}
+.banterScene .vn-cast.full-portraits .vn-portrait figcaption{bottom:-14px;left:50%;font-size:10px;opacity:1;padding:3px 6px;white-space:nowrap;background:#17171bd9}
+.banterScene .vn-cast.full-portraits .vn-portrait i{display:none}
+@media(max-width:560px){.banterScene .vn-cast.full-portraits{top:90px;bottom:170px;gap:4px}.banterScene .vn-cast.full-portraits .vn-portrait figcaption{font-size:8px}}

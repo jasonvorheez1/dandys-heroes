@@ -1,0 +1,105 @@
+/* Trials: a small illustrated playbill for each division. */
+#screen:has(.trials-screen){background:#11191b}
+.trials-screen{
+  min-height:100%;margin:-10px -10px -18px;padding:15px 0 18px;
+  background:
+    radial-gradient(ellipse at 50% -5%,#9feb6940,transparent 42%),
+    radial-gradient(ellipse at 5% 75%,#4d789026,transparent 38%),
+    repeating-linear-gradient(90deg,#ffffff08 0 1px,transparent 1px 28px),
+    linear-gradient(180deg,#233033,#11191b 58%);
+}
+.trials-head{padding:1px 12px 17px}
+.trials-kicker{display:inline-block;padding:4px 12px 3px;border:1px solid #a9ee8c66;border-radius:99px;background:#0b1717a8;color:#c9f8a0;font-size:8px;letter-spacing:2.4px}
+.trials-head h1{margin:7px 0 3px;font:900 clamp(30px,5vw,42px)/.94 "Fredoka Journal","Arial Black",sans-serif;letter-spacing:1.5px;color:#fffbe6;-webkit-text-stroke:3px #0a1110;text-shadow:0 4px #0a1110,0 8px 18px #0008}
+.trials-sub{color:#b9cbc1;font-size:9px;letter-spacing:1px}
+.trials-sub b{color:#d9ffa8;font-size:10px}
+.trial-deck{grid-auto-columns:clamp(182px,28vw,222px);gap:14px;height:clamp(390px,calc(100dvh - 225px),500px);padding:6px max(14px,calc((100vw - 980px)/2)) 17px;scroll-padding-left:14px}
+.trial-card{border-color:#080c0d;border-radius:20px;box-shadow:inset 0 0 0 2px var(--trial-accent),0 6px 0 #080d0e,0 12px 24px #0009;transition:transform .18s ease,filter .18s ease}
+@media(hover:hover){.trial-card:hover{transform:translateY(-3px);filter:brightness(1.08)}}
+.trial-card:before{z-index:0;background:radial-gradient(ellipse at 50% 35%,color-mix(in srgb,var(--trial-accent) 27%,transparent),transparent 58%),linear-gradient(180deg,#050b0d44 0%,transparent 26%,#09101122 51%,#060b0df5 79%),repeating-linear-gradient(145deg,#ffffff08 0 2px,transparent 2px 13px)}
+.trial-card:after{content:"";position:absolute;z-index:1;left:14px;right:14px;bottom:108px;height:1px;background:linear-gradient(90deg,transparent,var(--trial-accent),transparent);box-shadow:0 0 13px var(--trial-accent);pointer-events:none}
+.trial-card-top{padding:15px 38px 12px 13px;min-height:84px;background:linear-gradient(180deg,#080d0df5,#080d0dd0 67%,transparent)}
+.trial-card-name{font:900 clamp(16px,2.5vw,19px)/1 "Fredoka Journal","Arial Black",sans-serif;letter-spacing:.3px;color:#fffdf0;-webkit-text-stroke:1px #0a0e0e;text-shadow:0 3px 3px #000c}
+.trial-card-name small{margin-top:7px;color:var(--trial-accent);font:900 8px/1.1 Arial,sans-serif;letter-spacing:1.2px;-webkit-text-stroke:0;text-shadow:0 1px 2px #000}
+.trial-info{top:11px;right:11px;width:30px;height:30px;border:2px solid #101617;background:#f5faee;box-shadow:0 3px #090d0e;color:#182024;font-size:16px;cursor:pointer}
+.trial-info:hover,.trial-info:focus-visible{background:var(--trial-accent)}
+.trial-art{z-index:2;left:8px;right:8px;top:78px;bottom:112px}
+.trial-art:before{content:"";position:absolute;left:8%;right:8%;bottom:4%;height:30%;border-radius:50%;background:radial-gradient(ellipse,var(--trial-accent),transparent 70%);opacity:.38;filter:blur(13px)}
+.trial-art img{position:relative;max-width:105%;max-height:107%;filter:saturate(1.14) contrast(1.06) drop-shadow(0 3px 1px #000c) drop-shadow(0 13px 10px #000b)}
+.trial-art.locked:before{opacity:.12}
+.trial-card-foot{left:11px;right:11px;bottom:11px}
+.trial-rule{height:auto;min-height:28px;max-height:35px;color:#f6f8ed;font-size:10px;font-weight:800;line-height:1.32}
+.trial-count{margin-top:5px;color:var(--trial-accent);font-size:8px;font-weight:900;letter-spacing:1.1px}
+.trial-progress{gap:4px;width:100%;margin:9px 0 10px}
+.trial-progress i{flex:1;width:auto;height:6px;border-color:#050808;border-radius:5px;background:#344044}
+.trial-progress i.done{box-shadow:inset 0 1px #fff8,0 0 5px var(--trial-accent)}
+.trial-progress i.next{background:#fffce5;box-shadow:0 0 0 2px var(--trial-accent),0 0 8px var(--trial-accent)}
+.trial-play{min-height:43px;border-radius:10px;color:#152217;background:linear-gradient(180deg,#f0ffd5,var(--trial-accent));box-shadow:inset 0 2px #fff9,0 4px #080b0c;font:900 10px/1 "Fredoka Journal",Arial,sans-serif;letter-spacing:.5px;cursor:pointer}
+.trial-play:hover,.trial-play:focus-visible{filter:brightness(1.13)}
+.trial-play.need{color:#e2eae4;background:linear-gradient(180deg,#687371,#3b4444)}
+.trial-card-endgame{box-shadow:inset 0 0 0 2px #ffad71,0 6px #090d0e,0 0 20px #ff764a55}
+.trial-card-endgame .trial-play{background:linear-gradient(180deg,#ffe39d,#f28c5a)}
+.trial-swipe{padding:10px 14px 0;color:#b2c4ba;font-size:8px;font-weight:900;letter-spacing:1.15px}
+
+/* The stage sheet keeps the encounter objective and reward visible together. */
+#modalBox:has(.trial-info-body){width:min(94vw,620px);border-color:#090e10;background:linear-gradient(145deg,#344547,#1a292b 58%,#111a1d);box-shadow:inset 0 2px #ffffff29,0 9px #080d0e,0 20px 50px #000a}
+.trial-info-summary{padding:12px;border:2px solid #0c1718;border-radius:12px;background:linear-gradient(130deg,#334549,#172529);box-shadow:inset 0 1px #ffffff25,0 3px #0b1214}
+.trial-info-tags{gap:5px;margin-bottom:9px}
+.trial-info-summary .tiny{font-size:9px;line-height:1.45}
+.trial-info-label{margin:15px 2px 7px;color:#d5f6b8;font-size:9px;font-weight:900;letter-spacing:1.4px}
+.trial-ready-heroes{gap:7px;min-height:50px}
+.trial-ready-heroes img{width:46px;height:46px;border-color:#a7d481;border-radius:10px;background:#283c39;box-shadow:0 2px #0d1516}
+.trial-stage-list{gap:9px;max-height:min(49dvh,500px);padding:3px 3px 7px}
+.trial-stage-action-row{grid-template-columns:minmax(0,1fr) 54px;gap:6px}
+.trial-stage-action-row .trial-stage-row{grid-template-columns:70px minmax(0,1fr) 55px;min-height:100px;border:2px solid var(--stage-accent);border-radius:11px;background:linear-gradient(105deg,color-mix(in srgb,var(--stage-accent) 30%,#26383b),#1a292d 62%);box-shadow:inset 0 1px #fff4,0 3px #0b1214;cursor:pointer}
+.trial-stage-action-row .trial-stage-thumb{min-height:100px;border-right-color:#0b1516}
+.trial-stage-thumb b{font:900 27px/1 "Fredoka Journal",Arial,sans-serif;-webkit-text-stroke:1px #080d0e;text-shadow:0 2px #080d0e}
+.trial-stage-thumb small{font-size:7px;letter-spacing:.2px}
+.trial-stage-action-row .trial-stage-copy{gap:4px;padding:8px}
+.trial-stage-action-row .trial-stage-copy>b{font-size:12px;white-space:normal;line-height:1.1}
+.trial-stage-copy>small{margin-top:0;color:#e0ebe4;font-size:8px;line-height:1.25;white-space:normal}
+.trial-stage-copy>small em{color:#d5f6a8}
+.trial-stage-action-row .trial-stage-copy>i{margin:0;font-size:9px;line-height:1.3}
+.trial-stage-challenge{margin-top:2px;padding:3px 5px;font-size:8px;letter-spacing:0;line-height:1.25}
+.trial-stage-pressure{font-size:8px}
+.trial-stage-rewards{min-width:0;gap:4px;padding:5px 2px}
+.trial-stage-rewards>small{font-size:6px;letter-spacing:.35px}
+.trial-stage-rewards>i{font-size:15px}
+.trial-stage-rewards>i b{font-size:7px}
+.trial-stage-raid{border-radius:10px;font-size:9px;cursor:pointer}
+.trial-stage-raid small{font-size:8px}
+.trial-stage-raid:hover:not(:disabled){filter:brightness(1.1)}
+.trials-beginner>.codebase-card,.trials-screen>.codebase-card{margin-top:7px}
+.trials-beginner{align-items:center}
+.trials-beginner>.codebase-card{flex:none;min-height:340px}
+.trial-grind-card{width:min(92%,430px);max-width:430px;margin:20px auto 0;padding:25px 20px 19px;border:3px solid #9beaff;border-radius:20px;background:radial-gradient(circle at 50% 5%,#9beaff47,transparent 45%),repeating-linear-gradient(145deg,#ffffff09 0 2px,transparent 2px 13px),linear-gradient(150deg,#2b5360,#172b39 63%,#12202b);box-shadow:inset 0 2px #ffffff65,0 6px #081217,0 12px 26px #0008}
+.trial-grind-icon{width:78px;height:78px;margin:0 auto 12px;font-size:39px}
+.trial-grind-card>small{font-size:9px;letter-spacing:2px}
+.trial-grind-card h2{margin:8px 0 10px;font:900 27px/1 "Fredoka Journal",Georgia,serif;text-shadow:0 3px #102b37}
+.trial-grind-card p{margin-bottom:17px;font-size:11px;line-height:1.5}
+.trial-grind-rewards{gap:6px;margin-bottom:14px}
+.trial-grind-rewards span{padding:6px 8px;font-size:9px}
+.trial-grind-note{font-size:8px}
+.trial-grind-play{min-height:45px;font:900 11px/1 "Fredoka Journal",Arial,sans-serif}
+.trial-grind-raid{min-height:40px;font-size:9px}
+@media(max-width:520px){
+  .trial-deck{grid-auto-columns:min(49vw,198px);gap:10px;height:clamp(385px,calc(100dvh - 215px),465px);padding-inline:10px}
+  .trial-card-top{padding-left:11px}
+  .trial-card-name{font-size:16px}
+  .trial-info-summary{padding:9px}
+  .trial-stage-action-row{grid-template-columns:minmax(0,1fr) 43px;gap:4px}
+  .trial-stage-action-row .trial-stage-row{grid-template-columns:56px minmax(0,1fr) 42px;min-height:110px}
+  .trial-stage-action-row .trial-stage-thumb{min-height:110px;padding:4px}
+  .trial-stage-thumb b{font-size:23px}
+  .trial-stage-thumb small{font-size:6px}
+  .trial-stage-action-row .trial-stage-copy{padding:6px 5px}
+  .trial-stage-action-row .trial-stage-copy>b{font-size:10px}
+  .trial-stage-copy>small,.trial-stage-action-row .trial-stage-copy>i{font-size:7px}
+  .trial-stage-challenge,.trial-stage-pressure{font-size:7px}
+  .trial-stage-rewards>small{font-size:5px}
+  .trial-stage-rewards>i{font-size:12px;gap:1px}
+  .trial-stage-rewards>i b{font-size:6px}
+  .trial-stage-raid{font-size:7px}
+}
+@media(max-height:650px){.trial-deck{height:360px}.trials-head{padding-bottom:9px}}
+@media(prefers-reduced-motion:reduce){.trial-card{transition:none}.trial-card:hover{transform:none}}

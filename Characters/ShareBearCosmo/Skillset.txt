@@ -1,0 +1,16 @@
+Share Bear Cosmo
+
+Tier: S Tier
+Role: Control
+
+Share Bear Cosmo combines the chocolate-pastry craftsmanship of Cosmo with the warm generosity of Share Bear. Dressed in a pastel purple bear hood, pink cheek hearts, and an apron bearing two crossed lollipops, Share Bear Cosmo operates under one golden rule: "Sharing is Caring" — whether enemies like it or not! Armed with swirling hypnotic lollipops, buff redistribution, and teamwide energy sharing, Cosmo dismantles enemy buff hierarchies and funnels their power directly into his allies.
+
+Name	Rarity	Damage Type	Description
+Share or Else!	White	Magic Damage / Energy Siphon / Sugar Glaze	Cosmo serves up a giant Care Bear lollipop platter that forces the enemy team to share! Targets the enemy with the highest current Energy and the enemy with the highest Attack. Deals Magic Damage to both and siphons 40+ Energy from each, distributing the stolen Energy equally to all living allies. Both targets are Sugar-Glazed (Stunned for 3s and Silenced for 4.5s), and any positive buffs they possess are swapped between them with their remaining durations cut in half.
+Hypnotic Swirl Lollipops	Green	Magic Damage / Vortex Suction / Blind	Cosmo flings two giant spinning swirl lollipops into the center of the enemy team. Creates a hypnotic sugar vortex for 3s that continuously pulls all nearby enemies toward its center, dealing Magic Damage per second and Blinding all caught enemies for 4.5s (causing 50% of basic attacks to miss).
+Equal Slices	Blue	Passive & Active / Buff Mirror / Shield Cut	Passive & Active: Cosmo enforces equality! Whenever an enemy receives a positive buff (Shield, Fortify, Attack Up, Speed Up, or Crit Up), Cosmo immediately copies that buff and grants it to all living allies for 5s (can trigger once every 5.5s). In addition, every third basic attack hurls a penetrating lollipop that cuts 30% of shields on all enemies in its path.
+Sharing is Caring	Purple	Passive / Team Heal & Shield Sharing / Energy Theft	Cosmo ensures no treat is enjoyed alone. Whenever any ally receives healing or a shield, 35%+ of that heal or shield value is duplicated and granted to all other living allies! In addition, whenever an enemy below 50% HP attempts to gain Energy from attacking or skills, 40% of that gained Energy is diverted straight to Share Bear Cosmo.
+The Sweetest Gift	Red	Control / True Damage / Team Haste	Whenever Cosmo casts a skill or triggers Equal Slices, all allies gain +25% Attack Speed and +25% Move Speed for 6s. Enemies affected by Sugar Glaze or Hypnotic Swirl suffer 25% vulnerability to all Magic Damage, and defeating an enemy who had buffs stolen triggers a massive Sugar Explosion that deals True Damage across the entire enemy field.
+
+Why S Tier?
+Share Bear Cosmo is an elite S-Tier Control unit capable of completely swinging team fights with a single button press. His ability to siphon massive chunks of enemy energy and distribute it to all allies allows teamwide ultimate chain-reactions, while his hypnotic swirl vortex clumps enemy squads together for devastating area combos. With automatic buff mirroring and teamwide heal sharing, Cosmo counters buff-heavy meta squads effortlessly.

@@ -1,0 +1,99 @@
+/* Hero Mods panel + Prism training */
+.mods-card{display:flex;flex-direction:column;gap:10px}
+.mods-wallet{display:flex;flex-wrap:wrap;gap:6px}
+.mods-wallet span{display:inline-flex;align-items:center;gap:5px;padding:4px 9px;border-radius:999px;background:#ffffff12;font-size:13px}
+.mods-wallet b{font-weight:800}
+.mods-wallet .resource-icon{width:18px;height:18px}
+.mods-chip-icon{width:18px;height:18px;border-radius:50%;object-fit:cover}
+.mods-total{font-size:12px;color:#ffe28a;font-weight:700}
+.mods-slots{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.mods-bag{display:grid;grid-template-columns:repeat(auto-fill,minmax(62px,1fr));gap:8px;max-height:230px;overflow:auto;padding:2px}
+.mod-tile{--mt:#c3ced6;position:relative;aspect-ratio:1;padding:0;border:2px solid var(--mt);border-radius:6px 6px 6px 16px;background:linear-gradient(160deg,#3a2810,#17100a);cursor:pointer;color:#fff;display:flex;align-items:center;justify-content:center;overflow:visible;transition:transform .16s,filter .16s}
+.mod-tile:not(.empty):hover,.mod-tile:not(.empty):focus-visible{transform:translateY(-2px) rotate(-2deg);filter:brightness(1.2)}
+.mod-tile:active{transform:scale(.94)}
+.mod-tile::after{content:"";position:absolute;inset:-2px;border-radius:inherit;box-shadow:0 0 0 0 var(--mt);pointer-events:none;transition:box-shadow .15s}
+.mod-tile.tier-1,.mod-tile.tier-2,.mod-tile.tier-3,.mod-tile.tier-4,.mod-tile.tier-5{border-color:var(--mt)}
+.mod-tile.selected::after{box-shadow:0 0 0 3px #fff,0 0 12px 2px var(--mt)}
+.mod-tile.empty{background:#00000040;border-style:dashed;border-color:#ffffff40;flex-direction:column;gap:2px}
+.mod-tile.locked{opacity:.65}
+.mod-tile.locked small{font-size:9px;text-align:center;line-height:1.1}
+.mod-plus{font-size:24px;opacity:.6}.mod-lock{font-size:18px}
+.mod-art{width:76%;height:76%;object-fit:contain;filter:drop-shadow(0 2px 2px #000a)}
+.mod-lv{position:absolute;top:2px;left:4px;font-size:11px;font-weight:900;text-shadow:0 1px 2px #000}
+.mod-tier{position:absolute;top:2px;right:4px;font-size:11px;font-weight:900;color:var(--mt);text-shadow:0 1px 2px #000}
+.mod-att{position:absolute;right:-3px;bottom:-3px;width:44%;height:44%;border-radius:5px;border:2px solid #17100a;object-fit:cover;background:#17100a}
+.mod-upg-dot{position:absolute;left:2px;bottom:2px;width:30%;height:30%}
+.mod-on{position:absolute;left:-4px;bottom:-4px;font-size:11px;line-height:16px;width:16px;text-align:center;border-radius:50%;background:#3fbf6a;color:#fff;font-weight:900}
+.mod-on:not(:empty){opacity:1}
+.mods-detail{--mt:#c3ced6;position:relative;isolation:isolate;display:flex;flex-direction:column;gap:8px;overflow:hidden;padding:11px;border-radius:12px;background:radial-gradient(circle at 36px 35px,color-mix(in srgb,var(--mt) 20%,transparent),transparent 135px),linear-gradient(155deg,#243033,#121b20);border:1px solid color-mix(in srgb,var(--mt) 43%,#ffffff1a);box-shadow:inset 0 1px #ffffff22,0 4px 14px #0003}
+.mods-detail-head{display:flex;gap:12px;align-items:center;min-height:80px}
+.mods-detail-copy{min-width:0}
+.mods-forge-art{position:relative;display:grid;place-items:center;flex:none;width:78px;height:78px;border-radius:16px;background:radial-gradient(circle,#ffffff24 0 18%,transparent 60%),conic-gradient(from 20deg,color-mix(in srgb,var(--mt) 40%,transparent),#171d20 20%,color-mix(in srgb,var(--mt) 60%,transparent) 48%,#171d20 72%,color-mix(in srgb,var(--mt) 40%,transparent));box-shadow:inset 0 0 0 1px #fff5,0 4px 12px #0006}
+.mods-forge-art::before{content:"";position:absolute;inset:5px;border:1px dashed color-mix(in srgb,var(--mt) 65%,transparent);border-radius:50%;animation:modsForgeOrbit 12s linear infinite}
+.mods-forge-art::after{content:"✦";position:absolute;top:1px;right:3px;color:#fff5;font-size:11px;text-shadow:0 0 8px var(--mt)}
+.mods-detail-head .mod-art{position:relative;z-index:1;width:62px;height:62px;flex:none;padding:6px;border-radius:6px 6px 6px 16px;border:2px solid var(--mt);background:linear-gradient(160deg,#3a2810,#17100a);filter:drop-shadow(0 3px 5px #000a)}
+.mods-rank{display:inline-block;margin-bottom:3px;padding:2px 6px;border:1px solid color-mix(in srgb,var(--mt) 50%,transparent);border-radius:4px;color:var(--mt);background:#0005;font-size:9px;font-weight:900;letter-spacing:.09em}
+.mods-detail-head b{display:block;font-size:15px;color:var(--mt)}
+.mods-detail-head small{display:block;opacity:.75;font-size:12px}
+.mods-progress{display:grid;gap:4px;padding:7px 8px;border:1px solid #ffffff18;border-radius:8px;background:#0004}
+.mods-progress-label{display:flex;justify-content:space-between;gap:8px;color:#c9d4d3;font-size:9px;font-weight:800;letter-spacing:.08em}
+.mods-progress-label strong{color:var(--mt);font-size:10px;letter-spacing:.02em}
+.mods-progress-track{height:7px;overflow:hidden;border-radius:20px;background:#0008;box-shadow:inset 0 1px 2px #0009}
+.mods-progress-track i{display:block;height:100%;border-radius:inherit;background:linear-gradient(90deg,color-mix(in srgb,var(--mt) 55%,#fff),var(--mt));box-shadow:0 0 8px var(--mt)}
+.mods-main{display:block;font-weight:800;font-size:13px;margin-top:2px}
+.mods-sub{display:flex;align-items:center;gap:4px;font-size:12px;opacity:.9}
+.mods-sub img{width:18px;height:18px}
+.mods-state{display:flex;flex-wrap:wrap;gap:6px;font-size:11px}
+.mods-state span{display:inline-flex;align-items:center;gap:4px;padding:3px 8px;border-radius:999px;background:#ffffff14}
+.mods-state img{width:16px;height:16px;border-radius:4px;object-fit:cover}
+.mods-state .attuned{background:#e0b24a33;color:#ffe28a}.mods-state .ok{background:#3fbf6a33;color:#8cf0ae}
+.mods-actions{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.mods-actions .btn{flex:1 1 auto;white-space:nowrap}
+.mods-actions .btn .resource-icon{width:15px;height:15px}
+.mods-hint{opacity:.6;font-size:11px}
+.mods-empty{margin:0;opacity:.7;font-size:13px;text-align:center;padding:6px}
+.mods-confirm{margin:0;font-size:13px;line-height:1.35}
+.mods-upgrades{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.mods-upgrades-title{padding-top:3px;border-top:1px solid #ffffff24;color:var(--mt);font-size:10px;font-weight:900;letter-spacing:.12em}
+.mods-upgrade{position:relative;display:flex;flex-direction:column;align-items:center;gap:3px;min-height:104px;padding:9px 4px;border-radius:10px;border:1px solid #ffffff2a;background:radial-gradient(circle at 50% 20%,color-mix(in srgb,var(--mt) 18%,transparent),transparent 65%),#ffffff0d;color:#fff;cursor:pointer;text-align:center;transition:transform .16s,border-color .16s,box-shadow .16s,background .16s}
+.mods-upgrade:not(:disabled):hover,.mods-upgrade:not(:disabled):focus-visible{transform:translateY(-3px);border-color:var(--mt);box-shadow:0 5px 12px #0007,0 0 12px color-mix(in srgb,var(--mt) 35%,transparent)}
+.mods-upgrade:not(:disabled):active{transform:translateY(1px) scale(.97)}
+.mods-upgrade:disabled{opacity:.55;cursor:default}
+.mods-upgrade.active{border-color:var(--mt);background:color-mix(in srgb,var(--mt) 20%,#182124);box-shadow:inset 0 0 12px color-mix(in srgb,var(--mt) 18%,transparent)}
+.mods-upgrade.active:disabled{opacity:1}
+.mods-upgrade img{width:36px;height:36px}.mods-upgrade b{font-size:12px}.mods-upgrade small{font-size:10px;opacity:.75;line-height:1.15}
+.mods-upgrade em{font-style:normal;font-size:11px;font-weight:800}.mods-upgrade em .resource-icon{width:13px;height:13px}
+.mod-celebrate{animation:modsForgeFlash .8s ease-out}
+.mod-celebrate::after{content:"";position:absolute;z-index:3;inset:-30%;pointer-events:none;background:linear-gradient(110deg,transparent 34%,#fff0 42%,#fff8 50%,#fff0 58%,transparent 66%);animation:modsForgeSweep .85s ease-out both}
+.mod-celebrate .mods-forge-art{animation:modsForgePop .7s cubic-bezier(.2,1.4,.3,1)}
+.mod-celebrate .mods-progress-track i{transform-origin:left;animation:modsMeterSurge .8s ease-out}
+.mod-celebrate-banner{position:absolute;z-index:4;top:8px;right:8px;max-width:calc(100% - 100px);padding:5px 8px;border:1px solid #fff9;border-radius:5px;color:#18201d;background:var(--mt);box-shadow:0 3px 10px #0008,0 0 12px var(--mt);font-size:10px;font-weight:900;letter-spacing:.06em;text-align:center;pointer-events:none;animation:modsBanner 1.3s ease-out both}
+.mod-celebrate-advance .mods-forge-art{animation-duration:.95s}
+@keyframes modsForgeOrbit{to{transform:rotate(360deg)}}
+@keyframes modsForgeFlash{0%{box-shadow:inset 0 0 0 0 #fff0,0 0 0 0 var(--mt)}30%{box-shadow:inset 0 0 28px color-mix(in srgb,var(--mt) 55%,transparent),0 0 18px var(--mt)}100%{box-shadow:inset 0 1px #ffffff22,0 4px 14px #0003}}
+@keyframes modsForgeSweep{from{transform:translateX(-100%)}to{transform:translateX(100%)}}
+@keyframes modsForgePop{0%{transform:scale(.75) rotate(-12deg);filter:brightness(1.8)}55%{transform:scale(1.15) rotate(5deg)}100%{transform:scale(1) rotate(0)}}
+@keyframes modsMeterSurge{from{transform:scaleX(.3);filter:brightness(2)}to{transform:scaleX(1);filter:brightness(1)}}
+@keyframes modsBanner{0%{opacity:0;transform:translateY(9px) scale(.8)}20%,65%{opacity:1;transform:translateY(0) scale(1)}100%{opacity:0;transform:translateY(-7px) scale(1)}}
+@media(prefers-reduced-motion:reduce){.mods-forge-art::before,.mod-celebrate,.mod-celebrate::after,.mod-celebrate .mods-forge-art,.mod-celebrate .mods-progress-track i,.mod-celebrate-banner{animation:none!important}.mod-celebrate-banner{opacity:1}.mods-upgrade,.mod-tile{transition:none}}
+html.accessibility-reduced-effects .mods-forge-art::before,html.accessibility-reduced-effects .mod-celebrate,html.accessibility-reduced-effects .mod-celebrate::after,html.accessibility-reduced-effects .mod-celebrate .mods-forge-art,html.accessibility-reduced-effects .mod-celebrate .mods-progress-track i,html.accessibility-reduced-effects .mod-celebrate-banner{animation:none!important}
+.mods-bag-head{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.mods-bag-head b span{opacity:.6;font-weight:600;margin-left:4px}
+.mods-filters{display:flex;gap:4px}
+.mods-filter{padding:3px 10px;border-radius:999px;border:1px solid #ffffff2a;background:transparent;color:#fff;font-size:12px;cursor:pointer}
+.mods-filter.active{background:#ffd24d;color:#2a1c08;border-color:#ffd24d;font-weight:800}
+/* Prism training */
+.prism-train{display:flex;flex-direction:column;gap:8px;margin-top:10px}
+.prism-train-head{display:flex;justify-content:space-between;font-size:13px}
+.prism-train-row{padding:8px;border-radius:10px;background:#00000030;border:1px solid #ffffff1a;display:flex;flex-direction:column;gap:6px}
+.prism-train-top{display:flex;gap:8px;align-items:center}
+.prism-train-top .prism-icon{font-size:24px}
+.prism-train-top b{display:block;font-size:14px}.prism-train-top small{opacity:.75;font-size:11px}
+.prism-train-gain{font-size:12px;color:#ffe28a}
+
+/* Enemy Mod chips and dossier rows */
+.enemy-gear-chip.mod{border-color:#6fd0ff;background:#1f3446}
+.enemy-preview-gear.mod{border-color:#2f5568}
+
+/* Skill levels raised by Mods */
+.sk-mod-plus{font-style:normal;font-size:.8em;color:#7fd8ff}

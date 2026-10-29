@@ -1,0 +1,16 @@
+Tenderheart Bear Sprout
+
+Tier: A Tier
+Role: Control
+
+Tenderheart Bear Sprout combines the culinary passion of Sprout with the pure, unwavering leadership and empathy of Tenderheart Bear. Donning his orange hood, heart-shaped sunglasses, and Care Bear apron with a glowing red heart belly badge, Tenderheart Sprout brings a never-before-seen battle gimmick to Dandy's Heroes: the Empathy Link. Through his iconic Care Bear Stare, he binds enemies together with magical heartstrings, forcing them to share each other's damage and suffer each other's crowd control effects simultaneously.
+
+Name	Rarity	Damage Type	Description
+Care Bear Stare: Heart Beam	White	Magic Damage / Dispel / Empathy Link	Passive: Tenderheart Sprout's heart glasses see through all deception; his attacks cannot miss and dispels 1 buff every 3 basic attacks. Active: Sprout straightens his heart sunglasses and unleashes the iconic Care Bear Stare from his apron badge! The prismatic heart beam sweeps across all enemies for Magic Damage, removes shields, and establishes an Empathy Link between the 2 enemies with the highest total offense for 7s. While tethered, whenever either enemy takes damage, the other takes 65%+ of that damage as True Damage. In addition, any hard Crowd Control (Stun, Silence, Freeze, Root, Sleep) suffered by one tethered target is mirrored onto the other!
+Caring Strawberry	Green	Magic Damage / Root / Energy Siphon	Sprout hurls an explosive candied heart strawberry at the enemy with the highest current Energy. On impact, deals Magic Damage, Roots them for 3.5s, and inflicts Pacifist Heart, cutting their basic attack damage by 50%. When the Root expires, siphons 25 Energy from the target to Sprout.
+Tender Heartstrings	Blue	Magic Damage / Displacement / Daze	Every 7s, Tenderheart Sprout pulls the glowing heartstrings connecting the battlefield! If an Empathy Link is active, the two tethered enemies are violently yanked toward each other, colliding for heavy Magic Damage and getting Stunned for 2s. If no link is active, yanks the closest enemy into the midline, Dazing and Armslowing them for 4s.
+From the Bottom of My Heart	Purple	Passive / Anti-CC Retaliation / Shield	Whenever an enemy afflicts any ally with a hard Crowd Control effect, Tenderheart Sprout claps his mittens in righteous empathy: immediately Stuns the offending enemy for 1.8s, cleanses the crowd control from the affected ally, and grants that ally a Warm Heart Shield (18%+ Max HP) and 3s CC Immunity (8s cooldown per ally).
+Caring Leadership	Red	Control / Stat Buff / True Damage	Allies gain +15% Tenacity and +15% Skill Haste. Whenever an Empathy Link duplicates damage or crowd control, all allies heal for 8% of the damage dealt and Tenderheart Sprout's next basic attack bursts in a rainbow heart explosion dealing bonus True Damage.
+
+Why A Tier?
+Tenderheart Bear Sprout is a premier control specialist who completely neutralizes double-DPS enemy teams. By linking the enemy's biggest threats together with Empathy Link, single-target burst from allies like Scraps, Cloud, or Tifa is transformed into devastating dual-annihilation, while his anti-CC retaliation shields allies from opposing control setups.

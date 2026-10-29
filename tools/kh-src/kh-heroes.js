@@ -366,7 +366,12 @@ khHero({
   id: 'LockShockBarrel', name: 'Lock, Shock & Barrel', role: 'Support', roleLabel: 'Trickster Support', position: 'Middle', tier: 'S', nativeFace: 1,
   blurb: 'Oogie Boogie\'s three mischievous henchmen, riding a living bathtub. They sling, kidnap, cheer each other on, and are never quite as loyal as they look.',
   scale: 1.6,
+<<<<<<< HEAD
+  base: { hp: 4200, atk: 145, def: 240, mag: 490, mdef: 280, spd: 124, acc: 220, eva: 165 },
+  growth: { hp: .088, atk: .050, def: .078, mag: .095, mdef: .082 },
+=======
   base: { hp: 5300, atk: 330, def: 270, mag: 540, mdef: 285, spd: 138, acc: 235, eva: 178 },
+>>>>>>> ccb31b9f96fec6e5b5e1509b31b66f6b3cb024e0
   hidden: KH_H(300, 1.2, 112, { aggro: .75, crit: .24, critDmg: 1.8, healPow: 1.2, cdr: .1, ccRes: .26 }),
   basic: { name: 'Slingshot & Lollipop', type: 'magic', ratio: .98, range: 300, proj: 'orb', pcol: '#ffb04a', wind: .2, attackAnim: .5, sfx: 'throwsomething', hit: 'candy_pop',
     onHit: (u, t, B) => {
@@ -459,6 +464,51 @@ khHero({
 khSprites('Donald', 1.4, 122, {
   idle: ['donald-idle', 4], move: ['donald-move', 9], attack: ['donald-cast', 7, true], cast: ['donald-cast', 7, true]
 });
+<<<<<<< HEAD
+STATUS.kh_donald_static = {
+  icon: '⚡', name: 'Static', kind: 'debuff', max: 3,
+  desc: 'Donald’s lightning interferes with attacks and spell timing. Three charges discharge into an Energy drain and Slow.',
+  mods: (m, s) => { m.aspdP -= .07 * s.stacks; m.cdr -= .04 * s.stacks; }
+};
+STATUS_VFX.kh_donald_static = 'ShockEffect';
+function donaldStatic(u, t, B, charges, dur) {
+  if (!t || !t.alive) return;
+  for (let i = 0; i < charges; i++) B.applyStatus(u, t, 'kh_donald_static', dur);
+  const mark = t.getStatus('kh_donald_static');
+  if (!mark || mark.stacks < 3) return;
+  B.removeStatus(t, 'kh_donald_static');
+  B.energy(t, -12); B.applyStatus(u, t, 'slow', 2.2);
+  B.fxFloatIcon(t.x, t.y - 104, '⚡ DISCHARGE', '#a9d9ff');
+  KHFX.impact(B, t, 'thunder', { size: 76, count: 5 });
+}
+function donaldThreat(u, B) {
+  return khFoes(u, B).sort((a, b) =>
+    Number(!!b.casting) - Number(!!a.casting) || b.energy - a.energy || a.hpPct - b.hpPct)[0];
+}
+khHero({
+  id: 'Donald', name: 'Donald', role: 'Control', roleLabel: 'Elemental Control', position: 'Backline', tier: 'A', nativeFace: 1,
+  blurb: 'The royal magician keeps trouble off his friends: Static disrupts spellcasters, Curaga turns debuffs around, and Blizzaga claims a patch of ground.',
+  scale: 1.4,
+  base: { hp: 4250, atk: 140, def: 225, mag: 505, mdef: 330, spd: 122, acc: 210, eva: 134 },
+  hidden: KH_H(310, .98, 88, { aggro: .55, healPow: 1.12, shieldPow: 1.08, magPen: .14, cdr: .07, crit: .12 }),
+  basic: { name: 'Staff Zap', type: 'magic', ratio: .84, range: 310, proj: 'orb', pcol: '#9fd0ff', wind: .24, attackAnim: .5, sfx: 'whoosh', hit: 'hit_magic',
+    onHit: (u, t, B) => { KHFX.impact(B, t, 'thunder', { size: 74, count: 5 }); donaldStatic(u, t, B, 1, 5); } },
+  skills: {
+    W: {
+      name: 'Thundaga', type: 'Magic Damage / Control', energy: 100,
+      v: { ratio: 1.3 }, p: { targets: 4, drain: 16, stun: 1.15 },
+      desc: (S, P) => `<span class="sk-pas">Staff Zap applies ⚡ Static. Static lowers Attack Speed and Skill Haste; three charges discharge, draining Energy and Slowing the enemy.</span>
+        Active: Lightning seeks a casting or highly charged enemy, then arcs to up to ${P.targets - 1} others. Each bolt deals <em>${pcn(S.ratio * 100)}</em> Magic damage, drains ${P.drain} Energy, applies Shock and two Static charges. Enemies already carrying Static are Stunned for ${P.stun}s.`,
+      passive: () => {},
+      cast: (u, B, S, P) => {
+        const foes = khFoes(u, B), first = donaldThreat(u, B);
+        if (!first) return;
+        const targets = [first, ...foes.filter(e => e !== first).sort((a, b) =>
+          Math.hypot(a.x - first.x, B.depthDelta(first, a)) - Math.hypot(b.x - first.x, B.depthDelta(first, b)))].slice(0, P.targets);
+        B.anim(u, 'cast', .8); KHFX.banner(B, 'Thundaga', 'donald');
+        KHFX.impact(B, u, 'thunder', { aura: true, size: 170, life: .85, lift: 92 });
+        targets.forEach((t, i) => B.after(.3 + i * .13, () => {
+=======
 khHero({
   id: 'Donald', name: 'Donald', role: 'Support', roleLabel: 'Battle Mage', position: 'Backline', tier: 'S', nativeFace: 1,
   blurb: 'The royal magician. He is here, and nobody has explained how. He heals, freezes and zaps, and gets very loud when he is ignored.',
@@ -477,17 +527,88 @@ khHero({
         B.anim(u, 'cast', .8); KHFX.banner(B, 'Thundaga', 'donald');
         KHFX.impact(B, u, 'thunder', { aura: true, size: 170, life: .85, lift: 92 });
         khFoes(u, B).sort(() => Math.random() - .5).slice(0, P.targets).forEach((t, i) => B.after(.35 + i * .12, () => {
+>>>>>>> ccb31b9f96fec6e5b5e1509b31b66f6b3cb024e0
           if (!u.alive || !t.alive) return;
           KHFX.arc(B, u, t, 'thunder', { life: .3 });
           KHFX.impact(B, t, 'thunder', { size: 126, lift: 72 });
           B.fxThunder(t, { size: 124, delay: i * .04 }); Sound.play('shock_big', { vol: .5, throttle: 90 });
+<<<<<<< HEAD
+          const primed = !!t.getStatus('kh_donald_static');
+          B.damage(u, t, u.st.mag * S.ratio, { type: 'magic', tag: 'Thundaga' });
+          if (!t.alive) return;
+          B.energy(t, -P.drain);
+          B.applyStatus(u, t, 'shock', 5, { stacks: 1, val: u.st.mag * .08 });
+          donaldStatic(u, t, B, 2, 5);
+          if (primed) B.applyStatus(u, t, 'stun', P.stun);
+=======
           B.damage(u, t, u.st.mag * S.ratio, { type: 'magic', tag: 'Thundaga' });
           B.applyStatus(u, t, 'shock', 6, { stacks: P.shock, val: u.st.mag * .1 });
           if (i === 0) B.applyStatus(u, t, 'stun', P.stun);
+>>>>>>> ccb31b9f96fec6e5b5e1509b31b66f6b3cb024e0
         }));
       }
     },
     G: {
+<<<<<<< HEAD
+      name: 'Curaga', type: 'Healing / Control', cd: 10,
+      v: { heal: .43, big: 1.15 }, p: { ward: 4, rebound: 2 },
+      fixedP: ['rebound'],
+      desc: (S, P) => `Triage magic heals every ally for <em>${pcn(S.heal * 100)}</em> Magic, with an extra <em>${pcn(S.big * 100)}</em> Magic for the lowest-HP ally. It removes two debuffs from that ally and one from each other ally. Cleansed allies gain Ward for ${P.ward}s; up to ${P.rebound} removed debuffs rebound as Static onto the most dangerous enemy.`,
+      ai: { prio: 70, cond: (u, B) => B.alliesOf(u).some(a => a.alive && (a.hpPct < .76 || a.statuses.some(s => STATUS[s.id] && STATUS[s.id].kind === 'debuff'))) },
+      cast: (u, B, S, P) => {
+        const allies = B.alliesOf(u).filter(x => x.alive), low = B.lowestHp(allies); if (!low) return;
+        B.anim(u, 'cast', .6); Sound.play('heal_soft', { vol: .5 });
+        KHFX.impact(B, u, 'cure', { aura: true, size: 166, life: .8, lift: 92 });
+        let removed = 0;
+        allies.forEach(a => {
+          KHFX.impact(B, a, 'cure', { size: a === low ? 142 : 106, lift: 66 });
+          B.heal(u, a, u.st.mag * (S.heal + (a === low ? S.big : 0)), { tag: 'Curaga' });
+          const cleansed = B.cleanse(a, a === low ? 2 : 1);
+          if (cleansed) { removed += cleansed; B.applyStatus(u, a, 'ward', P.ward); }
+          B.fxFloatIcon(a.x, a.y - 100, '✚', '#9dffb0');
+        });
+        const threat = donaldThreat(u, B);
+        if (threat && removed) {
+          donaldStatic(u, threat, B, Math.min(P.rebound, removed), 5);
+          KHFX.arc(B, low, threat, 'thunder', { life: .27 });
+        }
+      }
+    },
+    B: {
+      name: 'Blizzaga', type: 'Magic Damage / Control', cd: 12,
+      v: { ratio: 1.1, pulse: .3 }, p: { freeze: 1.25, slow: 3.5, radius: 185, pulses: 3 },
+      fixedP: ['pulses'],
+      desc: (S, P) => `Blizzaga lands on the densest group for <em>${pcn(S.ratio * 100)}</em> Magic damage and leaves an ice field. It pulses ${P.pulses} times, each pulse dealing <em>${pcn(S.pulse * 100)}</em> Magic damage and Slowing enemies inside for ${P.slow}s. Enemies caught by a later pulse Freeze for ${P.freeze}s once per field.`,
+      ai: { prio: 60, cond: (u, B) => khFoes(u, B).length > 0 },
+      cast: (u, B, S, P) => {
+        const foes = khFoes(u, B);
+        const t = foes.sort((a, b) => {
+          const nearby = c => foes.filter(e => Math.hypot(e.x - c.x, B.depthDelta(c, e)) <= P.radius).length;
+          return nearby(b) - nearby(a) || b.energy - a.energy;
+        })[0];
+        if (!t) return; B.anim(u, 'cast', .5);
+        KHFX.shot(B, u, t, 'ice', { size: 42, life: .48 });
+        B.fxProj(u, t, { kind: 'orb', col: '#bfeaff' }, () => {
+          if (!u.alive) return;
+          const x = t.x, depth = t.depth, frozen = new Set();
+          KHFX.impact(B, t, 'ice', { size: 160, lift: 68 });
+          B.fxRing(x, t.y - 40, P.radius, '#bfeaff', .5);
+          const inside = () => khFoes(u, B).filter(e => Math.hypot(e.x - x, (e.depth - depth) * B.depthSpan) <= P.radius);
+          inside().forEach(e => {
+            B.damage(u, e, u.st.mag * S.ratio, { type: 'magic', area: true, tag: 'Blizzaga' });
+            if (e.alive) B.applyStatus(u, e, 'slow', P.slow);
+          });
+          B.repeat(P.pulses, 1, i => {
+            if (!u.alive) return;
+            B.fxRing(x, B.ground - depth * B.depthSpan - 44, P.radius, '#bfeaff', .28);
+            inside().forEach(e => {
+              KHFX.impact(B, e, 'ice', { size: 65, count: 4 });
+              B.damage(u, e, u.st.mag * S.pulse, { type: 'magic', area: true, tag: 'Blizzaga Field' });
+              if (!e.alive) return;
+              if (i > 0 && !frozen.has(e)) { B.applyStatus(u, e, 'freeze', P.freeze); frozen.add(e); }
+              B.applyStatus(u, e, 'slow', P.slow);
+            });
+=======
       name: 'Curaga', type: 'Healing', cd: 9,
       v: { heal: 1.0, big: 1.8 }, p: {},
       desc: (S) => `Heals every ally for <em>${pcn(S.heal * 100)}</em> Magic and cleanses one debuff. The ally with the lowest HP is healed for an extra <em>${pcn(S.big * 100)}</em> Magic.`,
@@ -519,11 +640,28 @@ khHero({
           khFoes(u, B).filter(e => e !== t && Math.hypot(e.x - t.x, B.depthDelta(t, e)) <= P.radius).forEach(e => {
             KHFX.arc(B, t, e, 'ice', { life: .25 }); KHFX.impact(B, e, 'ice', { size: 82, count: 5 });
             B.damage(u, e, u.st.mag * S.splash, { type: 'magic', area: true, tag: 'Blizzaga Shards' }); B.applyStatus(u, e, 'slow', P.slow, { stacks: 2 });
+>>>>>>> ccb31b9f96fec6e5b5e1509b31b66f6b3cb024e0
           });
         });
       }
     },
     P: {
+<<<<<<< HEAD
+      name: 'Magic Mastery', type: 'Passive', v: { cdr: .08 }, p: { energy: 4, every: 3, dur: 5, drain: 18 },
+      fixedP: ['every'],
+      desc: (S, P) => `+<em>${pcn(S.cdr * 100)}</em> Skill Haste. Every spell Donald casts restores ${P.energy} Energy to allies. Every ${P.every}rd spell is a Magic Surge: allies gain Magic Up for ${P.dur}s, and the two enemies with the most Energy lose ${P.drain} Energy and gain Static.`,
+      passive: (u, B, S, P) => {
+        u.flat.cdrKhMagic = S.cdr; u.dirty = true; u._donaldSpells = 0;
+        B.on(u, 'cast', () => {
+          B.alliesOf(u).filter(a => a.alive).forEach(a => B.energy(a, P.energy));
+          u._donaldSpells++;
+          if (u._donaldSpells % P.every) return;
+          B.alliesOf(u).forEach(a => { if (a.alive) B.applyStatus(u, a, 'magup', P.dur); });
+          khFoes(u, B).sort((a, b) => b.energy - a.energy).slice(0, 2).forEach(e => {
+            B.energy(e, -P.drain); donaldStatic(u, e, B, 1, 5);
+            KHFX.arc(B, u, e, 'thunder', { life: .25 });
+          });
+=======
       name: 'Magic Mastery', type: 'Passive', v: { cdr: .12 }, p: { energy: 6, every: 3, dur: 6 },
       desc: (S, P) => `+<em>${pcn(S.cdr * 100)}</em> Skill Haste. Every spell Donald casts restores ${P.energy} Energy to all allies. Every ${P.every}rd spell is a Magic Surge: all allies gain Magic Up for ${P.dur}s.`,
       passive: (u, B, S, P) => {
@@ -533,12 +671,26 @@ khHero({
           u._donaldSpells++;
           if (u._donaldSpells % P.every) return;
           B.alliesOf(u).forEach(a => { if (a.alive) B.applyStatus(u, a, 'magup', P.dur); });
+>>>>>>> ccb31b9f96fec6e5b5e1509b31b66f6b3cb024e0
           KHFX.impact(B, u, 'surge', { aura: true, size: 250, life: .9, lift: 82 });
           B.fxFloatIcon(u.x, u.y - 120, '✨ MAGIC SURGE', '#9fd0ff');
         });
       }
     },
     R: {
+<<<<<<< HEAD
+      name: 'Royal Magician', type: 'Passive', v: { shield: .08, save: .22 }, p: { silence: 1.1, freeze: 1.2 },
+      desc: (S, P) => `After Curaga or Blizzaga, the lowest-HP ally gains a Shield worth <em>${pcn(S.shield * 100)}</em> of their Max HP. If the nearest enemy carries Static, Donald Silences them for ${P.silence}s. Once per battle, he saves an ally from a lethal blow: they recover <em>${pcn(S.save * 100)}</em> Max HP, gain Ward and brief Untargetability, while their attacker Freezes for ${P.freeze}s.`,
+      passive: (u, B, S, P) => {
+        u._donaldSaved = false;
+        B.on(u, 'cast', ev => {
+          if (ev.key !== 'G' && ev.key !== 'B') return;
+          const a = B.lowestHp(B.alliesOf(u).filter(x => x.alive));
+          if (!a) return;
+          B.shield(u, a, a.max.hp * S.shield, 6);
+          const foe = B.nearest(a, khFoes(u, B));
+          if (foe && foe.hasStatus('kh_donald_static')) B.applyStatus(u, foe, 'silence', P.silence);
+=======
       name: 'Royal Magician', type: 'Passive', v: { shield: .1, save: .3 }, p: {},
       desc: S => `After Curaga or Blizzaga, the lowest-HP ally gains a Shield worth <em>${pcn(S.shield * 100)}</em> of their Max HP. Once per battle, when an ally would fall, Donald stamps his foot and saves them: they recover <em>${pcn(S.save * 100)}</em> Max HP, Ward and are briefly Untargetable.`,
       passive: (u, B, S) => {
@@ -546,12 +698,18 @@ khHero({
         B.on(u, 'cast', ev => {
           if (ev.key !== 'G' && ev.key !== 'B') return;
           const a = B.lowestHp(B.alliesOf(u).filter(x => x.alive)); if (a) B.shield(u, a, a.max.hp * S.shield, 6);
+>>>>>>> ccb31b9f96fec6e5b5e1509b31b66f6b3cb024e0
         });
         B.on(u, 'allyLethal', ev => {
           if (u._donaldSaved || !u.alive || !ev.unit) return;
           u._donaldSaved = true; ev.prevented = true;
           ev.unit.hp = Math.max(1, ev.unit.max.hp * S.save);
+<<<<<<< HEAD
+          B.applyStatus(u, ev.unit, 'untargetable', .8); B.applyStatus(u, ev.unit, 'ward', 4);
+          if (ev.src && ev.src.alive && ev.src.team !== u.team) B.applyStatus(u, ev.src, 'freeze', P.freeze);
+=======
           B.applyStatus(u, ev.unit, 'untargetable', 1.2); B.applyStatus(u, ev.unit, 'ward', 5);
+>>>>>>> ccb31b9f96fec6e5b5e1509b31b66f6b3cb024e0
           KHFX.impact(B, ev.unit, 'cure', { aura: true, size: 205, life: .9, lift: 68 });
           B.fxFloatIcon(ev.unit.x, ev.unit.y - 120, '👑 SAVED!', '#9dffb0');
           Sound.play('heal_soft', { vol: .6 });

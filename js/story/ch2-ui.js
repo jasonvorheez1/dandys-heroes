@@ -3,9 +3,19 @@
 'use strict';
 
 Object.assign(ST_VN_ART, {
+<<<<<<< HEAD
+  Cody:'Characters/Cody/vn.webp', Jessie:'Characters/Jessie/vn.webp', Dango:'Characters/Dango/vn.webp', Nugget:'Characters/Nugget/vn.webp',
+  Tisha: 'uploads/tishavnportrait.webp', Rodger: 'uploads/rodgervnportrait.webp', Dyle: 'uploads/dylevnportrait.webp',
+  Scraps: 'uploads/scraps-vn.png', Rudie: 'uploads/rudievnportrait.webp', Coal: 'uploads/coalvnportrait.webp',
+  Connie: 'uploads/connievnportrait.webp', Boxten: 'uploads/boxtenvnportrait.webp',
+  Goob: 'uploads/goobvnportrait.webp', Cosmo: 'uploads/cosmovnportrait.webp',
+  Glisten: 'uploads/Glisten.png', Flutter: 'uploads/Fltuter.png', Ribecca: 'uploads/Ribecca.png',
+  Eclipse: 'assets/kh/vn/eclipse.webp'
+=======
   Tisha: 'uploads/tishavnportrait.webp', Rodger: 'uploads/rodgervnportrait.webp', Dyle: 'uploads/dylevnportrait.webp',
   Scraps: 'uploads/scraps-vn.png', Rudie: 'uploads/rudievnportrait.webp', Coal: 'uploads/coalvnportrait.webp',
   Glisten: 'uploads/Glisten.png', Flutter: 'uploads/Fltuter.png', Ribecca: 'uploads/Ribecca.png'
+>>>>>>> ccb31b9f96fec6e5b5e1509b31b66f6b3cb024e0
 });
 
 ST_TOON_IDS.forEach(id => { if (!ST_COLORS[id]) ST_COLORS[id] = ST_TOONS[id].color; });

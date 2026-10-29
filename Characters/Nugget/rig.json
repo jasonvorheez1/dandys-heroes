@@ -1,0 +1,184 @@
+{
+  "width": 188,
+  "height": 332,
+  "parts": [
+    {
+      "name": "earL",
+      "parent": "head",
+      "pivot": [
+        61,
+        85
+      ],
+      "rect": [
+        44,
+        27,
+        75,
+        88
+      ],
+      "src": "parts/earL.png"
+    },
+    {
+      "name": "earR",
+      "parent": "head",
+      "pivot": [
+        114,
+        75
+      ],
+      "rect": [
+        100,
+        25,
+        131,
+        70
+      ],
+      "src": "parts/earR.png"
+    },
+    {
+      "name": "head",
+      "parent": "torso",
+      "pivot": [
+        100,
+        173
+      ],
+      "rect": [
+        36,
+        25,
+        165,
+        181
+      ],
+      "src": "parts/head.png"
+    },
+    {
+      "name": "forearmL",
+      "parent": "armL",
+      "pivot": [
+        65,
+        218
+      ],
+      "rect": [
+        43,
+        213,
+        74,
+        263
+      ],
+      "src": "parts/forearmL.png"
+    },
+    {
+      "name": "forearmR",
+      "parent": "armR",
+      "pivot": [
+        133,
+        215
+      ],
+      "rect": [
+        121,
+        210,
+        150,
+        249
+      ],
+      "src": "parts/forearmR.png"
+    },
+    {
+      "name": "armL",
+      "parent": "torso",
+      "pivot": [
+        79,
+        190
+      ],
+      "rect": [
+        57,
+        181,
+        90,
+        227
+      ],
+      "src": "parts/armL.png"
+    },
+    {
+      "name": "armR",
+      "parent": "torso",
+      "pivot": [
+        122,
+        188
+      ],
+      "rect": [
+        115,
+        180,
+        141,
+        225
+      ],
+      "src": "parts/armR.png"
+    },
+    {
+      "name": "apron",
+      "parent": "torso",
+      "pivot": [
+        100,
+        220
+      ],
+      "rect": [
+        66,
+        218,
+        127,
+        281
+      ],
+      "src": "parts/apron.png"
+    },
+    {
+      "name": "legL",
+      "parent": "root",
+      "pivot": [
+        92,
+        268
+      ],
+      "rect": [
+        68,
+        265,
+        102,
+        324
+      ],
+      "src": "parts/legL.png"
+    },
+    {
+      "name": "legR",
+      "parent": "root",
+      "pivot": [
+        113,
+        268
+      ],
+      "rect": [
+        100,
+        265,
+        133,
+        319
+      ],
+      "src": "parts/legR.png"
+    },
+    {
+      "name": "torso",
+      "parent": "root",
+      "pivot": [
+        100,
+        233
+      ],
+      "rect": [
+        73,
+        177,
+        121,
+        218
+      ],
+      "src": "parts/torso.png"
+    }
+  ],
+  "drawOrder": [
+    "legL",
+    "legR",
+    "armR",
+    "forearmR",
+    "torso",
+    "apron",
+    "armL",
+    "forearmL",
+    "earL",
+    "earR",
+    "head"
+  ]
+}

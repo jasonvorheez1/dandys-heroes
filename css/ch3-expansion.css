@@ -1,0 +1,8 @@
+/* Chapter 3's environmental tells stay behind the fighters and text. */
+#battle.story-tb[data-story-hazard] .ms-tb::before{content:"";position:absolute;z-index:0;inset:0;pointer-events:none;opacity:.28}
+#battle.story-tb[data-story-hazard="signal"] .ms-tb::before{background:repeating-linear-gradient(180deg,transparent 0 8px,#96ffa629 9px 10px),radial-gradient(circle at 76% 30%,#82ff9740,transparent 40%)}
+#battle.story-tb[data-story-hazard="blackout"] .ms-tb::before{background:radial-gradient(circle at 30% 45%,transparent 6%,#03050bed 82%);opacity:.5}
+#battle.story-tb[data-story-hazard="rack"] .ms-tb::before{background:repeating-linear-gradient(90deg,transparent 0 56px,#e6a75533 57px 59px,transparent 60px 65px)}
+#battle.story-tb[data-story-hazard="sorter"] .ms-tb::before{background:repeating-linear-gradient(125deg,transparent 0 20px,#a7c8e920 21px,transparent 22px 42px)}
+#battle.story-tb[data-story-hazard="pressure"] .ms-tb::before{background:radial-gradient(ellipse at 50% 100%,#ec592d88,transparent 70%);opacity:.5}
+@media(prefers-reduced-motion:reduce){#battle.story-tb[data-story-hazard] .ms-tb::before{opacity:.16}}

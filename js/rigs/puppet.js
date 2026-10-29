@@ -8,7 +8,11 @@
      - face       : eyes (sclera, pupil, lids that fade into the skin, closed-eye arcs, lashes), brows,
                     blush, mouth (teeth, tongue) and a table of expressions the face blends between.
      - props      : little vector objects parented to a part (a held treat, a sparkle...).
+<<<<<<< HEAD
+     - behavior   : the personality. idle / walk / wind / attack / cast / spin poses, named skill poses, and a weighted list
+=======
      - behavior   : the personality. idle / walk / wind / attack / cast / spin poses plus a weighted list
+>>>>>>> ccb31b9f96fec6e5b5e1509b31b66f6b3cb024e0
                     of idle events, each just a function that edits the pose targets for this frame.
    The framework owns blinking, glancing, hit reactions, status poses (sleep, stun), the spark pool and
    the per-frame spring stepping, so a new character is mostly data + a few pose functions.
@@ -107,6 +111,10 @@ const PuppetRig = (() => {
     if (C.faceOn && !names.has(C.faceOn)) bad('faceOn part ' + C.faceOn + ' missing');
     const B = C.behavior || {};
     (B.events || []).forEach(e => { if (!B.event || !B.event[e.n]) bad('idle event ' + e.n + ' has no function'); });
+<<<<<<< HEAD
+    for (const style in (B.skills || {})) if (typeof B.skills[style] !== 'function') bad('skill pose ' + style + ' must be a function');
+=======
+>>>>>>> ccb31b9f96fec6e5b5e1509b31b66f6b3cb024e0
   }
 
   function define(C) {
@@ -303,7 +311,11 @@ const PuppetRig = (() => {
         const P = { x: 0, y: 0, sx: 1, sy: 1, crouch: 0, air: 0, lookX: this.look.x, lookY: this.look.y, legs: [0, 0], lift: [0, 0] };
         for (const k in C.channels) P[k] = C.rest && C.rest[k] != null ? C.rest[k] : 0;
         const ctx = {
+<<<<<<< HEAD
+          P, T, dt, ph, k: 0, on: 0, run, idle, s01, vf, u, lib, alt: this.swing % 2, anim, style: u.animStyle || '', rig: this,
+=======
           P, T, dt, ph, k: 0, on: 0, run, idle, s01, vf, u, lib, alt: this.swing % 2, anim, rig: this,
+>>>>>>> ccb31b9f96fec6e5b5e1509b31b66f6b3cb024e0
           sway: Math.sin(T * (C.tempo || .6)), breath: Math.sin(T * 1.9), beat: Math.sin(T * (C.beatRate || 3.6)),
           exp: this.hurtT > 0 ? (BEH.hurtExpr || 'hurt') : (C.defaultExpr || 'happy'),
           set(e) { this.exp = e; },
@@ -335,7 +347,12 @@ const PuppetRig = (() => {
           ctx.phase = this.phase;
           if (BEH.walk) BEH.walk(ctx);
         }
+<<<<<<< HEAD
+        if ((animOn || casting) && BEH.skills && BEH.skills[ctx.style]) BEH.skills[ctx.style](ctx);
+        else if (anim === 'wind' && BEH.wind) BEH.wind(ctx);
+=======
         if (anim === 'wind' && BEH.wind) BEH.wind(ctx);
+>>>>>>> ccb31b9f96fec6e5b5e1509b31b66f6b3cb024e0
         else if (anim === 'attack' && BEH.attack) BEH.attack(ctx);
         else if ((anim === 'cast' || casting) && BEH.cast) BEH.cast(ctx);
         else if (anim === 'spin' && BEH.spin) BEH.spin(ctx);
@@ -479,4 +496,7 @@ const PuppetRig = (() => {
 
   return { define, lib, PROPS };
 })();
+<<<<<<< HEAD
+=======
 
+>>>>>>> ccb31b9f96fec6e5b5e1509b31b66f6b3cb024e0

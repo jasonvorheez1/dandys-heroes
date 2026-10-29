@@ -10,7 +10,11 @@ const ST_STATUS_ICON = {
   atkUp: ['⚔', 'buff', 'Attack & Magic up'], magUp: ['✦', 'buff', 'Magic up'], defUp: ['🛡', 'buff', 'Defense up'], haste: ['»', 'buff', 'Haste'],
   regen: ['✚', 'buff', 'Regen'], shield: ['◈', 'buff', 'Shield'], counter: ['↺', 'buff', 'Counter'], guard: ['▣', 'buff', 'Guarding'],
   atkDown: ['⚔', 'debuff', 'Attack down'], defDown: ['🛡', 'debuff', 'Defense down'], slow: ['«', 'debuff', 'Slow'], ink: ['💧', 'debuff', 'Ichor-soaked'],
+<<<<<<< HEAD
+  sleep: ['z', 'debuff', 'Asleep'], silence: ['🔇', 'debuff', 'Silenced: no skills'], barrier: ['🪧', 'buff', 'Barrier: counts as a Tank'], stun: ['✷', 'debuff', 'Stunned'], taunt: ['!', 'debuff', 'Taunted'], mark: ['◎', 'debuff', 'Marked']
+=======
   sleep: ['z', 'debuff', 'Asleep'], stun: ['✷', 'debuff', 'Stunned'], taunt: ['!', 'debuff', 'Taunted'], mark: ['◎', 'debuff', 'Marked']
+>>>>>>> ccb31b9f96fec6e5b5e1509b31b66f6b3cb024e0
 };
 
 const StoryBattleUI = {
@@ -23,7 +27,13 @@ const StoryBattleUI = {
     const n = MainStory.nodes[i];
     MainStory.floor(ids, n.lv);
     const items = MainStory.itemsFor(mode), base = Object.assign({}, items), stock = {};
+<<<<<<< HEAD
+    if (MainStory.ch >= 2) Object.entries(MainStory.state().shop.items).forEach(([k, v]) => { if (v > 0) { stock[k] = v; items[k] = (items[k] || 0) + v; } });
+    if (n.relay) ids = [...new Set([].concat(...n.relay.map(q => MainStory.lineup(q, i))))];
+    MainStory.floor(ids, n.lv);
+=======
     if (MainStory.ch === 2) Object.entries(MainStory.state().shop.items).forEach(([k, v]) => { if (v > 0) { stock[k] = v; items[k] = (items[k] || 0) + v; } });
+>>>>>>> ccb31b9f96fec6e5b5e1509b31b66f6b3cb024e0
     this.run = { i, n, mode, ids, wave: 0, carry: {}, items, base, stock, exp: 0, killed: 0, ch: MainStory.ch };
     StoryUI.overlay = true;
     this.build();
@@ -40,6 +50,10 @@ const StoryBattleUI = {
     arena.hidden = false; $('#app').hidden = true;
     arena.classList.remove('kh-battle', 'unknown-world-battle', 'qom-battle', 'stb-lost');
     arena.classList.add('story-tb');
+<<<<<<< HEAD
+    arena.dataset.storyHazard = r.n.hazard || '';
+=======
+>>>>>>> ccb31b9f96fec6e5b5e1509b31b66f6b3cb024e0
     $('#battleEnd').hidden = true; clear($('#battleEnd'));
     $('#battleHud').classList.remove('wave-exit');
     clear($('#unitLayer')); clear($('#allyDock')); clear($('#logBox'));
@@ -81,30 +95,60 @@ const StoryBattleUI = {
     const flv = MainStory.foeLevel(n, r.mode), mult = MainStory.foeMult(n, r.mode);
     const foes = [];
     waves[w].forEach(([k, cnt, x]) => { for (let c = 0; c < cnt; c++) foes.push([k, flv, Object.assign({}, x || {}, { mult })]); });
+<<<<<<< HEAD
+    const sqId = n.relay ? n.relay[w] : n.squad, wave = n.relay ? MainStory.lineup(sqId, r.i) : r.ids;
+    const party = wave.map(id => ({
+      sq: MainStory.ch === 3 ? sqId : null, tm: MainStory.ch === 3 ? MainStory.trinketMods(id) : null, rank: MainStory.skillRank(),
+      id, lv: MainStory.lv(id).lv, row: st.rows[id], hp: r.carry[id] ? (r.carry[id].hp === 0 && this.lobbyReturn(id) ? Math.round(stHandlerStats(id, MainStory.lv(id).lv).hp * .35) : r.carry[id].hp) : null, bond: r.carry[id] ? r.carry[id].bond : 0
+    }));
+    const returned = party.filter(p => r.carry[p.id] && r.carry[p.id].hp === 0 && this.lobbyReturn(p.id)).map(p => stChar(p.id).name);
+    this.B = new StoryBattle({ party, foes, items: r.items, tier: n.tier || 0, improvised: !!n.improvised, unlocked: sk => MainStory.skillOpen(sk) });
+    this.hazardTurns = 0;
+=======
     const party = r.ids.map(id => ({
       id, lv: MainStory.lv(id).lv, row: st.rows[id], hp: r.carry[id] ? r.carry[id].hp : null, bond: r.carry[id] ? r.carry[id].bond : 0
     }));
     this.B = new StoryBattle({ party, foes, items: r.items, improvised: !!n.improvised, unlocked: sk => MainStory.skillOpen(sk) });
+>>>>>>> ccb31b9f96fec6e5b5e1509b31b66f6b3cb024e0
     this.B.party().forEach(u => { const c = r.carry[u.key]; if (c) u.fp = Math.min(u.max.fp, c.fp); });
     this.el.wave.textContent = `${n.name}  ·  ${r.mode === 'hard' ? 'HARD' : 'EASY'} ${w + 1}/${waves.length}`;
     this.el.turn.textContent = 'TURN 1';
     if (w === 0) clear(this.el.units);
+<<<<<<< HEAD
+    else { this.el.units.querySelectorAll('.unit.foe').forEach(x => x.remove()); if (n.relay) this.el.units.querySelectorAll('.unit.ally').forEach(x => x.remove()); }
+=======
     else this.el.units.querySelectorAll('.unit.foe').forEach(x => x.remove());
+>>>>>>> ccb31b9f96fec6e5b5e1509b31b66f6b3cb024e0
     this.drawParty(); this.drawFoes(); this.drawDock(); this.drawOrder();
     this.el.cmd.innerHTML = '';
     const boss = foes.some(f => ST_ENEMIES[f[0]].boss);
     Music.play(stTrack(n.music));
+<<<<<<< HEAD
+    this.banner(n.relay ? ST3_SQUADS[sqId].name.toUpperCase() : w === 0 ? (n.improvised ? 'NO BADGES. IMPROVISE!' : 'BATTLE START') : boss ? 'BOSS INCOMING' : `WAVE ${w + 1}`, boss ? 'boss' : '');
+    Sound.play(boss ? 'apex_trial_warning' : 'endless_enter', { vol: .45 });
+    if (returned.length) setTimeout(() => { this.say(`<b>${returned.join(', ')}</b> came back from the Lobby, memories intact.`, 'big'); UI.toast(`${returned.join(', ')} returned from the Lobby`); }, 700);
+    setTimeout(() => this.loop(), 1300);
+  },
+  /* Chapter 3: a fallen Toon is printed back at the Lobby for the next wave. Handlers are not. */
+  lobbyReturn(id) { return MainStory.ch === 3 && stChar(id).kind === 'toon'; },
+=======
     this.banner(w === 0 ? (n.improvised ? 'NO BADGES. IMPROVISE!' : 'BATTLE START') : boss ? 'BOSS INCOMING' : `WAVE ${w + 1}`, boss ? 'boss' : '');
     Sound.play(boss ? 'apex_trial_warning' : 'endless_enter', { vol: .45 });
     setTimeout(() => this.loop(), 1300);
   },
+>>>>>>> ccb31b9f96fec6e5b5e1509b31b66f6b3cb024e0
 
   /* ---------- the stage ---------- */
   unitEl(u) { return u && this.el.units.querySelector(`[data-uid="${u.uid}"]`); },
   art(u) { return u.side === 'p' ? stBattleUrl(u.key) : stEnemyArt(u.key); },
   makeUnit(u) {
     const foe = u.side === 'e', w = Math.round(98 * (this.phone ? .82 : 1) * (u.boss ? 1.3 : 1)), top = w * 1.32;
+<<<<<<< HEAD
+    const flip = !foe && (ST_HANDLERS[u.key] || (Art.skin(u.key) || {}).nativeFace === -1); // Handler cutouts face left; Toon art already faces right
+    const n = el('div', `unit ${foe ? 'foe' : 'ally'}${flip ? ' flip' : ''}${u.boss ? ' boss' : ''}${foe && u.def.art[0] === 'w' ? ' inky' : ''} stb-unit stb-enter`);
+=======
     const n = el('div', `unit ${foe ? 'foe' : 'ally'}${u.boss ? ' boss' : ''}${foe && u.def.art[0] === 'w' ? ' inky' : ''} stb-unit stb-enter`);
+>>>>>>> ccb31b9f96fec6e5b5e1509b31b66f6b3cb024e0
     n.dataset.uid = u.uid;
     n.style.setProperty('--w', w + 'px');
     n.style.setProperty('--stb-color', u.side === 'p' ? stChar(u.key).color : '#ed617f');
@@ -328,6 +372,19 @@ const StoryBattleUI = {
       if (nx.events.length) await this.play(nx.events);
       if (!alive()) return;
       if (B.over) break;
+<<<<<<< HEAD
+      if (this.run.n.hazard && !nx.skip) {
+        const hazardEvents = this.storyHazard(B, this.run.n.hazard);
+        if (hazardEvents.length) {
+          this.banner('⚠ ' + this.run.n.name.toUpperCase(), 'charge');
+          await this.play(hazardEvents);
+          this.refreshAll();
+          if (!alive()) return;
+          if (B.over) break;
+        }
+      }
+=======
+>>>>>>> ccb31b9f96fec6e5b5e1509b31b66f6b3cb024e0
       if (nx.skip) { this.refreshAll(); await this.wait(250); continue; }
       let ev;
       if (actor.side === 'p') {
@@ -348,6 +405,13 @@ const StoryBattleUI = {
     if (alive()) this.endWave();
   },
 
+<<<<<<< HEAD
+  storyHazard(B, kind) {
+    return st3Hazard(B, kind, ++this.hazardTurns);
+  },
+
+=======
+>>>>>>> ccb31b9f96fec6e5b5e1509b31b66f6b3cb024e0
   /* ---------- the command menu ---------- */
   pick(u) {
     return new Promise(resolve => {
@@ -362,7 +426,11 @@ const StoryBattleUI = {
     cmd.innerHTML = `<div class="ms-cmd-who" style="--hc:${h.color}"><b>${h.name}</b><small>${ST_ROLE_ICON[h.role]} ${h.role} · ${u.fp}/${u.max.fp} FP</small></div>
       <div class="ms-cmd-row">
         <button data-c="attack" class="atk"><i>⚔</i><b>${B.improvised ? h.improvised : 'Attack'}</b><small>+3 FP</small></button>
+<<<<<<< HEAD
+        <button data-c="skills" ${u.skills.length && !B.has(u, 'silence') ? '' : 'disabled'}><i>✦</i><b>Skills</b><small>${B.has(u, 'silence') ? 'Silenced' : u.skills.length ? u.skills.length + ' known' : 'No badge'}</small></button>
+=======
         <button data-c="skills" ${u.skills.length ? '' : 'disabled'}><i>✦</i><b>Skills</b><small>${u.skills.length ? u.skills.length + ' known' : 'No badge'}</small></button>
+>>>>>>> ccb31b9f96fec6e5b5e1509b31b66f6b3cb024e0
         <button data-c="guard"><i>▣</i><b>Guard</b><small>½ dmg</small></button>
         <button data-c="item" ${items.length ? '' : 'disabled'}><i>✚</i><b>Items</b><small>${items.reduce((a, k) => a + B.items[k], 0)} left</small></button>
         <button data-c="bond" class="bond${u.bond >= 100 ? ' ready' : ''}" ${u.bond >= 100 ? '' : 'disabled'}><i>❀</i><b>${u.bond >= 100 ? h.bond.name : 'Bond'}</b><small>${u.bond >= 100 ? 'READY!' : u.bond + '%'}</small></button>
@@ -388,7 +456,11 @@ const StoryBattleUI = {
   skillMenu(u) {
     const B = this.B;
     this.subMenu(u, 'Skills', u.skills.map(sk => ({
+<<<<<<< HEAD
+      name: sk.name, desc: sk.desc, tag: sk.fp + ' FP', off: u.fp < sk.fp || (sk.once && u.used && u.used[sk.id]) || (sk.target === 'ko' && !B.party().some(x => !x.alive)),
+=======
       name: sk.name, desc: sk.desc, tag: sk.fp + ' FP', off: u.fp < sk.fp || (sk.target === 'ko' && !B.party().some(x => !x.alive)),
+>>>>>>> ccb31b9f96fec6e5b5e1509b31b66f6b3cb024e0
       go: () => {
         if (['enemy', 'ally', 'ko'].includes(sk.target)) this.target(u, sk.target, t => this.pendingPick({ type: 'skill', id: sk.id, target: t }), () => this.skillMenu(u));
         else this.pendingPick({ type: 'skill', id: sk.id });
@@ -450,8 +522,14 @@ const StoryBattleUI = {
         }
         case 'cutin': await this.cutin(a, e); break;
         case 'charge':
+<<<<<<< HEAD
+          this.say(`<b class="foe">${a.name}</b> · ${e.lethal ? '☠ LETHAL · ' : ''}${e.text}`, 'big');
+          this.banner((e.lethal ? '☠ ' : '⚠ ') + e.name, 'charge'); Sound.play('warn', { vol: .5 });
+          if (e.lethal) { this.flash('#ff1f3d'); this.arena.classList.add('stb-lethal-warn'); setTimeout(() => this.arena && this.arena.classList.remove('stb-lethal-warn'), 1400); }
+=======
           this.say(`<b class="foe">${a.name}</b> · ${e.text}`, 'big');
           this.banner('⚠ ' + e.name, 'charge'); Sound.play('warn', { vol: .5 });
+>>>>>>> ccb31b9f96fec6e5b5e1509b31b66f6b3cb024e0
           this.refreshUnit(a); await this.wait(900); break;
         case 'dmg': {
           const src = U(e.src);
@@ -470,9 +548,16 @@ const StoryBattleUI = {
           else if (heavy) this.shake(false);
           this.refreshUnit(t); await this.wait(e.kind === 'mag' ? 145 : 200); break;
         }
+<<<<<<< HEAD
+        case 'lethal': this.pop(t, 'GONE', 'crit hurt'); this.flash('#000'); this.shake(true); Sound.play('crit', { vol: .6 }); await this.wait(420); break;
+        case 'miss': this.pop(t, 'MISS', 'miss'); Sound.play('miss', { vol: .4 }); await this.wait(200); break;
+        case 'heal': if (e.amount > 0) { this.fxBurst(t, this._fxAction ? this._fxAction.key : 'Sam', 'heal'); this.pop(t, '+' + e.amount, 'heal'); Sound.play('heal_soft', { vol: .35, throttle: 60 }); } this.refreshUnit(t); await this.wait(140); break;
+        case 'fp': this.pop(t, e.amount < 0 ? `${e.amount} FP` : `+${e.amount} FP`, e.amount < 0 ? 'debuff' : 'fp'); this.refreshUnit(t); await this.wait(90); break;
+=======
         case 'miss': this.pop(t, 'MISS', 'miss'); Sound.play('miss', { vol: .4 }); await this.wait(200); break;
         case 'heal': if (e.amount > 0) { this.fxBurst(t, this._fxAction ? this._fxAction.key : 'Sam', 'heal'); this.pop(t, '+' + e.amount, 'heal'); Sound.play('heal_soft', { vol: .35, throttle: 60 }); } this.refreshUnit(t); await this.wait(140); break;
         case 'fp': this.pop(t, `+${e.amount} FP`, 'fp'); this.refreshUnit(t); await this.wait(90); break;
+>>>>>>> ccb31b9f96fec6e5b5e1509b31b66f6b3cb024e0
         case 'dot': this.pop(t, e.amount, 'ink'); Sound.play('hit_water', { vol: .3 }); this.refreshUnit(t); await this.wait(260); break;
         case 'status': {
           const ic = ST_STATUS_ICON[e.k];
@@ -558,8 +643,15 @@ const StoryBattleUI = {
     r.ids.forEach(id => { ups[id] = MainStory.addExp(id, r.exp); });
     const rew = MainStory.rewards(n, r.mode, first);
     Save.give(rew, true);
+<<<<<<< HEAD
+    // Winning Story battles count toward the Most Used Toons leaderboard like any other win.
+    r.ids.forEach(id => { const h = HEROES[id] && Save.hero(id); if (h) h.battles = (h.battles || 0) + 1; });
+    MainStory.mark(r.i, r.mode);
+    const skin = r.mode === 'hard' && first ? MainStory.skinFor(n) : null;
+=======
     MainStory.mark(r.i, r.mode);
     const skin = r.mode === 'hard' && first && n.skin ? ST_SKINS[n.skin] : null;
+>>>>>>> ccb31b9f96fec6e5b5e1509b31b66f6b3cb024e0
     Sound.play('arena_fanfare', { vol: .5 });
     if (MainStory.ch === 2) ST2_TAPES.filter(t => MainStory.tapeOpen(t)).slice(tapesBefore).forEach((t, k) => setTimeout(() => UI.toast(`📼 New tape: ${t.title}`), 1200 + k * 600));
     if (stockBefore) {
@@ -579,7 +671,11 @@ const StoryBattleUI = {
     Save.write();
     this.arena.classList.add('stb-lost');
     Music.play('stEmotional');
+<<<<<<< HEAD
+    this.el.cmd.innerHTML = `<div class="ms-defeat"><b>THE ICHOR TAKES YOU</b><p>${r.exp ? `${MainStory.ch >= 2 ? 'The Toons' : 'The Handlers'} keep ${fmt(Math.round(r.exp * .5))} EXP from the attempt.` : 'Guard when hurt, and Break enemies that are charging.'}</p>
+=======
     this.el.cmd.innerHTML = `<div class="ms-defeat"><b>THE ICHOR TAKES YOU</b><p>${r.exp ? `${MainStory.ch === 2 ? 'The Toons' : 'The Handlers'} keep ${fmt(Math.round(r.exp * .5))} EXP from the attempt.` : 'Guard when hurt, and Break enemies that are charging.'}</p>
+>>>>>>> ccb31b9f96fec6e5b5e1509b31b66f6b3cb024e0
       <div><button data-d="retry">Try again</button><button data-d="leave">Leave</button></div></div>`;
     this.el.cmd.querySelector('[data-d="retry"]').onclick = () => { Sound.play('choose'); const { i, mode, ids } = r; this.closeBattle(true); this.start(i, mode, ids); };
     this.el.cmd.querySelector('[data-d="leave"]').onclick = () => { Sound.play('ui_back'); this.closeBattle(); if (Screens.cur === 'story') Screens.render(); else Screens.go('story'); };
@@ -614,9 +710,15 @@ const StoryBattleUI = {
     const box = el('div', 'ms-result');
     box.innerHTML = `<h3>${r.first ? 'VICTORY' : 'CLEARED'}</h3><small>${r.n.name} · ${r.mode === 'hard' ? 'HARD' : 'EASY'}</small>
       <div class="ms-res-party">${r.ids.map(id => { const l = MainStory.lv(id); return `<span style="--hc:${stChar(id).color}"><img src="${stCharUrl(id)}" alt=""><b>LV ${l.lv}</b>${r.ups[id] ? `<em>LEVEL UP${r.ups[id] > 1 ? ' ×' + r.ups[id] : ''}!</em>` : ''}<u><s style="width:${Math.round(l.exp / stExpNeed(l.lv) * 100)}%"></s></u></span>`; }).join('')}</div>
+<<<<<<< HEAD
+      <p class="ms-res-exp">+${fmt(r.exp)} ${MainStory.ch >= 2 ? 'Toon' : 'Handler'} EXP each</p>
+      <div class="ms-rewards"><div>${Object.keys(r.rew).filter(k => RES[k]).map(k => `<span>${RES[k].icon}<b>${fmt(r.rew[k])}</b></span>`).join('')}</div></div>
+      ${r.skin ? `<div class="ms-res-skin"><img src="${ASSET + r.skin.art}" alt=""><div><small>SKIN UNLOCKED</small><b>${r.skin.name}</b><p>Equip it on ${r.skin.toon}’s Hero page.</p></div></div>` : ''}
+=======
       <p class="ms-res-exp">+${fmt(r.exp)} ${MainStory.ch === 2 ? 'Toon' : 'Handler'} EXP each</p>
       <div class="ms-rewards"><div>${Object.keys(r.rew).filter(k => RES[k]).map(k => `<span>${RES[k].icon}<b>${fmt(r.rew[k])}</b></span>`).join('')}</div></div>
       ${r.skin ? `<div class="ms-res-skin"><img src="${ASSET + r.skin.art}" alt=""><div><small>SKIN UNLOCKED</small><b>${r.skin.name}</b><p>Equip it on ${Object.keys(ST_SKINS).find(k => ST_SKINS[k] === r.skin)}’s Hero page.</p></div></div>` : ''}
+>>>>>>> ccb31b9f96fec6e5b5e1509b31b66f6b3cb024e0
       <button class="ms-go" type="button">${r.next != null ? 'Continue the story ›' : 'Done'}</button>`;
     if (r.skin) { Sound.play('get_rare', { vol: .6 }); this.confetti(box); }
     box.querySelector('.ms-go').onclick = () => {

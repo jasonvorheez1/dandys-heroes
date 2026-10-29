@@ -1,0 +1,77 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" fill="none">
+  <defs>
+    <radialGradient id="bgGlow" cx="50%" cy="45%" r="55%">
+      <stop offset="0%" stop-color="#ff6b8b"/>
+      <stop offset="55%" stop-color="#c92a49"/>
+      <stop offset="100%" stop-color="#3b0d1e"/>
+    </radialGradient>
+    <linearGradient id="boomboxBody" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ff5e78"/>
+      <stop offset="100%" stop-color="#b81d38"/>
+    </linearGradient>
+    <linearGradient id="crownGold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fff394"/>
+      <stop offset="55%" stop-color="#ffd23f"/>
+      <stop offset="100%" stop-color="#d48b00"/>
+    </linearGradient>
+    <linearGradient id="lettuceGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#d6f89e"/>
+      <stop offset="60%" stop-color="#96d658"/>
+      <stop offset="100%" stop-color="#5a9e28"/>
+    </linearGradient>
+    <linearGradient id="shrimpOrange" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ff9b6a"/>
+      <stop offset="100%" stop-color="#d9481e"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Outer Badge Medallion -->
+  <circle cx="64" cy="64" r="58" fill="url(#bgGlow)" stroke="#ffd23f" stroke-width="5"/>
+  <circle cx="64" cy="64" r="51" fill="none" stroke="#ff9db2" stroke-width="1.5" stroke-dasharray="5 4" opacity="0.65"/>
+
+  <!-- Sonic Radio Waves -->
+  <path d="M22 48 C14 58, 14 70, 22 80" stroke="#96d658" stroke-width="3.5" stroke-linecap="round" opacity="0.85"/>
+  <path d="M106 48 C114 58, 114 70, 106 80" stroke="#ff9b6a" stroke-width="3.5" stroke-linecap="round" opacity="0.85"/>
+  <path d="M15 40 C5 55, 5 73, 15 88" stroke="#ffd23f" stroke-width="2.5" stroke-linecap="round" opacity="0.6"/>
+  <path d="M113 40 C123 55, 123 73, 113 88" stroke="#ffd23f" stroke-width="2.5" stroke-linecap="round" opacity="0.6"/>
+
+  <!-- Lettuce Frill Backdrop (Left/Top) -->
+  <path d="M28 54 C24 38, 42 26, 56 36 C64 26, 82 32, 76 48 C68 56, 36 62, 28 54 Z" fill="url(#lettuceGrad)" stroke="#234911" stroke-width="3"/>
+  <path d="M36 47 Q52 40 62 46" stroke="#eaffc9" stroke-width="2.5" stroke-linecap="round"/>
+
+  <!-- Jessie's Boombox -->
+  <path d="M40 50 L40 38 L88 38 L88 50" stroke="#ffffff" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/>
+  <rect x="26" y="48" width="76" height="48" rx="11" fill="url(#boomboxBody)" stroke="#2b0c16" stroke-width="4"/>
+
+  <!-- Strawberry Seeds on Boombox -->
+  <circle cx="34" cy="56" r="1.8" fill="#fff5b8"/>
+  <circle cx="94" cy="56" r="1.8" fill="#fff5b8"/>
+  <circle cx="64" cy="88" r="1.8" fill="#fff5b8"/>
+  <circle cx="52" cy="55" r="1.6" fill="#fff5b8"/>
+  <circle cx="76" cy="55" r="1.6" fill="#fff5b8"/>
+
+  <!-- Speakers -->
+  <circle cx="44" cy="73" r="13" fill="#2b0c16" stroke="#ffd23f" stroke-width="2.5"/>
+  <circle cx="44" cy="73" r="5" fill="#ff758f"/>
+  <circle cx="84" cy="73" r="13" fill="#2b0c16" stroke="#ffd23f" stroke-width="2.5"/>
+  <circle cx="84" cy="73" r="5" fill="#ff758f"/>
+
+  <!-- Tuner Dial -->
+  <rect x="57" y="61" width="14" height="22" rx="4" fill="#ffe6ec" stroke="#2b0c16" stroke-width="2.5"/>
+  <line x1="60" y1="68" x2="68" y2="68" stroke="#d91b42" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="60" y1="74" x2="66" y2="74" stroke="#5a9e28" stroke-width="2.5" stroke-linecap="round"/>
+
+  <!-- Jessie's Golden Crown Tilted on Top -->
+  <path d="M44 38 L40 19 L55 29 L64 14 L73 29 L88 19 L84 38 Z" fill="url(#crownGold)" stroke="#2b0c16" stroke-width="3.2" stroke-linejoin="round"/>
+  <circle cx="64" cy="28" r="3" fill="#ff3b5c"/>
+
+  <!-- Shrimpo's Angry Vein Mark (Bottom Right) -->
+  <g transform="translate(86, 82) rotate(-12)">
+    <path d="M-10 -2 Q-2 -2 -2 -10 M2 -10 Q2 -2 10 -2 M10 2 Q2 2 2 10 M-2 10 Q-2 2 -10 2" stroke="#ff2a2a" stroke-width="4" stroke-linecap="round" fill="none"/>
+    <path d="M-10 -2 Q-2 -2 -2 -10 M2 -10 Q2 -2 10 -2 M10 2 Q2 2 2 10 M-2 10 Q-2 2 -10 2" stroke="#fff07c" stroke-width="1.8" stroke-linecap="round" fill="none"/>
+  </g>
+
+  <!-- Shrimpo's Tail Fin Emblem (Bottom Left) -->
+  <path d="M22 86 C14 96, 26 108, 36 98 C39 108, 52 102, 42 88 Z" fill="url(#shrimpOrange)" stroke="#2b0c16" stroke-width="3" stroke-linejoin="round"/>
+</svg>
+

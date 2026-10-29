@@ -1,0 +1,1 @@
+Discard Rek-Kords and Selena: Full Test Save exclusives. Normal crate/shop/research and shard recruitment blocked. Existing full saves gain both on load. Energy converted to the 100-point game scale. Supplied idle/icon/Twisted artwork and six supplied voice clips are used. No named-Toon or trinket combat dependencies.

@@ -144,6 +144,8 @@ const SkillPreviewSimulator = {
           const trinket = copy && TRINKETS[copy.id];
           if (trinket) { try { trinket.apply(u, B, copy.rank); } catch (e) {} }
         });
+        (u.mods || []).forEach(mod => { try { applyMod(u, B, mod); } catch (e) { console.warn('preview mod failed', u.id, mod, e); } });
+        if (u.modShield) { try { applyModShield(u, B); } catch (e) { console.warn('preview mod shield failed', u.id, e); } }
         const badgeRefs = u.badges && u.badges.length ? u.badges : u.badge ? [u.badge] : [];
         badgeRefs.forEach(ref => {
           const bid = typeof ref === 'string' ? ref : ref && ref.id;

@@ -1,0 +1,44 @@
+Jessie Platter — Dandy's Heroes
+Tier: SS Tier
+Role: Control / Support
+Position: Midline
+Damage Type: Magic
+Specialty: Evasion, damage reflection, taunting, radio interference, enemy stat theft, and offensive team buffs.
+
+Personality & Lore:
+Jessie has a vain, condescending personality, often belittling and acting superior to other Toons and referring to them as "losers" and "peasants". Inspired by Kuzco, she controls an area around her Annoying Radio ("My Space"), deliberately provokes enemies into attacking her ("Spotlight"), punishes their attacks by dodging and reflecting damage to build "Attention", and converts her dominance into team-wide buffs ("Perfect Reception" & "Royal Broadcast").
+
+Revised Skillset
+
+Peasants, Make Way!
+Rarity: White
+Damage Type: Control / Support (Magic)
+Passive: Jessie begins each wave by placing her radio beside herself and declaring the surrounding area My Space. Enemies inside My Space lose 5% Attack and Skill Power every 2 seconds, stacking up to 30% each. Jessie gains 10% Evasion for every enemy inside My Space, up to 40%. Her Basic Attacks release short radio pulses that deal Magic Damage and push enemies slightly toward the edge of her territory.
+Active: Jessie strikes a dramatic pose and turns her radio to maximum volume. For 9 seconds, she gains 40% Armor, Magic Defense, and Damage Reduction, plus 30% Skill Haste. Jessie also gains Spotlight, causing enemies to prioritize attacking her when possible. While Spotlight is active, 50% of the damage Jessie receives is Reflected back to its source, and each reflected attack restores a portion of her missing HP. When Spotlight expires, Jessie performs a dismissive gesture, Knocking Back nearby enemies and dealing Magic Damage equal to a capped portion of the damage she Reflected.
+
+Look, Don't Touch!
+Rarity: Green
+Damage Type: Control / Evasion / Magic Damage
+Jessie brushes aside her lettuce hair and performs a smug little dance, gaining Untouchable for 7 seconds. Untouchable allows Jessie to automatically Dodge the next 5 attacks or damaging Skills targeting her. During this effect, she is immune to removable debuffs. Each successful Dodge causes her radio to emit a sharp burst of static, dealing Magic Damage to the attacker and applying Embarrassed for 8 seconds. Embarrassed enemies have 25% reduced Accuracy and deal 20% less Damage to Jessie. After her fifth Dodge, Jessie teleports behind the enemy who most recently attacked her and delivers a concentrated radio shockwave, briefly Stunning them. If Untouchable expires before all Dodges are consumed, Jessie gains a Shield based on the number of remaining Dodges.
+
+Annoying Radio
+Rarity: Blue
+Damage Type: Support / Control (Magic)
+Jessie adjusts her radio to broadcast an obnoxiously energetic tune for 12 seconds. While it plays, allies gain 30% Movement Speed, 20% Attack Speed, and 20% Skill Haste. Meanwhile, enemies within My Space are Sapped, reducing their Energy generation by 25% and their Attack Speed by 20%. Every 3 seconds, the radio emits a louder beat that deals Magic Damage to nearby enemies and interrupts Basic Attacks. Whenever an enemy attacks Jessie while Annoying Radio is playing, their Attack and Skill Power are reduced by an additional 5%, stacking up to a total reduction of 40%. At the end of the broadcast, Jessie restores Energy to allies based on the number of enemies affected by Sap.
+
+Above Everyone Else
+Rarity: Purple
+Damage Type: Control / Survival
+Jessie gains 25% Evasion and 15% Debuff Resistance. Whenever Jessie successfully Dodges, Reflects Damage, or resists a debuff, she gains one stack of Attention, up to 10 stacks. Every 2 Attention stacks increase Jessie's Skill Haste by 5% and Damage Reduction by 3%. At 5 stacks, Jessie becomes immune to Accuracy reductions. At 8 stacks, her radio pulses steal 5% of the target's Attack and Skill Power for 8 seconds, granting the stolen stats to Jessie. At 10 stacks, Jessie enters Perfect Reception for 8 seconds. During Perfect Reception, her radio's territory expands to cover the entire enemy side of the battlefield, and all allies receive half of the Attack and Skill Power stolen by Jessie. Whenever an enemy affected by My Space uses a Skill during Perfect Reception, they lose Energy and Jessie gains a Shield. Attention resets when Perfect Reception ends.
+
+It's All About Me!
+Rarity: Red
+Damage Type: Magic Damage / Control / Support
+Jessie's influence over the battlefield becomes much stronger.
+- Peasants, Make Way! now applies Spotlight to the two enemies with the highest Attack, forcing them to prioritize Jessie while reducing their Accuracy by 25%.
+- Look, Don't Touch! grants Jessie two additional automatic Dodges, and its static counterattacks remove Energy.
+- Annoying Radio now grants allies 20% Attack and Skill Power during its broadcast, and enemies affected by Sap have their Skill cooldowns recover 30% slower.
+- Above Everyone Else grants Jessie increased Healing whenever she Reflects Damage.
+New Effect — Center of Attention: Once per wave, when Jessie activates Perfect Reception while Spotlight is active, her radio begins a 10-second Royal Broadcast. During Royal Broadcast, Jessie becomes immune to Crowd Control, gains 50% Evasion, and Reflects 75% of incoming Damage, subject to a per-hit reflection cap. Every second, enemies lose a portion of their Attack and Skill Power, and Jessie redistributes the stolen stats to her allies. Whenever an enemy misses Jessie, that enemy becomes Embarrassed, and all allies gain additional Energy. At the end of Royal Broadcast, Jessie releases a battlefield-wide radio shockwave that deals Magic Damage, Knocks Back all enemies, and Stuns enemies with maximum stat reductions for 3 seconds.
+Additional Stat Boosts: Increased Evasion, Skill Power, Magic Defense, and Damage Reflection.
+

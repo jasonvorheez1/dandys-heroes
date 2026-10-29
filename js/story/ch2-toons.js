@@ -51,12 +51,21 @@ Object.assign(ST_TOONS, {
     basicName: 'Fossil Pick', basicKind: 'phys', improvised: 'Fossil Pick',
     base: { hp: 98, fp: 32, atk: 10.5, mag: 12, def: 9, mdef: 10, spd: 13, luck: 9 },
     grow: { hp: 10.6, fp: 2.2, atk: 1.1, mag: 1.3, def: 1.0, mdef: 1.1, spd: .21, luck: .28 },
+<<<<<<< HEAD
+    passive: { name: 'Fossil Findings', desc: 'Allies’ skills deal 5% more damage while Shelly is on her feet (10% more against Marked, Researched or Exposed enemies).' },
+    skills: [
+      { id: 'core', name: 'Core Sample', fp: 6, unlock: 'badge', target: 'enemy', kind: 'phys', stagger: 1.8, desc: 'A drilling strike. Lowers Defense for 3 turns.', fx: { dmg: 'phys', power: 1.15, foe: [['defDown', 3]] } },
+      { id: 'inspire', name: 'Inspiration', fp: 13, unlock: 'badge', target: 'allies', kind: 'buff', desc: 'The whole party gains Attack and Magic up for 3 turns.', fx: { team: [['atkUp', 3]] } },
+      { id: 'solver', name: 'Problem Solver', fp: 11, unlock: 'c2s10', target: 'ally', kind: 'buff', desc: 'Shelly picks the fix an ally needs: healing and a shield when hurt, FP and Attack when tired, otherwise Defense and a Ward.', fx: { solver: true } },
+      { id: 'passion', name: 'Paleontologist’s Passion', fp: 20, unlock: 'c2s14', target: 'allies', kind: 'buff', desc: 'Party Attack and Defense up for 3 turns, and everyone else regains 4 FP.', fx: { team: [['atkUp', 3], ['defUp', 3]], fpTeam: 4 } }
+=======
     passive: { name: 'Fossil Findings', desc: 'Allies’ skills deal 10% more damage while Shelly is on her feet (20% more against Marked, Researched or Exposed enemies).' },
     skills: [
       { id: 'core', name: 'Core Sample', fp: 6, unlock: 'badge', target: 'enemy', kind: 'phys', stagger: 1.8, desc: 'A drilling strike. Lowers Defense for 3 turns.', fx: { dmg: 'phys', power: 1.15, foe: [['defDown', 3]] } },
       { id: 'inspire', name: 'Inspiration', fp: 10, unlock: 'badge', target: 'allies', kind: 'buff', desc: 'The whole party gains Attack and Magic up for 3 turns.', fx: { team: [['atkUp', 3]] } },
       { id: 'solver', name: 'Problem Solver', fp: 11, unlock: 'c2s10', target: 'ally', kind: 'buff', desc: 'Shelly picks the fix an ally needs: healing and a shield when hurt, FP and Attack when tired, otherwise Defense and a Ward.', fx: { solver: true } },
       { id: 'passion', name: 'Paleontologist’s Passion', fp: 18, unlock: 'c2s14', target: 'allies', kind: 'buff', desc: 'Party Attack and Defense up for 3 turns, and everyone else regains 6 FP.', fx: { team: [['atkUp', 3], ['defUp', 3]], fpTeam: 6 } }
+>>>>>>> ccb31b9f96fec6e5b5e1509b31b66f6b3cb024e0
     ],
     bond: { name: 'Eureka!', toonLine: 'Shelly holds up the fossil!', desc: 'Magic damage to every enemy. The party gains Attack up and Haste for 3 turns and 10 FP.', stagger: 1.5, fx: { dmg: 'mag', all: true, power: .9, team: [['atkUp', 3], ['haste', 3]], fpTeam: 10, fpTeamSelf: true } }
   },
@@ -163,14 +172,24 @@ Object.assign(ST_TOONS, {
     basicName: 'Tossed Sweets', basicKind: 'mag', improvised: 'Tossed Sweets',
     base: { hp: 94, fp: 34, atk: 7, mag: 13, def: 8.5, mdef: 12, spd: 12.5, luck: 7 },
     grow: { hp: 10.4, fp: 2.4, atk: .7, mag: 1.45, def: .9, mdef: 1.3, spd: .2, luck: .2 },
+<<<<<<< HEAD
+    passive: { name: 'Overprotective', desc: 'The first time each ally drops under 30% HP in a battle, Sprout instantly tosses them a treat (10% Max HP).' },
+=======
     passive: { name: 'Overprotective', desc: 'The first time each ally drops under 30% HP in a battle, Sprout instantly tosses them a treat (15% Max HP).' },
+>>>>>>> ccb31b9f96fec6e5b5e1509b31b66f6b3cb024e0
     skills: [
       { id: 'sweets', name: 'Baked Sweets', fp: 6, unlock: 'badge', target: 'ally', kind: 'heal', desc: 'Heal one ally for 30% of their Max HP plus Sprout’s Magic.', fx: { heal: { pct: .3, mag: 1.6 } } },
       { id: 'stayclose', name: 'Stay Close', fp: 8, unlock: 'badge', target: 'ally', kind: 'buff', desc: 'Regen (9% Max HP per turn) and Defense up on one ally for 3 turns.', fx: { ally: [['regen', 3, 1, { v: .09 }], ['defUp', 3]] } },
       { id: 'oven', name: 'Fresh Out of the Oven', fp: 15, unlock: 'c2s8', target: 'allies', kind: 'heal', desc: 'Heal the whole party for 22% Max HP and wash off Ichor.', fx: { heal: { pct: .22, mag: .6 }, cleanse: 'team' } },
+<<<<<<< HEAD
+      { id: 'batch', name: 'Second Batch', fp: 26, unlock: 'c2s12', target: 'ko', kind: 'heal', once: true, desc: 'Bring a fallen ally back with 30% HP. Once per battle.', fx: { revive: .3 } }
+    ],
+    bond: { name: 'Bake Sale', toonLine: 'Sprout opens the bakery!', desc: 'Heal everyone 40%, revive the fallen at 20% and cleanse all ailments.', fx: { revive: .2, heal: { pct: .4 }, cleanse: 'team' } }
+=======
       { id: 'batch', name: 'Second Batch', fp: 20, unlock: 'c2s12', target: 'ko', kind: 'heal', desc: 'Bring a fallen ally back with 40% HP.', fx: { revive: .4 } }
     ],
     bond: { name: 'Bake Sale', toonLine: 'Sprout opens the bakery!', desc: 'Heal everyone 55%, revive the fallen at 30% and cleanse all ailments.', fx: { revive: .3, heal: { pct: .55 }, cleanse: 'team' } }
+>>>>>>> ccb31b9f96fec6e5b5e1509b31b66f6b3cb024e0
   },
 
   Cosmo: {

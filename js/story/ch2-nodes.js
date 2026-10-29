@@ -50,7 +50,11 @@ const ST2_NODES = [
     easy: [[['inkBrick', 2], ['inkSponge', 1]], [['repGigi', 1], ['repToodles', 1], ['inkHand', 1]]],
     hard: [[['inkBrick', 2], ['inkSponge', 2]], [['repGigi', 1], ['repToodles', 1], ['inkHand', 2]]] },
   { type: 'story', scene: 'c2s11' },
+<<<<<<< HEAD
+  { type: 'battle', id: 'k7', name: 'Hall of Mirrors', bg: 'art', lv: 32, music: 'boss', boss: 'repGlisten', skin: 'Scraps',
+=======
   { type: 'battle', id: 'k7', name: 'Hall of Mirrors', bg: 'art', lv: 32, music: 'boss', boss: 'repGlisten',
+>>>>>>> ccb31b9f96fec6e5b5e1509b31b66f6b3cb024e0
     tune: { easy: { atk: 1 }, hard: { atk: 1.0 } },
     hint: 'Twisted Glisten counters when she Reflects. Wait it out, or hit her with something that does not touch her.',
     easy: [[['inkBall', 3]], [['repGlisten', 1, { boss: true }]]],
@@ -69,13 +73,21 @@ const ST2_NODES = [
     easy: [[['repRibecca', 1], ['inkBrick', 1], ['inkBall', 1]], [['repSoulvester', 1, { boss: true }], ['inkHand', 1]]],
     hard: [[['repRibecca', 1], ['inkBrick', 2], ['inkBall', 1]], [['repSoulvester', 1, { boss: true }], ['repRibecca', 1], ['inkHand', 1]]] },
   { type: 'story', scene: 'c2s15', join: ['Rudie', 'Coal'] },
+<<<<<<< HEAD
+  { type: 'battle', id: 'k10', name: 'Toy Workshop', bg: 'christmas', lv: 36, music: 'carol', boss: 'repCocoa', require: ['Coal'], skin: 'Cosmo',
+=======
   { type: 'battle', id: 'k10', name: 'Toy Workshop', bg: 'christmas', lv: 36, music: 'carol', boss: 'repCocoa', require: ['Coal'],
+>>>>>>> ccb31b9f96fec6e5b5e1509b31b66f6b3cb024e0
     tune: { easy: { atk: 0.95 }, hard: { atk: 0.75 } },
     hint: 'Two bosses. Coal’s Stay Put pulls both onto her, and Rudie’s Momentum builds as he hits.',
     easy: [[['inkCake', 2], ['inkDrop', 2]], [['repCocoa', 1, { boss: true }], ['repFlyte', 1, { boss: true }]]],
     hard: [[['inkCake', 2], ['inkDrop', 2], ['inkBomb', 1]], [['repCocoa', 1, { boss: true }], ['repFlyte', 1, { boss: true }], ['inkCake', 1]]] },
   { type: 'story', scene: 'c2s16' },
+<<<<<<< HEAD
+  { type: 'battle', id: 'k11', name: 'The Reserve', bg: 'greenhouse', lv: 38, music: 'unknown', skin: 'Rudie',
+=======
   { type: 'battle', id: 'k11', name: 'The Reserve', bg: 'greenhouse', lv: 38, music: 'unknown',
+>>>>>>> ccb31b9f96fec6e5b5e1509b31b66f6b3cb024e0
     tune: { easy: { atk: 0.9 }, hard: { atk: 0.72 } },
     hint: 'Three waves, and your own faces in the last one. HP carries over; spend Bond Arts where they count.',
     easy: [[['inkHand', 2], ['inkBomb', 1], ['inkBrick', 1]], [['repToodles', 1], ['repGigi', 1], ['repLooey', 1]], [['twTisha', 1, { name: 'Replica Tisha' }], ['twRodger', 1, { name: 'Replica Rodger' }], ['repBoxten', 1, { boss: true }]]],
@@ -105,6 +117,14 @@ const ST2_SHOP = [
   { id: 'stealth', price: 2200, unlock: 'k9' }, { id: 'tonic', price: 2600, unlock: 'k10' }
 ];
 const ST2_SHOP_CAP = 9;
+<<<<<<< HEAD
+const ST2_SKINS = {
+  Scraps: { node: 'k7', id: 'garden-bouquet', name: 'Garden Bouquet', art: 'Characters/scraps/scraps-garden-portrait.png' },
+  Cosmo: { node: 'k10', id: 'caramel-drizzle', name: 'Caramel Drizzle', art: 'Characters/Cosmo/cosmo-caramel-drizzle.png' },
+  Rudie: { node: 'k11', id: 'blue-bell', name: 'Blue bell', art: 'Characters/Rudie/rudie-blue-bell.png' }
+};
+=======
+>>>>>>> ccb31b9f96fec6e5b5e1509b31b66f6b3cb024e0
 const ST2_DANDY_LINES = [
   'Everything has a price. That is not a threat, it is a policy.',
   'No refunds. I would love to offer them. I simply do not remember agreeing to any.',
@@ -168,4 +188,8 @@ const ST2_TAPES = [
   ] }
 ];
 
+<<<<<<< HEAD
+if (typeof module !== 'undefined') module.exports = { ST2_NODES, ST2_ITEMS_FOR, ST2_HARD, ST2_SHOP, ST2_TAPES, ST2_SKINS };
+=======
 if (typeof module !== 'undefined') module.exports = { ST2_NODES, ST2_ITEMS_FOR, ST2_HARD, ST2_SHOP, ST2_TAPES };
+>>>>>>> ccb31b9f96fec6e5b5e1509b31b66f6b3cb024e0

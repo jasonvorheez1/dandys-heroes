@@ -63,7 +63,11 @@ Devan [sparkle]: Morning, Mr. Walton!
 Arthur [note]: Arthur, please.
 Delilah [dots]: The schedule, Arthur.
 Arthur [sweat]: Right. Go on.
+<<<<<<< HEAD
+Delilah [dots]: Handlers: guests at ten, Main Stage at eleven-thirty, lunch at noon, departure at three.
+=======
 Delilah [dots]: Handlers. The children arrive at ten. Toons on the Main Stage by eleven-thirty. Lunch at twelve. They leave by three.
+>>>>>>> ccb31b9f96fec6e5b5e1509b31b66f6b3cb024e0
 Delilah [dots]: Research has a pressure test scheduled for eleven. Sublevels only. Keep guests out of the service lifts.
 Arthur [dots] (shake): We can move it until the building closes.
 Delilah [dots]: We moved it twice. The pressure readings have been unstable all week.
@@ -163,7 +167,11 @@ Arthur [dots]: Delilah reported a pressure leak below us. I didn't know it had r
 Arthur [dots]: Your badges. Take them out.
 Devan [?]: Our... badges?
 > Each badge bears the Gardenview flower and a Toon portrait: Pebble, Vee, Sprout.
+<<<<<<< HEAD
+Arthur [dots]: Delilah put Ichor in the badges to track Toons out of sight.
+=======
 Arthur [dots]: Delilah put a trace of Ichor in the badges. She said it would help us monitor the Toons when they were out of sight.
+>>>>>>> ccb31b9f96fec6e5b5e1509b31b66f6b3cb024e0
 Arthur [dots]: I've never asked you to use that connection. I don't know what it will do under this much pressure.
 Sam [?]: Connects us how?
 Arthur [dots] (nod): Hold the badge. Think of the Toon you care for. Devan, start with Pebble.
@@ -433,8 +441,13 @@ Delilah [dots]: Good. Close the door. The vent in the corridor isn't sealed.
 @enter Shannon farleft
 @enter Sam farright
 Shannon [!]: Have you heard from Arthur? He went into Research hours ago.
+<<<<<<< HEAD
+Delilah [dots]: His radio died on sublevel two. The crew can't get past the lift; you can.
+Delilah [dots]: At eleven-fifty-two, the core overpressurized. Someone opened the main valve by hand. I can't tell why.
+=======
 Delilah [dots]: His radio cut out on sublevel two. I'm sending you there because the emergency crew can't get past the lift.
 Delilah [dots]: At eleven-fifty-two, the core exceeded its pressure limit. The main valve opened by hand. I don't know whether it was deliberate or an attempt to vent the system.
+>>>>>>> ccb31b9f96fec6e5b5e1509b31b66f6b3cb024e0
 Devan [?]: Who has a key?
 Delilah [dots]: Arthur, Dandy, and I can all reach the valve. Arthur went down after the alarm. Dandy was there before it.
 Veronica [dots]: He said you left samples in his shop.
@@ -481,7 +494,11 @@ Veronica [dots]: Delilah says Dandy was down here before the alarm.
 Arthur [?]: He was. I asked him to bring the sample canisters to storage.
 Devan [dots]: He said she asked him.
 Arthur [dots]: They were both working on the samples. Ask them both. I can't tell you what either did after I left the lab.
+<<<<<<< HEAD
+Arthur [dots]: The badges share the Toons' Ichor. They were monitors. We never tested this link.
+=======
 Arthur [dots]: The badges respond to the Toons because they contain the same Ichor. Delilah designed them as monitors; neither of us tested them like this.
+>>>>>>> ccb31b9f96fec6e5b5e1509b31b66f6b3cb024e0
 Shannon [dots]: You should have told us what was in them.
 Arthur [dots]: Yes. I should have.
 @sfx machine_start
@@ -656,7 +673,11 @@ Veronica [heart]: You found me anyway.
 Vee [dots]: Pebble did. I was still checking cameras.
 > A thin line of Ichor has stained Veronica's neck. She rubs it; it does not come off.
 Shannon [dots]: We need Sam to look at that.
+<<<<<<< HEAD
+Veronica [dots]: Later. Voices came through the pipes. Some led to rooms. Some led nowhere.
+=======
 Veronica [dots]: Later. I could hear voices through the pipes. Sometimes the vents carried sound from rooms. Sometimes there was no room at the end of it.
+>>>>>>> ccb31b9f96fec6e5b5e1509b31b66f6b3cb024e0
 Austin [dots]: Did you hear Astro?
 Veronica [dots]: I heard him call your name. I can't tell whether it came from the Planetarium or the Ichor around me.
 Veronica [dots]: Near the core, I heard a woman reading pressure numbers over a radio.
@@ -697,7 +718,11 @@ Dandy [dots]: Devan. I hoped you'd take the others upstairs.
 Devan [anger]: Tell me what you're doing with the valve.
 Dandy [dots]: Holding it where the pressure levels off. If I let go, the automatic purge starts.
 Veronica [anger] (shake): We saw you enter this room before the surge. What happened inside?
+<<<<<<< HEAD
+Dandy [dots]: I brought the samples down. The alarm was sounding. I opened the bypass to spare the public floors.
+=======
 Dandy [dots]: I brought the samples down. The pressure alarm was already on. I opened the bypass to keep it out of the public floors.
+>>>>>>> ccb31b9f96fec6e5b5e1509b31b66f6b3cb024e0
 Veronica [dots]: The public floors filled with Ichor.
 Dandy [dots]: I know. The bypass failed.
 @enter Austin farright
@@ -705,8 +730,13 @@ Austin [anger] (shake): Astro was hurt. So was Boxten. Do you understand that?
 Dandy [dots]: I saw Boxten. Devan, you know I wouldn't choose this.
 Devan [dots]: I know you're scared for them. I still need the whole story.
 @enter Shannon farleft
+<<<<<<< HEAD
+Shannon [?]: Closing the main line stops the flow. Why won't you let us?
+Dandy [dots]: The affected Toon tanks need that line. Delilah never separated them from the core.
+=======
 Shannon [?]: The control panel says closing the main line will stop the flow. Why won't you let us do it?
 Dandy [dots]: The same panel says the affected Toon tanks depend on that line. Delilah never separated them from the core.
+>>>>>>> ccb31b9f96fec6e5b5e1509b31b66f6b3cb024e0
 Shannon [dots]: The tanks aren't the Toons upstairs. We don't know what closing it would do to them.
 Dandy [dots]: Exactly. I won't gamble on their lives to make the gauge look better.
 Sam [dots]: What does the purge do?
@@ -805,12 +835,20 @@ s15: { title: 'Five Days', time: 'June 29, 2002', place: 'Outside the Gates', sc
 @bg sign
 @fx tv
 @music journal
+<<<<<<< HEAD
+Reporter: All twenty-three visiting children are safe. One Gardenview staff member remains missing.
+=======
 Reporter: All twenty-three children who visited Gardenview on Monday have been accounted for. One staff member remains missing after the incident.
+>>>>>>> ccb31b9f96fec6e5b5e1509b31b66f6b3cb024e0
 Reporter: Questions remain about safety procedures and an Ichor test conducted while guests were in the building.
 Reporter: Co-founder Delilah Keen spoke outside the gates this morning.
 @enter Delilah center
 Delilah [dots]: We have not determined what caused the pressure failure. We are preserving the records for investigators.
+<<<<<<< HEAD
+Delilah [dots]: All visiting children are safe. Devan Reed is missing. Search crews will enter when the lower level is safe.
+=======
 Delilah [dots]: Our Handlers brought every visiting child out safely. Devan Reed is still missing. Search crews will continue as soon as the lower level is safe.
+>>>>>>> ccb31b9f96fec6e5b5e1509b31b66f6b3cb024e0
 Delilah [dots]: Gardenview Educational Center and Museum is closing today. The Toons will remain inside while we assess their condition.
 Reporter: And co-founder Arthur Walton? We understand he was injured in the incident.
 Delilah [dots]: Arthur is recovering. He has asked us to keep the Toons together.

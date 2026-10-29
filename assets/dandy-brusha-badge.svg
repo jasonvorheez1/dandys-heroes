@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Brusha's Spotlight Palette">
+  <defs>
+    <radialGradient id="night"><stop stop-color="#653070"/><stop offset="1" stop-color="#21172d"/></radialGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff1a3"/><stop offset=".5" stop-color="#dba94f"/><stop offset="1" stop-color="#885c27"/></linearGradient>
+    <linearGradient id="brush" x1="0" y1="1" x2="1" y2="0"><stop stop-color="#613146"/><stop offset="1" stop-color="#f5c487"/></linearGradient>
+    <filter id="glow"><feGaussianBlur stdDeviation="4"/></filter>
+  </defs>
+  <circle cx="64" cy="64" r="61" fill="url(#night)" stroke="url(#gold)" stroke-width="5"/>
+  <circle cx="64" cy="64" r="52" fill="none" stroke="#ffb8d1" stroke-opacity=".55" stroke-width="1.5" stroke-dasharray="3 5"/>
+  <path d="M64 15 76 45 106 57 76 69 64 103 51 69 22 57 51 45Z" fill="#ffd88c" opacity=".5" filter="url(#glow)"/>
+  <path d="M64 19 75 46 103 57 75 68 64 99 52 68 25 57 52 46Z" fill="url(#gold)"/>
+  <path d="M64 32 70 50 89 57 70 63 64 82 58 63 40 57 58 50Z" fill="#fff4c5"/>
+  <path d="M29 91c12-22 31-37 56-46" fill="none" stroke="#ff66ae" stroke-linecap="round" stroke-width="12" opacity=".78"/>
+  <path d="M31 91c16-16 33-27 52-35" fill="none" stroke="#6ed7f4" stroke-linecap="round" stroke-width="4"/>
+  <path d="m93 27-8 17-12 13 8 7 14-13 14-8z" fill="url(#brush)" stroke="#40233b" stroke-width="2"/>
+  <path d="m109 43-9 2-5 7" fill="none" stroke="#fff1c8" stroke-width="2"/>
+  <circle cx="24" cy="85" r="4" fill="#ff66ae"/><circle cx="40" cy="102" r="3" fill="#6ed7f4"/><circle cx="102" cy="78" r="3.5" fill="#ffd166"/>
+</svg>

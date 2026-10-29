@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" role="img" aria-label="Pebble's Lookout Bell">
+  <defs>
+    <radialGradient id="stone"><stop stop-color="#677c8c"/><stop offset="1" stop-color="#18212c"/></radialGradient>
+    <linearGradient id="silver" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff"/><stop offset=".52" stop-color="#b8cbd8"/><stop offset="1" stop-color="#687f95"/></linearGradient>
+    <linearGradient id="bell" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#fff0a6"/><stop offset=".55" stop-color="#d4ad53"/><stop offset="1" stop-color="#8a632f"/></linearGradient>
+    <filter id="halo"><feGaussianBlur stdDeviation="5"/></filter>
+  </defs>
+  <circle cx="64" cy="64" r="61" fill="url(#stone)" stroke="url(#silver)" stroke-width="5"/>
+  <circle cx="64" cy="64" r="51" fill="none" stroke="#d5e4f2" stroke-opacity=".55" stroke-width="1.5"/>
+  <path d="M33 73c0-24 14-43 31-43s31 19 31 43" fill="none" stroke="#d9e9f7" stroke-width="5" opacity=".55" filter="url(#halo)"/>
+  <path d="M51 45c-4-2-9-10-7-15 2-5 8-5 12-1 4 5 4 13-1 16zm27 0c4-2 9-10 7-15-2-5-8-5-12-1-4 5-4 13 1 16zM37 60c-5-1-11-8-10-13 1-6 8-7 12-3 6 5 5 13-2 16zm54 0c5-1 11-8 10-13-1-6-8-7-12-3-6 5-5 13 2 16z" fill="url(#silver)"/>
+  <path d="M64 51c-8 0-10 7-15 11-9 4-12 14-7 21 5 8 13 8 22 3 9 5 17 5 22-3 5-7 2-17-7-21-5-4-7-11-15-11z" fill="url(#silver)" stroke="#e9f5ff" stroke-width="2"/>
+  <path d="M55 74c6 4 12 4 18 0" fill="none" stroke="#829baa" stroke-width="2" stroke-linecap="round"/>
+  <path d="M48 89c5 8 27 13 34 0l-2 15c-11 7-24 7-31 0z" fill="#6a8797" stroke="url(#silver)" stroke-width="2"/>
+  <path d="M57 95c0-9 14-9 14 0l5 11H52z" fill="url(#bell)" stroke="#fff0b3" stroke-width="2"/>
+  <circle cx="64" cy="106" r="4" fill="#5e4b37"/>
+</svg>
