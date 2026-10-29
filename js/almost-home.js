@@ -36,19 +36,19 @@
     const duration = reduced ? 180 : door ? 3100 : 2500;
     const cut = el('div', 'ah-cut ah-cut-' + kind);
     cut.setAttribute('aria-label', ({
-      'door-in': 'The door swings open into the event lobby',
-      'door-loop': 'The staff door opens onto the tea room again',
-      'door-out': 'The station door opens for the visitors',
-      'tea': 'Dango pours tea',
-      'fan': 'Cody catches the tipping fan',
-      'stage': 'The curtains part for Jessie',
+      'door-in': 'The heavy door opens into the East Wing corridor',
+      'door-loop': 'The backstage door opens onto the Welcome Room again',
+      'door-out': 'The station platform doors open',
+      'tea': 'Dango whisks matcha tea',
+      'fan': 'Cody steadies the desk fan',
+      'stage': 'The curtains part for Jessie Platter',
       'token': 'Gigi retrieves her token'
     })[kind] || 'Scene animation');
     cut.style.setProperty('--ah-cut-time', duration + 'ms');
     const sprite = (id, cls) => `<img class="ah-cut-toon ${cls || ''}" src="${art(id)}" alt="${id}">`;
     if (door) {
       const bg = kind === 'door-loop' ? 'Stagebackgrounds/maps/diner.png' : kind === 'door-out' ? 'uploads/backgroundlobby2.png' : 'uploads/backgroundlobby1.webp';
-      cut.innerHTML = `<div class="ah-door-wall"></div><div class="ah-door-space"><div class="ah-door-view" style="background-image:url('${ASSET + bg}')"></div><div class="ah-door-leaf"><div class="ah-door-panel"></div><span class="ah-door-sign">${kind === 'door-loop' ? 'STAFF ONLY' : kind === 'door-out' ? 'EXIT' : 'ROYAL BROADCAST'}</span><i class="ah-door-handle"></i></div><div class="ah-door-trim"></div></div><div class="ah-door-light"></div>`;
+      cut.innerHTML = `<div class="ah-door-wall"></div><div class="ah-door-space"><div class="ah-door-view" style="background-image:url('${ASSET + bg}')"></div><div class="ah-door-leaf"><div class="ah-door-panel"></div><span class="ah-door-sign">${kind === 'door-loop' ? 'STAFF ONLY' : kind === 'door-out' ? 'STATION' : 'EAST WING'}</span><i class="ah-door-handle"></i></div><div class="ah-door-trim"></div></div><div class="ah-door-light"></div>`;
     } else if (kind === 'tea') {
       cut.innerHTML = `<div class="ah-cut-table"></div>${sprite('Dango','ah-cut-left')}<svg class="ah-pour" viewBox="0 0 500 300"><g class="ah-pot"><path d="M65 80q-20 100 70 100t65-100Z" fill="#bde3d3" stroke="#665166" stroke-width="6"/><path d="M196 108l51-35-24 69-26 8" fill="#bde3d3" stroke="#665166" stroke-width="6"/><path d="M71 110q-72-36-39 39l43 11" fill="none" stroke="#665166" stroke-width="10"/><ellipse cx="133" cy="79" rx="66" ry="13" fill="#f3c9d8" stroke="#665166" stroke-width="6"/><circle cx="133" cy="60" r="12" fill="#f3c9d8" stroke="#665166" stroke-width="5"/></g><path class="ah-tea-stream" d="M265 132Q320 145 334 217" fill="none" stroke="#c59355" stroke-width="8" stroke-linecap="round"/><ellipse cx="340" cy="276" rx="62" ry="10" fill="#fceedd"/><path d="M298 216h85v29q0 32-42 32t-43-32Z" fill="#f3c9d8" stroke="#665166" stroke-width="5"/><ellipse cx="340" cy="216" rx="42" ry="7" fill="#ac7b50"/><path d="M384 225q39-12 25 19l-25 6" fill="none" stroke="#665166" stroke-width="7"/></svg>`;
     } else if (kind === 'fan') {
@@ -97,8 +97,9 @@
 
   /* ============================================================
      OVERHAULED MAIN STORY CHAPTERS (1 to 6)
-     High-energy comedic confrontation: The actual Gardenview toons
-     try to evict the squatters, while Jessie ruthlessly insults them!
+     Deeply canon-authentic to Dandy's World lore:
+     Vee, Bassie, and Shelly return to Gardenview Center to find
+     the sealed East Wing broadcast stage occupied by the modded quartet!
      ============================================================ */
   const story = [
     scene('01 · Unlawful Entry', 'Gardenview Lobby', `
@@ -108,47 +109,47 @@
 @cut door-in
 @enter Vee right
 @enter Bassie left
-> The heavy brass door flies open with a shudder. Bassie stumbles inside, clutching her wicker basket, while Vee marches in behind her with smoking circuits.
-Vee: Oh, finally! Sweet air-conditioned sanity! If I spent another five minutes in that Gold Saucer elevator, I was going to short-circuit!
-Bassie: I'm just glad we made it back before dinner. Did Shelly make it through?
+> The heavy entrance door swings shut with a muted thud. Bassie adjusts the pastel ribbon on her basket, while Vee rubs her screen casing, emitting a thin wisp of static.
+Vee: --ZZzst- Finally. A stable floor. If that Gold Saucer elevator shuddered one more time, my vertical sync was going to desynchronize completely.
+Bassie: It's good to be back in the Center. The seasonal wing felt so far away. Did Shelly make it across the courtyard?
 @enter Shelly center
-Shelly: I'm here. Barely. The hallway was narrower than I remembered.
-Vee: Good. Now let's grab our keys and—wait a second.
-> Vee stops dead in her tracks. The familiar quiet lobby has been completely overhauled.
-> Golden streamers hang from the ceiling, neon pink velvet drapes cover the notice boards, and a massive illuminated sign blares: ROYAL BROADCAST HEADQUARTERS.
-Vee [!]: WHAT IN THE NAME OF HIGH DEFINITION IS THIS?! Who authorized this hideous tacky pink wallpaper?!
+Shelly: I'm right behind you! I was just admiring the sediment layers near the drainage pipe. It's fascinating how the mortar erodes!
+Vee: Fascinating. Truly. Let us check the evening maintenance log and—
+> Vee halts. Her broadcast antenna tilts forward as her screen blinks in sharp disbelief.
+> The normally orderly East Wing corridor of Gardenview Center has been transformed. Heavy magenta velvet covers the display vitrines, golden wiring runs along the baseboards, and a gilded art-deco marquee glows above the archway: THE ROYAL BROADCAST.
+Vee [glare]: Tch. BZT-- What is this? Who authorized cord routing across an active thoroughfare? This is a blatant safety violation.
 @exit Shelly
 @enter Dango center
-Dango [sweat]: O-Okaeri nasai! Welcome to... w-wait! You're not on the VIP guest list!
-Vee [glare]: Guest list?! GUEST LIST?! We LIVE here!
-Bassie [?]: Um... excuse me, little sweet treat, but who are you and why is our front desk covered in powdered sugar?
-Dango [note]: I am Dango! Dandy assigned us this sector for the broadcast! I am terribly sorry if my banners are in your eyeline, I can move the ribbons four inches to the left—
-Vee: You can move them into the incinerator! You are SQUATTING in our lobby! Shelly, get security! We are kicking these intruders out onto the pavement right now!
+Dango [sweat]: O-Okaeri nasai! Welcome to... wait! You aren't listed on the call sheet!
+Vee [dots]: Call sheet? I am Vee. This is the Gardenview Educational Center. Who gave you permission to drape cheap fabric over the museum exhibits?
+Bassie [?]: Um... excuse me... HAhaha... ha... not to pry, but why is there a bamboo steamer on our reception counter?
+Dango [note]: I am Dango! Dandy assigned us this sector for our broadcast preparations! If the banners obstruct your line of sight, I can calibrate their elevation four inches higher—
+Vee: You can unhook them and pack them into boxes. You are cluttering our facility without an approved production schedule. Move your equipment out of the wing.
 @enter Cody left
-Cody: Nobody's kicking anyone anywhere. Keep your voice down, antenna-head.
+Cody: Nobody's moving anything. Keep your static down, monitor-head.
 @cut fan
-Vee [!]: Did you just call me ANTENNA-HEAD?!
-Cody: You're blocking the doorway and shaking the fan. Take three steps back before you trigger the pressure plate under that rug.
-Bassie [!]: PRESSURE PLATE?!
-Cody: Forged bear-trap. Iron jaws, sixty-pound spring. Keeps loiterers from scuffing the floorboards.
-Dango [sweat]: Cody! Please don't threaten guests with bear-traps! And your chains clanked so loud they startled me!
-Cody: It's fashion, Dango. If I wanted to choke someone, I wouldn't do it with a belt loop.
+Vee [glare]: --ZZzst- Monitor-head?!
+Cody: You're stomping on the floorboards and vibrating the desk fan. Take three steps back before you trip the tension wire near that floor mat.
+Bassie [!]: T-Tension wire?! HAhaha... ha... you're joking, right?!
+Cody: Forged bear-trap. Iron jaws, sixty-pound counter-weight spring. Keeps wandering feet from ruining the floor wax.
+Dango [sweat]: Cody! Please do not set perimeter traps in the front hallway! And your chains creaked so loudly you made me drop my measuring spoon!
+Cody: The chains are fashion, Dango. I told you that yesterday. If I wanted to restrain someone, I wouldn't use decorative brass links.
 @enter Nugget right
-Nugget [!] (jump): Wait! Don't fight! Nobody get snapped by bear-traps!
-Nugget: Look! Freshly grilled hot dogs! Extra artisan yellow mustard! I labeled the wrappers so nobody fights! Hot dogs are the universal peace treaty!
-Bassie: Oh... well, it does smell rather buttery...
-Vee: BASSIE! Do NOT accept squatter food!
-> A loud, theatrical clatter echoes from the stage corridor. High-heeled footsteps click sharply against the tile.
+Nugget [!] (jump): Hey! Don't argue! Nobody trip over iron traps!
+Nugget: Look! Freshly grilled hot dogs! Steamed potato buns and extra artisan yellow mustard! I labeled each wrapper with wax pencil so nobody gets confused! Hot dogs resolve every misunderstanding!
+Bassie: Oh... well... the melted butter aroma is quite lovely...
+Vee: Bassie. Do not accept unverified concession food from an unregistered squatter.
+> A sharp clatter rings out from the inner corridor, followed by the deliberate, rhythmic click of vintage high-heeled shoes.
 @enter Jessie center
-Jessie [smug]: WHAT is all this dreadful peasant squawking in My Space?! Nugget, did I or did I not mandate complete vocal silence during my warmup?!
-Vee: YOUR SPACE?!
+Jessie [smug]: WHAT is all this dreadful peasant squawking in My Space?! Nugget, did I or did I not mandate complete vocal silence during my diaphragmatic warmup?!
+Vee: "My Space"?
 Jessie [glare]: And what in heaven's name is THIS eyesore? Filthy peasants! Loitering unwashed in my foyer without VIP credentials!
-Vee [!]: FILTHY PEASANTS?! EXCUSE ME?!
-Jessie [note] (bow): Dango, why hasn't this rabble been swept into the gutter with the rest of the dust bunnies? Look at her—she’s broadcasting in standard definition! How humiliating for my aesthetic!
-Vee: That does it! Pack your hot dogs and your bear-traps! You four have five minutes to evacuate, or I am throwing you out of this building myself!
-Jessie [smug]: Oh, darling, please. You couldn't evict a moth from a lightbulb. This is My Space! Now scurry back to the barn before I have Cody toss you into the street!
-Cody: Working on the bear-traps now.
-Vee: Oh, it's on. You four are getting evicted today if it's the last thing I do!`),
+Vee [glare]: Filthy peasants? I am the primary broadcast host of Gardenview Center. You are a noisy radio head with a microphone stand.
+Jessie [note] (bow): Dango, why hasn't this television rabble been escorted to the service exit? Look at her—she is broadcasting in standard definition! How thoroughly humiliating for my aesthetic!
+Vee: --ZZzst- Pack your hot dogs, pack your bear-traps, and pack your oversized ribbons. You have five minutes to clear this wing, or I will disconnect your main feed myself.
+Jessie [smug]: Oh, darling, please. You couldn't disconnect a lamp. This is My Space! Scurry back to the archives before I have Cody drag your pedestal into the courtyard!
+Cody: I'm calibrating the trap triggers right now. Don't test me.
+Vee: Tch. We will see about that. You four are vacating this wing today.`),
 
     scene('02 · Chipped China & Broken Clocks', 'Welcome Room', `
 @bg Stagebackgrounds/maps/diner.png
@@ -157,33 +158,34 @@ Vee: Oh, it's on. You four are getting evicted today if it's the last thing I do
 @cut tea
 @enter Dango left
 @enter Shelly right
-> Dango scurries around the low counter, hands trembling as she sets down steaming porcelain cups and fresh mochi plates.
-Dango [sweat]: Please! Please drink some hot green tea! In my experience, green tea lowers elevated blood pressure and resolves ninety-eight percent of all territorial disputes!
-Shelly: It smells lovely, dear. Though your friends seem rather belligerent for hotel staff.
-Dango: Jessie-sama isn't belligerent! She's just... exceptionally proud of her broadcast space! And Cody is very protective of his style!
+> Dango scurries around the counter, setting down ceramic cups and plates of fresh mochi with delicate, practiced motions.
+Dango [sweat]: Please! Please drink some hot green tea! In my experience, properly brewed matcha lowers pulse rates and resolves ninety-eight percent of all spatial disputes!
+Shelly: It smells wonderful, dear. Though your stage partner seems rather intense for a fellow Toon.
+Dango: Jessie-sama is just... exceptionally dedicated to her performance! And Cody is very defensive about his appearance!
 @enter Cody center
-> Cody marches over, eyes Shelly's teacup, and snatches it right out from under her claws.
+> Cody steps over, eyes the teacup in Shelly's hand, and takes it from her grip without a word.
 Shelly [?]: Oh?
-Cody: Handle's cracked. Don't touch it. You'd slice your lip open.
-> Cody pours the tea into his own dented metal canteen and sets a fresh porcelain cup in its place.
-Cody: There. Don't look at me like that. I'm keeping porcelain off the newly waxed floor. Don't make a story out of it.
-Shelly: Why, thank you, young man. You're surprisingly considerate for an armed trespasser.
-Cody [dots]: I'm protecting the floor, not you. Don't get sentimental.
+Cody: Rim's chipped. You'd slice your lip open on the second sip.
+> Cody pours the tea into a dented metal canteen and sets down a flawless porcelain cup in its place.
+Cody: There. Don't look at me like that. I'm keeping blood off the woodwork. Don't make a story out of it.
+Shelly: Why, thank you, Cody! You know, that reminds me of an oviraptor protecting an unhatched clutch! Tough exterior, but remarkably careful with fragile specimens!
+Cody [dots]: I'm not an oviraptor. Drink your tea and sit still.
 @enter Vee right
-Vee [glare]: Shelly! Stop fraternizing with the squatters!
-Vee: Look at that clock! It's frozen at three fifteen! Did you amateurs blow out our master circuits with your illegal spotlight rig?!
+Vee [glare]: Shelly. Stop psychoanalyzing the trespassers.
+Vee: And look at that wall clock! The brass gears are frozen at three fifteen! Did your makeshift stage lights overload the secondary junction box?!
 @enter Nugget center
 Nugget [sweat]: U-Um... that wasn't the stage lights, Miss Vee...
-Vee: Then what was it, hot dog boy?!
-Nugget: I... may have borrowed the clock's AA battery to power my electric mustard-frother so Cody's lunch would be extra savory...
-Vee [!]: An electric... MUSTARD-FROTHER?!
-Nugget [note]: It creates thirty percent more savory micro-bubbles! It’s food science!
-Cody: The mustard was good. Leave my boyfriend alone, antenna-head.
-Vee: YOU BROKE THE TIME-SPACE CONTINUITY OF GARDENVIEW FOR HOT DOG CONDIMENTS?!
-Dango [!] (jump): EEEEEK! THE OUTSIDE DOOR! IT JUST CLICKED SHUT BY ITSELF!
-> Cody tugs at the brass handle. It doesn't budge.
-Cody: Deadbolt's sealed. Looks like the filthy peasants are stuck in here with us.
-Jessie~: I heard that, Cody! And do not associate my royal presence with commoners!`),
+Vee: Then what was it?
+Nugget: I... may have borrowed the clock's AA battery to power my electric mustard-frother so Cody's lunch would have optimal savory aeration...
+Vee [dots]: ...An electric mustard-frother.
+Nugget [note]: It creates thirty percent more micro-bubbles! It holds the emulsion together! It is culinary science!
+Vee: You dismantled an operational Gardenview timepiece... for hot dog condiments.
+Cody: The mustard was good. Leave my boyfriend alone, monitor-head.
+Vee: --ZZzst- I am surrounded by unhinged amateurs.
+Dango [!] (jump): EEEEEK! THE HALLWAY DOOR! IT JUST CLICKED SHUT!
+> Cody strides to the brass handle and pulls hard. The lock does not yield.
+Cody: Deadbolt's engaged. Mechanism isn't responding. Looks like the peasants are stuck in here with us.
+Jessie~: I heard that, Cody! And do not lump my royal presence in with commoners!`),
 
     scene('03 · Prima Donna Soundcheck', 'Center Stage', `
 @bg Stagebackgrounds/maps/vee-showroom.webp
@@ -192,40 +194,40 @@ Jessie~: I heard that, Cody! And do not associate my royal presence with commone
 @cut stage
 @enter Jessie center
 @enter Nugget left
-> Under blazing magenta spotlights, Jessie Platter grips her golden microphone stand, striking an exaggerated dramatic pose while Nugget adjusts folding chairs.
-Jessie [note]: Yes! More illumination! If my cheekbones aren't blinding the cheap seats from fifty paces, the lighting technician should be exiled to the dungeon!
-Nugget: Front row chairs are set, Jessie! Each one has a complimentary bag of peanuts! Did you want Cody's seat reserved by the aisle?
-Jessie: Only if he promises not to rattle his belt chains during my high notes. My little brother thinks he can buy prime concert seating with lunch.
-Nugget: Can I?
-Jessie: One hot dog. Extra mustard. Then we will discuss VIP seating.
+> Under brilliant magenta spotlights, Jessie Platter grips her golden microphone stand, striking a commanding theatrical pose while Nugget adjusts rows of velvet chairs.
+Jessie [note]: Yes! More illumination! If my cheekbones are not blinding the back rows from fifty paces, the lighting crew should be banished to the prop basement!
+Nugget: Center aisle chairs are aligned, Jessie! Every seat has a complimentary packet of roasted sunflower seeds! Did you want Cody's chair reserved by the sound booth?
+Jessie: Only if he promises not to rattle his belt chains during my high notes. My little brother seems to believe prime auditorium seating can be bought with grilled sausage.
+Nugget: Can it?
+Jessie: One artisan dog. Extra Dijon. Then we will discuss VIP positioning.
 @enter Vee right
 @enter Bassie left
-Vee [glare]: HEY! Drama queen! Drop the microphone and put your hands where my camera can see them!
-Jessie: Ugh! The rabble returns! And they brought their little wicker basket!
-Bassie: It's a lovely basket, actually. It holds fresh berries.
-Jessie [smug]: It holds peasant food! Darlings, darlings, quiet your screeching! You are in the presence of the reigning empress of Gardenview broadcasting!
-Vee: You are an unlicensed squatter in my studio! I produce the shows here!
-Jessie: You produce technical glitches, darling! I produce HIGH ART! I deliver majesty! I deliver drama!
-> Suddenly, a funky, digitized retro backing track begins booming through the overhead monitors on its own.
+Vee [glare]: Jessie. Step away from the microphone before I trip the breaker.
+Jessie: Ugh! The television rabble returns! And they brought their little wicker basket!
+Bassie: It's a very nice basket, actually... HAhaha... ha... it holds freshly gathered clover...
+Jessie [smug]: It holds peasant greenery! Darlings, quiet your shrill buzzing! You stand in the presence of the reigning queen of Gardenview broadcasting!
+Vee: You are occupying a closed archival stage. My quiz show operates on rigorous scheduling. Your vanity project operates on stolen power.
+Jessie: Your little quiz show is a parade of blinking lights and cheap buzzers, darling! I deliver HIGH ART! I deliver majesty! I deliver drama!
+> Suddenly, a funky, digitized retro backing track begins booming through the overhead speakers on its own.
 @enter Dango right
 Dango [sweat]: A-Ano... Jessie-sama? I didn't push play! The sound console is operating entirely by itself!
-Jessie [?]: What? But my cue isn't for another four measures!
+Jessie [?]: What? But my opening measure is not for another four bars!
 > Shelly walks up to the stage proscenium, shining a pocket magnifier on a framed, dusty poster half-hidden behind the velvet drapes.
 @enter Shelly left
 Shelly: Vee... look at this.
 @image ahJessie
 Shelly: "JESSIE IN CENTER STAGE. Show date: 7/24/1998."
 Vee [!]: July 24, 1998?!
-Bassie: But... none of us were animated in 1998! That was decades ago!
+Bassie: But... that was years before our show debuted! That was decades ago!
 Jessie [dots]: What...?
-> Jessie's haughty sneer cracks for a brief moment. She stares at her own painted portrait on the aged paper.
-Jessie: Nineteen... ninety-eight? But... my show date... Dandy had that printed for my opening week. I remember the performance. I don't remember the year...
-Vee: Wait. Dandy printed that for you?
+> Jessie's haughty sneer falters for a brief second. She stares at her own painted likeness on the aged paper.
+Jessie: Nineteen... ninety-eight? But... my opening week show date... Dandy had that printed for our prime broadcast run. I remember the applause. I don't remember the year...
+Vee: Wait. Dandy had that printed for you?
 @imgoff
 Jessie [glare] (jump): SILENCE! How dare you inspect my historical archives without paying admission!
-Jessie: Out! OUT! Cody, release the attack dogs! Or Nugget, throw a pretzel at her!
+Jessie: Out! OUT! Cody, lower the iron grating! Or Nugget, throw a pretzel at her!
 Nugget: Jumbo salted pretzel inbound! Catch, Miss Vee!
-Vee: DON'T THROW BAKED GOODS AT MY LENS!`),
+Vee: --ZZzst- DO NOT THROW BAKED GOODS AT MY LENS!`),
 
     scene('04 · Euclidean Geometry is Optional', 'Backstage Storage', `
 @bg Stagebackgrounds/maps/vee-storage.webp
@@ -234,108 +236,108 @@ Vee: DON'T THROW BAKED GOODS AT MY LENS!`),
 @cut door-loop
 @enter Dango left
 @enter Shelly right
-> Dango clutches her color-coded clipboard against her chest, leading the eviction committee through a dim, labyrinthine corridor of backstage props.
-Dango [sweat]: The staff room exit connects to the real Gardenview hallway! Just follow me through this door—
+> Dango clutches her clipboard against her apron, leading the group through a labyrinthine corridor of stacked set flats and unused museum displays.
+Dango [sweat]: The staff exit connects directly to the central elevator hall! Just follow me through this archway—
 @enter Cody center
-Cody: Told you. The hallway's looping.
+Cody: Told you. The corridor is looping.
 > Cody pushes the heavy wooden door marked 'STAFF ONLY'.
-> Through the open doorframe sits... the Welcome Room tea table. Cody's metal canteen is still sitting on the saucer.
+> Through the open doorframe sits... the Welcome Room tea table. Cody's metal canteen is still resting on the ceramic saucer.
 @enter Nugget right
 Nugget: Hey! Our tea's still warm!
-Vee [!]: ARE YOU KIDDING ME?! We just walked half a mile down a hallway! Why are we back in the dining room?!
-Dango [!] (jump): WAAAAAH! I broke the hotel! I folded the floor plan into an impossible origami knot!
-Dango: I'm sorry! I'm so sorry! You're going to evict us and I don't even know where our luggage went!
-Nugget: No cardboard boxes! Here, I labeled an extra hot dog for you, Dango! Look, it says 'Dango' right on the wrapper!
+Vee [glare]: Tch. BZT-- We walked two hundred paces down a straight corridor. Why are we back in the dining room?
+Dango [!] (jump): AWAWAWA! I broke the floor plan! I folded the archival wing into an impossible geometric knot!
+Dango: I'm sorry! I'm so sorry! You're going to throw us out into the rain and I don't even know where our storage crates went!
+Nugget: No cardboard boxes, Dango! Look! I labeled an extra hot dog for you! See? It says 'Dango' right on the wax wrapper!
 Dango: Oh... you remembered I didn't eat lunch?
-Nugget: You always forget to feed yourself while worrying about everyone else! Eat up!
-Cody: Stop panicking, Dango. The room moved. That's on the landlord, not you. And nobody's evicting anyone while I'm standing here.
-> Shelly kneels down behind a wardrobe and pulls out another framed poster covered in cobwebs.
+Nugget: You always forget to feed yourself while checking everyone else's schedules! Eat up!
+Cody: Stop panicking, Dango. The room shifted on its own. That's on the management, not you. And nobody's throwing anyone out while I'm standing here.
+> Shelly kneels behind an old costume wardrobe and pulls out another framed poster covered in fine dust.
 @image ahDango
-Shelly: Dango... look here.
+Shelly: Dango... look at this.
 Shelly: "DANGO’S BEHIND THE SCENES! Premiering April 5, 2000."
-Dango [dots]: Th-That's... me. Holding the same clipboard.
+Dango [dots]: Th-That's... me. Holding this exact clipboard.
 @imgoff
-Dango: Dandy gave me that ribbon after our first broadcast. But how could that be twenty-six years ago...?
-Bassie: Cody's right. You four aren't squatters. You've been here longer than we have.
+Dango: Arthur and Delilah gave me that ribbon after our first test broadcast. But... how could that be so long ago...?
+Bassie: Cody's right. You four aren't intruders from outside... you were part of Gardenview before we were even created.
 Jessie~: Finally! The basket peasant exhibits basic cognition! We are the FOUNDING ROYALTY of Gardenview!
-Vee: You are still an insufferable pain in my circuits. Come on. If the hallways are bending, there's only one toon behind it. Station platform. Now!`),
+Vee: You are still an insufferable headache. Come on. If the hallways are shifting, there is only one Toon in Gardenview holding the master keys. Station platform. Now.`),
 
-    scene('05 · The Landlord’s Explanation', 'Gardenview Station', `
+    scene('05 · The Flower’s Explanation', 'Gardenview Station', `
 @bg uploads/gardenviewtrainstation.webp
 @ah station
 @music ahCandy
 @cut door-out
 @enter Dandy right
 @enter Vee left
-> Down at the vintage train platform, Dandy sits casually on an iron bench, humming a lighthearted tune while cleaning his nails with a pocket screwdriver.
-Vee [glare]: DANDY! Put down the screwdriver and start talking!
-Dandy [note]: Ah! Vee! Bassie! Shelly! Did you enjoy your scenic detour through the Gold Saucer?
-Vee: Do not play dumb with me! You rented our hotel lobby to four temporal castaways who keep calling us FILTHY PEASANTS!
+> Down at the vintage iron train platform inside Gardenview Park, Dandy sits casually on a wooden bench, humming a melody while polishing a golden tape cassette.
+Vee [glare]: Dandy. Put down the tape and explain yourself.
+Dandy [note]: Ah! Vee! Bassie! Shelly! Did you have a pleasant excursion through the Gold Saucer?
+Vee: Do not play innocent with me. You unlocked the sealed East Wing archives and let four vintage castaways take over the stage!
 @enter Jessie center
-Jessie [glare]: Because you ARE filthy peasants! Dandy, darling! Arrest these intruders immediately! They barged into My Space, insulted my lighting, and refused my autographed napkins!
-Dandy [note] (bow): Now, now, Miss Platter! Let's not banish our most dedicated subscribers just yet!
+Jessie [glare]: And they barged into My Space, Dandy! Banish these television extras immediately! They insulted my lighting and refused my autographed playbills!
+Dandy [note] (bow): Now, now, Miss Platter! Let's not discard our most dedicated audience just yet!
 @enter Cody center
 @enter Nugget left
-Cody: Did you double-book this wing, flower? Because my bear-traps are getting restless.
-Nugget: And my mustard is losing its emulsion! We need stability, Mr. Dandy!
+Cody: Did you double-book this wing, flower? Because my bear-traps are set, and I don't like moving them twice.
+Nugget: And my mustard is losing its aeration! We need stability, Mr. Dandy!
 @enter Dango center
-Dango [sweat]: Dandy-san... are we... are we supposed to be here? The posters on the walls... they have dates from before the current hotel was built...
+Dango [sweat]: Dandy-san... are we... are we supposed to be here? The posters on the walls... they have show dates from decades ago...
 Dandy [dots]: ...
-> Dandy's perpetual grin softens slightly. He pulls a gleaming brass skeleton key from his waistcoat pocket.
-Dandy: A good hotel never truly forgets its original stars, Dango. When you four went into storage after the old broadcast ended, Gardenview felt... a little quieter. A little less colorful.
-Jessie [smug]: Naturally! Without me, this place was an aesthetic wasteland!
-Dandy: So when the doors from the Gold Saucer shook the old foundation, I thought... why not unlock the Royal Wing? Why shouldn't our newest Toons meet the legends who laid the floorboards?
-Vee [?]: Legends? You mean... they really were the original broadcast cast?
+> Dandy's cheerful grin softens into something slightly more reflective. He twirls a polished brass skeleton key around his fingertip.
+Dandy: Gardenview has deep roots, Dango. When your broadcast run wrapped up and the East Wing was closed for renovation, the halls were... quieter. A little less grand.
+Jessie [smug]: Naturally! Without my presence, the facility was an artistic wasteland!
+Dandy: So when the doors from the Gold Saucer shook the old foundation, I thought... why keep our original stars tucked away in archival storage? Why shouldn't Gardenview's newest Toons meet the ones who helped build the stage?
+Vee [dots]: The ones who helped build the stage? You mean... they really were Gardenview's original performers?
 Jessie: OF COURSE WE WERE, YOU TELEVISION COMMONER!
-Bassie [note]: Well... that explains why they know where all the secret tea pantries are.
-Dandy: This key opens the passage between both wings. No evictions. No squatter disputes. From today on, the Royal Broadcast has permanent VIP residency.
-Vee: ...Fine. But if she calls me a filthy peasant one more time, I'm jamming her microphone down her throat.
-Jessie [note]: Oh, darling, my high notes would shatter your audio drivers before you even got close.
-Nugget [!] (jump): Group hug! Nobody gets evicted! Hot dogs for everyone!
+Bassie [note]: Well... HAhaha... ha... that explains why they know where all the spare porcelain is stored.
+Dandy: This master pass connects both wings permanently. No lockouts. No squatter disputes. From today on, the Royal Broadcast has an official residency in the East Wing.
+Vee: ...Fine. But if she refers to me as a filthy peasant one more time, I am testing her vocal range with an oscilloscope.
+Jessie [note]: Oh, darling, my high notes would shatter your vacuum tubes before you could even flip the switch.
+Nugget [!] (jump): Group celebration! Nobody gets kicked out! Hot dogs for the whole facility!
 @move Dango left
 @move Bassie right
-> Dango hands Bassie a warm, carefully folded paper bag of freshly baked matcha biscuits.
+> Dango steps forward, presenting Bassie with a carefully folded paper parcel of freshly baked matcha biscuits.
 Dango [note]: Arigato gozaimashita, Bassie-san... Thank you for understanding.
-Bassie: Thank you for the tea, Dango. And Nugget... that mustard really is exceptional.
-Nugget: HAHA! I KNEW IT! ARTISAN QUALITY ALWAYS PREVAILS!
-Jessie [note] (bow): Otsukaresama, peasants! Return for my grand broadcast tomorrow—and bring flowers next time!`),
+Bassie: Thank you for the tea, Dango. And Nugget... that mustard really is quite remarkable.
+Nugget: HAHA! I KNEW IT! ARTISAN AERATION NEVER FAILS!
+Jessie [note] (bow): Otsukaresama, peasants! Be in your seats for my grand broadcast tomorrow—and bring fresh roses!`),
 
     scene('06 · The Souvenir on the Shelf', 'The Real Gardenview & Royal Studio', `
 @bg Stagebackgrounds/maps/rainbow-rooms.png
 @music ahCandy
 @cut token
 @enter Gigi center
-> Back in her cozy bedroom in the modern Gardenview wing, Gigi lies flat on her belly with a wooden ruler, poking beneath her heavy oak bookshelf.
+> Back in her room in Gardenview's residential quarters, Gigi lies flat on the floor with a wooden ruler, probing beneath her heavy bookshelf.
 Gigi [dots]: Come on... just a little further...
-> With a metallic scrape, the shiny brass token slides out from the shadows into her paw.
-Gigi: AHA! Victory!
+> With a crisp clink, a shiny brass arcade token slides out from the shadows into her paw.
+Gigi [note]: AHA! Victory! Mwehehe...
 @enter Bassie right
 @enter Shelly left
-Bassie: Did you find your lucky token, Gigi?
-Gigi: Found it! Where were you guys? You took forever to get back from the train station.
-Shelly: We had a rather lively dispute with the original tenants of the studio wing.
-Gigi: Oh yeah? Did Vee kick them out?
-Bassie: Quite the opposite. We gave them permanent residency. Here, they sent these for you.
-> Bassie hands Gigi a warm pastry bag. Gigi pulls out a golden-brown biscuit dusted in fine green-tea sugar and takes a massive bite.
+Bassie: Did you recover your lucky token, Gigi?
+Gigi: Found it! Where were you guys? You took forever to get back from the station.
+Shelly: We had a rather lively encounter with the original performers from the East Wing! It was just like discovering living fossils!
+Gigi: Oh yeah? Did Vee throw them out?
+Bassie: Quite the opposite. Dandy granted them official residency. Here, they sent these for you.
+> Bassie hands Gigi a warm pastry bag. Gigi pulls out a golden biscuit dusted with fine green-tea sugar and takes a massive bite.
 Gigi [!] (jump): WHOA! This is incredible! Who baked this?!
-Shelly: A sweet little mochi girl named Dango.
-Gigi: And who's that loud person I heard screaming from the hallway?
-Bassie: That would be Jessie Platter. She called Vee a filthy peasant seven times.
-Gigi [note]: Seven times?! To her face?!
-Gigi: I don't care what Dandy says, those modded guys are my new favorite people in this entire building.
+Shelly: A sweet little Toon named Dango. She's remarkably attentive!
+Gigi: And who's that loud person I heard shouting from three corridors away?
+Bassie: That would be Jessie Platter. HAhaha... ha... she called Vee a filthy peasant seven times.
+Gigi [note]: Seven times?! Straight to Vee's screen?!
+Gigi: Mwehehe... I don't care what anyone says, those new guys can stay forever. I'm going to see what else they have in their dressing rooms!
 @exitall
 @bg Stagebackgrounds/maps/vee-storage.webp
 @ah backstage
 @enter Dango left
 @enter Cody right
-> Back in the Royal Wing, Cody hammers a heavy steel wedge beneath the looping backstage door, securing the frame firmly against the wall.
+> Back in the East Wing, Cody drives a heavy steel wedge beneath the swinging backstage door, securing the frame firmly against the wall.
 Dango: Is it going to hold this time, Cody?
-Cody: It's anchored with three railroad spikes. It's not moving an inch.
+Cody: It's anchored with three steel spikes. It's not shifting an inch.
 @enter Nugget center
-Nugget [note]: Dinner is served! Twenty jumbo dogs, grilled onions, and extra honey-mustard!
+Nugget [note]: Dinner is served! Twenty jumbo dogs, grilled onions, and extra aerated mustard!
 @enter Jessie right
-Jessie [smug]: At last! The star requires protein!
-> Jessie takes a hot dog, pretending to inspect it with dramatic scrutiny before taking a delicate, enthusiastic bite.
+Jessie [smug]: At last! The star requires proper protein!
+> Jessie takes a hot dog, inspecting it with theatrical scrutiny before taking a delicate, enthusiastic bite.
 Jessie: ...Acceptable. In fact, bordering on exquisite. You have done well, my culinary brother.
 Nugget: YAY! Best review ever!
 Dango [note]: Cody... Jessie... Nugget... we really get to stay, don't we?
@@ -355,16 +357,16 @@ Jessie [note] (bow): Home? Darlings, we aren't just home—we own the stage! Now
 @enter Bassie right
 > Dango kneels at the low wooden counter, hands trembling as she measures bright green matcha powder with a bamboo spoon.
 Dango [sweat]: Okay... ninety-two point five degrees Celsius... exactly three whisks clockwise, then two figure-eights...
-Bassie: Dango, dear, it's just tea. You don't have to calculate the trajectory.
-Dango [!]: It's NOT just tea, Bassie-san! It is the sacred spirit of hospitality! If the foam bubbles are larger than one millimeter, my ancestors will weep!
+Bassie: Dango, dear, it's just tea. HAhaha... ha... you don't have to calculate the trajectory.
+Dango [!]: It is NOT just tea, Bassie-san! It is the sacred spirit of hospitality! If the foam bubbles are larger than one millimeter, my preparation is flawed!
 > Dango whisks frantically until a delicate, jade-green foam tops the ceramic bowl. She presents it with both paws, bowing until her forehead touches the wood.
 Dango: Please accept this humble, completely inadequate offering!
 Bassie: Oh, thank you!
 > Bassie lifts the bowl and chugs the entire steaming serving in three giant gulps.
 Bassie [note]: Mmmm! That hits the spot! Can I get a refill?
 Dango [dots]: Y-You... drank it in three seconds...
-Bassie: It was delicious! Best tea I've ever had!
-Dango [sweat] (jump): AHHH! SHE LIKED IT! I DIDN’T OFFEND THE ANCESTORS!
+Bassie: It was delicious! Best tea I've ever had! HAhaha... ha... did I drink it too fast?
+Dango [sweat] (jump): AHHH! SHE LIKED IT! THE FOAM WAS ACCEPTABLE!
 > Dango collapses sideways onto her cushion in tearful, overwhelmed relief.`),
 
     scene('Jessie · Acoustic Decibel Wars', 'Center Stage', `
@@ -396,17 +398,17 @@ Jessie [smug] (bow): Perfection. If the peasants' ears aren't ringing by intermi
 Cody: Dustpan's crooked.
 Dango [!] (jump): GYAAAAAAAH!
 > Dango leaps three feet into the air, tossing her broom like a spear. Cody catches it by the handle with one hand without flinching.
-Dango [sweat]: CODY! You CANNOT keep doing that! You walk like a ghost wrapped in iron! I almost threw my broom into your eye!
+Dango [sweat]: CODY! You CANNOT keep doing that! You walk like a shadow wrapped in iron! I almost hit your chin with the bristles!
 Cody: You'd miss. Your broom-throwing technique is terrible.
 Dango: Put a bell on your collar! Or rattle your chains! Give me a five-second warning before entering my personal breathing radius!
-Cody: I told you, the chains are fashion. If I wear a bell, how am I supposed to catch intruders sneaking through the service ducts?
-Dango: We don't HAVE intruders in the service ducts!
+Cody: I told you, the chains are fashion. If I wear a bell, how am I supposed to catch wandering Toons tracking mud across the threshold?
+Dango: We don't HAVE wandering Toons tracking mud!
 @enter Nugget center
 Nugget [note]: CODY! Look! I made you an artisanal heart-shaped ketchup packet for your tool belt!
 > Nugget proudly presents a red foil pouch folded into a lumpy little heart.
 Cody [dots]: ...
 Dango [smug]: Oh? What's this? The terrifying, stone-cold trap master is blushing?
-Cody [glare]: I'm not blushing. The lobby heater is too high.
+Cody [glare]: I'm not blushing. The lobby heater is set too high.
 Nugget: Put it next to your wrench, Cody! It'll keep you company while you forge bear-traps!
 Cody [dots]: ...Yeah. All right. Thanks, puppy. Into the pocket it goes.
 Dango [note]: Hehehe! So soft on the inside! Like sweet red bean paste!
@@ -418,9 +420,9 @@ Cody: Say another word about bean paste, Dango, and your broom goes into the bea
 @music ahCandy
 @enter Jessie right
 Jessie [!]: EMERGENCY! CODE CRIMSON! My five-hundred-dollar imported emerald silk vocal-preservation scarf has vanished!
-Jessie: Someone has committed high treason! Dango, fetch the police! Cody, seal the exits!
+Jessie: Someone has committed high treason! Dango, convene the royal tribunal! Cody, seal the exits!
 @enter Nugget left
-Nugget [note]: Good morning, Jessie! Did you have a nice nap?
+Nugget [note]: Good morning, Jessie! Did you have a nice rest?
 Jessie [glare]: Nugget! Did you touch my scarf?! It was sitting right on my dressing vanity!
 Nugget: The green shiny cloth? Oh yeah! I put it away for you!
 Jessie: Away? Away WHERE?!
