@@ -459,12 +459,12 @@ const StoryUI = {
   },
 
   /* ============================================================ VISUAL NOVEL */
-  playScene(i, chained) {
-    const n = MainStory.nodes[i], scene = ST_STORY[n.scene];
+  playScene(i, chained, external = null) {
+    const n = external ? {} : MainStory.nodes[i], scene = external ? external.scene : ST_STORY[n.scene];
     if (!scene) return;
     document.querySelectorAll('.ms-vn').forEach(x => x.remove());
     const lines = scene.script.trim().split('\n').map(x => x.trim()).filter(Boolean);
-    if (MainStory.ch === 3) [...scene.script.matchAll(/@horror (\w+)/g)].forEach(m => ST3_HORROR[m[1]] && stHorrorImage(m[1], ST3_HORROR[m[1]]));   // paint them while the scene plays
+    if (!external && MainStory.ch === 3) [...scene.script.matchAll(/@horror (\w+)/g)].forEach(m => ST3_HORROR[m[1]] && stHorrorImage(m[1], ST3_HORROR[m[1]]));   // paint them while the scene plays
     const vn = el('div', 'ms-vn');
     vn.innerHTML = `<div class="ms-vn-bg"></div><div class="ms-vn-bg2"></div><div class="ms-vn-stage"></div><div class="ms-vn-fx"></div>
       <div class="ms-vn-bar top"><span class="ms-vn-stampline"><b>JUNE 24, 2002</b> · <span class="ms-vn-time"></span> · <span class="ms-vn-place"></span></span></div>
@@ -472,6 +472,7 @@ const StoryUI = {
       <div class="ms-vn-bar bottom"><button data-vn="auto">Auto</button><button data-vn="log">Log</button><button data-vn="skip">Skip »</button></div>
       <div class="ms-vn-choice" hidden></div><div class="ms-vn-card"><span></span></div><div class="ms-vn-log" hidden><div class="ms-vn-log-in"></div><button data-vn="closelog">Close</button></div>
       <div class="ms-vn-title"><small class="ms-vn-t-date"></small><b class="ms-vn-t-time"></b><i></i><strong class="ms-vn-t-title"></strong><em class="ms-vn-t-place"></em></div>`;
+    if (external && external.className) vn.classList.add(external.className);
     document.body.appendChild(vn);
     this.overlay = true;
     const Q = sel => vn.querySelector(sel);
@@ -502,12 +503,12 @@ const StoryUI = {
       if (img) img.style.scale = (ST_ART_FACES_LEFT.has(c.who) ? -face : face) < 0 ? '-1 1' : '';
     };
     const enter = (who, slot) => {
-      const art = stPortrait(who); if (!art) return null;
+      const art = external && external.portrait ? external.portrait(who) : stPortrait(who); if (!art) return null;
       let c = cast[who];
       if (!c) {
         const present = Object.keys(cast);
         if (present.length >= 5) exit(present.sort((a, b) => (cast[a].talked || 0) - (cast[b].talked || 0))[0]);
-        const node = el('div', 'ms-bust' + (/^Twisted/.test(who) ? ' twisted' : '') + (ST_HANDLERS[who] ? ' handler' : '') + (ST_VN_ART[who] ? ' vnart' : ''));
+        const node = el('div', 'ms-bust' + (/^Twisted/.test(who) ? ' twisted' : '') + (ST_HANDLERS[who] ? ' handler' : '') + ((ST_VN_ART[who] || (external && external.portrait)) ? ' vnart' : ''));
         node.innerHTML = '<span class="ms-emote"></span>';
         stage.appendChild(node);
         c = cast[who] = { node, slot: slot || freeSlot(), who };
@@ -616,6 +617,8 @@ const StoryUI = {
       document.removeEventListener('keydown', key); picToken++;
       vn.classList.add('closing'); this.overlay = false;
       setTimeout(() => vn.remove(), 520);
+      // External event scenes share the renderer without granting main-story progress or rewards.
+      if (external) { external.onFinish(skipped); return; }
       const first = !MainStory.done(i);
       if (first) {
         const rew = MainStory.sceneReward(i);
@@ -672,14 +675,17 @@ const StoryUI = {
           else if (cmd === 'exitall') Object.keys(cast).forEach(exit);
           else if (cmd === 'fx') effect(arg);
           else if (cmd === 'sfx') Sound.play(arg, { vol: .5 });
-          else if (cmd === 'card') { log.push({ name: '', text: arg }); showCard(arg); return; }
-          else if (cmd === 'wait') { waiting = true; setTimeout(() => { waiting = false; step(); }, +arg || 600); return; }
+          else if (cmd === 'card') { if (external && at <= (external.startLine || 0)) continue; log.push({ name: '', text: arg }); showCard(arg); return; }
+          else if (cmd === 'wait') { if (external && at <= (external.startLine || 0)) continue; waiting = true; setTimeout(() => { waiting = false; step(); }, +arg || 600); return; }
           else if (cmd === 'choice') { showChoice(arg.split('|').map(x => x.trim())); return; }
           else if (cmd === 'image') showPicture(arg);
           else if (cmd === 'horror') showHorror(arg);
           else if (cmd === 'imgoff') hidePicture();
+          else if (external && external.onCommand) external.onCommand(cmd, arg, vn);
           continue;
         }
+        if (external && at <= (external.startLine || 0)) continue;
+        if (external && external.onProgress) external.onProgress(at - 1);
         Object.values(cast).forEach(c => c.node.classList.remove('talk'));
         if (line[0] === '>') {
           box.className = 'ms-vn-box narrate'; nameEl.textContent = ''; nameEl.style.removeProperty('--nc');
@@ -727,14 +733,15 @@ const StoryUI = {
       else if (e.key === 'Escape') { if (!logEl.hidden) logEl.hidden = true; else finish(true); }
     };
     document.addEventListener('keydown', key);
+    if (external) Q('[data-vn="skip"]').textContent = 'Leave';
     // Title card: date, time, title, place.
     const t = Q('.ms-vn-title');
     Q('.ms-vn-t-date').textContent = scene.date || (dated ? 'FIVE DAYS LATER' : 'JUNE 24, 2002');
     Q('.ms-vn-t-time').textContent = scene.date ? scene.time : dated ? 'JUNE 29' : scene.time;
     Q('.ms-vn-t-title').textContent = scene.title; Q('.ms-vn-t-place').textContent = scene.place;
     vn.classList.add('titling');
-    Sound.play('ticktock', { vol: .45 });
-    setTimeout(() => Sound.play('ult', { vol: .3 }), 700);
+    Sound.play(external ? 'ui_open' : 'ticktock', { vol: external ? .2 : .45 });
+    if (!external) setTimeout(() => Sound.play('ult', { vol: .3 }), 700);
     let titled = false;
     const endTitle = () => { if (titled) return; titled = true; vn.classList.remove('titling'); t.classList.add('gone'); setTimeout(step, 380); };
     setTimeout(endTitle, chained ? 2400 : 2900);

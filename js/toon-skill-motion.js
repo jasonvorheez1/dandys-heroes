@@ -55,6 +55,9 @@ const ToonSkillMotion = (() => {
     TenderheartSprout: 'beam toss yank clap rally',
     ShareBearCosmo:    'platter swirl mirror offer feast',
     Jessie:            'spotlight dodge broadcast pose encore',
+    Cody:              'trap slam pull guard lockdown',
+    Nugget:            'offer toppings charge guard protect',
+    Dango:             'bounce melt cheer float encore',
     Selena:            'swoop rush observe hover soar',
     Copper:            'guard rush glow glow rescue',
     Discard:           'stage glide broadcast rest encore'
@@ -71,13 +74,13 @@ const ToonSkillMotion = (() => {
     charm: 'glow', clean: 'tidy', coordinate: 'observe', craft: 'scavenge',
     discover: 'inspect', drowse: 'float', experiment: 'vial', finale: 'encore',
     hope: 'offer', hush: 'guard', inspire: 'cheer', knight: 'armor',
-    learn: 'study', legacy: 'spiral', memory: 'spiral', mend: 'wrap',
+    learn: 'study', legacy: 'spiral', lockdown: 'roots', memory: 'spiral', mend: 'wrap',
     mime: 'stage', overflow: 'basket', palette: 'decorate', pose: 'stage',
-    prism: 'flash', ratings: 'audience', ready: 'guard', remember: 'inspect',
+    prism: 'flash', protect: 'guard', pull: 'reach', ratings: 'audience', ready: 'guard', remember: 'inspect',
     rescue: 'charge', resolve: 'guard', rest: 'float', rise: 'bounce',
     roll: 'charge', shape: 'melt', show: 'stage', shrug: 'guard',
     smile: 'offer', solve: 'inspect', stalk: 'hunt', surprise: 'toss',
-    tether: 'reach', trap: 'roots', ward: 'guard', windup: 'rhythm'
+    tether: 'reach', toppings: 'decorate', trap: 'roots', ward: 'guard', windup: 'rhythm'
   };
   const clamp = n => Math.max(0, Math.min(1, n));
   const bell = (p, a = 0, b = 1) => Math.sin(Math.PI * clamp((p - a) / (b - a)));

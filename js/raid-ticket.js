@@ -114,7 +114,7 @@ Object.assign(Screens, {
     this.startRaidTicketRun({
       title: 'Event Raid Ticket', label, amount, opts,
       runOne: () => RaidTicket.runEvent(ev, stage, team),
-      ctx: { currencyIcon: Raid.currencyIcon(ev), currencyName: ev.isQOM ? 'Backstage Passes' : ev.isPhantasia ? 'Wish Coins' : ev.isUnknownWorld ? 'Gears' : 'Event Tokens' },
+      ctx: { currencyIcon: Raid.currencyIcon(ev), currencyName: ev.isQOM ? 'Backstage Passes' : ev.isPhantasia ? 'Wish Coins' : ev.isUnknownWorld ? 'Gears' : ev.isDWModded ? 'Golden Tapes' : 'Event Tokens' },
       again: (n, o) => this.raidTicketFight(ev, stage, team, n, o)
     });
   },
