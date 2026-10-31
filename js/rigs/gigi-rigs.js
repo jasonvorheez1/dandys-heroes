@@ -373,7 +373,7 @@ const GigiRigs = (() => {
       const id = `gigi-model-${++nextId}`;
       const svg = node('svg', { viewBox: '0 0 260 372', class: 'rig-svg', 'aria-hidden': 'true' }, host);
       const defs = node('defs', {}, svg);
-      const url = (typeof ASSET === 'string' ? ASSET : './') + 'Characters/Gigi/Gigi.png';
+      const url = (typeof ASSET === 'string' ? ASSET : './') + 'assets/toon-art/Gigi/Gigi.png';
       const piece = (name, path, parent) => {
         const clip = `${id}-${name}`;
         node('path', { d: path }, node('clipPath', { id: clip, clipPathUnits: 'userSpaceOnUse' }, defs));

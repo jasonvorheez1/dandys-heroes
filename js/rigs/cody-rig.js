@@ -4,7 +4,7 @@ var CodyRig=(()=>{
  const NS='http://www.w3.org/2000/svg';
  function create(host,options={}){
   const d=window.CODY_RIG_DATA,by=Object.fromEntries(d.parts.map(p=>[p.name,p]));
-  const base=options.assetBase||(typeof ASSET==='string'?ASSET+'Characters/Cody/':'Characters/Cody/');
+  const base=options.assetBase||(typeof ASSET==='string'?ASSET+'assets/toon-art/Cody/':'assets/toon-art/Cody/');
   const node=(tag,attrs,parent)=>{const e=document.createElementNS(NS,tag);for(const k in attrs)e.setAttribute(k,attrs[k]);parent?.appendChild(e);return e;};
   const svg=node('svg',{viewBox:'0 0 206 364',class:'rig-svg','aria-label':'Cody'},host);svg.style.cssText='display:block;width:100%;height:100%;overflow:visible';
   const root=node('g',{},svg),groups={root},springs={};

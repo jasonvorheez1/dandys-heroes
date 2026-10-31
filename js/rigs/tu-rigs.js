@@ -464,7 +464,7 @@ var ToonsUniverseRigs = (() => {
         { name: 'head',  pivot: [168, 228], src: 'parts/head.png' }
       ]
     };
-    const base = options.assetBase || (typeof ASSET === 'string' ? ASSET : '') + 'Characters/Selena/';
+    const base = options.assetBase || (typeof ASSET === 'string' ? ASSET : '') + 'assets/toon-art/Selena/';
     const svg = document.createElementNS(NS, 'svg');
     svg.setAttribute('viewBox', '72 68 195 398');
     svg.style.cssText = 'display:block;width:100%;height:100%;overflow:visible';
@@ -877,7 +877,7 @@ var ToonsUniverseRigs = (() => {
         { name: 'armL',  pivot: [372, 236], src: 'parts/armL.png' }
       ]
     };
-    const base = options.assetBase || (typeof ASSET === 'string' ? ASSET : '') + 'Characters/Discard/';
+    const base = options.assetBase || (typeof ASSET === 'string' ? ASSET : '') + 'assets/toon-art/Discard/';
     const svg = document.createElementNS(NS, 'svg');
     svg.setAttribute('viewBox', '65 15 445 675');
     svg.style.cssText = 'display:block;width:100%;height:100%;overflow:visible';
@@ -1238,7 +1238,7 @@ var ToonsUniverseRigs = (() => {
         { name: 'flame', pivot: [414, 112], src: 'parts/flame.png' }
       ]
     };
-    const base = options.assetBase || (typeof ASSET === 'string' ? ASSET : '') + 'Characters/Copper/';
+    const base = options.assetBase || (typeof ASSET === 'string' ? ASSET : '') + 'assets/toon-art/Copper/';
     const svg = document.createElementNS(NS, 'svg');
     svg.setAttribute('viewBox', '260 20 840 1335');
     svg.setAttribute('aria-label', 'Copper');

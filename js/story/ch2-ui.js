@@ -3,7 +3,7 @@
 'use strict';
 
 Object.assign(ST_VN_ART, {
-  Cody:'Characters/Cody/vn.webp', Jessie:'Characters/Jessie/vn.webp', Dango:'Characters/Dango/vn.webp', Nugget:'Characters/Nugget/vn.webp',
+  Cody:'assets/toon-art/Cody/vn.webp', Jessie:'assets/toon-art/Jessie/vn.webp', Dango:'assets/toon-art/Dango/vn.webp', Nugget:'assets/toon-art/Nugget/vn.webp',
   Tisha: 'uploads/tishavnportrait.webp', Rodger: 'uploads/rodgervnportrait.webp', Dyle: 'uploads/dylevnportrait.webp',
   Scraps: 'uploads/scraps-vn.png', Rudie: 'uploads/rudievnportrait.webp', Coal: 'uploads/coalvnportrait.webp',
   Connie: 'uploads/connievnportrait.webp', Boxten: 'uploads/boxtenvnportrait.webp',

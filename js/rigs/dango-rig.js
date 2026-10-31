@@ -5,7 +5,7 @@
   function create(host, options={}) {
     const data=window.DANGO_RIG_DATA;
     if(!data) throw new Error('Load rig-data.js before creating DangoRig.');
-    const base=options.assetBase || (typeof ASSET==='string'?ASSET+'Characters/Dango/':'./');
+    const base=options.assetBase || (typeof ASSET==='string'?ASSET+'assets/toon-art/Dango/':'./');
     const make=(tag,attrs,parent)=>{
       const e=document.createElementNS(NS,tag);
       Object.entries(attrs||{}).forEach(([k,v])=>e.setAttribute(k,v));

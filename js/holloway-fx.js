@@ -70,7 +70,7 @@
     },
     mrsHollowayApparition(x, y) {
       if (!canShow(this)) return;
-      const art = 'Characters/MrsHolloway/MrsHolloway.png';
+      const art = 'assets/toon-art/MrsHolloway/MrsHolloway.png';
       const node = place(this, 'hfx-apparition', x, y - 80, 180, 210,
         `<i class="hfx-apparition-halo">${spiral}</i><img src="${art}" alt=""><i class="hfx-apparition-eye"></i>`);
       expire(node, 1450);

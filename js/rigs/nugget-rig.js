@@ -2,7 +2,7 @@
 var NuggetRig=(()=>{
  const NS='http://www.w3.org/2000/svg';
  function create(host,options={}){
-  const d=window.NUGGET_RIG_DATA,by=Object.fromEntries(d.parts.map(p=>[p.name,p])),base=options.assetBase||(typeof ASSET==='string'?ASSET+'Characters/Nugget/':'Characters/Nugget/');
+  const d=window.NUGGET_RIG_DATA,by=Object.fromEntries(d.parts.map(p=>[p.name,p])),base=options.assetBase||(typeof ASSET==='string'?ASSET+'assets/toon-art/Nugget/':'assets/toon-art/Nugget/');
   const node=(tag,a,p)=>{const n=document.createElementNS(NS,tag);for(const k in a)n.setAttribute(k,a[k]);p?.appendChild(n);return n;};
   const svg=node('svg',{viewBox:'0 0 188 332',class:'rig-svg','aria-label':'Nugget'},host);svg.style.cssText='display:block;width:100%;height:100%;overflow:visible';
   const root=node('g',{},svg),groups={root},springs={};

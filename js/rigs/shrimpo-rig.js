@@ -38,7 +38,7 @@ const ShrimpoRig = (() => {
       const id = `shrimpo-rig-${++nextId}`;
       const svg = node('svg', { viewBox: '0 0 466 614', class: 'rig-svg', 'aria-hidden': 'true' }, host);
       const defs = node('defs', {}, svg);
-      const src = (typeof ASSET === 'string' ? ASSET : './') + 'Characters/Shrimpo/Shrimpo.png';
+      const src = (typeof ASSET === 'string' ? ASSET : './') + 'assets/toon-art/Shrimpo/Shrimpo.png';
       const faceMaskId = `${id}-face-mask`;
       const faceMask = node('mask', { id: faceMaskId, x: 0, y: 0, width: 466, height: 614,
         maskUnits: 'userSpaceOnUse', style: 'mask-type:alpha' }, defs);

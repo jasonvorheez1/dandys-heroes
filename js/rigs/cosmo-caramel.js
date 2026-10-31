@@ -4,7 +4,7 @@
 
 const CARAMEL_DRIZZLE = {
   id: 'caramel-drizzle', name: 'Caramel Drizzle',
-  art: 'Characters/Cosmo/cosmo-caramel-drizzle.png',
+  art: 'assets/toon-art/Cosmo/cosmo-caramel-drizzle.png',
   description: 'A caramel dipped look for Cosmo. Clear Toy Workshop on Hard to unlock.',
   get available() { return MainStory.withCh(2, () => MainStory.hardDone('k10')); }
 };

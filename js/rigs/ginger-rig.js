@@ -38,7 +38,7 @@ const GingerRig = (() => {
       const id = `ginger-rig-${++nextId}`;
       const svg = node('svg', { viewBox: '0 0 175 363', class: 'rig-svg', 'aria-hidden': 'true' }, host);
       const defs = node('defs', {}, svg);
-      const src = (typeof ASSET === 'string' ? ASSET : './') + 'Characters/Ginger/Ginger.png';
+      const src = (typeof ASSET === 'string' ? ASSET : './') + 'assets/toon-art/Ginger/Ginger.png';
       const piece = (name, path, parent) => {
         const clipId = `${id}-${name}`;
         node('path', { d: path }, node('clipPath', { id: clipId, clipPathUnits: 'userSpaceOnUse' }, defs));

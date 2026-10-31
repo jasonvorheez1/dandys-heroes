@@ -38,7 +38,7 @@ const CocoaRig = (() => {
       const id = `cocoa-rig-${++serial}`;
       const svg = node('svg', { viewBox: '0 0 380 348', class: 'rig-svg', 'aria-hidden': 'true' }, host);
       const defs = node('defs', {}, svg);
-      const src = (typeof ASSET === 'string' ? ASSET : './') + 'Characters/Cocoa/Cocoa.png';
+      const src = (typeof ASSET === 'string' ? ASSET : './') + 'assets/toon-art/Cocoa/Cocoa.png';
       const cut = (name, d, parent) => {
         const cid = `${id}-${name}`;
         node('path', { d }, node('clipPath', { id: cid, clipPathUnits: 'userSpaceOnUse' }, defs));

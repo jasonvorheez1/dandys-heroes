@@ -31,7 +31,7 @@ const BobetteRig = (() => {
       const key = `bobette-${++id}`;
       const svg = n('svg', { viewBox: '0 0 251 406', class: 'rig-svg', 'aria-hidden': 'true' }, host);
       const defs = n('defs', {}, svg);
-      const url = (typeof ASSET === 'string' ? ASSET : './') + 'Characters/Bobette/Bobette.png';
+      const url = (typeof ASSET === 'string' ? ASSET : './') + 'assets/toon-art/Bobette/Bobette.png';
       const piece = (name, path, parent) => {
         const clip = `${key}-${name}`;
         n('path', { d: path }, n('clipPath', { id: clip, clipPathUnits: 'userSpaceOnUse' }, defs));

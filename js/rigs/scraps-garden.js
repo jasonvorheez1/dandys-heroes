@@ -4,8 +4,8 @@
 
 const GARDEN_BOUQUET = {
   id: 'garden-bouquet', name: 'Garden Bouquet',
-  art: 'Characters/scraps/scraps-garden-portrait.png',
-  battleArt: 'Characters/scraps/scraps-garden-still.png',
+  art: 'assets/toon-art/scraps/scraps-garden-portrait.png',
+  battleArt: 'assets/toon-art/scraps/scraps-garden-still.png',
   description: 'A flower crown, petal dress and leafy paws for Scraps. Clear Hall of Mirrors on Hard to unlock.',
   get available() { return MainStory.withCh(2, () => MainStory.hardDone('k7')); }
 };
@@ -41,7 +41,7 @@ const ScrapsGarden = { pending: undefined };
 
 /* Same atlas layout as scraps-rig.png, recolored and decorated (flower crown, leaf ears,
    green paws, coral petal dress), so every joint and animation is Scraps' own. */
-const GARDEN_ATLAS = 'Characters/scraps/scraps-garden-rig.png';
+const GARDEN_ATLAS = 'assets/toon-art/scraps/scraps-garden-rig.png';
 
 function gardenRig(rig) {
   const R = rig.R;

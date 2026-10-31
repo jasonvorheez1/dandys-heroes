@@ -1,12 +1,12 @@
-/* sprout-rig.js - Sprout's battle sprite (Characters/Sprout/Sprout.png) cut into head, leaf, scarf, torso,
-   arms and legs (Characters/Sprout/sprout-rig.png) and driven by the shared PuppetRig framework (puppet.js). */
+/* sprout-rig.js - Sprout's battle sprite (assets/toon-art/Sprout/Sprout.png) cut into head, leaf, scarf, torso,
+   arms and legs (assets/toon-art/Sprout/sprout-rig.png) and driven by the shared PuppetRig framework (puppet.js). */
 'use strict';
 
 /* ============================================================ SPROUT
    An anxious little baker: overprotective, always scanning for who needs a treat, wringing his
    hands, hopping to the rescue. Hand-me-down keywords: fret, offer, scurry. */
 const SproutRig = PuppetRig.define({
-  img: 'Characters/Sprout/sprout-rig.png', sourceFace: 'Characters/Sprout/Sprout.png', atlas: [684, 153], vb: [291, 414],
+  img: 'assets/toon-art/Sprout/sprout-rig.png', sourceFace: 'assets/toon-art/Sprout/Sprout.png', atlas: [684, 153], vb: [291, 414],
   pieces: {"legB":[4,4,40,122,139,280],"legF":[52,4,28,122,120,280],"torso":[88,4,57,103,115,216],"armLu":[153,4,45,68,81,230],"armLf":[206,4,60,60,61,286],"armR":[274,4,44,58,172,260],"scarf":[326,4,69,51,109,198],"head":[403,4,141,145,69,70],"leaf":[552,4,128,95,86,16]},
   faceOn: 'head', ground: 402, waist: [143, 300], crouchDrop: 7, tempo: .7, beatRate: 4.4,
   walkFreq: [1.9, 2.2], lookGap: [.4, 1.5], lookX: [-.9, 1], blinkGap: [1.6, 4],

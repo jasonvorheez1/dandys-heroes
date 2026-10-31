@@ -39,7 +39,7 @@ const FinnRig = (() => {
       const id = `finn-rig-${++serial}`;
       const svg = node('svg', { viewBox: '0 0 248 352', class: 'rig-svg', 'aria-hidden': 'true' }, host);
       const defs = node('defs', {}, svg);
-      const source = (typeof ASSET === 'string' ? ASSET : './') + 'Characters/Finn/Finn.png';
+      const source = (typeof ASSET === 'string' ? ASSET : './') + 'assets/toon-art/Finn/Finn.png';
       const cut = (name, d, parent) => {
         const clip = `${id}-${name}`;
         node('path', { d }, node('clipPath', { id: clip, clipPathUnits: 'userSpaceOnUse' }, defs));

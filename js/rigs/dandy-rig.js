@@ -42,7 +42,7 @@ const DandyRig = (() => {
       const id = `dandy-rig-${++nextId}`;
       const svg = node('svg', { viewBox: '0 0 268 371', class: 'rig-svg', 'aria-hidden': 'true' }, host);
       const defs = node('defs', {}, svg);
-      const src = (typeof ASSET === 'string' ? ASSET : './') + 'Characters/Dandy/Dandy.png';
+      const src = (typeof ASSET === 'string' ? ASSET : './') + 'assets/toon-art/Dandy/Dandy.png';
       const piece = (name, path, parent) => {
         const clipId = `${id}-${name}`;
         node('path', { d: path }, node('clipPath', { id: clipId, clipPathUnits: 'userSpaceOnUse' }, defs));

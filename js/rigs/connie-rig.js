@@ -36,7 +36,7 @@ const ConnieRig = (() => {
       const id = `connie-rig-${++serial}`;
       const svg = node('svg', { viewBox: '0 0 267 328', class: 'rig-svg', 'aria-hidden': 'true' }, host);
       const defs = node('defs', {}, svg);
-      const src = (typeof ASSET === 'string' ? ASSET : './') + 'Characters/Connie/Connie.png';
+      const src = (typeof ASSET === 'string' ? ASSET : './') + 'assets/toon-art/Connie/Connie.png';
       const cut = (name, d, parent) => {
         const cid = `${id}-${name}`;
         node('path', { d }, node('clipPath', { id: cid, clipPathUnits: 'userSpaceOnUse' }, defs));

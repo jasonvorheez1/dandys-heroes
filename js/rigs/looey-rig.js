@@ -38,7 +38,7 @@ const LooeyRig = (() => {
       const id = this.id = `looey-rig-${++serial}`;
       const svg = node('svg', { viewBox: '0 0 291 459', class: 'rig-svg', 'aria-hidden': 'true' }, host);
       const defs = node('defs', {}, svg);
-      const src = (typeof ASSET === 'string' ? ASSET : './') + 'Characters/Looey/Looey.png';
+      const src = (typeof ASSET === 'string' ? ASSET : './') + 'assets/toon-art/Looey/Looey.png';
       const cut = (name, d, parent) => {
         const cid = `${id}-${name}`;
         node('path', { d }, node('clipPath', { id: cid, clipPathUnits: 'userSpaceOnUse' }, defs));

@@ -41,7 +41,7 @@ const RudieRig = (() => {
       const id = `rudie-rig-${++nextId}`;
       const svg = node('svg', { viewBox: '0 0 267 398', class: 'rig-svg', 'aria-hidden': 'true' }, host);
       const defs = node('defs', {}, svg);
-      const src = (typeof ASSET === 'string' ? ASSET : './') + 'Characters/Rudie/Rudie.png';
+      const src = (typeof ASSET === 'string' ? ASSET : './') + 'assets/toon-art/Rudie/Rudie.png';
       const piece = (name, path, parent) => {
         const clipId = `${id}-${name}`;
         node('path', { d: path }, node('clipPath', { id: clipId, clipPathUnits: 'userSpaceOnUse' }, defs));

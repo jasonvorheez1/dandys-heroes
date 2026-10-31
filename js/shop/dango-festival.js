@@ -110,10 +110,10 @@ const DangoShop = (()=>{
   function buy(id,currency='ichor'){const o=offers.find(x=>x.id===id);if(!o||!spend(currency,price(o)))return false;
     if(o.hero)Save.giveShards(o.hero,o.amount);else if(o.trinket)Save.addTrinketCopy(o.trinket,1);else Save.give(o.gain,true,{exact:true});Save.write();UI.refreshBar(true);return true;}
   function upgrade(currency='ichor'){const f=DangoFestival.state(),cost=300+150*f.level;if(f.level>=5||!spend(currency,cost))return false;f.level++;Save.write();return true;}
-  function mount(host,root){if(Save.data.opt?.animatedChars===true&&window.DangoRig){const rig=window.DangoRig.create(host,{assetBase:ASSET+'Characters/Dango/'});let running=true,frame,last=0;
+  function mount(host,root){if(Save.data.opt?.animatedChars===true&&window.DangoRig){const rig=window.DangoRig.create(host,{assetBase:ASSET+'assets/toon-art/Dango/'});let running=true,frame,last=0;
       function tick(now){if(!running||!root.isConnected)return;rig.update({animState:'idle'},Math.min(.04,(now-last)/1000||.016));last=now;frame=requestAnimationFrame(tick);}frame=requestAnimationFrame(tick);
       return {destroy(){running=false;cancelAnimationFrame(frame);rig.destroy();}};}
-    const img=document.createElement('img');img.src=ASSET+'Characters/Dango/vn.webp';img.alt='Dango';img.className='market-keeper-still';host.appendChild(img);return {destroy(){host.replaceChildren();}};}
+    const img=document.createElement('img');img.src=ASSET+'assets/toon-art/Dango/vn.webp';img.alt='Dango';img.className='market-keeper-still';host.appendChild(img);return {destroy(){host.replaceChildren();}};}
   function enter(){Screens.shopKeeper='dango';Screens.go('shop');}
   function render(s){Screens._shopRig?.destroy();Screens._shopRig=null;clearInterval(Screens._shopTalkTimer);clearInterval(Screens._shopClock);clearTimeout(Screens._shopStartTimer);clearTimeout(Screens._shopEntranceTimer);
     const f=DangoFestival.state(),tab=Screens.dangoShopTab||'supplies',root=el('div','shop-screen market market-dango');root.dataset.keeper='dango';

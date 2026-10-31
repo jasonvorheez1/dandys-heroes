@@ -39,7 +39,7 @@ const VeeRig = (() => {
       const id = `vee-rig-${++nextId}`;
       const svg = node('svg', { viewBox: '0 0 307 454', class: 'rig-svg', 'aria-hidden': 'true' }, host);
       const defs = node('defs', {}, svg);
-      const src = (typeof ASSET === 'string' ? ASSET : './') + 'Characters/Vee/Vee.png';
+      const src = (typeof ASSET === 'string' ? ASSET : './') + 'assets/toon-art/Vee/Vee.png';
       const piece = (name, path, parent) => {
         const clipId = `${id}-${name}`;
         node('path', { d: path }, node('clipPath', { id: clipId, clipPathUnits: 'userSpaceOnUse' }, defs));

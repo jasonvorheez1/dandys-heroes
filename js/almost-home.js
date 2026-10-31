@@ -459,7 +459,7 @@ Jessie [note]: Yes, yes, I'm a benevolent monarch. Now fetch me tea before I fai
   }
 
   function art(id) {
-    return ['Dango', 'Cody', 'Nugget'].includes(id) ? `Characters/${id}/vn.webp` : Art.hero(id);
+    return ['Dango', 'Cody', 'Nugget'].includes(id) ? `assets/toon-art/${id}/vn.webp` : Art.hero(id);
   }
 
   function button(text, fn, cls = '') {
@@ -484,7 +484,7 @@ Jessie [note]: Yes, yes, I'm a benevolent monarch. Now fetch me tea before I fai
       onCommand: dressScene,
       onDispose: stopCut,
       startLine: start,
-      portrait: id => cast.includes(id) ? ASSET + `Characters/${id}/vn.webp` : stPortrait(id),
+      portrait: id => cast.includes(id) ? ASSET + `assets/toon-art/${id}/vn.webp` : stPortrait(id),
       onProgress: line => {
         if (!extra) { state().bookmark = { index, line }; Save.write(); }
       },

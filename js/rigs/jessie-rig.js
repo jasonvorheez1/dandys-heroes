@@ -13,7 +13,7 @@ var JessieRig = (function () {
   var NS = 'http://www.w3.org/2000/svg';
   var XLINK = 'http://www.w3.org/1999/xlink';
 
-  var SHEET = 'Characters/Jessie/jessie-rig.png';
+  var SHEET = 'assets/toon-art/Jessie/jessie-rig.png';
   var SW = 1024, SH = 620;
   var VW = 460, VH = 500;
 

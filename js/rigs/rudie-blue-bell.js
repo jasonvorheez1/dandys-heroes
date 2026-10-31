@@ -4,7 +4,7 @@
 
 const BLUE_BELL = {
   id: 'blue-bell', name: 'Blue bell',
-  art: 'Characters/Rudie/rudie-blue-bell.png',
+  art: 'assets/toon-art/Rudie/rudie-blue-bell.png',
   description: 'A blue-nosed look for Rudie. Clear The Reserve on Hard to unlock.',
   get available() { return MainStory.withCh(2, () => MainStory.hardDone('k11')); }
 };

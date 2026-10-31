@@ -106,9 +106,9 @@ const ST2_SHOP = [
 ];
 const ST2_SHOP_CAP = 9;
 const ST2_SKINS = {
-  Scraps: { node: 'k7', id: 'garden-bouquet', name: 'Garden Bouquet', art: 'Characters/scraps/scraps-garden-portrait.png' },
-  Cosmo: { node: 'k10', id: 'caramel-drizzle', name: 'Caramel Drizzle', art: 'Characters/Cosmo/cosmo-caramel-drizzle.png' },
-  Rudie: { node: 'k11', id: 'blue-bell', name: 'Blue bell', art: 'Characters/Rudie/rudie-blue-bell.png' }
+  Scraps: { node: 'k7', id: 'garden-bouquet', name: 'Garden Bouquet', art: 'assets/toon-art/scraps/scraps-garden-portrait.png' },
+  Cosmo: { node: 'k10', id: 'caramel-drizzle', name: 'Caramel Drizzle', art: 'assets/toon-art/Cosmo/cosmo-caramel-drizzle.png' },
+  Rudie: { node: 'k11', id: 'blue-bell', name: 'Blue bell', art: 'assets/toon-art/Rudie/rudie-blue-bell.png' }
 };
 const ST2_DANDY_LINES = [
   'Everything has a price. That is not a threat, it is a policy.',
