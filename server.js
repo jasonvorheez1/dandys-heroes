@@ -271,7 +271,15 @@ export default {
         ? env.DB.prepare(select + ' WHERE d.user_id != ? ORDER BY d.updated_at_ms DESC LIMIT 40').bind(viewerId)
         : env.DB.prepare(select + ' ORDER BY d.updated_at_ms DESC LIMIT 40');
       const { results } = await query.all();
-      return Response.json({ defenses: results.map(parseDefense).filter(Boolean) });
+      // The viewer's own published defense is returned separately so it never
+      // shows up in (or vanishes from) the list of other players' teams.
+      let mine = null;
+      if (viewerId) {
+        const own = await env.DB.prepare(select + ' WHERE d.user_id = ?').bind(viewerId).all();
+        mine = own.results && own.results[0] ? parseDefense(own.results[0]) : null;
+      }
+      return Response.json({ defenses: results.map(parseDefense).filter(Boolean), mine, viewerId: viewerId || null },
+        { headers: { 'cache-control': 'no-store' } });
     }
 
     if (url.pathname === '/api/arena/defense') {
@@ -345,6 +353,60 @@ export default {
       return Response.json({
         week, mode, total: Number(totalRow && totalRow.n) || 0, you,
         top: top.results.map((row, i) => ({ rank: i + 1, username: cleanText(row.username, 64) || 'Player', score: Number(row.score) || 0, you: !!viewerId && row.user_id === viewerId }))
+      }, { headers: { 'cache-control': 'no-store' } });
+    }
+
+    // Public picture-book profile: only the profile page fields and a few
+    // headline stats are read from the player's cloud save.
+    if (url.pathname === '/api/profile') {
+      if (request.method !== 'GET') return jsonError('Method not allowed', 405);
+      const name = cleanText(url.searchParams.get('u'), 64);
+      if (!name) return jsonError('Username required', 400);
+      await env.DB.exec(SAVE_TABLE);
+      const row = await env.DB
+        .prepare('SELECT user_id, username, save_json, mastery, heroes, deepest_floor FROM dandys_heroes_saves WHERE username = ? COLLATE NOCASE LIMIT 1')
+        .bind(name).first();
+      let save = null;
+      try { save = row && JSON.parse(row.save_json); } catch (_) { save = null; }
+      if (!save || isFullTestSave(save)) return Response.json({ profile: null, username: name }, { headers: { 'cache-control': 'no-store' } });
+      const p = save.profile && typeof save.profile === 'object' ? save.profile : {};
+      const book = p.book && typeof p.book === 'object' ? p.book : {};
+      const ids = list => (Array.isArray(list) ? list : []).filter(id => typeof id === 'string').map(id => id.slice(0, 64));
+      const favorites = ids(p.favorites && p.favorites.heroes).slice(0, 6);
+      const feature = typeof book.feature === 'string' ? book.feature.slice(0, 64) : '';
+      const toons = {};
+      [feature, ...favorites].forEach(id => {
+        const h = id && save.heroes && save.heroes[id];
+        if (h && typeof h === 'object') toons[id] = { level: cleanNumber(h.level, 1, 9999, 1), rarity: cleanNumber(h.rarity, 1, 6, 1), costume: typeof h.costume === 'string' ? h.costume.slice(0, 64) : null };
+      });
+      const stickers = (Array.isArray(book.stickers) ? book.stickers : []).slice(0, 12).map(s => s && typeof s === 'object' ? {
+        p: cleanNumber(s.p, 0, 9, 0), k: cleanText(s.k, 2), v: cleanText(s.v, 64),
+        x: cleanNumber(s.x, 0, 100, 50), y: cleanNumber(s.y, 0, 100, 50), r: cleanNumber(s.r, -180, 180, 0), s: cleanNumber(s.s, 40, 260, 100)
+      } : null).filter(Boolean);
+      return Response.json({
+        username: cleanText(row.username, 64) || name,
+        you: request.headers.get('x-websim-user-id') === row.user_id,
+        profile: {
+          name: cleanText(p.name, 24),
+          tagline: cleanText(p.tagline, 90),
+          icon: p.icon && typeof p.icon === 'object' ? { kind: cleanText(p.icon.kind, 16), id: cleanText(p.icon.id, 64) } : null,
+          favorites: { heroes: favorites },
+          featuredAchievements: ids(p.featuredAchievements).slice(0, 3),
+          book: {
+            theme: cleanText(book.theme, 32), banner: cleanText(book.banner, 32), bg: cleanText(book.bg, 32),
+            music: cleanText(book.music, 48), title: cleanText(book.title, 72), feature,
+            favTwisted: cleanText(book.favTwisted, 64), favTrinket: cleanText(book.favTrinket, 64),
+            panel: book.panel === 'stickers' ? 'stickers' : 'stats',
+            sheet: ids(book.sheet).slice(0, 6), stickers
+          }
+        },
+        toons,
+        stats: {
+          mastery: cleanNumber(row.mastery, 0, 100000, 0),
+          heroes: cleanNumber(row.heroes, 0, 100000, 0),
+          bestFloor: cleanNumber(row.deepest_floor, 0, 100000000, 0),
+          arenaWins: cleanNumber(save.arena && save.arena.wins, 0, 100000000, 0)
+        }
       }, { headers: { 'cache-control': 'no-store' } });
     }
 

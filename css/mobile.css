@@ -1,0 +1,27 @@
+/* Touch-friendly layer: larger tap targets, no accidental zoom/selection, safe areas. */
+html, body { overscroll-behavior: none; -webkit-text-size-adjust: 100%; }
+button, [role="button"], [data-nav], .res, select, input[type="checkbox"], input[type="range"] {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+#app, #battle, #launcher, #modal, #navbar, #topbar, #battleHud {
+  -webkit-user-select: none; user-select: none; -webkit-touch-callout: none;
+}
+input, textarea { font-size: 16px; -webkit-user-select: text; user-select: text; } /* stops iOS focus-zoom */
+
+@media (pointer: coarse), (max-width: 500px) {
+  /* safe areas for notches / home indicator */
+  #topbar { padding-top: max(env(safe-area-inset-top), 4px); padding-left: max(env(safe-area-inset-left), 6px); padding-right: max(env(safe-area-inset-right), 6px); }
+  #navbar { padding-bottom: env(safe-area-inset-bottom); }
+  #battleHud { padding-bottom: env(safe-area-inset-bottom); }
+
+  /* minimum ~44px touch targets */
+  #navbar button { min-height: 52px; }
+  #hudBtns { gap: 8px; }
+  #hudBtns button { min-width: 44px; min-height: 44px; }
+  .profile-btn { min-height: 44px; }
+  #modalBox button, .launcher-actions button { min-height: 44px; }
+  #modalBox { max-height: calc(100dvh - 24px); overflow-y: auto; -webkit-overflow-scrolling: touch; }
+  #screen { -webkit-overflow-scrolling: touch; overscroll-behavior-y: contain; }
+  #allyDock button, #allyDock [role="button"] { min-height: 44px; }
+}

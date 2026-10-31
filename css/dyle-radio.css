@@ -1,4 +1,4 @@
-.market-dyle .market-departments{grid-template-columns:repeat(3,minmax(0,1fr))}
+.market-dyle .market-departments{grid-template-columns:repeat(4,minmax(0,1fr))}
 .dyle-radio-list{display:grid;gap:10px}
 .dyle-radio-card{display:grid;grid-template-columns:46px minmax(0,1fr);gap:10px;align-items:center;padding:12px;color:#f6f2fa;background:#2d2a31;border:2px solid #756b7e;border-radius:12px;box-shadow:0 3px 0 #0008}
 .dyle-radio-card.owned{border-color:#a996c1}
@@ -9,3 +9,12 @@
 .dyle-radio-copy>span{color:#d0c8d6;font-size:11px}
 .dyle-radio-action{grid-column:1/-1;margin-top:2px}
 @media(min-width:600px){.dyle-radio-list{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.dyle-sticker-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(132px,1fr));gap:10px}
+.dyle-sticker-card{display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 10px 10px;color:#f6f2fa;background:#2d2a31;border:2px solid #756b7e;border-radius:12px;box-shadow:0 3px 0 #0008;text-align:center}
+.dyle-sticker-card>img{width:84px;height:84px;object-fit:contain;filter:drop-shadow(0 3px 4px #0008);transform:rotate(-4deg)}
+.dyle-sticker-card:nth-child(even)>img{transform:rotate(4deg)}
+.dyle-sticker-card b{min-height:2.4em;display:grid;place-items:center;font-size:13px;line-height:1.2}
+.dyle-sticker-card.owned{border-color:#a996c1}
+.dyle-sticker-card.locked>img{filter:grayscale(1) brightness(.5)}
+.dyle-sticker-action{width:100%;display:flex;align-items:center;justify-content:center;gap:4px}
+.dyle-sticker-action .currency-icon{width:16px;height:16px}

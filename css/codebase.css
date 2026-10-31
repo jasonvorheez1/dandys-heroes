@@ -7,3 +7,8 @@
 .codebase-card:disabled,.codebase-enter:disabled{opacity:.52}
 .trials-beginner>.codebase-card,.trials-screen>.codebase-card{width:min(172px,60vw);margin:4px auto 12px;height:340px}
 .codebase-battle-hud small+small{margin-top:1px;color:#ffe3a2}
+.codebase-tiers{display:flex;gap:4px;justify-content:center;margin-bottom:5px}
+.codebase-tiers button{flex:1;min-width:0;padding:4px 0;border:2px solid #0b1112;border-radius:7px;background:#251a3b;color:#cbbfe3;font:inherit;font-size:10px;font-weight:900}
+.codebase-tiers button.on{background:var(--tier);color:#1a1226;box-shadow:0 0 0 2px #fff6}
+.codebase-tiers button:disabled{opacity:.45}
+.trials-beginner>.codebase-card,.trials-screen>.codebase-card{height:392px}

@@ -69,8 +69,11 @@ const ShopKeepers = (() => {
     if (dyle) svg.setAttribute('viewBox', '20 0 260 355');
     const face = dyle ? dyleFace(rig) : null;
     let mood = dyle ? 'thoughtful' : 'happy', running = true, frame = 0, last = 0, t = 0;
+    // Phones animate the shopkeeper at 30 FPS; an idle SVG rig does not need 120.
+    const minFrameMs = document.documentElement.classList.contains('touch-device') ? 32 : 0;
     function update(now) {
       if (!running || !root.isConnected) return;
+      if (minFrameMs && last && now - last < minFrameMs) { frame = requestAnimationFrame(update); return; }
       const dt = Math.min(.04, (now-last)/1000 || .016); last = now;
       const reduced = typeof Accessibility !== 'undefined' && Accessibility.enabled();
       if (!document.hidden) {

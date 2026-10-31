@@ -2,9 +2,10 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,interactive-widget=resizes-content">
 <title>Dandy's Heroes</title>
 <script src="js/mobile-frame.js"></script>
+<script src="js/perf-guard.js"></script>
 <link rel="icon" href="uploads/ichor.png" type="image/png">
 <link rel="preload" as="image" href="uploads/launcher-room.webp">
 <link rel="preload" as="image" href="uploads/Dandysheroes-2.webp">
@@ -42,6 +43,12 @@
 <link rel="stylesheet" href="css/battle-foregrounds.css">
 <link rel="stylesheet" href="css/effekseer.css">
 <link rel="stylesheet" href="css/boskers-globe.css">
+<link rel="stylesheet" href="css/profile-book.css">
+<link rel="stylesheet" href="css/arena-v2.css">
+<link rel="stylesheet" href="css/mobile.css">
+<link rel="stylesheet" href="css/battle-mobile.css">
+<link rel="stylesheet" href="css/perf.css">
+<link rel="stylesheet" href="css/qol.css">
 <script src="vendor/effekseer/effekseer.min.js" defer></script>
 </head>
 <body>
@@ -84,7 +91,7 @@
   <header id="topbar">
     <div class="tb-left">
       <div class="tb-lvl"><span id="tbAcctLvl">1</span><small>MASTERY</small></div>
-      <button class="profile-btn" id="accountBtn" aria-label="Open Dandy's Heroes profile"><span class="profile-avatar">🎭</span><span class="profile-label">Profile</span></button>
+      <button class="profile-btn" id="accountBtn" aria-label="Open profile"><span class="profile-avatar">🎭</span><span class="profile-label">Profile</span></button>
     </div>
     <div class="tb-right">
       <div class="res" data-res="ichor"><i><img class="currency-icon ichor-icon" src="uploads/ichor.png" alt="Ichor"></i><span id="resIchor">0</span></div>
@@ -144,5 +151,6 @@
 
 <script src="js/boot-loader.js"></script>
 <script src="js/item-sheet.js"></script>
+<script src="js/battle-mobile.js"></script>
 </body>
 </html>

@@ -1,0 +1,15 @@
+/* perf.css - loaded last. Touch-device relief for the GPU.
+   Backdrop blurs re-sample everything behind them on every scroll frame and
+   are the single most expensive effect on phone GPUs. Panels keep their own
+   translucent background colour, just without the frosted re-blur. */
+@media (pointer: coarse) {
+  *, *::before, *::after {
+    -webkit-backdrop-filter: none !important;
+    backdrop-filter: none !important;
+  }
+}
+
+/* Nothing needs to animate while the app is in the background. */
+html.app-hidden *, html.app-hidden *::before, html.app-hidden *::after {
+  animation-play-state: paused !important;
+}

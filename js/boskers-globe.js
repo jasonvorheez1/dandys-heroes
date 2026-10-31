@@ -843,8 +843,8 @@ Bosker: There arent any
 
   // The Globe's art is drawn taller than the game's sprites. In a fight, fit it to roughly the same height as its neighbours.
   function fitGlobeUnits() {
-    document.querySelectorAll('#unitLayer .unit .body img').forEach(im => {
-      if (im.src.indexOf('boskers-globe/art') < 0 || im.dataset.bgFit || !im.naturalWidth) return;
+    document.querySelectorAll('#unitLayer .unit .body img[src*="boskers-globe/art"]:not([data-bg-fit])').forEach(im => {
+      if (!im.naturalWidth) return;
       const body = im.closest('.body'), bw = body && body.getBoundingClientRect().width;
       if (!bw) return;
       const aspect = im.naturalHeight / im.naturalWidth;
@@ -1887,7 +1887,12 @@ Bosker: There arent any
     };
   }
   // The Globe's art is drawn taller than the game's, in any fight.
-  setInterval(() => { if (document.getElementById('unitLayer')) fitGlobeUnits(); }, 300);
+  // Only while a fight is actually on screen; this used to poll the DOM three
+  // times a second for the whole session, menus included.
+  setInterval(() => {
+    const arena = document.getElementById('battle');
+    if (!document.hidden && arena && !arena.hidden) fitGlobeUnits();
+  }, 300);
 
   /* ---------------------------------------------------------------- skins change what a fight sounds like */
   {

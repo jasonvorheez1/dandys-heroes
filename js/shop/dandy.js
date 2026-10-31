@@ -59,9 +59,9 @@
       }
       // Star Dust crates return Star Dust in their guaranteed cache. Price
       // every crate in the counter bundle against that growing return.
-      if (['gold', 'diamond', 'main'].includes(item.id)) {
+      if (['gold', 'diamond', 'main', 'collab'].includes(item.id)) {
         const cache = Gacha.supplyCache(item.id, Gacha.projectedCrateLevel());
-        const unit = Math.ceil(cache.star * 4 / (1 - this.discount(level)));
+        const unit = Math.ceil(cache.star * (item.id === 'collab' ? 10 : 4) / (1 - this.discount(level)));
         out.cost = { star: unit * out.gain[item.id] };
       }
       if (item.hero) {
@@ -146,6 +146,7 @@
     { id:'ticket', unlock:40, name:'Scratch Ticket', desc:'Open one Prize Wall tile. Grand Prize progress carries forward.', emoji:'🎟', cost:{ichor:5000}, gain:{ticket:1}, unlimited:true, say:"A Scratch Ticket. One ticket, one tile on the Prize Wall!" },
     { id:'raid-ticket', unlock:48, name:'Raid Ticket', desc:'One instant battle round or Wood game attempt. Battles use the real sim; Wood games auto-play at Bronze or replay your best score.', emoji:'⚡', cost:RaidEconomy.SHOP_COST, gain:{raidTicket:1}, limit:1, say:"A Raid Ticket. Genuinely rare stock these days, so the price is... also genuinely rare. Make it count." },
     { id:'diamond', unlock:55, name:'Diamond Crate', desc:'Premium Hero research and upgrade materials.', emoji:'💎', cost:{star:135}, gain:{diamond:1}, limit:1, say:"Ooh, the Diamond Crate! Very shiny, very valuable, and very much not something to drop on my counter!" },
+    { id:'collab', unlock:120, name:'Collab Crate', desc:'Rare research for Collab and Event Toons.', emoji:'🎭', cost:{star:900}, gain:{collab:1}, limit:1, say:"A Collab Crate! Visitors from other worlds packed this one. I only stock a few, and they go fast." },
     { id:'main', unlock:85, name:'Main Character Crate', desc:'Focused research with a high chance of a Main Character or Dandy.', emoji:'🌟', cost:{star:360}, gain:{main:1}, limit:1, say:"A Main Character Crate! I would hold onto that one. It has an unusually strong pull toward the important files... and my file, naturally!" }
   ];
 
@@ -1301,12 +1302,12 @@
     clearInterval(this._shopTalkTimer); clearTimeout(this._shopStartTimer); clearTimeout(this._shopEntranceTimer);
     shopState();
     const dyle = this.shopKeeper === 'dyle';
-    const tabs = dyle ? [['skins','◇','Skins'],['radio','♫','Radio'],['gossip','☏','Gossip']] : [['resources','◈','Supplies'],['licenses','♡','Toons'],['packs','▣','Packs'],['trinkets','✧','Trinkets'],['icons','◉','Icons'],['gossip','☏','Gossip']];
+    const tabs = dyle ? [['skins','◇','Skins'],['stickers','✿','Stickers'],['radio','♫','Radio'],['gossip','☏','Gossip']] : [['resources','◈','Supplies'],['licenses','♡','Toons'],['packs','▣','Packs'],['trinkets','✧','Trinkets'],['icons','◉','Icons'],['gossip','☏','Gossip']];
     const remembered = dyle ? this.dyleShopTab : this.shopTab;
     const tab = tabs.some(t=>t[0] === remembered) ? remembered : tabs[0][0];
     if (dyle) this.dyleShopTab = tab; else this.shopTab = tab;
     const entering = !this._shopInStore; this._shopInStore = true;
-    const isGossip = tab === 'gossip', isSkin = dyle && tab === 'skins', isRadio = dyle && tab === 'radio';
+    const isGossip = tab === 'gossip', isSkin = dyle && tab === 'skins', isRadio = dyle && tab === 'radio', isSticker = dyle && tab === 'stickers';
     const root = el('div',`shop-screen market${dyle ? ' market-dyle' : ' market-dandy'}`);
     root.dataset.keeper = dyle ? 'dyle' : 'dandy';
     root.innerHTML = `<header class="market-header"><button class="market-back" aria-label="Back to Home">‹</button><h1>Gardenview shops</h1><span class="market-open"><i></i> OPEN</span></header>
@@ -1314,9 +1315,9 @@
       <section class="market-stage" aria-label="${dyle ? 'Dyle' : 'Dandy'} at the counter"><div class="market-keeper" role="img" aria-label="${dyle ? 'Animated Dyle' : 'Dandy'}"></div><div class="market-counter" aria-hidden="true"></div><div class="market-dialogue"><div class="market-speaker">${dyle ? 'DYLE' : 'DANDY'}<button class="market-finish" aria-label="Show the complete dialogue" title="Show complete dialogue">››</button></div><div class="market-speech-wrap"><div class="shop-speech-measure" aria-hidden="true"></div><div class="shop-speech" id="shopSpeech" aria-hidden="true"></div></div><span class="sr-only" id="shopSpeechAnnouncement" aria-live="polite" aria-atomic="true"></span></div></section>
       <a class="shop-skip-link" href="#shopContents">Skip to shop contents</a>
       <nav class="market-departments" role="tablist" aria-label="${dyle ? 'Dyle' : 'Dandy'}’s departments">${tabs.map(([key,icon,label])=>`<button role="tab" id="shop-tab-${key}" aria-selected="${key === tab}" aria-controls="shopContents" data-shop-tab="${key}" class="${tab === key ? 'on' : ''}"><i aria-hidden="true">${icon}</i><span>${label}</span></button>`).join('')}</nav>
-      <section class="market-stock"><div class="market-stock-heading"><h2>${isGossip ? dyle ? 'Off the record' : 'Between us' : isSkin ? 'The wardrobe' : isRadio ? 'The radio' : tabs.find(t=>t[0] === tab)[2]}</h2>${!dyle && !isGossip ? '<span class="market-reset">Restocks in <b id="shopRotation">—</b></span>' : '<span class="market-heading-note">'+(isSkin ? 'A gift from Dyle' : isRadio ? 'Permanent tracks' : 'Choose a conversation')+'</span>'}</div>
-      ${!isSkin && !isRadio ? `<div class="market-search-row"><label class="market-search"><span aria-hidden="true">⌕</span><input type="search" id="marketSearch" placeholder="${isGossip ? 'Search gossip…' : 'Find '+(tab === 'licenses' ? 'a Toon' : 'stock')+'…'}" aria-label="Search ${isGossip ? 'gossip' : 'shop stock'}"></label><select id="marketFilter" aria-label="Filter ${isGossip ? 'gossip' : 'stock'}"><option value="all">All ${isGossip ? 'files' : 'stock'}</option><option value="available">Available</option><option value="${isGossip ? 'unread' : 'affordable'}">${isGossip ? 'Unheard' : 'Can afford'}</option></select></div>` : ''}
-      <div class="market-tools">${!isSkin && !isRadio ? '<span class="market-results" aria-live="polite"></span>' : ''}${!dyle && !isGossip ? `<button class="market-refresh" id="shopRefresh" aria-label="Refresh stock for one Counter Token">↻ Refresh <b>🔄 1</b><small>${fmt(Save.res('counterToken'))} owned</small></button>` : ''}</div>
+      <section class="market-stock"><div class="market-stock-heading"><h2>${isGossip ? dyle ? 'Off the record' : 'Between us' : isSkin ? 'The wardrobe' : isRadio ? 'The radio' : isSticker ? 'The sticker board' : tabs.find(t=>t[0] === tab)[2]}</h2>${!dyle && !isGossip ? '<span class="market-reset">Restocks in <b id="shopRotation">—</b></span>' : '<span class="market-heading-note">'+(isSkin ? 'A gift from Dyle' : isSticker ? 'For your profile book' : isRadio ? 'Permanent tracks' : 'Choose a conversation')+'</span>'}</div>
+      ${!isSkin && !isRadio && !isSticker ? `<div class="market-search-row"><label class="market-search"><span aria-hidden="true">⌕</span><input type="search" id="marketSearch" placeholder="${isGossip ? 'Search gossip…' : 'Find '+(tab === 'licenses' ? 'a Toon' : 'stock')+'…'}" aria-label="Search ${isGossip ? 'gossip' : 'shop stock'}"></label><select id="marketFilter" aria-label="Filter ${isGossip ? 'gossip' : 'stock'}"><option value="all">All ${isGossip ? 'files' : 'stock'}</option><option value="available">Available</option><option value="${isGossip ? 'unread' : 'affordable'}">${isGossip ? 'Unheard' : 'Can afford'}</option></select></div>` : ''}
+      <div class="market-tools">${!isSkin && !isRadio && !isSticker ? '<span class="market-results" aria-live="polite"></span>' : ''}${!dyle && !isGossip ? `<button class="market-refresh" id="shopRefresh" aria-label="Refresh stock for one Counter Token">↻ Refresh <b>🔄 1</b><small>${fmt(Save.res('counterToken'))} owned</small></button>` : ''}</div>
       <div id="shopContents" role="tabpanel" aria-labelledby="shop-tab-${tab}" tabindex="-1"></div><div class="market-search-empty" hidden>No matches. Try another search or filter.</div></section>`;
     s.appendChild(root);
     this._shopRig = ShopKeepers.mount($('.market-keeper',root),dyle ? 'dyle' : 'dandy',root);
@@ -1359,6 +1360,7 @@
     if (dyle) {
       this._shopItems = [];
       if (isSkin) DyleShop.renderSkins(contents,root,api);
+      else if (isSticker) DyleShop.renderStickers(contents,root,api);
       else if (isRadio) DyleShop.renderRadio(contents,root,api);
       else DyleShop.renderGossip(contents,root,api);
     } else if (isGossip) {

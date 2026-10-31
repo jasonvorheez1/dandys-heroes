@@ -46,6 +46,7 @@ const DyleShop = (() => {
     if (!Array.isArray(s.read)) s.read = [];
     if (!Array.isArray(s.skins)) s.skins = [];
     if (!Array.isArray(s.records)) s.records = [];
+    if (!Array.isArray(s.stickers)) s.stickers = [];
     return s;
   }
   function hasRecord(id) { return state().records.includes(id); }
@@ -151,5 +152,34 @@ const DyleShop = (() => {
       list.appendChild(card);
     });
   }
-  return { files, records, state, readCount, hear, hasSkin, ready, claim, hasRecord, buyRecord, renderGossip, renderSkins, renderRadio };
+  /* Profile stickers: Ichor purchases, some held back until a Mastery level. */
+  function hasSticker(id) { return state().stickers.includes(id); }
+  function buySticker(id) {
+    const sticker = BOOK_SHOP_STICKERS.find(item => item.id === id);
+    if (!sticker || hasSticker(id) || bookLocked(sticker) || !Save.can({ ichor:sticker.cost })) return false;
+    Save.data.res.ichor -= sticker.cost;
+    state().stickers.push(id);
+    Save.write();
+    UI.refreshBar();
+    return true;
+  }
+  function renderStickers(contents, root, api) {
+    const grid = el('div', 'dyle-sticker-grid');
+    contents.appendChild(grid);
+    BOOK_SHOP_STICKERS.forEach(sticker => {
+      const owned = hasSticker(sticker.id), locked = !owned && bookLocked(sticker);
+      const card = el('article', 'dyle-sticker-card' + (owned ? ' owned' : '') + (locked ? ' locked' : ''));
+      card.innerHTML = `<img src="assets/stickers/${sticker.id}.webp" alt="" loading="lazy"><b>${sticker.label}</b><button class="market-primary dyle-sticker-action" type="button">${owned ? 'In your book' : locked ? `🔒 Mastery ${sticker.mastery}` : `<img class="currency-icon ichor-icon" src="uploads/ichor.png" alt="Ichor"> ${fmt(sticker.cost)}`}</button>`;
+      const action = $('.dyle-sticker-action', card);
+      action.disabled = owned || locked || !Save.can({ ichor:sticker.cost });
+      action.onclick = () => {
+        if (!buySticker(sticker.id)) return;
+        Sound.play('get_item');
+        api.say(`“${sticker.label}” — filed under your name. You'll find it in your profile book.`, 'pleased');
+        grid.remove(); renderStickers(contents, root, api);
+      };
+      grid.appendChild(card);
+    });
+  }
+  return { files, records, state, hasSticker, buySticker, renderStickers, readCount, hear, hasSkin, ready, claim, hasRecord, buyRecord, renderGossip, renderSkins, renderRadio };
 })();

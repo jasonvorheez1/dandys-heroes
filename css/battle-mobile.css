@@ -1,0 +1,101 @@
+/* Combat HUD, touch pass: same look, easier to read and hit on a phone. */
+#battleHud{--dock-h:128px;
+  padding-left:max(10px,env(safe-area-inset-left,0px));padding-right:max(10px,env(safe-area-inset-right,0px))}
+#battle,#battleHud button,#allyDock{-webkit-touch-callout:none;touch-action:manipulation}
+#battle{height:100dvh}
+
+/* top row: info pills shrink first, buttons never wrap */
+#hudTop{flex-wrap:nowrap;gap:6px}
+#waveInfo{min-width:0}
+#hudTimer{font-variant-numeric:tabular-nums}
+#battle #hudBtns{gap:6px;flex-shrink:0}
+#battle #hudBtns button{position:relative;width:44px!important;height:44px!important;min-width:44px!important;min-height:44px!important}
+#battle #hudBtns button:after{content:"";position:absolute;inset:-4px}
+/* leaving is a destructive action: set it apart from pause so it is not hit by mistake */
+#battle #hudBtns #btnQuit{margin-left:8px;border-color:#a65a5a!important;background:linear-gradient(145deg,#5a3a3d,#2e1d20)!important}
+
+/* log sits right above the dock, wherever the dock ends up */
+#logBox{left:max(10px,env(safe-area-inset-left,0px));right:max(10px,env(safe-area-inset-right,0px));max-width:none;width:fit-content;max-width:calc(100% - 20px);
+  bottom:calc(var(--dock-h) + 14px + env(safe-area-inset-bottom,0px))!important}
+#logBox div{font-size:11px}
+
+/* ally dock: bigger, clearer cards; ready skills are unmistakable */
+#battle #allyDock{gap:4px}
+#battle .unitcard:not(.kh-card):not(.ff7-card){-webkit-tap-highlight-color:transparent}
+#battle .unitcard:not(.kh-card):not(.ff7-card) .uc-port{width:100%!important;max-width:58px;aspect-ratio:1;height:auto!important}
+#battle .unitcard:not(.kh-card):not(.ff7-card) .uc-hpwrap,#battle .unitcard:not(.kh-card):not(.ff7-card) .uc-enwrap{width:100%!important;max-width:58px;height:7px!important}
+#battle .unitcard:not(.kh-card):not(.ff7-card) .uc-sts{width:100%;font-size:10px;min-height:11px}
+#battle .unitcard.can-cast .uc-port{border-color:#fff3a0!important;animation:bmReady 1s ease-in-out infinite alternate!important}
+#battle .unitcard.can-cast:after{content:"TAP";position:absolute;z-index:4;top:-9px;right:-3px;padding:1px 5px;border-radius:6px;background:#ffe27a;color:#2a1a00;font:900 8px/12px Arial,sans-serif;letter-spacing:.4px;pointer-events:none;animation:bmTap .9s ease-in-out infinite alternate}
+#battle .unitcard:active .uc-port{transform:scale(.93)}
+@keyframes bmReady{from{box-shadow:0 0 6px 1px #ffd23fb3;transform:scale(1)}to{box-shadow:0 0 16px 5px #ffd23ff2;transform:scale(1.07)}}
+@keyframes bmTap{from{transform:translateY(0)}to{transform:translateY(-2px)}}
+
+/* small portrait phones */
+@media (max-width:380px){
+  #waveInfo{font-size:11px;padding:4px 8px}#hudTimer{padding:4px 8px}
+  #battle #hudBtns{gap:4px}#battle #hudBtns #btnQuit{margin-left:5px}
+  #battle #hudBtns button{width:40px!important;height:40px!important;min-width:40px!important;min-height:40px!important}
+}
+
+/* phones held sideways: little height, so compact everything and keep the field clear */
+@media (orientation:landscape) and (max-height:520px){
+  #battleHud{padding-top:calc(5px + env(safe-area-inset-top,0px));padding-bottom:calc(4px + env(safe-area-inset-bottom,0px))}
+  #hudTop{min-height:0}
+  #waveInfo,#hudTimer{min-height:30px;padding:2px 10px;font-size:11px}
+  #battle #hudBtns button{width:38px!important;height:38px!important;min-width:38px!important;min-height:38px!important}
+  #battle #allyDock{left:max(6px,env(safe-area-inset-left,0px))!important;right:auto!important;width:auto!important;max-width:calc(100% - 12px - env(safe-area-inset-left,0px) - env(safe-area-inset-right,0px));bottom:calc(4px + env(safe-area-inset-bottom,0px))!important;padding:10px 6px 5px!important;gap:5px}
+  #battle #allyDock:before{display:none}
+  #battle .unitcard:not(.kh-card):not(.ff7-card){width:50px!important;flex:0 0 50px!important;min-width:50px!important}
+  #battle .unitcard:not(.kh-card):not(.ff7-card) .uc-port{max-width:42px}
+  #battle .unitcard:not(.kh-card):not(.ff7-card) .uc-hpwrap,#battle .unitcard:not(.kh-card):not(.ff7-card) .uc-enwrap{max-width:42px;height:5px!important}
+  #battle .unitcard:not(.kh-card):not(.ff7-card) .uc-stars{display:none}
+  #logBox{left:auto;right:max(10px,env(safe-area-inset-right,0px));bottom:calc(8px + env(safe-area-inset-bottom,0px))!important;max-width:36vw;max-height:44px}
+}
+@media (prefers-reduced-motion:reduce){#battle .unitcard.can-cast .uc-port,#battle .unitcard.can-cast:after{animation:none!important}}
+
+/* ---------- phones: results, status details, mutations ---------- */
+@media (max-width:600px),(pointer:coarse) and (max-width:900px){
+  /* status chips on hero cards are hold/tap targets; give them some size */
+  #battle #allyDock .status-chip{width:26px;height:20px;flex-basis:26px}
+
+  /* status details open as a bottom sheet above the dock instead of a tiny popover at the finger */
+  .battle-status-detail{left:8px!important;right:8px!important;top:auto!important;width:auto!important;max-width:460px;margin:0 auto;
+    bottom:calc(150px + env(safe-area-inset-bottom,0px))!important;max-height:min(46vh,380px);padding:12px;font-size:13px;border-radius:12px}
+  .battle-status-detail-close{width:36px;height:36px;top:-6px;right:-4px;font-size:22px;line-height:32px}
+  .battle-status-detail-head{padding-right:40px}
+  .battle-status-detail-head>b{font-size:15px}.battle-status-detail-head>span{font-size:10px}
+  .battle-status-detail-row{grid-template-columns:30px 1fr;gap:9px;padding:8px 3px}
+  .status-detail-icon{width:30px;height:30px;font-size:18px}
+  .battle-status-detail-row b{font-size:13px}.battle-status-detail-row small{font-size:10px}.battle-status-detail-row p{font-size:12px;line-height:1.35}
+
+  /* mutation pill clears the taller button row */
+  .mutation-live{top:calc(64px + env(safe-area-inset-top,0px))}
+  .mutation-live summary{min-height:36px;padding:6px 12px;font-size:11px}
+  .mutation-live-list{max-height:40vh}
+
+  /* results: readable numbers and full-size buttons */
+  #battleEnd{padding-bottom:calc(64px + env(safe-area-inset-bottom,0px))}
+  .wrap-inner{width:min(94vw,440px)}
+  .wrap-panel{width:min(92vw,420px);padding:12px 10px}
+  .wrap-kicker{font-size:11px}
+  .wrap-line{font-size:13px;padding:3px 0;-webkit-text-stroke-width:3px}
+  .wrap-line.big{font-size:15px;margin-top:6px}
+  .wrap-perf{font-size:11px}
+  .wrap-report-title{font-size:10px}
+  .wrap-report-stats{grid-template-columns:repeat(4,1fr);gap:5px}
+  .wrap-stat{padding:7px 2px 6px}.wrap-stat b{font-size:13px}.wrap-stat span{font-size:9px;margin-top:4px}
+  .wrap-roster-head,.wrap-roster-row{grid-template-columns:minmax(92px,1.6fr) repeat(4,minmax(36px,1fr));gap:3px;padding:6px 5px}
+  .wrap-roster-head{font-size:9px}.wrap-roster-row{font-size:11px}.wrap-roster-stat{font-size:11px}
+  .wrap-hero-name img{width:26px;height:26px}
+  .wrap-report-note{font-size:10px;line-height:1.35}
+  .wrap-btns{width:min(92vw,420px);min-height:50px}
+  .wrap-btns .btn{min-height:50px;font-size:14px}
+  .wrap-skip{bottom:calc(26px + env(safe-area-inset-bottom,0px));min-height:44px;padding:10px 20px;font-size:12px;-webkit-text-stroke-width:3px}
+}
+/* sideways phones: results scroll in two columns would be cramped; keep one column but tighten height */
+@media (orientation:landscape) and (max-height:520px){
+  #battleEnd{padding-top:10px}
+  .battle-status-detail{bottom:calc(10px + env(safe-area-inset-bottom,0px))!important;max-height:70vh;left:auto!important;width:min(360px,60vw)!important}
+  .mutation-live{top:calc(46px + env(safe-area-inset-top,0px))}
+}

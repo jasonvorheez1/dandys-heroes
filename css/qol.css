@@ -1,0 +1,41 @@
+/* qol.css - loaded last. Small layout fixes for phones (360-412 px wide). */
+
+/* Home: the Edit Squad hint used to stretch into a tall card that covered the
+   right third of the squad (two stylesheets pinned both its top and bottom).
+   It is now a small pill in the corner; the whole stage is still the button. */
+.home-stage .home-stage-edit {
+  position: absolute !important;
+  top: 8px !important;
+  right: 8px !important;
+  bottom: auto !important;
+  left: auto !important;
+  width: auto !important;
+  height: auto !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 4px !important;
+  padding: 5px 10px !important;
+  border: 2px solid #244c3d !important;
+  border-radius: 999px !important;
+  background: #f5f1cfee !important;
+  box-shadow: 0 2px #25483c !important;
+  color: #244c3d !important;
+  font: 900 11px/1 Arial, sans-serif !important;
+  letter-spacing: .3px !important;
+  text-transform: uppercase;
+  pointer-events: none;
+}
+.home-stage .home-stage-edit b { font-size: 12px !important; line-height: 1 !important; color: #327a58 !important; }
+.home-stage:active .home-stage-edit { transform: translateY(1px) !important; box-shadow: 0 1px #25483c !important; }
+
+/* Hero file: all five tabs fit on one row on phones instead of scrolling Gear off-screen. */
+@media (max-width: 520px) {
+  .hero-profile-tabs { display: grid !important; grid-template-columns: repeat(5, minmax(0, 1fr)) !important; gap: 4px !important; overflow: visible !important; padding: 4px 6px 6px !important; }
+  .hero-profile-tabs button { min-width: 0 !important; min-height: 40px !important; padding: 6px 2px !important; font-size: 12px !important; letter-spacing: 0 !important; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+}
+
+/* Status tab: compact source chips (they inherited the 44px phone button size). */
+.hero-status-tab .hero-status-src { min-height: 0 !important; min-width: 0 !important; height: auto !important; padding: 4px 10px !important; line-height: 1.2 !important; border-radius: 999px !important; font-size: 11px !important; }
+.hero-status-tab .hero-status-seg button, .hero-status-tab .hero-status-chip { min-height: 34px !important; padding: 6px 8px !important; }
