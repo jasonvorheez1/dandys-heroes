@@ -18,7 +18,7 @@ const DangoFestival = (() => {
   EVENT_MODIFIERS.push(...rules);
   function state(){const s=AlmostHome.state();s.festival ||= {};const f=s.festival;
     for(const key of ['ichor','earned','level'])f[key]=Math.max(0,Math.floor(Number(f[key])||0));
-    f.level=Math.min(5,f.level);f.clears ||= {};f.daily ||= {};f.bought ||= {};f.heard ||= {};
+    f.level=Math.min(5,f.level);f.clears ||= {};f.daily ||= {};f.heard ||= {};
     return f;
   }
   function day(){return new Date().toLocaleDateString('en-CA',{timeZone:'America/Chicago'});}
@@ -79,22 +79,37 @@ const DangoFestival = (() => {
   return {state,day,quote,award,battle,prep,board,stages,modes,roster,rules};
 })();
 
+// The rehearsal board was defined but never mounted, leaving Festival Ichor
+// without an obtainable source. Keep it beside the event's regular stages.
+const dwDossierWithFestival = Screens.dwModdedDossier;
+Screens.dwModdedDossier = function(s, ev) {
+  dwDossierWithFestival.call(this, s, ev);
+  if (this._dwTab !== 'stages') return;
+  const stages = s.querySelector('.dw-stages-grid');
+  if (!stages) return;
+  const board = el('section', 'df-board');
+  board.appendChild(el('h2', '', 'Festival Rehearsals'));
+  DangoFestival.board(board);
+  stages.before(board);
+};
+
 const DangoShop = (()=>{
   const offers=[
-    ...['Dango','Jessie','Cody','Nugget'].map(id=>({id:'shards-'+id,name:id+' research',hero:id,amount:10,cost:240,limit:2,desc:'10 research toward recruiting or promoting '+id+'.'})),
-    {id:'tape',name:'Field Tape',cost:70,limit:4,gain:{tape:15},desc:'15 Field Tape for skill and counter upgrades.',img:'OBJECT/Tape.png'},
-    {id:'exp',name:'EXP parcel',cost:60,limit:4,gain:{exp:2500},desc:'2,500 EXP for your roster.',img:'uploads/exp-bottle-icon.png'},
-    {id:'manual',name:'Training notes',cost:100,limit:3,gain:{manual:10},desc:'10 Training Manuals.',emoji:'📘'},
-    {id:'scrap',name:'Trinket parts',cost:120,limit:3,gain:{scrap:60},desc:'60 Trinket Shards for crafting.',emoji:'🔩'}
+    ...['Dango','Jessie','Cody','Nugget'].map(id=>({id:'shards-'+id,name:id+' research',hero:id,amount:10,cost:240,desc:'10 research toward recruiting or promoting '+id+'.'})),
+    {id:'tape',name:'Field Tape',cost:70,gain:{tape:15},desc:'15 Field Tape for skill and counter upgrades.',img:'OBJECT/Tape.png'},
+    {id:'exp',name:'EXP parcel',cost:60,gain:{exp:2500},desc:'2,500 EXP for your roster.',img:'uploads/exp-bottle-icon.png'},
+    {id:'manual',name:'Training notes',cost:100,gain:{manual:10},desc:'10 Training Manuals.',emoji:'📘'},
+    {id:'scrap',name:'Trinket parts',cost:120,gain:{scrap:60},desc:'60 Trinket Shards for crafting.',emoji:'🔩'}
   ];
-  offers.push(...['dango_skewer','jessie_radio','cody_beartrap','nugget_mustard'].map(id=>({id:'trinket-'+id,trinket:id,name:TRINKETS[id].name,cost:650,limit:1,desc:TRINKETS[id].desc||TRINKETS[id].effect,img:trinketIcon(id)})));
+  offers.push(...['dango_skewer','jessie_radio','cody_beartrap','nugget_mustard'].map(id=>({id:'trinket-'+id,trinket:id,name:TRINKETS[id].name,cost:650,desc:TRINKETS[id].desc||TRINKETS[id].effect,img:trinketIcon(id)})));
   const chats=[['stock','The stockroom',"Dandy helped me carry these over. I made my own list this time. If something's missing, I can actually tell you when it'll be back."],['jessie','Jessie’s rehearsal',"She keeps saying she'll only do one more take. I leave the tea covered now. It stays warm longer."],['cody','The fan',"Cody moved the fan again. The cards stay on the desk now, but the welcome sign keeps falling down. I'll find somewhere for both."],['nugget','A useful label',"I asked Nugget to label the boxes. They're all labeled now. Including my lunch. That one says 'Dango, probably'."]];
   function price(o){return Math.ceil(o.cost*(1-DangoFestival.state().level*.03));}
-  function remaining(o){return Math.max(0,o.limit-(DangoFestival.state().bought[DangoFestival.day()+':'+o.id]||0));}
-  function buy(id){const o=offers.find(x=>x.id===id),f=DangoFestival.state();if(!o||!remaining(o)||f.ichor<price(o))return false;
-    f.ichor-=price(o);f.bought[DangoFestival.day()+':'+o.id]=(f.bought[DangoFestival.day()+':'+o.id]||0)+1;
+  function wallet(currency){return currency==='golden'?Raid.state().dwModdedTapes||0:DangoFestival.state().ichor;}
+  function spend(currency,amount){if(!['ichor','golden'].includes(currency)||wallet(currency)<amount)return false;
+    if(currency==='golden')Raid.state().dwModdedTapes-=amount;else DangoFestival.state().ichor-=amount;return true;}
+  function buy(id,currency='ichor'){const o=offers.find(x=>x.id===id);if(!o||!spend(currency,price(o)))return false;
     if(o.hero)Save.giveShards(o.hero,o.amount);else if(o.trinket)Save.addTrinketCopy(o.trinket,1);else Save.give(o.gain,true,{exact:true});Save.write();UI.refreshBar(true);return true;}
-  function upgrade(){const f=DangoFestival.state(),cost=300+150*f.level;if(f.level>=5||f.ichor<cost)return false;f.ichor-=cost;f.level++;Save.write();return true;}
+  function upgrade(currency='ichor'){const f=DangoFestival.state(),cost=300+150*f.level;if(f.level>=5||!spend(currency,cost))return false;f.level++;Save.write();return true;}
   function mount(host,root){if(Save.data.opt?.animatedChars===true&&window.DangoRig){const rig=window.DangoRig.create(host,{assetBase:ASSET+'Characters/Dango/'});let running=true,frame,last=0;
       function tick(now){if(!running||!root.isConnected)return;rig.update({animState:'idle'},Math.min(.04,(now-last)/1000||.016));last=now;frame=requestAnimationFrame(tick);}frame=requestAnimationFrame(tick);
       return {destroy(){running=false;cancelAnimationFrame(frame);rig.destroy();}};}
@@ -102,20 +117,25 @@ const DangoShop = (()=>{
   function enter(){Screens.shopKeeper='dango';Screens.go('shop');}
   function render(s){Screens._shopRig?.destroy();Screens._shopRig=null;clearInterval(Screens._shopTalkTimer);clearInterval(Screens._shopClock);clearTimeout(Screens._shopStartTimer);clearTimeout(Screens._shopEntranceTimer);
     const f=DangoFestival.state(),tab=Screens.dangoShopTab||'supplies',root=el('div','shop-screen market market-dango');root.dataset.keeper='dango';
-    root.innerHTML=`<header class="market-header"><button class="market-back" aria-label="Back to event">‹</button><h1>Dango’s Shop</h1><span class="market-open"><i></i>OPEN</span></header><nav class="market-keepers" aria-label="Choose shopkeeper"></nav><section class="market-stage"><div class="market-keeper" role="img" aria-label="Dango"></div><div class="market-counter"></div><div class="market-dialogue"><div class="market-speaker">DANGO</div><p class="df-speech" aria-live="polite">Irasshaimase! Have a look. The price tags are in Festival Ichor—you earn that at the rehearsal board.</p></div></section><div class="df-wallet"><b>${f.ichor} Festival Ichor</b><span>Event currency · separate from regular Ichor</span></div><nav class="market-departments" aria-label="Dango’s departments"></nav><section class="market-stock"><div class="df-shop-content"></div></section>`;
+    root.innerHTML=`<header class="market-header"><button class="market-back" aria-label="Back to event">‹</button><h1>Dango’s Shop</h1><span class="market-open"><i></i>OPEN</span></header><nav class="market-keepers" aria-label="Choose shopkeeper"></nav><section class="market-stage"><div class="market-keeper" role="img" aria-label="Dango"></div><div class="market-counter"></div><div class="market-dialogue"><div class="market-speaker">DANGO</div><p class="df-speech" aria-live="polite">Irasshaimase! Have a look. Festival Ichor or Golden Tapes—your choice.</p></div></section><div class="df-wallet"><b>${f.ichor} Festival Ichor · ${wallet('golden')} Golden Tapes</b></div><nav class="market-departments" aria-label="Dango’s departments"></nav><section class="market-stock"><div class="df-shop-content"></div></section>`;
     s.appendChild(root);Screens._shopRig=mount(root.querySelector('.market-keeper'),root);
+    const rehearse=el('button','df-rehearse','Earn Festival Ichor');
+    rehearse.type='button';
+    rehearse.onclick=()=>{Screens._raidDossier=AlmostHome.ID;Screens._dwTab='stages';Screens.go('raid');};
+    root.querySelector('.df-wallet').appendChild(rehearse);
     root.querySelector('.market-back').onclick=()=>{Screens._raidDossier=AlmostHome.event.id;Screens.go('raid');};
     for(const [id,label]of[['dandy','Dandy’s'],['dyle','Dyle’s'],['dango','Dango’s']]){const b=el('button',id==='dango'?'selected':'',label);b.type='button';b.setAttribute('aria-pressed',String(id==='dango'));b.onclick=()=>{Screens.shopKeeper=id;Screens.render();};root.querySelector('.market-keepers').appendChild(b);}
     for(const [id,label]of[['supplies','Supplies'],['toons','Event toons'],['trinkets','Trinkets'],['gossip','Gossip']]){const b=el('button',tab===id?'on':'',label);b.type='button';b.setAttribute('aria-pressed',String(tab===id));b.onclick=()=>{Screens.dangoShopTab=id;Screens.render();};root.querySelector('.market-departments').appendChild(b);}
     const body=root.querySelector('.df-shop-content'),say=text=>{root.querySelector('.df-speech').textContent=text;};
     if(tab==='gossip'){for(const [id,title,text]of chats){const b=el('button','df-chat',title+(f.heard[id]?' ↻':''));b.onclick=()=>{f.heard[id]=true;Save.write();say(text);b.textContent=title+' ↻';};body.appendChild(b);}}
-    else{const up=el('div','df-upgrade');up.innerHTML=`<b>Counter level ${f.level}/5 · ${f.level*3}% off</b><p>Stock refreshes daily at midnight, Chicago time. Research and supply limits are separate for each item.</p>`;
-      const u=el('button','',f.level===5?'Fully upgraded':`Upgrade · ${300+150*f.level} Festival Ichor`);u.disabled=f.level===5||f.ichor<300+150*f.level;u.onclick=()=>{if(upgrade())Screens.render();};up.appendChild(u);body.appendChild(up);
+    else{const up=el('div','df-upgrade');up.innerHTML=`<b>Counter level ${f.level}/5 · ${f.level*3}% off</b><p>Unlimited stock. Buy with Festival Ichor or Golden Tapes.</p>`;
+      const upgradeButtons=el('div','df-buy-options');
+      for(const [currency,label] of [['ichor','Festival Ichor'],['golden','Golden Tapes']]){const u=el('button','',f.level===5?'Fully upgraded':`Upgrade · ${300+150*f.level} ${label}`);u.disabled=f.level===5||wallet(currency)<300+150*f.level;u.onclick=()=>{if(upgrade(currency))Screens.render();};upgradeButtons.appendChild(u);}up.appendChild(upgradeButtons);body.appendChild(up);
       const grid=el('div','shop-grid');body.appendChild(grid);
-      offers.filter(o=>tab==='toons'?!!o.hero:tab==='trinkets'?!!o.trinket:!o.hero&&!o.trinket).forEach(o=>{const card=el('article','shop-item');const src=o.hero?Art.hero(o.hero):o.img?(o.trinket?o.img:ASSET+o.img):'';card.innerHTML=`<div class="shop-item-art">${src?`<img src="${src}" alt="">`:`<span>${o.emoji}</span>`}</div><div class="shop-item-copy"><h3>${o.name}</h3><p>${o.desc}</p><small>${remaining(o)} left today</small></div>`;
-        const b=el('button','shop-buy',remaining(o)?`${price(o)} Festival Ichor`:'Sold out');b.disabled=!remaining(o)||f.ichor<price(o);b.onclick=()=>{if(buy(o.id)){Sound.play('currency');Screens.render();UI.toast(o.name+' received');}};card.querySelector('.shop-item-copy').appendChild(b);grid.appendChild(card);});}
+      offers.filter(o=>tab==='toons'?!!o.hero:tab==='trinkets'?!!o.trinket:!o.hero&&!o.trinket).forEach(o=>{const card=el('article','shop-item');const src=o.hero?Art.hero(o.hero):o.img?(o.trinket?o.img:ASSET+o.img):'';card.innerHTML=`<div class="shop-item-art">${src?`<img src="${src}" alt="">`:`<span>${o.emoji}</span>`}</div><div class="shop-item-copy"><h3>${o.name}</h3><p>${o.desc}</p></div>`;
+        const buttons=el('div','df-buy-options');for(const [currency,label] of [['ichor','Festival Ichor'],['golden','Golden Tapes']]){const b=el('button','shop-buy',`${price(o)} ${label}`);b.disabled=wallet(currency)<price(o);b.onclick=()=>{if(buy(o.id,currency)){Sound.play('currency');Screens.render();UI.toast(o.name+' received');}};buttons.appendChild(b);}card.querySelector('.shop-item-copy').appendChild(buttons);grid.appendChild(card);});}
     Music.play('ahCandy');
   }
   const base=Screens.shop;Screens.shop=function(s){if(this.shopKeeper==='dango')return render(s);base.call(this,s);const nav=s.querySelector('.market-keepers');if(nav){const b=el('button','','Dango’s Shop');b.type='button';b.setAttribute('aria-pressed','false');b.onclick=enter;nav.appendChild(b);}};
-  return {enter,render,buy,upgrade,offers,remaining,price};
+  return {enter,render,buy,upgrade,offers,price};
 })();

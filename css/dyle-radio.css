@@ -1,0 +1,11 @@
+.market-dyle .market-departments{grid-template-columns:repeat(3,minmax(0,1fr))}
+.dyle-radio-list{display:grid;gap:10px}
+.dyle-radio-card{display:grid;grid-template-columns:46px minmax(0,1fr);gap:10px;align-items:center;padding:12px;color:#f6f2fa;background:#2d2a31;border:2px solid #756b7e;border-radius:12px;box-shadow:0 3px 0 #0008}
+.dyle-radio-card.owned{border-color:#a996c1}
+.dyle-radio-symbol{display:grid;place-items:center;width:46px;height:46px;border:2px solid #9886ad;border-radius:50%;color:#eee1ff;background:#50465a;font-size:24px}
+.dyle-radio-copy{min-width:0}
+.dyle-radio-copy small{display:block;color:#d7c3e8;font-size:9px;font-weight:800;letter-spacing:.8px;text-transform:uppercase}
+.dyle-radio-copy h3{margin:3px 0;color:#fbf7ff;font-size:18px;line-height:1.1}
+.dyle-radio-copy>span{color:#d0c8d6;font-size:11px}
+.dyle-radio-action{grid-column:1/-1;margin-top:2px}
+@media(min-width:600px){.dyle-radio-list{grid-template-columns:repeat(2,minmax(0,1fr))}}

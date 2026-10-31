@@ -1197,8 +1197,6 @@ body{letter-spacing:.01em;text-rendering:optimizeLegibility}
 .home-collect-card b{font-size:9px}.home-collect-card small{font-size:8px;color:#dbe7e2}
 .home-grow-card b{font-size:10px}.home-grow-card small{font-size:8px;color:#d8e5df}
 .home-mastery-copy{font-size:9px;line-height:1.45}.home-settings{font-size:9px;color:#bfd1c9}
-.home-mastery.tap{cursor:pointer;transition:filter .15s,transform .15s}.home-mastery.tap:hover,.home-mastery.tap:focus-visible{filter:brightness(1.13)}.home-mastery.tap:focus-visible{outline:2px solid #ffe49a;outline-offset:2px}.home-mastery.tap:active{transform:translateY(2px)}
-.mastery-training{display:grid;gap:12px}.mastery-training-actions{display:grid;gap:8px}.mastery-training-option{display:grid;gap:4px;padding:8px;border:1px solid #ffe49a44;border-radius:8px;background:#10182977}.mastery-training-option .btn{width:100%;text-align:center}.mastery-training-option .mini{line-height:1.5}
 @media(max-width:420px){#navbar button span{font-size:8px;letter-spacing:.15px}}
 
 /* First-time Hero recruitment reveal. It sits above other reward overlays so
@@ -1455,7 +1453,7 @@ body{letter-spacing:.01em;text-rendering:optimizeLegibility}
 /* ============================================================
    GINGER: piped icing, sugar and bakery light
    ============================================================ */
-.gi-sprinkle{position:absolute;z-index:16;width:3px;height:9px;border-radius:2px;pointer-events:none;opacity:0;animation:giSprinkle .95s cubic-bezier(.2,.7,.4,1) forwards}
+.gi-sprinkle{position:absolute;z-index:16;width:3px;height:9px;border-radius:2px;pointer-events:none;opacity:0;animation:giSprinkle .7s cubic-bezier(.2,.7,.4,1) forwards}
 @keyframes giSprinkle{0%{opacity:1;transform:translate(0,0) rotate(0)}60%{opacity:1}100%{opacity:0;transform:translate(var(--dx),calc(var(--dy) + 46px)) rotate(var(--r))}}
 .gi-splat{position:absolute;z-index:15;width:68px;height:68px;pointer-events:none;opacity:0;transform:scale(.3)}
 .gi-splat.active{opacity:1;transform:scale(1);transition:transform .16s cubic-bezier(.2,1.6,.4,1),opacity .5s .2s;opacity:0;animation:giSplat .6s ease-out forwards}
@@ -1464,7 +1462,7 @@ body{letter-spacing:.01em;text-rendering:optimizeLegibility}
 .gi-heart.active{opacity:1;animation:giHeartIn .5s cubic-bezier(.16,1.5,.3,1) both}
 .gi-heart.leaving{opacity:0;transform:translateY(-26px) scale(1.15);transition:opacity .32s ease-in,transform .32s ease-in}
 @keyframes giHeartIn{0%{transform:translateY(24px) scale(.2)}100%{transform:none}}
-.gi-heart-rays{position:absolute;inset:-70%;border-radius:50%;background:repeating-conic-gradient(from 0deg,#ffe9a888 0 6deg,transparent 6deg 24deg);-webkit-mask:radial-gradient(circle,#000 8%,transparent 62%);mask:radial-gradient(circle,#000 8%,transparent 62%);animation:giRays 5s linear infinite}
+.gi-heart-rays{position:absolute;inset:-24%;border-radius:50%;background:repeating-conic-gradient(from 0deg,#ffe9a866 0 6deg,transparent 6deg 24deg);-webkit-mask:radial-gradient(circle,#000 8%,transparent 62%);mask:radial-gradient(circle,#000 8%,transparent 62%);animation:giRays 5s linear infinite}
 @keyframes giRays{to{transform:rotate(1turn)}}
 .gi-heart-glow{position:absolute;inset:-18%;border-radius:50%;background:radial-gradient(circle,#fff 0,#fff1d0cc 22%,#ffc27a77 48%,#ff789233 68%,transparent 80%);animation:giGlow .6s ease-in-out infinite alternate}
 @keyframes giGlow{to{transform:scale(1.12);opacity:.8}}
@@ -1476,13 +1474,13 @@ body{letter-spacing:.01em;text-rendering:optimizeLegibility}
 .gi-mini{position:absolute;font-style:normal;font-size:17px;color:#ff5d7a;text-shadow:0 0 8px #fff;opacity:0;animation:giMini 1.1s ease-out infinite}
 .gi-mini.h1{left:6%;bottom:30%}.gi-mini.h2{right:4%;bottom:36%;animation-delay:.3s}.gi-mini.h3{left:44%;bottom:60%;animation-delay:.6s}
 @keyframes giMini{0%{opacity:0;transform:translateY(0) scale(.5)}30%{opacity:1}100%{opacity:0;transform:translateY(-46px) scale(1.1)}}
-.gi-master{position:absolute;z-index:17;width:320px;height:320px;pointer-events:none;opacity:0}
-.gi-master.active{opacity:1;animation:giMaster 1.05s ease-out forwards}
-.gi-master-rays{position:absolute;inset:-40%;border-radius:50%;background:repeating-conic-gradient(#fff3b8cc 0 4deg,transparent 4deg 15deg);-webkit-mask:radial-gradient(circle,#000 5%,transparent 60%);mask:radial-gradient(circle,#000 5%,transparent 60%);animation:giRays 3s linear infinite}
+.gi-master{position:absolute;z-index:17;width:220px;height:220px;pointer-events:none;opacity:0}
+.gi-master.active{opacity:1;animation:giMaster .7s ease-out forwards}
+.gi-master-rays{position:absolute;inset:-12%;border-radius:50%;background:repeating-conic-gradient(#fff3b899 0 4deg,transparent 4deg 15deg);-webkit-mask:radial-gradient(circle,#000 5%,transparent 60%);mask:radial-gradient(circle,#000 5%,transparent 60%);animation:giRays 3s linear infinite}
 .gi-master svg{position:absolute;inset:25%;width:50%;height:50%;filter:drop-shadow(0 0 18px #ffd166)}
 @keyframes giMaster{0%{opacity:0;transform:scale(.3) rotate(-30deg)}25%{opacity:1;transform:scale(1.05) rotate(0)}100%{opacity:0;transform:scale(1.5) rotate(20deg)}}
 .gi-icing{position:absolute;z-index:14;border-radius:50%;pointer-events:none;opacity:0;transform:scale(.55);transition:transform .35s cubic-bezier(.17,1.5,.3,1),opacity .22s}
-.gi-icing.active{opacity:1;transform:scale(1);animation:giIcingFloat 1.8s ease-in-out infinite alternate;filter:drop-shadow(0 0 8px #ffe6c9)}
+.gi-icing.active{opacity:.82;transform:scale(1);animation:giIcingFloat 1.8s ease-in-out infinite alternate;filter:drop-shadow(0 0 5px #ffe6c9)}
 .gi-icing.leaving{opacity:0;transform:scale(1.2) translateY(-14px);transition:transform .25s,opacity .22s}
 @keyframes giIcingFloat{to{transform:scale(1.04) translateY(-3px)}}
 .gi-doily-spin{transform-origin:50px 50px;animation:giSpin 14s linear infinite}
@@ -4585,6 +4583,8 @@ html.accessibility-reduced-effects .skill-preview-stage *{animation:none!importa
   cursor: pointer;
 }
 .launcher-settings:hover { color: #fff; text-decoration-color: currentColor; }
+.launcher-settings:disabled { cursor: wait; opacity: .55; }
+.launcher-status { color: #f5e9ce; font: 700 12px/1.3 Arial, sans-serif; text-align: center; text-shadow: 0 2px 4px #000; }
 .launcher-play:focus-visible, .launcher-settings:focus-visible { outline: 3px solid #fff; outline-offset: 4px; }
 @media (max-width: 600px) {
   .launcher-backdrop { background-position: 60% center; }
@@ -10291,6 +10291,10 @@ a.leaderboard-identity:hover{text-decoration:underline;text-decoration-color:#f1
 .depth-door em{align-self:stretch;margin-top:4px;padding:5px 0;border-radius:4px;color:#152116;background:linear-gradient(180deg,#ddff8e,#73c96f);text-align:center;font-style:normal;font-size:9px;font-weight:900}
 .depth-door.elite,.depth-door.boss{border-color:#7a3a44}.depth-door.elite em,.depth-door.boss em{color:#fff;background:linear-gradient(180deg,#ff7a86,#c63b4c)}
 .depth-door-foes{display:flex;align-items:center;gap:2px}.depth-door-foes img{width:22px;height:22px;object-fit:contain;border-radius:3px;background:#0006}.depth-door-foes i{margin-left:4px;color:var(--rz-warn,#f0c85a);font-size:8px;font-style:normal;font-weight:900}
+.depth-door-power{color:#b9edb4;font-size:8px;font-weight:900;line-height:1.35}.depth-door-power.under{color:#ffb6a4}
+.depth-door-mutations{display:grid;gap:4px;align-self:stretch;padding:7px;border:1px solid #8b91aa;border-radius:5px;background:#242b3b;color:#d7dfed;font-size:9px;line-height:1.35}
+.depth-door-mutations>b{color:#ffe08a;font-size:8px;letter-spacing:.06em}
+.depth-door-mutations>span>strong{font-size:inherit;line-height:inherit}
 .depth-pack{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 10px;padding:10px 12px;border:1px solid #384448;border-radius:4px;color:var(--rz-text,#f5f6ed);background:linear-gradient(180deg,var(--rz-card,#465255),var(--rz-card2,#354145));box-shadow:0 5px 12px #0008}
 .depth-gumballs{display:flex;align-items:center;gap:5px}.depth-gumballs img{width:30px;height:30px;object-fit:contain}.depth-gumballs b{font-size:18px}.depth-gumballs small{color:var(--rz-muted,#b7c4c0);font-size:8px;font-weight:800}
 .depth-pockets{display:flex;gap:6px;flex:1;justify-content:flex-end}

@@ -8,6 +8,7 @@ Screens.roster = function (screen) {
   const missing = PLAYABLE_IDS.filter(id => HEROES[id] && !ownedSet.has(id));
   const team = new Set(Save.data.team || []);
   const ready = Object.fromEntries(owned.map(id => [id, rosterUpgradeState(id)]));
+  const collectionReady = HeroCollections.catalogue.filter(c => HeroCollections.claimable(c)).length;
   const massLocked = !this.modeUnlocked('massUpgrade');
   const opt = Save.data.opt || (Save.data.opt = {});
   const validSorts = ['power', 'level', 'role', 'name'];
@@ -26,6 +27,7 @@ Screens.roster = function (screen) {
     <div class="hero-roster-actions">
       <button id="rosterTeam" type="button">Edit team</button>
       <button id="rosterUpgrade" type="button">${massLocked ? '🔒 ' : ''}Mass upgrade</button>
+      <button id="rosterCollections" type="button"><span>✦ Hero Collections</span><em>${collectionReady ? `${collectionReady} reward${collectionReady === 1 ? '' : 's'} ready` : 'Explore groups ›'}</em></button>
     </div>
     <div class="hero-roster-controls">
       <label class="hero-roster-sort">Sort
@@ -191,6 +193,7 @@ Screens.roster = function (screen) {
 
   $r('#rosterTeam').onclick = () => this.openTeamEditor();
   $r('#rosterUpgrade').onclick = () => massLocked ? this.showModeGate('massUpgrade') : this.massUpgrade();
+  $r('#rosterCollections').onclick = () => { this._collectionId = null; this.go('collections'); };
   sort.onchange = () => {
     sortBy = sort.value;
     opt.sort = sortBy;

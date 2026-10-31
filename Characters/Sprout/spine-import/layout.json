@@ -1,0 +1,210 @@
+{
+  "character": "Sprout",
+  "canvas": [
+    291,
+    414
+  ],
+  "coordinateSystem": "top-left, x right, y down, pixels",
+  "drawOrder": [
+    "legB",
+    "legF",
+    "torso",
+    "armLu",
+    "armLf",
+    "armR",
+    "scarf",
+    "head",
+    "leaf"
+  ],
+  "parts": [
+    {
+      "name": "legB",
+      "image": "images/legB.png",
+      "parent": null,
+      "topLeft": [
+        139,
+        280
+      ],
+      "pivot": [
+        156,
+        300
+      ],
+      "pivotInImage": [
+        17,
+        20
+      ],
+      "size": [
+        40,
+        122
+      ]
+    },
+    {
+      "name": "legF",
+      "image": "images/legF.png",
+      "parent": null,
+      "topLeft": [
+        120,
+        280
+      ],
+      "pivot": [
+        134,
+        302
+      ],
+      "pivotInImage": [
+        14,
+        22
+      ],
+      "size": [
+        28,
+        122
+      ]
+    },
+    {
+      "name": "torso",
+      "image": "images/torso.png",
+      "parent": null,
+      "topLeft": [
+        115,
+        216
+      ],
+      "pivot": [
+        143,
+        300
+      ],
+      "pivotInImage": [
+        28,
+        84
+      ],
+      "size": [
+        57,
+        103
+      ]
+    },
+    {
+      "name": "armLu",
+      "image": "images/armLu.png",
+      "parent": "torso",
+      "topLeft": [
+        81,
+        230
+      ],
+      "pivot": [
+        108,
+        242
+      ],
+      "pivotInImage": [
+        27,
+        12
+      ],
+      "size": [
+        45,
+        68
+      ]
+    },
+    {
+      "name": "armLf",
+      "image": "images/armLf.png",
+      "parent": "armLu",
+      "topLeft": [
+        61,
+        286
+      ],
+      "pivot": [
+        90,
+        296
+      ],
+      "pivotInImage": [
+        29,
+        10
+      ],
+      "size": [
+        60,
+        60
+      ]
+    },
+    {
+      "name": "armR",
+      "image": "images/armR.png",
+      "parent": "torso",
+      "topLeft": [
+        172,
+        260
+      ],
+      "pivot": [
+        172,
+        263
+      ],
+      "pivotInImage": [
+        0,
+        3
+      ],
+      "size": [
+        44,
+        58
+      ]
+    },
+    {
+      "name": "scarf",
+      "image": "images/scarf.png",
+      "parent": "torso",
+      "topLeft": [
+        109,
+        198
+      ],
+      "pivot": [
+        143,
+        216
+      ],
+      "pivotInImage": [
+        34,
+        18
+      ],
+      "size": [
+        69,
+        51
+      ]
+    },
+    {
+      "name": "head",
+      "image": "images/head.png",
+      "parent": null,
+      "topLeft": [
+        69,
+        70
+      ],
+      "pivot": [
+        143,
+        214
+      ],
+      "pivotInImage": [
+        74,
+        144
+      ],
+      "size": [
+        141,
+        145
+      ]
+    },
+    {
+      "name": "leaf",
+      "image": "images/leaf.png",
+      "parent": "head",
+      "topLeft": [
+        86,
+        16
+      ],
+      "pivot": [
+        150,
+        90
+      ],
+      "pivotInImage": [
+        64,
+        74
+      ],
+      "size": [
+        128,
+        95
+      ]
+    }
+  ]
+}

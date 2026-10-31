@@ -555,7 +555,6 @@ function friendshipEdit(id, stageName, original, replacement) {
   ['phantasia_dandy', 'A Wish in the Window', `I wished for a light to follow. Then I smelled peppermint and forgot about the light.`, `I wished for a guiding light. Then I smelled peppermint and forgot it.`],
   ['brusha_tisha', 'The Mess', `That is called composition.`, `That is composition.`],
   ['qom_soulvester_gourdy', 'An Old Cue Sheet', `The old songs are still here. Could we play one?`, `The old songs are here. Could we play one?`],
-  ['qom_eclipse_connie', 'Two Names on the Poster', `They put both our names on the Halloween show poster!`, `We're both on the Halloween poster!`],
   ['rodger_teagan', 'One Cup Short', `The kitchen shelf had spares this morning. I will fetch one.`, `The kitchen had spare cups this morning. I will fetch one.`],
   ['gigi_connie', 'The Empty Hook', `I saw it in the lounge this morning. I did not take it, before you ask.`, `Saw it in the lounge this morning. Didn't take it, before you ask.`],
   ['mrsholloway_gourdy', 'A Scent in the Dust', `I know. I am sorry I could not get back sooner.`, `I know. I'm sorry I could not come sooner.`],

@@ -1237,3 +1237,13 @@
 .tu-mass-btn.max b {
   color: #e9d5ff;
 }
+
+/* Extra life: alarm pulse, header scanline, Chekhov bobbing in his duct */
+@keyframes tuAlarm { 0%,100% { box-shadow: 0 0 0 0 #ff3b3b00, inset 0 0 0 1px #ff3b3b55; } 50% { box-shadow: 0 0 22px 2px #ff3b3b66, inset 0 0 0 1px #ff3b3bcc; } }
+@keyframes tuScan { from { transform: translateX(-120%); } to { transform: translateX(120%); } }
+@keyframes tuBob { 0%,100% { transform: translateY(0) rotate(-1deg); } 50% { transform: translateY(-5px) rotate(1.5deg); } }
+.tu-alert-panel { animation: tuAlarm 1.4s ease-in-out infinite; }
+.tu-header { position: relative; overflow: hidden; }
+.tu-header::after { content: ""; position: absolute; inset: 0; width: 40%; background: linear-gradient(90deg, transparent, #7fe9ff22, transparent); pointer-events: none; animation: tuScan 5s linear infinite; }
+.tu-cheknov img { animation: tuBob 2.6s ease-in-out infinite; transform-origin: 50% 100%; }
+@media (prefers-reduced-motion: reduce) { .tu-alert-panel, .tu-header::after, .tu-cheknov img { animation: none; } }

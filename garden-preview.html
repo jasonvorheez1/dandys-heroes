@@ -1,0 +1,7 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+body{background:#292437;color:white;font:16px Arial;display:flex;gap:35px;align-items:flex-start;padding:25px}.card{background:#1b1624;border:2px solid #7c5b92;border-radius:14px;padding:10px;text-align:center}.rig-sprite{width:310px;height:400px}.rig-svg{width:100%;height:100%}img{width:310px;height:400px;object-fit:contain}
+</style></head><body>
+<div class="card"><div class="rig-sprite" id="rig"></div><p>Garden rig</p></div><div class="card"><img src="Characters/scraps/scraps-garden-portrait.png"><p>Portrait pose</p></div><div class="card"><img src="Characters/scraps/scraps-garden-still.png"><p>Battle pose</p></div>
+<script>const ASSET='./',Save={data:{opt:{animatedChars:true},heroes:{Scraps:{costume:'garden-bouquet'}}},hero(){return this.data.heroes.Scraps}},HERO_SKINS={Scraps:{id:'pastel-bow'}},Art={skin(){return null},defaultHero(){return ''}},MainStory={withCh(_c,fn){return fn()},hardDone(){return true}},HeroPage={extrasTab(){return document.createElement('div')}},Sound={play(){}},el=(tag,cls,html)=>{const e=document.createElement(tag);e.className=cls;e.innerHTML=html||'';return e};Save.write=()=>{};</script>
+<script src="garden-rig-preview.js"></script><script src="js/rigs/scraps-garden.js"></script><script>const r=ScrapsRig.create(document.getElementById('rig'),'garden-bouquet');const u={face:1,moving:false,vx:0,vy:0,animState:'idle',animT:0,animDur:0,casting:false,hitT:0,visualSleep:false,visualStun:false};r.update(u,.016);</script>
+</body></html>

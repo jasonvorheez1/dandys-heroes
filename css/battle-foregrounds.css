@@ -1,0 +1,144 @@
+/* The walkable plane keeps the units anchored while each room gets its own
+   foreground materials and a slow, low-contrast light pass. */
+#floorLine {
+  --floor-top: #31454a;
+  --floor-mid: #17282e;
+  --floor-bottom: #070d14;
+  --floor-glint: #ccefe8;
+  --floor-debris: #cce4ce;
+  --floor-marks:
+    radial-gradient(ellipse 38% 9% at 13% 24%, #91b6af23 0 38%, transparent 70%),
+    radial-gradient(ellipse 52% 8% at 76% 43%, #d4e7d41d 0 34%, transparent 72%),
+    linear-gradient(117deg, transparent 0 17%, #090f1740 18% 22%, transparent 23% 64%, #a1c8bd12 65% 67%, transparent 68%);
+  border-top: 2px solid color-mix(in srgb, var(--floor-glint) 46%, transparent);
+  background:
+    radial-gradient(ellipse 65% 20% at 48% 1%, color-mix(in srgb, var(--floor-glint) 22%, transparent), transparent 80%),
+    linear-gradient(90deg, #05090e78, transparent 22% 78%, #05090e78),
+    linear-gradient(180deg, var(--floor-top) 0%, var(--floor-mid) 42%, var(--floor-bottom) 100%);
+  box-shadow: inset 0 15px 28px #ffffff14, inset 0 -65px 80px #020508b8, 0 -7px 30px color-mix(in srgb, var(--floor-glint) 19%, transparent);
+}
+
+#floorLine::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: var(--floor-marks);
+  opacity: .9;
+  transform-origin: 50% 10%;
+  animation: battleFloorBreathe 11s ease-in-out infinite alternate;
+}
+
+#floorLine::after {
+  content: "";
+  position: absolute;
+  inset: -8% -35%;
+  border: 0;
+  background:
+    linear-gradient(108deg, transparent 33%, color-mix(in srgb, var(--floor-glint) 10%, transparent) 45%, color-mix(in srgb, var(--floor-glint) 24%, transparent) 49%, transparent 59%),
+    radial-gradient(ellipse 34% 7% at 52% 30%, color-mix(in srgb, var(--floor-glint) 14%, transparent), transparent 75%),
+    radial-gradient(ellipse at 50% 20%, transparent 30%, #0204088c 100%);
+  transform: translateX(-17%);
+  animation: battleFloorLight 12s ease-in-out infinite alternate;
+}
+
+#floorLine > i {
+  position: absolute;
+  z-index: 1;
+  width: 21px;
+  height: 9px;
+  background: var(--floor-debris);
+  clip-path: polygon(7% 54%, 44% 3%, 100% 23%, 76% 91%, 24% 100%);
+  opacity: .26;
+  filter: blur(.3px);
+  transform: rotate(-19deg);
+  animation: battleFloorDrift 9s ease-in-out infinite alternate;
+}
+#floorLine > i:nth-child(1) { left: 7%; top: 23%; width: 15px; animation-delay: -2s; }
+#floorLine > i:nth-child(2) { left: 22%; top: 61%; width: 26px; height: 7px; animation-delay: -6s; }
+#floorLine > i:nth-child(3) { right: 16%; top: 34%; width: 18px; animation-delay: -4s; }
+#floorLine > i:nth-child(4) { right: 4%; top: 72%; width: 31px; height: 8px; animation-delay: -8s; }
+
+/* Paint and confetti are irregular splashes rather than perspective tiles. */
+#floorLine:is([data-scene="rainbow-rooms"], [data-scene="artist"], [data-scene="art-floor"]) {
+  --floor-top: #413b58; --floor-mid: #29263f; --floor-bottom: #10121d;
+  --floor-glint: #f6c6f4; --floor-debris: #eec86e;
+  --floor-marks:
+    radial-gradient(ellipse 12% 5% at 13% 25%, #ef89c590 0 38%, transparent 72%),
+    radial-gradient(ellipse 18% 7% at 78% 39%, #71d5df70 0 38%, transparent 73%),
+    radial-gradient(ellipse 11% 8% at 42% 67%, #f4d07754 0 38%, transparent 73%),
+    linear-gradient(118deg, transparent 17%, #af87d935 20% 22%, transparent 25% 60%, #6bbdbe28 63% 65%, transparent 67%);
+}
+
+/* Green rooms carry leaf shadows and drifting flecks. */
+#floorLine:is([data-scene="greenhouse"], [data-scene="shelly-floor"], [data-scene="easter-floor"]) {
+  --floor-top: #465440; --floor-mid: #243b35; --floor-bottom: #0b1818;
+  --floor-glint: #d7ed9c; --floor-debris: #cbe98e;
+  --floor-marks:
+    radial-gradient(ellipse 19% 4% at 16% 23%, #1c361c98 0 45%, transparent 75%),
+    radial-gradient(ellipse 24% 5% at 84% 38%, #132d249c 0 45%, transparent 75%),
+    radial-gradient(ellipse 11% 3% at 52% 61%, #b0db7b4d 0 45%, transparent 75%),
+    linear-gradient(126deg, transparent 26%, #d8efad1b 29% 31%, transparent 34% 66%, #142c2459 69% 73%, transparent 76%);
+}
+#floorLine:is([data-scene="greenhouse"], [data-scene="shelly-floor"], [data-scene="easter-floor"]) > i {
+  border-radius: 75% 0 75% 0;
+  clip-path: none;
+}
+
+/* Water reads through curved reflections instead of straight floor lines. */
+#floorLine[data-scene="aquatic-floor"] {
+  --floor-top: #285468; --floor-mid: #133544; --floor-bottom: #071b2d;
+  --floor-glint: #95eaf5; --floor-debris: #b9f2f7;
+  --floor-marks:
+    radial-gradient(ellipse 31% 9% at 23% 26%, transparent 53%, #9cdef174 58% 60%, transparent 66%),
+    radial-gradient(ellipse 35% 10% at 78% 50%, transparent 55%, #b8f4e55a 59% 61%, transparent 67%),
+    radial-gradient(ellipse 28% 8% at 46% 72%, transparent 56%, #9bdbe043 60% 62%, transparent 68%);
+}
+#floorLine[data-scene="aquatic-floor"] > i { border-radius: 50%; clip-path: none; height: 4px; }
+
+/* Dark display floors get pools of stage light and broken reflections. */
+#floorLine:is([data-scene="vee-floor"], [data-scene="vee-showroom"], [data-scene="vee-storage"], [data-scene="astro-floor"]) {
+  --floor-top: #38374f; --floor-mid: #1c2339; --floor-bottom: #090d1c;
+  --floor-glint: #a9d9ff; --floor-debris: #91caff;
+  --floor-marks:
+    radial-gradient(ellipse 34% 14% at 18% 27%, #678bf84b, transparent 76%),
+    radial-gradient(ellipse 38% 12% at 83% 37%, #d76fb73f, transparent 78%),
+    linear-gradient(108deg, transparent 13%, #a8d5ff26 14% 15%, transparent 17% 72%, #dda3ff22 73% 74%, transparent 76%);
+}
+
+/* Seasonal rooms use scattered soft color and warm stage reflections. */
+#floorLine:is([data-scene="gift-floor"], [data-scene="christmas-floor"], [data-scene="halloween-floor"], [data-scene="diner"]) {
+  --floor-top: #5d473f; --floor-mid: #322c32; --floor-bottom: #15121b;
+  --floor-glint: #ffd69b; --floor-debris: #ffc982;
+  --floor-marks:
+    radial-gradient(ellipse 13% 7% at 18% 34%, #f0af8a58, transparent 75%),
+    radial-gradient(ellipse 16% 6% at 78% 28%, #f2d58a4e, transparent 75%),
+    radial-gradient(ellipse 10% 5% at 47% 65%, #d3779952, transparent 75%),
+    linear-gradient(114deg, transparent 25%, #fff0c81b 28% 30%, transparent 34% 69%, #2c1a2880 72% 75%, transparent 78%);
+}
+
+#battle.kh-battle #floorLine,
+#battle.unknown-world-battle #floorLine {
+  background:
+    radial-gradient(ellipse 65% 20% at 48% 1%, color-mix(in srgb, var(--floor-glint) 22%, transparent), transparent 80%),
+    linear-gradient(90deg, #05090e78, transparent 22% 78%, #05090e78),
+    linear-gradient(180deg, var(--floor-top) 0%, var(--floor-mid) 42%, var(--floor-bottom) 100%);
+}
+#battle.kh-battle #floorLine { --floor-top: #26316b; --floor-mid: #11194a; --floor-bottom: #050922; --floor-glint: #b5c8ff; --floor-debris: #ffe394; }
+#battle.kh-battle #floorLine::before { background: var(--floor-marks); }
+#battle.unknown-world-battle #floorLine { --floor-top: #e5bf73; --floor-mid: #aa7645; --floor-bottom: #473529; --floor-glint: #fff0ac; --floor-debris: #f9ce77; }
+#battle.unknown-world-battle #floorLine::before { background: var(--floor-marks); opacity: .65; }
+#battle.unknown-world-battle #floorLine::after { background: linear-gradient(108deg, transparent 36%, #fff7d330 48%, transparent 59%), radial-gradient(ellipse at 50% 25%, transparent 28%, #38221399 100%); }
+
+@keyframes battleFloorBreathe { from { opacity: .58; transform: scale(1); } to { opacity: .98; transform: scale(1.04); } }
+@keyframes battleFloorLight { from { transform: translateX(-17%); opacity: .55; } to { transform: translateX(17%); opacity: .9; } }
+@keyframes battleFloorDrift { from { transform: translate3d(0, 0, 0) rotate(-19deg); } to { transform: translate3d(9px, -7px, 0) rotate(5deg); } }
+
+html.accessibility-reduced-effects #floorLine::before,
+html.accessibility-reduced-effects #floorLine::after,
+html.accessibility-reduced-effects #floorLine > i,
+html.graphics-low #floorLine::before,
+html.graphics-low #floorLine::after,
+html.graphics-low #floorLine > i { animation: none; }
+html.graphics-low #floorLine > i,
+html.graphics-no-background #floorLine > i,
+html.graphics-no-background #floorLine::after { display: none; }

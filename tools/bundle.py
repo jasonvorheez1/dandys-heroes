@@ -1,35 +1,50 @@
-"""Read/replace/insert source files inside js/game.js (a JSON-line bundle).
-usage: bundle.py get NAME OUTFILE | put NAME INFILE [--after OTHER | --before OTHER] | list
+"""Read, replace, or insert sources in the single-line js/game.js bundle.
+
+usage: bundle.py list | get NAME OUTFILE | put NAME INFILE [--after OTHER | --before OTHER]
 """
-import json, sys
-SRC = '/workspace/js/game.js'
+import json
+import sys
+from pathlib import Path
+
+SRC = Path('/workspace/js/game.js')
+START = 'var S='
+END = ';\nfor(var i='
+
 
 def load():
-    lines = open(SRC, encoding='utf-8').read().split('\n')
-    return lines
+    source = SRC.read_text(encoding='utf-8')
+    prefix, remaining = source.split(START, 1)
+    payload, suffix = remaining.split(END, 1)
+    return prefix, json.loads(payload), END + suffix
 
-def parse(line):
-    return json.loads(line[:-1] if line.endswith(',') else line)
 
 def main():
-    cmd = sys.argv[1]
-    lines = load()
-    idx = [i for i, l in enumerate(lines) if l.startswith('["')]
-    names = {parse(lines[i])[0]: i for i in idx}
-    if cmd == 'list':
-        print('\n'.join(names)); return
+    command = sys.argv[1]
+    prefix, scripts, suffix = load()
+    names = [name for name, _ in scripts]
+    if command == 'list':
+        print('\n'.join(names))
+        return
     name = sys.argv[2]
-    if cmd == 'get':
-        open(sys.argv[3], 'w', encoding='utf-8').write(parse(lines[names[name]])[1]); return
-    if cmd == 'put':
-        body = open(sys.argv[3], encoding='utf-8').read()
-        enc = json.dumps([name, body], ensure_ascii=True, separators=(',', ':')) + ','
+    if command == 'get':
+        Path(sys.argv[3]).write_text(scripts[names.index(name)][1], encoding='utf-8')
+        return
+    if command == 'put':
+        body = Path(sys.argv[3]).read_text(encoding='utf-8')
         if name in names:
-            lines[names[name]] = enc
+            scripts[names.index(name)][1] = body
         else:
-            if '--after' in sys.argv: pos = names[sys.argv[sys.argv.index('--after') + 1]] + 1
-            elif '--before' in sys.argv: pos = names[sys.argv[sys.argv.index('--before') + 1]]
-            else: raise SystemExit('new file needs --after/--before')
-            lines.insert(pos, enc)
-        open(SRC, 'w', encoding='utf-8').write('\n'.join(lines)); return
-main()
+            marker = '--after' if '--after' in sys.argv else '--before'
+            if marker not in sys.argv:
+                raise SystemExit('new file needs --after/--before')
+            anchor = sys.argv[sys.argv.index(marker) + 1]
+            index = names.index(anchor) + (marker == '--after')
+            scripts.insert(index, [name, body])
+        SRC.write_text(prefix + START + json.dumps(scripts, ensure_ascii=True, separators=(',', ':')) + suffix,
+                       encoding='utf-8')
+        return
+    raise SystemExit('unknown command: ' + command)
+
+
+if __name__ == '__main__':
+    main()

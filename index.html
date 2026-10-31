@@ -10,6 +10,7 @@
 <link rel="preload" as="image" href="uploads/Dandysheroes-2.webp">
 <link rel="stylesheet" href="css/styles.css">
 <link rel="stylesheet" href="css/layers.css">
+<link rel="stylesheet" href="css/dyle-radio.css">
 <link rel="stylesheet" href="css/home-stage.css">
 <link rel="stylesheet" href="css/rarity-aura.css">
 <link rel="stylesheet" href="css/dandy-buttons.css">
@@ -24,6 +25,7 @@
 <link rel="stylesheet" href="css/roster-refresh.css">
 <link rel="stylesheet" href="css/bottom-navigation.css">
 <link rel="stylesheet" href="css/heroes-menu.css">
+<link rel="stylesheet" href="css/hero-collections.css">
 <link rel="stylesheet" href="css/arena-exchange.css">
 <link rel="stylesheet" href="css/trials-polish.css">
 <link rel="stylesheet" href="css/mods.css">
@@ -35,6 +37,12 @@
 <link rel="stylesheet" href="css/dw-modded.css">
 <link rel="stylesheet" href="css/almost-home.css">
 <link rel="stylesheet" href="css/veteran-events.css">
+<link rel="stylesheet" href="css/arena-season.css">
+<link rel="stylesheet" href="css/arena-overhaul.css">
+<link rel="stylesheet" href="css/battle-foregrounds.css">
+<link rel="stylesheet" href="css/effekseer.css">
+<link rel="stylesheet" href="css/boskers-globe.css">
+<script src="vendor/effekseer/effekseer.min.js" defer></script>
 </head>
 <body>
 
@@ -49,8 +57,9 @@
   <div class="launcher-card">
     <img class="launcher-logo" src="uploads/Dandysheroes-2.webp" alt="Dandy's Heroes" fetchpriority="high">
     <div class="launcher-actions">
-      <button id="launcherPlay" class="launcher-play" type="button">Play</button>
-      <button id="launcherSettings" class="launcher-settings" type="button">Settings</button>
+      <button id="launcherPlay" class="launcher-play" type="button" disabled>Loading…</button>
+      <button id="launcherSettings" class="launcher-settings" type="button" disabled>Settings</button>
+      <div id="launcherStatus" class="launcher-status" role="status" aria-live="polite">Loading game…</div>
     </div>
   </div>
 </div>
@@ -104,9 +113,10 @@
 <div id="battle" hidden>
   <div id="stage">
     <div id="bgLayer"></div>
-    <div id="floorLine"></div>
+    <div id="floorLine" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
     <div id="fxBack"></div>
     <div id="unitLayer"></div>
+    <canvas id="effekseerLayer" aria-hidden="true"></canvas>
     <div id="fxFront"></div>
     <div id="popLayer"></div>
     <div id="flash"></div>
@@ -132,6 +142,7 @@
 <div id="modal" hidden><div id="modalBox"></div></div>
 <div id="toasts"></div>
 
+<script src="js/boot-loader.js"></script>
 <script src="js/item-sheet.js"></script>
 </body>
 </html>

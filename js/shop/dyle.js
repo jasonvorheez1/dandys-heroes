@@ -1,6 +1,11 @@
 /* Dyle's personal notes and permanent appearance gifts use the existing save. */
 'use strict';
 const DyleShop = (() => {
+  const records = [
+    { id:'kh', mode:'dyleKh', title:'Dearly Beloved', source:'Kingdom Hearts', cost:75000 },
+    { id:'ff7', mode:'dyleFf7', title:'Main Theme', source:'Final Fantasy VII', cost:75000 },
+    { id:'ode', mode:'dyleOde', title:'Ode to Joy', source:'Beethoven', cost:75000 }
+  ];
   const owned = id => Save.owns(id);
   const stars = id => Save.data.heroes?.[id]?.stars || 0;
   const chapterClear = (chapter, node, hard = false) => typeof MainStory !== 'undefined' && MainStory.withCh(chapter, () => hard ? MainStory.hardDone(node) : MainStory.done(MainStory.nodeIdx(node)));
@@ -40,7 +45,18 @@ const DyleShop = (() => {
     const s = Save.data.shop.dyle;
     if (!Array.isArray(s.read)) s.read = [];
     if (!Array.isArray(s.skins)) s.skins = [];
+    if (!Array.isArray(s.records)) s.records = [];
     return s;
+  }
+  function hasRecord(id) { return state().records.includes(id); }
+  function buyRecord(id) {
+    const record = records.find(item => item.id === id);
+    if (!record || hasRecord(id) || !Save.can({ tape:record.cost })) return false;
+    Save.data.res.tape -= record.cost;
+    state().records.push(id);
+    Save.write();
+    UI.refreshBar();
+    return true;
   }
   function readCount() { return files.filter(f => state().read.includes(f.id)).length; }
   function hear(id) {
@@ -110,5 +126,30 @@ const DyleShop = (() => {
     };
     $('.dyle-to-gossip', card)?.addEventListener('click', () => { Screens.dyleShopTab = 'gossip'; Screens.render(); });
   }
-  return { files, state, readCount, hear, hasSkin, ready, claim, renderGossip, renderSkins };
+  function renderRadio(contents, root, api) {
+    const list = el('div', 'dyle-radio-list');
+    contents.appendChild(list);
+    records.forEach(record => {
+      const ownedRecord = hasRecord(record.id);
+      const selected = Music.getMenuMode() === record.mode;
+      const card = el('article', 'dyle-radio-card' + (ownedRecord ? ' owned' : ''));
+      card.innerHTML = `<span class="dyle-radio-symbol" aria-hidden="true">♫</span><div class="dyle-radio-copy"><small>${record.source}</small><h3>${record.title}</h3><span>${ownedRecord ? selected ? 'Playing in menus' : 'Unlocked for menu music' : 'Permanent menu music unlock'}</span></div><button class="market-primary dyle-radio-action" type="button">${ownedRecord ? selected ? 'Selected' : 'Select track' : `Unlock · 📼 ${fmt(record.cost)}`}</button>`;
+      const action = $('.dyle-radio-action', card);
+      action.disabled = ownedRecord && selected || !ownedRecord && !Save.can({ tape:record.cost });
+      action.onclick = () => {
+        if (!hasRecord(record.id)) {
+          if (!buyRecord(record.id)) return;
+          Sound.play('get_rare');
+          api.say(`A fine choice. ${record.title} is yours to play from the radio whenever you like.`, 'pleased');
+        } else {
+          Music.setMenuMode(record.mode);
+          Sound.play('ui_ok');
+          api.say(`${record.title}. I will put it on the timetable.`, 'pleased');
+        }
+        list.remove(); renderRadio(contents, root, api);
+      };
+      list.appendChild(card);
+    });
+  }
+  return { files, records, state, readCount, hear, hasSkin, ready, claim, hasRecord, buyRecord, renderGossip, renderSkins, renderRadio };
 })();

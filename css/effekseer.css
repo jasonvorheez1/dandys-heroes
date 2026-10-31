@@ -1,0 +1,14 @@
+#effekseerLayer {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  display: block;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+html.accessibility-reduced-effects #effekseerLayer,
+#battle.story-tb #effekseerLayer {
+  visibility: hidden;
+}
