@@ -5,7 +5,7 @@
 'use strict';
 
 Object.assign(ST_BG, {
-  christmas: 'Stagebackgrounds/maps/christmas-floor.png', platform: 'Stagebackgrounds/maps/warehouse.png'
+  christmas: 'assets/backgrounds/maps/christmas-floor.png', platform: 'assets/backgrounds/maps/warehouse.png'
 });
 Object.assign(ST_MUSIC, { colossus2: 'stColossus' });
 

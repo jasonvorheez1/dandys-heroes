@@ -8,7 +8,7 @@
 'use strict';
 
 Object.assign(ST_BG, {
-  park: 'Stagebackgrounds/maps/park-gate.webp', station: 'uploads/gardenviewtrainstation.webp', station2: 'uploads/gardenviewtrainstation.webp',
+  park: 'assets/backgrounds/maps/park-gate.webp', station: 'uploads/gardenviewtrainstation.webp', station2: 'uploads/gardenviewtrainstation.webp',
   renovation: 'uploads/gardenviewsignclosedforrenovation.png'
 });
 

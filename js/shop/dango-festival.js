@@ -3,9 +3,9 @@
 const DangoFestival = (() => {
   const roster = ['Dango','Jessie','Cody','Nugget','Shelly','Vee','Bassie','Bobette'];
   const stages = [
-    {name:'Tea Tray Relay',hint:'Clear the helpers before the healer can keep them standing.',bg:'Stagebackgrounds/maps/diner.png',boss:'Sprout',waves:[['Boxten','Toodles','Poppy'],['Cosmo','Goob','Poppy'],['Sprout','Cosmo','Goob','Toodles']]},
-    {name:'Center Stage Rush',hint:'Fast damage dealers build pressure. Keep your support protected.',bg:'Stagebackgrounds/maps/vee-showroom.webp',boss:'Vee',waves:[['Looey','Poppy','Toodles'],['Glisten','Vee','Poppy'],['Vee','Glisten','Looey','Toodles']]},
-    {name:'Backstage Scramble',hint:'A tough front line protects ranged damage. Bring sustained damage.',bg:'Stagebackgrounds/maps/vee-storage.webp',boss:'Bobette',waves:[['Goob','Scraps','Boxten'],['Bobette','Scraps','Poppy'],['Bobette','Goob','Scraps','Cosmo']]},
+    {name:'Tea Tray Relay',hint:'Clear the helpers before the healer can keep them standing.',bg:'assets/backgrounds/maps/diner.png',boss:'Sprout',waves:[['Boxten','Toodles','Poppy'],['Cosmo','Goob','Poppy'],['Sprout','Cosmo','Goob','Toodles']]},
+    {name:'Center Stage Rush',hint:'Fast damage dealers build pressure. Keep your support protected.',bg:'assets/backgrounds/maps/vee-showroom.webp',boss:'Vee',waves:[['Looey','Poppy','Toodles'],['Glisten','Vee','Poppy'],['Vee','Glisten','Looey','Toodles']]},
+    {name:'Backstage Scramble',hint:'A tough front line protects ranged damage. Bring sustained damage.',bg:'assets/backgrounds/maps/vee-storage.webp',boss:'Bobette',waves:[['Goob','Scraps','Boxten'],['Bobette','Scraps','Poppy'],['Bobette','Goob','Scraps','Cosmo']]},
     {name:'Last Train Encore',hint:'Three mixed teams, then a well-supported headliner. Save your team for the finale.',bg:'uploads/gardenviewtrainstation.webp',boss:'Dandy',waves:[['Boxten','Poppy','Toodles'],['Goob','Cosmo','Glisten'],['Dandy','Sprout','Vee','Goob','Toodles']]}
   ];
   const modes = {warmup:{name:'Warm-up',level:30,waves:2,pay:60,mult:.7},standard:{name:'Showtime',level:75,waves:3,pay:125,mult:1},encore:{name:'Encore',level:140,waves:3,pay:220,mult:1.35}};
@@ -96,7 +96,7 @@ Screens.dwModdedDossier = function(s, ev) {
 const DangoShop = (()=>{
   const offers=[
     ...['Dango','Jessie','Cody','Nugget'].map(id=>({id:'shards-'+id,name:id+' research',hero:id,amount:10,cost:240,desc:'10 research toward recruiting or promoting '+id+'.'})),
-    {id:'tape',name:'Field Tape',cost:70,gain:{tape:15},desc:'15 Field Tape for skill and counter upgrades.',img:'OBJECT/Tape.png'},
+    {id:'tape',name:'Field Tape',cost:70,gain:{tape:15},desc:'15 Field Tape for skill and counter upgrades.',img:'assets/objects/Tape.png'},
     {id:'exp',name:'EXP parcel',cost:60,gain:{exp:2500},desc:'2,500 EXP for your roster.',img:'uploads/exp-bottle-icon.png'},
     {id:'manual',name:'Training notes',cost:100,gain:{manual:10},desc:'10 Training Manuals.',emoji:'📘'},
     {id:'scrap',name:'Trinket parts',cost:120,gain:{scrap:60},desc:'60 Trinket Shards for crafting.',emoji:'🔩'}

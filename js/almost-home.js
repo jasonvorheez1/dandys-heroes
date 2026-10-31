@@ -48,7 +48,7 @@
     cut.style.setProperty('--ah-cut-time', duration + 'ms');
     const sprite = (id, cls) => `<img class="ah-cut-toon ${cls || ''}" src="${art(id)}" alt="${id}">`;
     if (door) {
-      const bg = kind === 'door-loop' ? 'Stagebackgrounds/maps/diner.png' : kind === 'door-out' ? 'uploads/backgroundlobby2.png' : 'uploads/backgroundlobby1.webp';
+      const bg = kind === 'door-loop' ? 'assets/backgrounds/maps/diner.png' : kind === 'door-out' ? 'uploads/backgroundlobby2.png' : 'uploads/backgroundlobby1.webp';
       cut.innerHTML = `<div class="ah-door-wall"></div><div class="ah-door-space"><div class="ah-door-view" style="background-image:url('${ASSET + bg}')"></div><div class="ah-door-leaf"><div class="ah-door-panel"></div><span class="ah-door-sign">${kind === 'door-loop' ? 'STAFF ONLY' : kind === 'door-out' ? 'STATION' : 'EAST WING'}</span><i class="ah-door-handle"></i></div><div class="ah-door-trim"></div></div><div class="ah-door-light"></div>`;
     } else if (kind === 'tea') {
       cut.innerHTML = `<div class="ah-cut-table"></div>${sprite('Dango','ah-cut-left')}<svg class="ah-pour" viewBox="0 0 500 300"><g class="ah-pot"><path d="M65 80q-20 100 70 100t65-100Z" fill="#bde3d3" stroke="#665166" stroke-width="6"/><path d="M196 108l51-35-24 69-26 8" fill="#bde3d3" stroke="#665166" stroke-width="6"/><path d="M71 110q-72-36-39 39l43 11" fill="none" stroke="#665166" stroke-width="10"/><ellipse cx="133" cy="79" rx="66" ry="13" fill="#f3c9d8" stroke="#665166" stroke-width="6"/><circle cx="133" cy="60" r="12" fill="#f3c9d8" stroke="#665166" stroke-width="5"/></g><path class="ah-tea-stream" d="M265 132Q320 145 334 217" fill="none" stroke="#c59355" stroke-width="8" stroke-linecap="round"/><ellipse cx="340" cy="276" rx="62" ry="10" fill="#fceedd"/><path d="M298 216h85v29q0 32-42 32t-43-32Z" fill="#f3c9d8" stroke="#665166" stroke-width="5"/><ellipse cx="340" cy="216" rx="42" ry="7" fill="#ac7b50"/><path d="M384 225q39-12 25 19l-25 6" fill="none" stroke="#665166" stroke-width="7"/></svg>`;
@@ -153,7 +153,7 @@ Cody: Already oiling the traps.
 Vee: Fine. By tonight, you're gone.`),
 
     scene('02 · Chipped China & Broken Clocks', 'Welcome Room', `
-@bg Stagebackgrounds/maps/diner.png
+@bg assets/backgrounds/maps/diner.png
 @ah tea
 @music ahCandy
 @cut tea
@@ -186,7 +186,7 @@ Cody: Deadbolt's down. Looks like we're all stuck together.
 Jessie~: I heard that! I am NOT "together" with commoners!`),
 
     scene('03 · Prima Donna Soundcheck', 'Center Stage', `
-@bg Stagebackgrounds/maps/vee-showroom.webp
+@bg assets/backgrounds/maps/vee-showroom.webp
 @ah stage
 @music ahCandy
 @cut stage
@@ -229,7 +229,7 @@ Nugget: Pretzel inbound! Catch, Miss Vee!
 Vee: DON'T THROW BAKED GOODS AT MY LENS!`),
 
     scene('04 · Euclidean Geometry Is Optional', 'Backstage Storage', `
-@bg Stagebackgrounds/maps/vee-storage.webp
+@bg assets/backgrounds/maps/vee-storage.webp
 @ah backstage
 @music ahCandy
 @cut door-loop
@@ -300,7 +300,7 @@ Nugget: I KNEW IT! AERATION NEVER FAILS!
 Jessie [note] (bow): Be in your seats for tomorrow's broadcast, peasants. And bring roses!`),
 
     scene('06 · The Souvenir on the Shelf', 'The Real Gardenview & Royal Studio', `
-@bg Stagebackgrounds/maps/rainbow-rooms.png
+@bg assets/backgrounds/maps/rainbow-rooms.png
 @music ahCandy
 @cut token
 @enter Gigi center
@@ -325,7 +325,7 @@ Gigi [note]: Seven? To her face? Mwehehe, they can stay forever. I'm going to go
 @exitall
 @fx dark
 @card That night, in the East Wing.
-@bg Stagebackgrounds/maps/vee-storage.webp
+@bg assets/backgrounds/maps/vee-storage.webp
 @ah backstage
 @enter Dango left
 @enter Cody right
@@ -351,7 +351,7 @@ Jessie [note] (bow): Home? Darling, we own the stage. Now chew faster! Tomorrow 
 
   const bonus = [
     scene('Dango · The Tea Ceremony Panic', 'Tea Counter', `
-@bg Stagebackgrounds/maps/diner.png
+@bg assets/backgrounds/maps/diner.png
 @ah tea
 @music ahCandy
 @enter Dango left
@@ -372,7 +372,7 @@ Dango [sweat] (jump): She liked it! THE FOAM WAS ACCEPTABLE!
 > Dango flops sideways onto her cushion, sobbing with relief.`),
 
     scene('Jessie · Acoustic Decibel Wars', 'Center Stage', `
-@bg Stagebackgrounds/maps/vee-showroom.webp
+@bg assets/backgrounds/maps/vee-showroom.webp
 @ah stage
 @music ahCandy
 @enter Jessie right
@@ -423,7 +423,7 @@ Dango [note]: So soft inside! Like red bean paste!
 Cody: Say "bean paste" once more and your broom goes in the trap.`),
 
     scene('Nugget · The Silk Scarf Incident', 'Backstage Dressing Room', `
-@bg Stagebackgrounds/maps/vee-storage.webp
+@bg assets/backgrounds/maps/vee-storage.webp
 @ah backstage
 @music ahCandy
 @enter Jessie right

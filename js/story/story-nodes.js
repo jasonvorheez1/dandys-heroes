@@ -8,12 +8,12 @@
 
 const ST_BG = {
   lobby: 'uploads/backgroundlobby1.webp', sign: 'uploads/backgroundlobby2.png', launcher: 'uploads/launcher-room.webp',
-  diner: 'Stagebackgrounds/maps/diner.png', rainbow: 'Stagebackgrounds/maps/rainbow-rooms.png', art: 'Stagebackgrounds/maps/art-floor.png',
-  gift: 'Stagebackgrounds/maps/gift-floor.png', aquatic: 'Stagebackgrounds/maps/aquatic-floor.png', astro: 'Stagebackgrounds/maps/astro-floor.png',
-  library: 'Stagebackgrounds/maps/library-floor.png', artist: 'Stagebackgrounds/maps/artist.png', greenhouse: 'Stagebackgrounds/maps/greenhouse.png',
-  warehouse: 'Stagebackgrounds/maps/warehouse.png', vee: 'Stagebackgrounds/maps/vee-floor.png', veeShow: 'Stagebackgrounds/maps/vee-showroom.webp',
-  veeStorage: 'Stagebackgrounds/maps/vee-storage.webp', shelly: 'Stagebackgrounds/maps/shelly-floor.png', easter: 'Stagebackgrounds/maps/easter-floor.png',
-  halloween: 'Stagebackgrounds/maps/halloween-floor.png', black: ''
+  diner: 'assets/backgrounds/maps/diner.png', rainbow: 'assets/backgrounds/maps/rainbow-rooms.png', art: 'assets/backgrounds/maps/art-floor.png',
+  gift: 'assets/backgrounds/maps/gift-floor.png', aquatic: 'assets/backgrounds/maps/aquatic-floor.png', astro: 'assets/backgrounds/maps/astro-floor.png',
+  library: 'assets/backgrounds/maps/library-floor.png', artist: 'assets/backgrounds/maps/artist.png', greenhouse: 'assets/backgrounds/maps/greenhouse.png',
+  warehouse: 'assets/backgrounds/maps/warehouse.png', vee: 'assets/backgrounds/maps/vee-floor.png', veeShow: 'assets/backgrounds/maps/vee-showroom.webp',
+  veeStorage: 'assets/backgrounds/maps/vee-storage.webp', shelly: 'assets/backgrounds/maps/shelly-floor.png', easter: 'assets/backgrounds/maps/easter-floor.png',
+  halloween: 'assets/backgrounds/maps/halloween-floor.png', black: ''
 };
 
 /* Story-only scores plus the game's own non-collab tracks. */

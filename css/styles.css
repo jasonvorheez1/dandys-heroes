@@ -10785,7 +10785,7 @@ html.accessibility-reduced-effects .unit .status-ambient::after{animation:none!i
 .pop-effect-mark.pumpkin{}
 .pop-effect-mark.candy{}
 .pop-effect-mark.bone{background-image:url('../item/Trinkets/PEBBLE_Bone.png')}
-.pop-effect-mark.book{background-image:url('../OBJECT/Book.png')}
+.pop-effect-mark.book{background-image:url('../assets/objects/Book.png')}
 .pop-effect-mark.heart{background-image:url('../uploads/cardiconheart.png')}
 .pop-effect-mark.feather{background-image:url('../item/Trinkets/TISHA_Featherduster.png')}
 .fx-phantasia-wish .wish-seal{display:block;width:27px;height:27px;margin:0 auto;clip-path:polygon(50% 0,90% 18%,100% 52%,75% 93%,24% 93%,0 52%,10% 18%);filter:drop-shadow(0 0 7px currentColor)}

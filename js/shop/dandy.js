@@ -137,7 +137,7 @@
   };
 
   const RESOURCE_STOCK = [
-    { id:'tape', unlock:0, name:'Field Tape', desc:'A tidy bundle for upgrading Hero skills and Dandy’s counter.', img:'./OBJECT/Tape.png', cost:{ichor:450}, gain:{tape:10}, limit:2, say:"Field Tape! It fixes skills, machines, shelves... hmm. Let's stop the list there." },
+    { id:'tape', unlock:0, name:'Field Tape', desc:'A tidy bundle for upgrading Hero skills and Dandy’s counter.', img:'./assets/objects/Tape.png', cost:{ichor:450}, gain:{tape:10}, limit:2, say:"Field Tape! It fixes skills, machines, shelves... hmm. Let's stop the list there." },
     { id:'exp', unlock:0, name:'EXP Bottle', desc:'A concentrated bottle of experience for Hero levels.', img:'uploads/exp-bottle-icon.png', cost:{ichor:500}, gain:{exp:1600}, limit:2, say:"An EXP Bottle! Carefully concentrated, delightfully sparkly, and much easier to pour than a whole training session!" },
     { id:'star', unlock:8, name:'Star Dust', desc:'Promotion dust with a suspicious sparkle.', img:ItemSheet.url('Star'), emoji:'⭐', cost:{ichor:700}, gain:{star:35}, limit:2, say:"Star Dust! Pretty, powerful, and impossible to sweep up. Please open it somewhere else!" },
     { id:'gold', unlock:16, name:'Gold Crate', desc:'A crate of Hero research and useful materials.', emoji:'📦', cost:{star:55}, gain:{gold:1}, limit:1, say:"A Gold Crate! It rattles a little, but that's normal... I think. Crates are supposed to rattle, right?" },
