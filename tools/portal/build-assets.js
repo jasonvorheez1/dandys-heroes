@@ -42,6 +42,10 @@ const up = async (file, k) => { const m = await sharp(file).metadata(); return s
     'incinerator-off': 'g2200_i0', 'incinerator-on': 'g2200_i1'
   };
   for (const [name, file] of Object.entries(keep)) await addFile(name, path.join(raw, file + '.png'));
+  for (let c = 0; c < 4; c++) for (let i = 0; i < 10; i++) await addFile('eye-' + c + '-' + i, path.join(raw, 'g1000' + c + '_i' + i + '.png'));
+  const more = { 'tv-frame': 'g21000_i0', 'tv-colon': 'g21000_i1', hole: 'g3000_i0', 'btn-grey': 'g1010_i0', 'btn-red': 'g1010_i1', glass: 'g1010_i2', life: 'g21100_i8', 'bar-g': 'g21100_i2', 'bar-r': 'g21100_i4', 'hud-bg': 'g21100_i0', 'hud-bg-r': 'g21100_i1' };
+  for (const [name, file] of Object.entries(more)) await addFile(name, path.join(raw, file + '.png'));
+  for (let d = 0; d < 10; d++) await addFile('digit-' + d, path.join(raw, 'g21001_i' + d + '.png'));
 
   /* 3D props -> 2D. Source models are z-up except the pedestal and the radio. */
   const turretTex = path.join(SRC, 'EDITOR_turret.png');
@@ -51,13 +55,20 @@ const up = async (file, k) => { const m = await sharp(file).metadata(); return s
   render('Radio.obj', path.join(SRC, 'Radio1.png'), 'radio.png', ['--up', 'y', '--yaw', '0', '--size', '128']);
   render('aperture_sign_02.obj', path.join(SRC, 'aperture_sign_02.png'), 'aperture-sign.png', ['--up', 'y', '--yaw', '0', '--size', '700', '--cutout']);
   render('personality_sphere_angry.obj', path.join(SRC, 'personality_sphere_angry.png'), 'core-anger.png', ['--up', 'z', '--yaw', '320', '--size', '160']);
-  // There is no Wheatley model in the folder: he is the same sphere with the texture turned from red to blue and lightened.
-  const wheatleyTex = path.join(TMP, 'wheatley-tex.png');
-  await sharp(path.join(SRC, 'personality_sphere_angry.png')).modulate({ hue: 205, brightness: 1.35, saturation: 1.05 }).png().toFile(wheatleyTex);
-  render('personality_sphere_angry.obj', wheatleyTex, 'wheatley.png', ['--up', 'z', '--yaw', '320', '--size', '160']);
   for (const name of ['turret', 'frankenturret', 'pedestal', 'radio', 'aperture-sign', 'core-anger']) await addFile(name, path.join(LOOSE, name + '.png'));
-  fs.copyFileSync(path.join(LOOSE, 'wheatley.png'), path.join(OUT, 'wheatley.png'));
-  await addFile('wheatley', path.join(LOOSE, 'wheatley.png'));
+  {
+    const src = await sharp(path.join(__dirname, 'source', 'wheatley.png')).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+    const { data, info } = src, W = info.width, H = info.height, bg = new Uint8Array(W * H), stack = [];
+    const white = p => data[p * 4] >= 236 && data[p * 4 + 1] >= 236 && data[p * 4 + 2] >= 236;
+    for (let x = 0; x < W; x++) { stack.push(x, (H - 1) * W + x); }
+    for (let y = 0; y < H; y++) { stack.push(y * W, y * W + W - 1); }
+    while (stack.length) { const p = stack.pop(); if (bg[p] || !white(p)) continue; bg[p] = 1; const x = p % W; if (x > 0) stack.push(p - 1); if (x < W - 1) stack.push(p + 1); if (p >= W) stack.push(p - W); if (p < W * (H - 1)) stack.push(p + W); }
+    for (let p = 0; p < W * H; p++) if (bg[p]) data[p * 4 + 3] = 0;
+    const cut = await sharp(data, { raw: { width: W, height: H, channels: 4 } }).trim({ threshold: 1 }).png().toBuffer();
+    const big = await sharp(cut).resize({ height: 220 }).png().toBuffer();
+    fs.writeFileSync(path.join(OUT, 'wheatley.png'), big);
+    pieces.wheatley = await sharp(cut).resize({ height: 110 }).png().toBuffer();
+  }
 
   /* Chell (pixel sprite sheet). Parts are numbered by slice-sheet.js (--gap 1 --min 150), top to bottom. */
   const sliced = path.join(TMP, 'chell');
@@ -72,14 +83,14 @@ const up = async (file, k) => { const m = await sharp(file).metadata(); return s
     pieces['chell-crouch-1'] = await sharp(part(16)).extract({ left: half, top: 0, width: m.width - half, height: m.height }).png().toBuffer(); }
   const chellNamed = { 'chell-hit': 17, 'chell-jump': 18, 'chell-fall': 19, 'chell-fall-1': 20, 'chell-lose-0': 32, 'chell-lose-1': 33, 'chell-win-0': 34, 'chell-win-1': 35, 'chell-win-2': 36,
     'chell-cakes': 37, 'chell-portals-orange': 38, 'chell-gun': 40, 'chell-portals-blue': 49, 'cube': 55, 'cube-heart': 61, 'pixel-turret': 46, 'pixel-turret-aim': 47,
-    'bullet-orange': 48, 'bullet-red': 60, 'core-frame-blue': 63, 'core-frame-red': 64, 'core-frame-orange': 65, 'core-frame-purple': 66, 'moon': 72 };
+    'bullet-orange': 48, 'bullet-red': 60, 'moon': 72 };
   for (const [name, n] of Object.entries(chellNamed)) await addFile(name, part(n));
   // the hero: enlarge with nearest-neighbour so the pixels stay crisp, then trim.
   const heroBase = part(3);
   fs.writeFileSync(path.join(OUT, 'chell', 'Chell.png'), await up(heroBase, 5));
   { const big = await up(part(3), 8), m = await sharp(big).metadata();
     fs.writeFileSync(path.join(OUT, 'chell', 'icon.png'), await sharp(big).extract({ left: 0, top: 0, width: m.width, height: Math.min(m.height, Math.round(m.width * 1.0)) }).resize(160, 160, { fit: 'contain', kernel: 'nearest', background: { r: 0, g: 0, b: 0, alpha: 0 } }).png().toBuffer()); }
-  fs.writeFileSync(path.join(OUT, 'glados.png'), await up(path.join(raw, 'g1_i0.png'), 2));
+  fs.writeFileSync(path.join(OUT, 'glados.png'), await sharp(await up(path.join(raw, 'g1_i0.png'), 2)).flop().png().toBuffer());   // she faces the player: flipped
 
   /* Pack the pieces into one atlas (shelf packing, 2px padding). */
   const entries = [];

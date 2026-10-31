@@ -126,8 +126,10 @@ const ItemSheet = (() => {
     "js/veteran-events.js",
     "js/boskers-globe.js",
     "js/chell-kit.js",
+    "js/chell-visuals.js",
     "js/aperture-fight.js",
     "js/aperture.js",
+    "js/skill-progression.js",
     "js/settings-hub.js"
   ];
   let finishScripts, failScripts;

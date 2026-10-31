@@ -132,6 +132,8 @@
     const r = Raid.state();
     const s = r.boskers || (r.boskers = {});
     if (!Array.isArray(s.read)) s.read = [];
+    // the Full Test Save has the whole story read, so every Globe version is unlocked
+    try { if (Save.isTestSession && Save.isTestSession()) { let n = 7; try { n = STORY_COUNT; } catch (_) { /* not defined yet */ } for (let i = 0; i < n; i++) if (!s.read.includes(i)) s.read.push(i); } } catch (_) { /* optional */ }
     if (!s.owned || typeof s.owned !== 'object') s.owned = {};
     if (!s.offered || typeof s.offered !== 'object') s.offered = {};
     if (!Array.isArray(s.notes)) s.notes = [];

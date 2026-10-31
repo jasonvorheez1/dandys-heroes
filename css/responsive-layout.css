@@ -1,0 +1,19 @@
+/* Real viewport layout: phones retain their touch rules, larger screens use
+   the available space. This overrides the legacy 560px application cap. */
+#app, #battle { width:100%; max-width:none; margin:0; box-sizing:border-box; }
+@media (min-width:769px) {
+  #screen { padding:18px 24px 26px; }
+  #screen > :not(.hero-file) { max-width:1440px; margin-inline:auto; }
+  .hero-roster-grid { grid-template-columns:repeat(auto-fill,minmax(145px,1fr)); }
+  .hero-roster-list-view .hero-roster-grid { grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); }
+  .event-list { grid-template-columns:repeat(auto-fit,minmax(320px,1fr)); }
+  #modalBox { max-width:min(94vw,1100px); }
+}
+@media (min-width:769px) and (pointer:coarse) {
+  /* Wide tablets use tablet space with touch-sized controls. */
+  #app, #battle { max-width:none; }
+  #navbar button, #hudBtns button { min-height:44px; }
+}
+@media (max-width:768px) {
+  #app, #battle { width:100%; max-width:none; }
+}

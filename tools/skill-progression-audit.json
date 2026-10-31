@@ -1,0 +1,89 @@
+{
+  "heroCount": 84,
+  "skillCount": 420,
+  "masteries": [
+    {
+      "id": "Blot",
+      "before": 0.08,
+      "after": 0.122176
+    },
+    {
+      "id": "Brusha",
+      "before": 0.12,
+      "after": 0.162176
+    },
+    {
+      "id": "Yatta",
+      "before": 0.1,
+      "after": 0.142176
+    },
+    {
+      "id": "Finn",
+      "before": 0.06,
+      "after": 0.10217599999999999
+    },
+    {
+      "id": "Tisha",
+      "before": 0.1,
+      "after": 0.142176
+    }
+  ],
+  "cooldowns": [
+    "Vee.G.delay",
+    "Cocoa.W.prepEvery",
+    "Cocoa.R.lowCd",
+    "Connie.P.cd",
+    "Bassie.W.prep",
+    "Gigi.W.every",
+    "Squirm.W.icd",
+    "Rodger.R.icd",
+    "Delilah.R.cd",
+    "Goob.W.every",
+    "Waxwell.B.delay",
+    "Finn.W.splashEvery",
+    "Finn.R.cooldown",
+    "Sora.G.delay",
+    "Sora.R.cd",
+    "Kairi.P.rescueCd",
+    "Goofy.W.blockCd",
+    "Goofy.R.autoCd",
+    "Phantasia.W.delay",
+    "Phantasia.P.basicEvery",
+    "Flutter.B.delay",
+    "QOMGourdy.W.beat",
+    "QOMConnie.P.phaseCd",
+    "Pebble.P.every",
+    "Pebble.R.cd",
+    "CheerbearShelly.R.rescueCd",
+    "TenderheartSprout.B.cd",
+    "TenderheartSprout.P.cd",
+    "ShareBearCosmo.B.cd",
+    "ShareBearCosmo.P.every",
+    "Ribecca.B.delay",
+    "Selena.P.interval",
+    "GingerBright.B.every",
+    "GingerBright.B.assistEvery",
+    "TigerLilyCookie.W.swipeEvery",
+    "LockShockBarrel.P.every",
+    "Chell.P.escapeCd"
+  ],
+  "chell": {
+    "low": {
+      "evaPct": 25,
+      "guardDur": 5,
+      "escapeCd": 10,
+      "guardPct": 0.15,
+      "cubeStun": 0.6,
+      "redEnergy": 10
+    },
+    "high": {
+      "evaPct": 41.9375,
+      "guardDur": 8.3875,
+      "escapeCd": 6.57,
+      "guardPct": 0.25163,
+      "cubeStun": 1.0065,
+      "redEnergy": 16.775
+    }
+  },
+  "previewMissing": []
+}

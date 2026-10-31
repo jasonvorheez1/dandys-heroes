@@ -18,32 +18,65 @@
     if (!s.beaten || typeof s.beaten !== 'object') s.beaten = {};
     if (!s.best || typeof s.best !== 'object') s.best = {};
     s.tries = s.tries || 0; s.credits = !!s.credits; s.chell = !!s.chell;
-    s.diff = ['easy', 'medium', 'hard'].includes(s.diff) ? s.diff : 'medium';
+    s.license = !!s.license || Object.values(s.beaten).some(Boolean);   // the first clear of anything
+    s.bank = Math.max(0, Number(s.bank) || 0);                            // shards earned before she was bought
+    s.diff = ['easy', 'medium', 'hard', 'kaizo'].includes(s.diff) ? s.diff : 'medium';
     return s;
   };
   const beatenAny = () => Object.values(state().beaten).some(Boolean);
+  /* Kaizo needs every Bosker's Globe toon */
+  const GLOBE_IDS = ['Astro', 'Vee', 'Shelly', 'Bassie', 'Gourdy', 'Yatta', 'Sprout', 'Bobette', 'Pebble'];
+  const globeCount = () => GLOBE_IDS.filter(id => { try { return Save.owns('g:' + id); } catch (_) { return false; } }).length;
+  const globeAll = () => globeCount() === GLOBE_IDS.length;
+  /* Chell: a license from the first clear, bought at Dyle's; shards from clears (1 to 3 stars is the base pack) */
+  const CHELL_PRICE = 25000;
+  function shardsToThree() {
+    try { const m = obtainOf('Chell').costMult, b = Progress.promotionShardMultiplier(); return Math.max(1, Math.round(STAR_COST[1] * m * b) + Math.round(STAR_COST[2] * m * b)); } catch (_) { return 110; }
+  }
+  const CLEAR_SHARDS = { easy: .5, medium: .75, hard: 1, kaizo: 2 };         // times the base pack; Kaizo pays more than any other difficulty
+  const clearShards = k => Math.round(shardsToThree() * (CLEAR_SHARDS[k] || .5));
+  const payShards = n => { if (Save.owns('Chell')) { try { Save.giveShards('Chell', n); } catch (_) { /* optional */ } } else state().bank += n; };
 
   const DIFFS = {
-    easy:   { label: 'Easy',   note: 'Slow rockets, weak bolts, a seven minute countdown.' },
-    medium: { label: 'Medium', note: 'Faster rockets, six minutes on the clock.' },
-    hard:   { label: 'Hard',   note: 'Full-speed rockets, stronger bolts, five minutes, less health.' }
+    easy:   { label: 'Easy',   note: 'Slow' },
+    medium: { label: 'Medium', note: 'Faster' },
+    hard:   { label: 'Hard',   note: 'Fast, less health' },
+    kaizo:  { label: 'Kaizo',  note: 'Glitched' }
   };
 
   /* ---------------------------------------------------------------- audio */
-  const SFX = { index: null, buffer: null, urls: {} };
+  const SFX = { index: null, buffer: null, urls: {}, live: new Set() };
   const sfxReady = fetch(asset('sfx/index.json')).then(r => r.json()).then(i => { SFX.index = i; return fetch(asset('sfx/aperture-sfx.bin')); })
-    .then(r => r.arrayBuffer()).then(b => { SFX.buffer = b; }).catch(() => { /* the event still works without the voice pack */ });
+    .then(r => r.arrayBuffer()).then(b => { SFX.buffer = b; return Promise.all([loadMia(), loadVoid(), loadShop()]); }).catch(() => { /* the event still works without the voice pack */ });
+  /* the Kaizo-only pack: the Mia character's sounds cut into pieces (tools/portal/build-mia.js) */
+  /* the void pieces play only once someone has auditioned them: tools/portal/audition-void.html writes void-approved.json */
+  /* the shop pack plays only once someone has auditioned it: tools/portal/audition-void.html?pack=shop writes shop-approved.json */
+  function loadShop() {
+    return fetch(asset('sfx/shop-approved.json')).then(r => { if (!r.ok) throw new Error('not approved'); return r.json(); }).then(ap => fetch(asset('sfx/shop-index.json')).then(r => r.json()).then(i => fetch(asset('sfx/shop-sfx.bin')).then(r => r.arrayBuffer()).then(ab => { SFX.shopBuf = ab; Object.keys(i).forEach(k => { if ((ap.approved || []).includes(k)) SFX.index[k] = [i[k][0], i[k][1], i[k][2], 's']; }); }))).catch(() => { /* none approved yet: no shop sounds */ });
+  }
+  function loadVoid() {
+    return fetch(asset('sfx/void-approved.json')).then(r => { if (!r.ok) throw new Error('not approved'); return r.json(); }).then(ap => fetch(asset('sfx/void-index.json')).then(r => r.json()).then(i => fetch(asset('sfx/void-sfx.bin')).then(r => r.arrayBuffer()).then(ab => { SFX.voidBuf = ab; Object.keys(i).forEach(k => { if ((ap.approved || []).includes(k)) SFX.index[k] = [i[k][0], i[k][1], i[k][2], 'v']; }); }))).catch(() => { /* none approved yet: no void sounds */ });
+  }
+  function loadMia() {
+    return fetch(asset('sfx/mia-index.json')).then(r => r.json()).then(i => fetch(asset('sfx/mia-sfx.bin')).then(r => r.arrayBuffer()).then(ab => { SFX.miaBuf = ab; Object.keys(i).forEach(k => { SFX.index[k] = [i[k][0], i[k][1], i[k][2], 'm']; }); })).catch(() => { /* Kaizo works without it */ });
+  }
   function snd(name, vol = .6, o = {}) {
     try {
+      if(name==='shoot-a'){Sound.play('chell_portal_fire',{vol,rate:o.rate||1,throttle:140});return;}
       if (Sound.on === false || !SFX.buffer || !SFX.index || !SFX.index[name]) return;
-      const [at, len, secs] = SFX.index[name];
-      const url = SFX.urls[name] || (SFX.urls[name] = window.URL.createObjectURL(new Blob([SFX.buffer.slice(at, at + len)], { type: 'audio/ogg' })));
+      const [at, len, secs, pk] = SFX.index[name], src = pk === 'm' ? SFX.miaBuf : pk === 'v' ? SFX.voidBuf : pk === 's' ? SFX.shopBuf : SFX.buffer;
+      if (!src) return;
+      const url = SFX.urls[name] || (SFX.urls[name] = window.URL.createObjectURL(new Blob([src.slice(at, at + len)], { type: 'audio/ogg' })));
       const a = new Audio(url);
       a.volume = clamp(vol * (typeof Sound.vol === 'number' ? Sound.vol : 1), 0, 1);
-      if (o.rate) a.playbackRate = o.rate;
+      if (o.pitch) { a.preservesPitch = false; a.mozPreservesPitch = false; a.webkitPreservesPitch = false; }
+      const rate = (o.rate || 1) * (o.pitch || 1); if (rate !== 1) a.playbackRate = clamp(rate, .25, 4);
+      if (o.from) { try { a.currentTime = o.from; } catch (_) { /* not ready */ } }
       a.play().catch(() => {});
-      const max = o.max || Math.min(secs, 6) * 1000;
-      setTimeout(() => { try { a.pause(); } catch (_) { /* gone */ } }, max + 200);
+      if (o.voice) { SFX.live.add(a); const drop = () => SFX.live.delete(a); a.addEventListener('ended', drop); a.addEventListener('error', drop); }
+      // a line marked full is never cut: it plays to its end
+      if (!o.full) { const max = o.max || Math.min(secs, 6) * 1000; setTimeout(() => { try { a.pause(); } catch (_) { /* gone */ } }, max + (o.exact ? 0 : 200)); }
+      return a;
     } catch (_) { /* audio is decoration */ }
   }
   if (typeof MUSIC_TRACKS !== 'undefined') {
@@ -51,6 +84,7 @@
     MUSIC_TRACKS.apFight = ASSET + BASE + 'music/some-assembly-required.mp3';
     MUSIC_TRACKS.apCalm = ASSET + BASE + 'music/future-starts-with-you.mp3';
     MUSIC_TRACKS.apCredits = ASSET + BASE + 'music/still-alive.mp3';
+    MUSIC_TRACKS.apKaizo = ASSET + BASE + 'music/kaizo.mp3';
   }
   const playMusic = key => { try { Music.play(key); } catch (_) { /* optional */ } };
 
@@ -60,9 +94,23 @@
     fetch(asset('atlas.json')).then(r => r.json()).then(j => { atlas.frames = j.frames; }).catch(() => {}),
     new Promise(res => { atlas.img.onload = atlas.img.onerror = res; atlas.img.src = asset('atlas.png'); })
   ]);
-  /* draw an atlas frame. o: ax, ay (anchor 0..1), s (scale), flip, rot, alpha */
+  /* the Kaizo-only atlas: abstract pieces (vortex, rings, static, dark shapes) */
+  const atlas2 = { img: new Image(), frames: null };
+  const atlas2Ready = Promise.all([
+    fetch(asset('corrupt-atlas.json')).then(r => r.json()).then(j => { atlas2.frames = j.frames; }).catch(() => {}),
+    new Promise(res => { atlas2.img.onload = atlas2.img.onerror = res; atlas2.img.src = asset('corrupt-atlas.png'); })
+  ]);
+  const spr2 = (ctx, name, x, y, o) => spr(ctx, name, x, y, Object.assign({ at: atlas2 }, o));
+  /* the Kaizo intro's cameo */
+  const atlas3 = { img: new Image(), frames: null };
+  const atlas3Ready = Promise.all([
+    fetch(asset('shop-atlas.json')).then(r => r.json()).then(j => { atlas3.frames = j.frames; }).catch(() => {}),
+    new Promise(res => { atlas3.img.onload = atlas3.img.onerror = res; atlas3.img.src = asset('shop-atlas.png'); })
+  ]);
+  const spr3 = (ctx, name, x, y, o) => spr(ctx, name, x, y, Object.assign({ at: atlas3 }, o));
+  /* draw an atlas frame. o: ax, ay (anchor 0..1), s (scale), flip, rot, alpha, at (another atlas) */
   function spr(ctx, name, x, y, o = {}) {
-    const f = atlas.frames && atlas.frames[name];
+    const at = o.at || atlas, f = at.frames && at.frames[name];
     if (!f) return null;
     const s = o.s || 1, w = f.w * s, h = f.h * s;
     ctx.save();
@@ -70,92 +118,76 @@
     if (o.rot) ctx.rotate(o.rot);
     if (o.flip) ctx.scale(-1, 1);
     if (o.alpha != null) ctx.globalAlpha = o.alpha;
-    ctx.drawImage(atlas.img, f.x, f.y, f.w, f.h, -w * (o.ax == null ? .5 : o.ax), -h * (o.ay == null ? .5 : o.ay), w, h);
+    ctx.drawImage(at.img, f.x, f.y, f.w, f.h, -w * (o.ax == null ? .5 : o.ax), -h * (o.ay == null ? .5 : o.ay), w, h);
     ctx.restore();
     return { w, h };
   }
   const PORTRAITS = { Wheatley: BASE + 'wheatley.png', GLaDOS: BASE + 'glados.png' };
 
   /* ---------------------------------------------------------------- story */
-  const scene = (title, place, script) => ({ title, place, script: script.trim(), time: 'AFTER HOURS', date: 'GARDENVIEW' });
+  const scene = (title, place, time, script) => ({ title, place, script: script.trim(), time, date: 'APERTURE' });
   const STORY = [
-    scene('Quiet Hours', 'Gardenview Educational Center', `
+    scene('Quiet Hours', 'Gardenview Educational Center', 'AFTER HOURS', `
 @bg assets/uploads/backgroundlobby1.webp
 @music apStory
-> Gardenview Educational Center, after hours. The hallway lights hum a half-step flat, and nobody has fixed it in years.
+> Gardenview Educational Center. After hours.
 @enter Looey center
-Looey: Boing. Boing. Boing. Okay. Quiet hallway. Nobody here. Good.
-> Looey bounces down the corridor, one careful bounce at a time. The floor is polished, and polished floors squeak.
-Looey: Sorry, floor.
-> Somewhere ahead a vending machine clunks. A single mint drops into the tray. Nobody pressed anything.
-Looey: That wasn't me.
-> The wrapper has a small orange stamp on it. A circle with a slice taken out.
+Looey: Quiet. Good.
+> A vending machine clunks. A mint drops. Nobody pressed anything.
+> The wrapper has a stamp on it: a circle with a slice missing.
 Looey: Huh.
-> It is very quiet for a while. Then, above the water fountain, a vent rattles. Once. Twice. Then something very small starts to cry.
-Looey [!]: Hello? Is somebody in the vent?
+> The vent over the fountain rattles. Something small is crying in it.
+Looey [!]: Hello?
 @exitall`),
 
-    scene('The Thing in the Vent', 'Gardenview Educational Center', `
+    scene('The Vent', 'Gardenview Educational Center', 'AFTER HOURS', `
 @bg assets/uploads/backgroundlobby1.webp
 @enter Looey right
-> The vent cover pops off and a round, battered shape drops into the fountain with a clang. It has one big blue eye and two handles, and it does not stop talking.
+> The cover falls off. A core drops into the fountain.
 @enter Wheatley left
-Wheatley: Oh! Oh, thank goodness, a person. A rubber person. A person-adjacent. Sorry. Hello. Hi.
+Wheatley: Oh! A person! Thank goodness. Hello. Hi.
 Looey: Hi?
-Wheatley: I've been in that vent for, what, four hours? Three days? There's no clock in a vent. Nobody tells you that.
-Looey: You're a... ball.
-Wheatley: Core. Personality core. It's a whole distinction. Listen. Listen. Don't panic. Actually, panic a little. I've been panicking quite a lot and it's helping.
-Looey: What's going on?
-Wheatley: She's back. Her. The big one, with the, the tone of voice. Somebody put her back together.
+Wheatley: She's back. GLaDOS. Somebody put her back together.
 Looey: Who?
-Wheatley: No idea! Somebody tidy. There was a clipboard down there. Tiny, careful handwriting. A "D", a dot, a "K", a dot. Probably nothing. Probably a sandwich order.
-Looey: Down where?
-Wheatley: Down. Below the basement. Below the basement's basement. They've put green tubing in everything, and they've stapled it. Neatly.
-> Looey looks at the mint still in one hand. Then at the stamped circle on the wrapper. Then at the corridor behind the fountain, where a service door that was never on any floor plan is standing open.
-Looey: ...I'll get my coat.
-Wheatley: You can't be serious. Oh. You're serious. Right. Right! Great! I'll come. I'll be brave from just behind you.
+Wheatley: No idea. There was a clipboard. Tidy handwriting. A "D", a dot, a "K", a dot.
+Looey: Where is she?
+Wheatley: Down. Below the basement. Past where the floor plans stop.
+> A service door that is on no floor plan stands open behind the fountain.
+Looey: ...Okay.
+Wheatley: You're going? Right. Right. I'll come. From just behind you.
 @exitall`),
 
-    scene('Down', 'Service Elevator', `
+    scene('Down', 'Service Elevator', 'GOING DOWN', `
 @bg assets/aperture/bg/shaft.png
 @music apCalm
-> Behind the door there is an elevator with one button and no label. Looey presses it. The doors close with a very polite sound.
 @enter Looey right
 @enter Wheatley left
-> Above the door a counter starts to count.
-> Floor 12.
-Wheatley: It's fine. It's an elevator. They go down. That's a thing they do.
-> Floor 47. Nobody speaks. The lights flicker once and then pretend they didn't.
-> Floor 96. A mug sits on the rail by the door. It says WORLD'S OKAYEST RESEARCHER. It is still warm.
-Looey: Whose mug is that?
-Wheatley: Not mine. I don't have hands. I have handles.
-Looey: Somebody was just here.
-Wheatley: Let's not think about it. I'm not thinking about it. You shouldn't either. Think about something else. Think about toast.
-> Floor 180. The concrete walls turn into white panels, and the white panels turn into grey ones.
-> Floor 241. Somewhere far below a machine counts something in a calm, pleasant voice. Neither of them can make out the number.
-Looey: Wheatley?
-Wheatley: Yes.
+> One button. No label. The doors close.
+> Floor 47.
+Wheatley: It's an elevator. They go down. That's what they do.
+> Floor 96. A mug sits by the door. WORLD'S OKAYEST RESEARCHER. Still warm.
+Looey: Someone was just here.
+Wheatley: Think about toast.
+> Floor 241. Far below, a calm voice is counting something.
 Looey: How many floors is this?
-Wheatley: Three hundred. Roughly. Give or take a basement.
+Wheatley: Three hundred. Give or take a basement.
 > Floor 300.
 @exitall`),
 
-    scene('Hello Again', 'Test Chamber, Floor 300', `
+    scene('Floor 300', 'Test Chamber', 'FLOOR 300', `
 @bg assets/aperture/bg/ruins.png
 @fx dark
-> The doors open on a chamber that has been repaired badly and cleaned very thoroughly. Green tubing runs along the new panels, stitched in with neat little staples.
+> Green tubing runs along the new panels. Neat little staples.
 @enter Wheatley left
 @enter Looey center
-Wheatley: That tubing. That's the same tubing. Looey, I think we should leave now. I think we should have left earlier.
+Wheatley: That tubing. I know that tubing. We should leave. We should have left earlier.
 @enter GLaDOS farright
-> Overhead, something very large unfolds from the ceiling and turns its single optic toward them. It has four small cores attached to it, like buttons on a coat.
-Looey: Um. Hi? We're lost. We were looking for a vent.
-Wheatley: Don't wave. If you don't wave she can't, she can't...
-> Behind Looey a pedestal rises out of the floor. On it sits a white and grey device with two glowing barrels, one blue and one orange.
+> Something large unfolds from the ceiling. Four small cores hang from it like buttons.
+Looey: We're lost. We were looking for a vent.
+> A pedestal rises behind Looey. On it, a white device with two barrels. One blue. One orange.
 Looey: ...Is that for me?
-Wheatley: It's always for you. That's the thing about pedestals.
+Wheatley: It's always for you.
 @sfx ui_open
-> Looey picks up the device. It hums. It sounds almost pleased. Somewhere in the ceiling a machine clears its throat.
 @exitall`)
   ];
 
@@ -175,22 +207,23 @@ Wheatley: It's always for you. That's the thing about pedestals.
   }
 
   /* ---------------------------------------------------------------- the fight (js/aperture-fight.js) */
-  const playFight = (diffKey, onEnd) => window.ApertureFight.play(diffKey, onEnd, { snd, spr, atlasReady, sfxReady, playMusic, asset });
+  const voices = { hold: on => SFX.live.forEach(a => { try { if (on) a.pause(); else a.play().catch(() => {}); } catch (_) { /* gone */ } }), stop: () => { SFX.live.forEach(a => { try { a.pause(); } catch (_) { /* gone */ } }); SFX.live.clear(); } };
+  const playFight = (diffKey, onEnd) => window.ApertureFight.play(diffKey, onEnd, { spr3, atlas3Ready, shopClips: () => Object.keys(SFX.index || {}).filter(k => k.indexOf('shop-') === 0).map(k => [k, SFX.index[k][2]]), spr2, atlas2Ready, voidClips: () => Object.keys(SFX.index || {}).filter(k => k.indexOf('void-') === 0).map(k => [k, SFX.index[k][2]]), voices, miaClips: () => Object.keys(SFX.index || {}).filter(k => k.indexOf('mia-') === 0).map(k => [k, SFX.index[k][2]]), sfxLen: n => (SFX.index && SFX.index[n] ? SFX.index[n][2] : 0), snd, spr, atlasReady, sfxReady, playMusic, asset });
 
   /* ---------------------------------------------------------------- credits */
   const CREDITS = [
-    ['STILL ALIVE', 'a Gardenview test'],
+    ['STILL ALIVE', 'Aperture Science'],
     ['', ''],
     ['TEST SUBJECT', 'Looey'],
     ['PERSONALITY CORE', 'Wheatley'],
-    ['FACILITY', 'GLaDOS'],
+    ['TEST', 'GLaDOS'],
     ['', ''],
     ['MUGEN GLaDOS', 'fhqwhgads7'],
     ['PEDESTAL BUTTON MODEL', 'ripped by KartMakerBrosU'],
-    ['PIXEL SPRITES', 'from the fan fighting-game sprite sheet'],
+    ['PIXEL SPRITES', 'fan sprite sheet'],
     ['PORTAL', 'Valve'],
     ['', ''],
-    ['DANDY\'S WORLD', 'its toons and its terrible floors'],
+    ['DANDY\'S WORLD', ''],
     ['', ''],
     ['THANKS FOR PLAYING', ''],
     ['', ''],
@@ -232,48 +265,193 @@ Wheatley: It's always for you. That's the thing about pedestals.
   /* ---------------------------------------------------------------- event card, dossier, shop */
   const sceneThen = (fn) => { Screens._raidDossier = ID; try { Screens.render(); } catch (_) { /* optional */ } if (fn) fn(); };
   function startFlow(diff, withStory) {
-    const run = () => playFight(diff, ok => {
+    const run = () => playFight(diff, (ok, res) => {
       const st = state();
       if (ok === null) { sceneThen(() => playMusic('navigation')); return; }
       st.tries++;
       if (ok) {
-        const first = !beatenAny();
-        st.beaten[diff] = true; Save.write();
-        playCredits(() => { sceneThen(); UI.toast(first ? 'Chell is waiting at Dyle\'s shop.' : 'Test complete. Still alive.'); });
-      } else { Save.write(); sceneThen(); UI.toast('The test is not over. GLaDOS would like you to try again.'); }
+        const firstAny = !st.license, firstDiff = !st.beaten[diff], n = Math.round(clearShards(diff) * (firstDiff ? 1 : .2));
+        st.beaten[diff] = true; st.license = true; payShards(n); if (res && res.rank && 'SABC'.indexOf(res.rank) < 'SABC'.indexOf(st.best[diff] || 'D')) st.best[diff] = res.rank; Save.write();
+        playCredits(() => { sceneThen(); UI.toast(firstAny ? 'Chell license unlocked at Dyle\'s shop. +' + n + ' shards' : '+' + n + ' Chell shards'); });
+      } else { Save.write(); sceneThen(); UI.toast('Test failed.'); }
     });
     if (withStory) playChapters(STORY, finished => { if (finished) { state().read = true; Save.write(); run(); } else sceneThen(); });
     else run();
   }
 
   function recruitChell() {
-    if (Save.owns('Chell')) return false;
+    const st = state();
+    if (Save.owns('Chell') || !st.license) return 0;
+    if (!Save.can({ gold: CHELL_PRICE })) { UI.toast('Not enough gold.'); return 0; }
+    Save.spend({ gold: CHELL_PRICE });
     Save.data.heroes.Chell = Save.newHero('Chell');
-    state().chell = true;
+    st.chell = true;
     try { Save.addMasteryXp(260); Achievements.record('heroUnlock', 1); if (UI.queueHeroUnlock) UI.queueHeroUnlock('Chell'); } catch (_) { /* extras only */ }
+    const n = shardsToThree() + st.bank; st.bank = 0;
+    try { Save.giveShards('Chell', n); } catch (_) { /* optional */ }
     Save.write();
-    return true;
+    return n;
   }
 
+  /* ---------------------------------------------------------------- menu scene and intro */
+  const rng = i => { const x = Math.sin(i * 127.1 + 311.7) * 43758.5453; return x - Math.floor(x); };
+  const ease = k => { k = Math.max(0, Math.min(1, k)); return k * k * (3 - 2 * k); };
+  /* One painter for the intro and the menu banner. st: scroll (px), speed 0..1, glados 0..1 (how far she has lowered), flash, shake */
+  function drawScene(ctx, w, h, t, st) {
+    const u = h / 300;
+    ctx.save();
+    if (st.shake) ctx.translate((Math.random() - .5) * st.shake, (Math.random() - .5) * st.shake);
+    let g = ctx.createLinearGradient(0, 0, 0, h); g.addColorStop(0, '#05070a'); g.addColorStop(1, '#18202a'); ctx.fillStyle = g; ctx.fillRect(-30, -30, w + 60, h + 60);
+    // far wall: dark panels
+    ctx.fillStyle = 'rgba(255,255,255,.03)';
+    for (let x = 0; x < w; x += 90 * u) ctx.fillRect(x, 0, 2, h);
+    // columns
+    [[.05, 22], [.17, 12], [.83, 12], [.95, 22]].forEach(c => {
+      const cw = c[1] * u, cx = w * c[0] - cw / 2, cg = ctx.createLinearGradient(cx, 0, cx + cw, 0); cg.addColorStop(0, '#10151a'); cg.addColorStop(.35, '#3a444e'); cg.addColorStop(1, '#0d1115');
+      ctx.fillStyle = cg; ctx.fillRect(cx, -10, cw, h + 20);
+    });
+    // girders passing by
+    const gap = 130 * u;
+    for (let i = -1; i < h / gap + 2; i++) {
+      const y = ((i * gap + st.scroll) % (gap * Math.ceil(h / gap + 2))) - gap;
+      ctx.fillStyle = '#0b0e11'; ctx.fillRect(0, y, w, 12 * u);
+      ctx.fillStyle = '#2b333b'; ctx.fillRect(0, y + 2 * u, w, 3 * u);
+      ctx.fillStyle = '#566069'; ctx.fillRect(0, y + 2 * u, w, Math.max(1, u * .8));
+      ctx.fillStyle = '#7c8791'; for (let x = 12 * u; x < w; x += 46 * u) ctx.fillRect(x, y + 7 * u, 2 * u, 2 * u);
+      const tx = w * (.3 + rng(Math.floor((st.scroll - i * gap) / gap) + i) * .35);
+      ctx.fillStyle = '#c8700f'; ctx.fillRect(tx, y - 2 * u, 36 * u, 16 * u); ctx.fillStyle = '#16181a';
+      for (let k = 0; k < 6; k++) { ctx.beginPath(); ctx.moveTo(tx + k * 8 * u, y + 14 * u); ctx.lineTo(tx + k * 8 * u + 4 * u, y + 14 * u); ctx.lineTo(tx + k * 8 * u + 8 * u, y - 2 * u); ctx.lineTo(tx + k * 8 * u + 4 * u, y - 2 * u); ctx.fill(); }
+    }
+    // speed streaks
+    if (st.speed > .04) for (let n = 0; n < 34; n++) {
+      const x = rng(n) * w, len = (30 + rng(n + 50) * 120) * u * st.speed, y = ((rng(n + 9) * h * 2 + st.scroll * (1.1 + rng(n + 3))) % (h * 1.5)) - len;
+      ctx.strokeStyle = 'rgba(255,' + (150 + Math.floor(rng(n + 4) * 80)) + ',80,' + (.25 + .4 * st.speed * rng(n + 2)) + ')'; ctx.lineWidth = Math.max(1, 1.6 * u); ctx.beginPath(); ctx.moveTo(x, y); ctx.lineTo(x, y + len); ctx.stroke();
+    }
+    // dust
+    ctx.fillStyle = 'rgba(255,255,255,.22)';
+    for (let n = 0; n < 26; n++) { const x = (rng(n + 70) * w + Math.sin(t * .3 + n) * 12 * u + w) % w, y = (rng(n + 90) * h + t * (6 + rng(n) * 10) * u + st.scroll * .1) % h; ctx.fillRect(x, y, Math.max(1, u), Math.max(1, u)); }
+    // GLaDOS lowers from the ceiling, swaying on her cables
+    const gl = ease(st.glados);
+    if (gl > 0) {
+      const sc = h / 315 * 1.02, px = w * .74, py = -(1 - gl) * h * 1.15 - 4;
+      const lg = ctx.createRadialGradient(px, h * .8, 10, px, h * .8, h * .8); lg.addColorStop(0, 'rgba(255,138,31,' + (.22 * gl) + ')'); lg.addColorStop(1, 'rgba(255,138,31,0)'); ctx.fillStyle = lg; ctx.fillRect(0, 0, w, h);
+      ctx.save(); ctx.translate(px, py); ctx.rotate(Math.sin(t * .7) * .022 * gl); ctx.imageSmoothingEnabled = false;
+      ctx.strokeStyle = '#0b0e11'; ctx.lineWidth = 5 * u; ctx.beginPath(); ctx.moveTo(0, -3000); ctx.lineTo(0, 0); ctx.stroke();
+      spr(ctx, 'glados-' + (Math.floor(t * 3) % 5), 0, 0, { ax: .5, ay: 0, s: sc, flip: true });
+      if (window.ApertureFight && window.ApertureFight.paintMounts) window.ApertureFight.paintMounts(ctx, spr, 0, 0, sc / .8, t, () => 'attached', () => ({ frame: 0, flip: true }));
+      const k = sc / .8, og = ctx.createRadialGradient(-30 * k, 235 * k, 1, -30 * k, 235 * k, 46 * k); og.addColorStop(0, 'rgba(255,190,90,' + (.55 + .25 * Math.sin(t * 3)) + ')'); og.addColorStop(1, 'rgba(255,120,20,0)');
+      ctx.globalCompositeOperation = 'lighter'; ctx.fillStyle = og; ctx.fillRect(-120 * k, 180 * k, 180 * k, 110 * k);
+      ctx.restore();
+    }
+    // Wheatley, bobbing
+    const ws = h / 300 * 1.05, wx = w * .42 + Math.sin(t * .9) * 9 * u, wy = h * .52 + Math.sin(t * 1.7) * 7 * u + (st.speed > .1 ? Math.sin(t * 40) * 2 * u * st.speed : 0);
+    ctx.imageSmoothingEnabled = false;
+    spr(ctx, 'wheatley', wx, wy, { s: ws, rot: Math.sin(t * 1.3) * .07 + (st.speed > .1 ? Math.sin(t * 31) * .03 : 0) });
+    // vignette, flash
+    const vg = ctx.createRadialGradient(w / 2, h / 2, h * .35, w / 2, h / 2, Math.max(w, h) * .75); vg.addColorStop(0, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(0,0,0,.6)'); ctx.fillStyle = vg; ctx.fillRect(-30, -30, w + 60, h + 60);
+    if (st.flash > 0) { ctx.fillStyle = 'rgba(255,240,220,' + Math.min(1, st.flash) + ')'; ctx.fillRect(-30, -30, w + 60, h + 60); }
+    ctx.restore();
+  }
+  /* keep a canvas sharp at its CSS size */
+  function fitCanvas(cv) {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2), w = cv.clientWidth, h = cv.clientHeight;
+    if (!w || !h) return null;
+    const pw = Math.round(w * dpr), ph = Math.round(h * dpr);
+    if (cv.width !== pw || cv.height !== ph) { cv.width = pw; cv.height = ph; }
+    const ctx = cv.getContext('2d'); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); ctx.imageSmoothingEnabled = false;
+    return { ctx, w, h };
+  }
+  const reduced = () => { try { return window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (_) { return false; } };
+
+  function playIntro(onDone) {
+    const rootEl = el('div', 'ap-intro');
+    rootEl.innerHTML = '<canvas></canvas><i class="ap-lb top"></i><i class="ap-lb bot"></i><div class="ap-in-floor"><small>FLOOR</small><b>1</b></div>'
+      + '<div class="ap-in-title"><small>APERTURE SCIENCE</small><h1>' + 'TEST SUBJECT'.split('').map((c, i) => '<span style="--i:' + i + '">' + (c === ' ' ? '&nbsp;' : c) + '</span>').join('') + '</h1><p>LOOEY &nbsp;VS&nbsp; GLaDOS</p></div><button class="ap-skip" type="button">Skip</button>';
+    ($('#app') || document.body).appendChild(rootEl);
+    const cv = $('canvas', rootEl), floorEl = $('.ap-in-floor b', rootEl), floorBox = $('.ap-in-floor', rootEl);
+    let finished = false, fired = {};
+    const done = () => { if (finished) return; finished = true; rootEl.classList.add('out'); setTimeout(() => { rootEl.remove(); }, 800); onDone(); };
+    $('.ap-skip', rootEl).onclick = done;
+    const keyHandler = e => { if (e.code === 'Escape') { document.removeEventListener('keydown', keyHandler); done(); } };
+    document.addEventListener('keydown', keyHandler);
+    rootEl.addEventListener('click', e => { if (e.target === rootEl || e.target === cv) done(); });
+    let t0 = null, last = null, scroll = 0;
+    atlasReady.then(() => {
+      const frame = now => {
+        if (!rootEl.isConnected) { document.removeEventListener('keydown', keyHandler); return; }
+        if (t0 == null) { t0 = now; last = now; }
+        const t = (now - t0) / 1000, dt = Math.min(.05, (now - last) / 1000); last = now;
+        const f = fitCanvas(cv);
+        if (f) {
+          // 0.7-3.9 s the car drops, 3.9 it stops hard, 4.5-5.9 she lowers, 5.6 the title
+          const run = ease((t - .7) / 1.6) * (1 - ease((t - 3.7) / .8));
+          scroll += run * f.h * 3.4 * dt;
+          const floorN = t < .7 ? 1 : t > 4.4 ? 300 : 1 + Math.round(299 * ease((t - .7) / 3.7) ** 1.3);
+          floorEl.textContent = floorN;
+          floorBox.classList.toggle('lock', t > 4.4); floorBox.classList.toggle('gone', t > 6.4);
+          if (t > 3.9 && !fired.stop) { fired.stop = true; snd('clank-a', .7, { max: 900 }); snd('boom-a', .45, { max: 1200 }); }
+          if (t > 4.5 && !fired.door) { fired.door = true; snd('door', .5, { max: 1400 }); }
+          if (t > 5.2 && !fired.open) { fired.open = true; snd('open', .4, { max: 900, rate: .8 }); }
+          if (t > .25 && !fired.go) { fired.go = true; rootEl.classList.add('go'); snd('door', .25, { max: 800, rate: .7 }); }
+          if (t > 5.6 && !fired.title) { fired.title = true; rootEl.classList.add('title'); snd('warning', .22, { max: 600, rate: .7 }); }
+          const flash = t > 3.9 ? Math.max(0, .9 - (t - 3.9) * 2.2) : 0, shake = t > .9 && t < 3.9 ? 2 + run * 3 : t >= 3.9 ? Math.max(0, 16 - (t - 3.9) * 22) : 0;
+          drawScene(f.ctx, f.w, f.h, t, { scroll, speed: run, glados: (t - 4.5) / 1.4, flash, shake });
+          if (t < .7) { f.ctx.fillStyle = 'rgba(0,0,0,' + (1 - t / .7) + ')'; f.ctx.fillRect(0, 0, f.w, f.h); }
+        }
+        if (t > 8 && !finished) { done(); return; }
+        requestAnimationFrame(frame);
+      };
+      requestAnimationFrame(frame);
+    });
+  }
+
+  /* ---------------------------------------------------------------- the menu */
+  const CLEAR_TIME = { easy: '7:00', medium: '6:00', hard: '5:00', kaizo: '4:30' };
   function dossier(s) {
     const st = state();
     const root = el('div', 'ap-wrap');
-    const diffBtn = k => `<button type="button" class="ap-diff${st.diff === k ? ' on' : ''}" data-diff="${k}"><b>${DIFFS[k].label}</b>${st.beaten[k] ? '<i>✔</i>' : ''}<small>${DIFFS[k].note}</small></button>`;
-    root.innerHTML = `<header class="ap-bar-top"><button class="ap-back" type="button" aria-label="Back">‹</button><b>${TITLE}</b></header>
-      <section class="ap-card"><img class="ap-sign" src="${asset('wheatley.png')}" alt=""><div><small>STORY EVENT · ONE BOSS</small><h2>${TITLE}</h2>
-      <p>Looey finds a very frightened core in a vent. Somebody has rebuilt GLaDOS, 300 floors under Gardenview. Levels do not matter: it is just Looey, a portal device, and the test.</p></div></section>
-      <section class="ap-card"><h3>The test</h3><p class="ap-small">Four cores. Break the glass over the spinning button, hit it to open the incinerator, and knock a loose core into the hole. Then it becomes a rocket turret: do not stand still, and send its rockets back through your portals into her to knock the next core off. Beat the clock.</p>
-      <div class="ap-diffs">${['easy', 'medium', 'hard'].map(diffBtn).join('')}</div>
-      <div class="ap-actions"><button class="ap-go" type="button">${st.read ? 'Begin the test' : 'Start the story'}</button>${st.read ? '<button class="ap-alt" type="button" data-a="story">Replay the story</button>' : ''}${st.credits ? '<button class="ap-alt" type="button" data-a="credits">Watch the credits</button>' : ''}</div></section>
-      <section class="ap-card ap-reward"><img src="${asset('chell/icon.png')}" alt=""><div><small>REWARD</small><h3>Chell</h3><p class="ap-small">${Save.owns('Chell') ? 'Chell has joined your roster.' : beatenAny() ? 'Beaten. Dyle\'s shop is selling her now (Skins shelf).' : 'Beat GLaDOS on any difficulty. Dyle will sell you a silent test subject with a portal device.'}</p></div></section>`;
+    const owned = Save.owns('Chell'), ready = beatenAny();
+    const level = { easy: 1, medium: 2, hard: 3, kaizo: 4 };
+    const locked = k => k === 'kaizo' && !globeAll();
+    const diffBtn = k => '<button type="button" class="ap-diff ' + k + (st.diff === k ? ' on' : '') + (locked(k) ? ' locked' : '') + '" data-diff="' + k + '"><b>' + DIFFS[k].label + '</b><span class="pips">' + [1, 2, 3, 4].map(n => '<i' + (n <= level[k] ? ' class="lit"' : '') + '></i>').join('') + '</span><small>' + CLEAR_TIME[k] + '</small>' + (st.beaten[k] ? '<em>' + (st.best[k] || '\u2714') + '</em>' : '') + '</button>';
+    root.innerHTML = '<header class="ap-hero"><canvas class="ap-scene"></canvas><button class="ap-back" type="button" aria-label="Back">\u2039</button><button class="ap-replay" type="button">\u25b6 Intro</button>'
+      + '<div class="ap-title"><small>APERTURE SCIENCE</small><h2><span>Test</span><span>Subject</span></h2><p>Looey vs GLaDOS</p></div></header>'
+      + '<div class="ap-grid"><section class="ap-panel ap-modes"><h3>Difficulty</h3><div class="ap-diffs">' + ['easy', 'medium', 'hard', 'kaizo'].map(diffBtn).join('') + '</div>'
+      + '<div class="ap-actions"><button class="ap-go" type="button"><span>' + (st.read ? 'Start test' : 'Begin') + '</span></button>' + (st.read ? '<button class="ap-alt" type="button" data-a="story">Story</button>' : '') + (st.credits ? '<button class="ap-alt" type="button" data-a="credits">Credits</button>' : '') + '</div></section>'
+      + '<section class="ap-panel ap-prog"><h3>Cores</h3><div class="ap-eyes">' + [0, 1, 2, 3].map(c => '<i class="ap-eye' + (ready ? ' lit' : '') + '" data-c="' + c + '"></i>').join('') + '</div>'
+      + '<div class="ap-clears">' + ['easy', 'medium', 'hard', 'kaizo'].map(k => '<span class="' + (st.beaten[k] ? 'ok' : '') + '">' + DIFFS[k].label + '</span>').join('') + '</div><p class="ap-meta">' + (st.tries ? st.tries + ' attempt' + (st.tries === 1 ? '' : 's') : 'No attempts yet') + '</p></section>'
+      + '<section class="ap-panel ap-reward"><img src="' + asset('chell/icon.png') + '" alt=""><div><small>REWARD</small><b>Chell</b><span>' + (owned ? 'On your roster' : st.license ? 'License ready at Dyle\'s shop' : 'Clear the test for the license') + '</span><em class="ap-shards">Shards per clear: ' + ['easy', 'medium', 'hard', 'kaizo'].map(k => DIFFS[k].label + ' ' + clearShards(k)).join(' \u00b7 ') + '</em></div></section></div>';
     s.appendChild(root);
     $('.ap-back', root).onclick = () => { Screens._raidDossier = null; Screens.go('raid'); try { Music.screen(Screens.cur); } catch (_) { /* optional */ } };
-    $$('.ap-diff', root).forEach(b => b.onclick = () => { st.diff = b.dataset.diff; Save.write(); Screens.render(); });
-    $('.ap-go', root).onclick = () => startFlow(st.diff, !st.read);
+    $$('.ap-diff', root).forEach(b => b.onclick = () => { if (locked(b.dataset.diff)) { UI.toast('Kaizo needs all 9 Bosker\'s Globe toons (' + globeCount() + '/9).'); return; } st.diff = b.dataset.diff; Save.write(); $$('.ap-diff', root).forEach(n => n.classList.toggle('on', n === b)); snd('open', .12, { max: 300, rate: 1.6 }); });
+    $('.ap-go', root).onclick = () => startFlow(locked(st.diff) ? 'hard' : st.diff, !st.read);
     $$('.ap-alt', root).forEach(b => b.onclick = () => {
       if (b.dataset.a === 'story') playChapters(STORY, fin => sceneThen());
       else playCredits(() => sceneThen());
     });
+    // the banner is the intro's last frame, kept alive
+    const cv = $('.ap-scene', root);
+    atlasReady.then(() => {
+      $$('.ap-eye', root).forEach(i => {
+        const fr = atlas.frames && atlas.frames['eye-' + i.dataset.c + '-0']; if (!fr) return;
+        const k = 1.7; i.style.width = fr.w * k + 'px'; i.style.height = fr.h * k + 'px'; i.style.backgroundImage = 'url(' + asset('atlas.png') + ')';
+        i.style.backgroundSize = atlas.img.naturalWidth * k + 'px ' + atlas.img.naturalHeight * k + 'px'; i.style.backgroundPosition = '-' + fr.x * k + 'px -' + fr.y * k + 'px';
+      });
+      let t0 = null;
+      const frame = now => {
+        if (!root.isConnected) return;
+        if (t0 == null) t0 = now;
+        const t = (now - t0) / 1000 + 30, f = fitCanvas(cv);
+        if (f) drawScene(f.ctx, f.w, f.h, t, { scroll: t * f.h * .06, speed: .06, glados: 1, flash: 0, shake: 0 });
+        requestAnimationFrame(frame);
+      };
+      requestAnimationFrame(frame);
+    });
+    const run = () => { root.classList.add('go'); };
+    let seen = false; try { seen = !!sessionStorage.getItem('apIntro'); } catch (_) { /* private window */ }
+    if (seen || reduced()) run();
+    else { try { sessionStorage.setItem('apIntro', '1'); } catch (_) { /* optional */ } playIntro(run); }
+    $('.ap-replay', root).onclick = () => { root.classList.remove('go'); playIntro(run); };
   }
 
   /* ---- hooks into the rest of the game */
@@ -281,7 +459,7 @@ Wheatley: It's always for you. That's the thing about pedestals.
     const weekly = weeklyEvents;
     weeklyEvents = function (week) {
       return [{ id: ID, label: TITLE, kind: 'aperture', isAperture: true, bossIds: [], featuredIds: ['Looey'], tag: 'STORY · BOSS', minMastery: 1, stageLevels: [1], rewardMult: 1,
-        title: TITLE, blurb: 'A rebuilt GLaDOS, three hundred floors down.' }, ...weekly.call(this, week)];
+        title: TITLE, blurb: 'GLaDOS is back.' }, ...weekly.call(this, week)];
     };
   }
   {
@@ -292,7 +470,7 @@ Wheatley: It's always for you. That's the thing about pedestals.
       if (old) {
         const st = state();
         const card = this.ebCard({
-          kind: 'Story · Boss', accent: '#ff9a2e', title: TITLE, sub: 'Looey vs GLaDOS',
+          kind: 'Story', accent: '#ff9a2e', title: TITLE, sub: 'Looey vs GLaDOS',
           art: [asset('wheatley.png'), asset('glados.png')],
           status: beatenAny() ? 'Cleared' : st.read ? 'The test' : 'New', tone: beatenAny() ? 'done' : 'ready', progress: beatenAny() ? 1 : st.read ? .5 : 0, cls: 'ap-event-card'
         });
@@ -310,11 +488,12 @@ Wheatley: It's always for you. That's the thing about pedestals.
       renderSkins.apply(this, arguments);
       const wrap = el('section', 'ap-shelf');
       const owned = Save.owns('Chell'), ready = beatenAny();
-      wrap.innerHTML = `<img src="${asset('chell/icon.png')}" alt="Chell"><div><small>APERTURE SCIENCE</small><b>Chell</b><p>${owned ? 'On your roster.' : ready ? 'A silent test subject with a handheld portal device. Dyle already wrapped her boots.' : 'Locked. Beat GLaDOS in the Aperture event.'}</p><button type="button" class="ap-buy" ${owned || !ready ? 'disabled' : ''}>${owned ? 'Recruited' : ready ? 'Recruit Chell' : 'Locked'}</button></div>`;
-      $('.ap-buy', wrap).onclick = () => { if (recruitChell()) { UI.toast('Chell joined your roster.'); Screens.render(); } };
+      const lic = state().license, afford = Save.can({ gold: CHELL_PRICE });
+      wrap.innerHTML = `<img src="${asset('chell/icon.png')}" alt="Chell"><div><small>APERTURE SCIENCE</small><b>Chell</b><p>${owned ? 'On your roster.' : lic ? 'License ready. Comes with shards for 3 stars (' + shardsToThree() + ').' : 'Clear the test to get the license.'}</p><button type="button" class="ap-buy" ${owned || !lic || !afford ? 'disabled' : ''}>${owned ? 'Owned' : lic ? 'Buy \u00b7 ' + CHELL_PRICE.toLocaleString() + ' gold' : 'Locked'}</button></div>`;
+      $('.ap-buy', wrap).onclick = () => { const n = recruitChell(); if (n) { UI.toast('Chell joined with ' + n + ' shards.'); Screens.render(); } };
       contents.appendChild(wrap);
     };
   }
 
-  window.Aperture = { ID, DIFFS, state, playFight, playCredits, playChapters, STORY, recruitChell };
+  window.Aperture = { ID, DIFFS, state, playIntro, playFight, playCredits, playChapters, STORY, recruitChell };
 })();

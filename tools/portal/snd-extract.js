@@ -12,7 +12,7 @@ if (buf.toString('latin1', 0, 11) !== 'ElecbyteSnd') throw new Error('not an SND
 const count = buf.readUInt32LE(0x10);
 let offset = buf.readUInt32LE(0x14);
 const list = [];
-for (let i = 0; i < count && offset > 0 && offset < buf.length; i++) {
+for (let i = 0; offset > 0 && offset + 16 <= buf.length && i < 5000; i++) {   // the header count is wrong in some files, so follow the chain
   const next = buf.readUInt32LE(offset), length = buf.readUInt32LE(offset + 4);
   const group = buf.readInt32LE(offset + 8), number = buf.readInt32LE(offset + 12);
   const data = buf.subarray(offset + 16, offset + 16 + (length || (next - offset - 16)));

@@ -1,0 +1,63 @@
+{
+  "curiosity": [
+    {
+      "file": "core-squeal-0.ogg",
+      "duration": 1.19
+    },
+    {
+      "file": "core-squeal-6.ogg",
+      "duration": 1.12
+    },
+    {
+      "file": "core-squeal-8.ogg",
+      "duration": 1.53
+    }
+  ],
+  "intelligence": [
+    {
+      "file": "core-a-10.ogg",
+      "duration": 1.24
+    },
+    {
+      "file": "core-a-13.ogg",
+      "duration": 1.29
+    },
+    {
+      "file": "core-a-18.ogg",
+      "duration": 1.69
+    }
+  ],
+  "anger": [
+    {
+      "file": "core-b-0.ogg",
+      "duration": 0.77
+    },
+    {
+      "file": "core-b-3.ogg",
+      "duration": 2.24
+    },
+    {
+      "file": "core-b-7.ogg",
+      "duration": 1.99
+    }
+  ],
+  "portal_fire": [
+    {
+      "file": "portal-gun-fire-orange.mp3",
+      "duration": 1.66,
+      "source": "User-supplied recording"
+    }
+  ],
+  "portal_open": [
+    {
+      "file": "open.ogg",
+      "duration": 1.69
+    }
+  ],
+  "cube_hit": [
+    {
+      "file": "clank-b.ogg",
+      "duration": 0.28
+    }
+  ]
+}
