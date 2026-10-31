@@ -124,7 +124,8 @@ const ItemSheet = (() => {
     "js/almost-home.js",
     "js/shop/dango-festival.js",
     "js/veteran-events.js",
-    "js/boskers-globe.js"
+    "js/boskers-globe.js",
+    "js/settings-hub.js"
   ];
   let finishScripts, failScripts;
   window.GameScriptsReady = new Promise((resolve, reject) => {

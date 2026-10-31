@@ -43,6 +43,9 @@ Known old bug, not ours: SPECIAL_HERO_ICONS.Discard points at Discard/icon.png b
 3. Self-contained features can use a local `new Audio(...)` helper like `sfx()` at the top of `js/boskers-globe.js`.
 4. Music: `MUSIC_TRACKS` (key -> URL), `Music.play(key)`. Autoplay is blocked until a click.
 
+## Settings and save safety (js/settings-hub.js, css/settings-hub.css)
+Replaces Screens.openSettings with a two-pane hub (Overview, Sound, Display, Saves, Backups, Account, Advanced); adds a Settings button in the top bar (alert dot) and a Home card. `window.SaveGuard` keeps rolling snapshots in IndexedDB (`dh-save-vault`: auto every 10 min after play, manual, before-risky-change, deleted slots), a one-step undo copy (`<slotKey>-undo` in localStorage) and tracks the last backup file (`dh-last-file-backup`). It wraps Save.flushWrite/import/reset/deleteSlot and Screens.downloadSave. Full Test Save is never snapshotted. Slot logic (Save.createSlot etc.) still lives in the bundle's meta/save.js. Save.import caps text at 300000 chars; the hub shows a clear error above that.
+
 ## Bosker's Globe (js/boskers-globe.js, css/boskers-globe.css, assets/boskers-globe/)
 Roblox-2011-styled roguelite Climb + visual-novel story + skins + Globe versions. State: `Raid.state().boskers`.
 - Skins (`SKINS`) only for toons with real Globe art: Astro, Bassie, Shelly, Vee, Cocoa, Looey, Pebble (Rock), Bobette, Gourdy, Sprout, Yatta.

@@ -1,0 +1,68 @@
+/* Settings hub, top-bar Settings button and the save safety net. See js/settings-hub.js. */
+
+/* ---- the always-visible button */
+.settings-btn { position: relative; display: inline-flex; align-items: center; gap: 6px; height: 34px; padding: 0 12px 0 9px; margin-left: 6px; border: 2px solid #8ee65e; border-radius: 17px; color: #e9ffe0; background: linear-gradient(180deg, #2b3d2a, #1a2a1b); font: inherit; font-size: 13px; font-weight: 800; letter-spacing: .02em; cursor: pointer; box-shadow: 0 2px 0 #0b140c; }
+.settings-btn svg { width: 19px; height: 19px; flex: none; }
+.settings-btn:hover { background: linear-gradient(180deg, #35502f, #20331f); }
+.settings-btn:active { transform: translateY(1px); box-shadow: none; }
+.settings-dot { display: none; position: absolute; top: -4px; right: -4px; width: 14px; height: 14px; border-radius: 50%; border: 2px solid #121a1c; background: #ffc94d; }
+.settings-btn[data-alert="bad"] { border-color: #ff6b7a; } .settings-btn[data-alert="bad"] .settings-dot { display: block; background: #ff4d5e; animation: shPulse 1.2s ease-in-out infinite; }
+.settings-btn[data-alert="warn"] .settings-dot { display: block; }
+.settings-btn[data-alert="info"] .settings-dot { display: block; background: #6ec1ff; }
+@keyframes shPulse { 50% { transform: scale(1.35); } }
+@media (max-width: 560px) { .settings-label { display: none; } .settings-btn { width: 40px; height: 40px; padding: 0; justify-content: center; border-radius: 50%; color: #13200f; background: #8ee65e; border-color: #c9ffa8; } .settings-btn:hover { background: #a3f27a; } .settings-btn svg { width: 24px; height: 24px; } }
+
+/* ---- Home card */
+.home-settings.sh-homecard { display: flex; align-items: center; gap: 12px; width: 100%; padding: 14px 16px; margin: 10px 0 4px; border: 2px solid #4a585c; border-radius: 14px; color: #fff; background: linear-gradient(135deg, #20302b, #172326); font: inherit; text-align: left; cursor: pointer; }
+.sh-homecard i { font-style: normal; font-size: 28px; }
+.sh-homecard span { flex: 1; min-width: 0; } .sh-homecard b { display: block; font-size: 17px; } .sh-homecard small { display: block; margin-top: 2px; color: #b9c9c5; font-size: 13px; }
+.sh-homecard em { padding: 6px 12px; border-radius: 14px; color: #13200f; background: #8ee65e; font-style: normal; font-size: 13px; font-weight: 800; }
+.sh-homecard.warn { border-color: #ffc94d; } .sh-homecard.warn em { background: #ffc94d; }
+.sh-homecard.bad { border-color: #ff6b7a; } .sh-homecard.bad em { background: #ff6b7a; }
+
+/* ---- the hub */
+#modalBox.sh-modal { width: min(96vw, 860px); max-height: 92dvh; padding: 0; overflow: hidden; border: 1px solid #4a585c; border-radius: 14px; background: #121a1c; display: flex; flex-direction: column; }
+#modalBox.sh-modal > .row:first-child { margin: 0 !important; padding: 12px 16px; background: #182023; border-bottom: 1px solid #2f3b3e; }
+#modalBox.sh-modal > .row:first-child .grow { font-size: 18px !important; font-weight: 800; color: #fff; }
+.sh { display: grid; grid-template-columns: 168px 1fr; min-height: 0; flex: 1; overflow: hidden; height: min(74dvh, 640px); }
+.sh-nav { display: flex; flex-direction: column; gap: 4px; padding: 10px; background: #0f1517; border-right: 1px solid #2f3b3e; overflow-y: auto; }
+.sh-tab { position: relative; display: flex; align-items: center; gap: 10px; padding: 10px 12px; border: 0; border-radius: 10px; color: #cfd9d6; background: transparent; font: inherit; font-size: 15px; font-weight: 700; text-align: left; cursor: pointer; }
+.sh-tab i { font-style: normal; font-size: 18px; width: 22px; text-align: center; }
+.sh-tab:hover { background: #1b2528; } .sh-tab.on { color: #13200f; background: #8ee65e; }
+.sh-dot { position: absolute; top: 8px; right: 8px; width: 10px; height: 10px; border-radius: 50%; background: #ff4d5e; }
+.sh-panel { padding: 14px 18px 20px; overflow-y: auto; min-width: 0; }
+@media (max-width: 640px) {
+  .sh { grid-template-columns: 1fr; grid-template-rows: auto 1fr; height: 78dvh; }
+  .sh-nav { flex-direction: row; border-right: 0; border-bottom: 1px solid #2f3b3e; overflow-x: auto; overflow-y: hidden; padding: 8px; }
+  .sh-tab { flex: none; padding: 8px 10px; font-size: 13px; } .sh-tab span { white-space: nowrap; }
+  .sh-panel { padding: 10px 12px 18px; }
+  .st-row { flex-wrap: wrap; }
+}
+
+/* ---- overview */
+.sh-hero { display: flex; align-items: center; gap: 14px; padding: 16px; border: 2px solid #8ee65e; border-radius: 14px; background: linear-gradient(135deg, #1d3322, #152124); }
+.sh-hero.warn { border-color: #ffc94d; background: linear-gradient(135deg, #38311a, #1e2224); } .sh-hero.bad { border-color: #ff6b7a; background: linear-gradient(135deg, #3b1b21, #1e2224); }
+.sh-hero-mark { flex: none; display: grid; place-items: center; width: 52px; height: 52px; border-radius: 50%; font-size: 26px; background: rgba(255, 255, 255, .1); }
+.sh-hero-copy { min-width: 0; } .sh-hero-copy small { color: #9db3ad; font-size: 11px; font-weight: 800; letter-spacing: .08em; }
+.sh-hero-copy b { display: block; font-size: 20px; color: #fff; } .sh-hero-copy span { display: block; color: #d3dedb; font-size: 14px; } .sh-hero-copy em { display: block; margin-top: 4px; color: #b9c9c5; font-size: 13px; font-style: normal; }
+.sh-quick { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 12px 0 4px; }
+.sh-big { padding: 14px; border: 2px solid #8ee65e; border-radius: 12px; color: #13200f; background: #8ee65e; font: inherit; text-align: left; cursor: pointer; }
+.sh-big b { display: block; font-size: 16px; } .sh-big small { display: block; margin-top: 2px; font-size: 12px; opacity: .8; }
+.sh-big.alt { color: #fff; border-color: #56666a; background: #222d30; }
+.sh-big:hover { filter: brightness(1.08); }
+.sh-issue { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin: 6px 0; padding: 10px 12px; border-radius: 10px; border: 1px solid #56666a; background: #1b2528; font-size: 14px; }
+.sh-issue.bad { border-color: #ff6b7a; background: #3b1b21; } .sh-issue.warn { border-color: #ffc94d; background: #38311a; } .sh-issue.info { border-color: #4a7a9a; background: #172733; }
+.sh-issue .st-btn { flex: none; }
+
+/* ---- snapshots */
+.sh-snaps { display: grid; gap: 8px; }
+.sh-snap { padding: 12px; border: 1px solid #3d4b4f; border-radius: 10px; background: #1b2528; }
+.sh-snap-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; } .sh-snap-head b { font-size: 16px; }
+.sh-snap-head em { padding: 2px 10px; border-radius: 12px; font-size: 12px; font-style: normal; font-weight: 800; color: #13200f; background: #8ee65e; }
+.sh-snap-head em.manual { background: #6ec1ff; } .sh-snap-head em.danger { background: #ffc94d; } .sh-snap-head em.deleted { background: #ff8a95; }
+.sh-snap small { color: #9db3ad; } .sh-snap p { margin: 4px 0 10px; color: #d3dedb; font-size: 14px; }
+.sh-empty { padding: 16px; border: 1px dashed #3d4b4f; border-radius: 10px; color: #9db3ad; font-size: 14px; }
+
+/* ---- error banner */
+.sh-banner { position: fixed; z-index: 99999; top: 0; left: 0; right: 0; display: flex; align-items: center; justify-content: center; gap: 12px; padding: 8px 12px; color: #fff; background: #b3263a; font-size: 14px; font-weight: 700; }
+.sh-banner button { padding: 5px 12px; border: 2px solid #fff; border-radius: 14px; color: #b3263a; background: #fff; font: inherit; font-weight: 800; cursor: pointer; }
