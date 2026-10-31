@@ -18,25 +18,25 @@ const ToonCutoutRigs = (() => {
     Delilah:      ['assets/toon-art/Delilah/Delilah.png',436,1011,.38,.76,.33,.70,'human',.65],
     Eclipse:      ['assets/toon-art/Eclipse/Eclipse.png',224,409,.48,.78,.31,.69,'human',1.05],
     Eggson:       ['assets/toon-art/Eggson/Eggson.png',268,410,.55,.78,.34,.68,'human',.7],
-    Flutter:      ['uploads/Fltuter.png',383,358,.54,.79,.45,.70,'wing',.96],
+    Flutter:      ['assets/uploads/Fltuter.png',383,358,.54,.79,.45,.70,'wing',.96],
     Flyte:       ['assets/toon-art/Flyte/Flyte.png',358,448,.56,.78,.45,.69,'wing',1.05],
-    Glisten:      ['uploads/Glisten.png',280,376,.50,.80,.34,.69,'human',.82],
+    Glisten:      ['assets/uploads/Glisten.png',280,376,.50,.80,.34,.69,'human',.82],
     MrHolloway:  ['assets/toon-art/MrHolloway/MrHolloway.png',432,578,.51,.78,.33,.70,'human',.8],
     MrsHolloway: ['assets/toon-art/MrsHolloway/MrsHolloway.png',432,578,.51,.78,.33,.70,'human',.76],
     Pebble:       ['assets/toon-art/Pebble/Pebble.png',343,242,.58,.79,.38,.70,'animal',1.12],
-    Phantasia:    ['uploads/Phantasia.png',391,379,.48,.80,.35,.68,'human',.88],
+    Phantasia:    ['assets/uploads/Phantasia.png',391,379,.48,.80,.35,.68,'human',.88],
     Poppy:        ['assets/toon-art/Poppy/Poppy.png',270,391,.55,.79,.33,.68,'human',1.02],
-    Ribecca:      ['uploads/Ribecca.png',235,373,.53,.77,.32,.70,'human',.8],
+    Ribecca:      ['assets/uploads/Ribecca.png',235,373,.53,.77,.32,.70,'human',.8],
     RnD:          ['assets/toon-art/RnD/RnD.png',386,434,.55,.79,.34,.68,'duo',.77],
     Rodger:       ['assets/toon-art/Rodger/Rodger.png',198,340,.48,.78,.34,.70,'human',.7],
     Squirm:       ['assets/toon-art/Squirm/Squirm.png',409,421,.55,.79,.33,.69,'crawler',1.04],
     Teagan:       ['assets/toon-art/Teagan/Teagan.png',310,378,.48,.78,.34,.69,'human',.72],
-    Tisha:        ['uploads/image-removebg-preview-3.png',288,354,.63,.81,.33,.69,'human',.88],
+    Tisha:        ['assets/uploads/image-removebg-preview-3.png',288,354,.63,.81,.33,.69,'human',.88],
     Toodles:      ['assets/toon-art/Toodles/Toodles.png',264,331,.54,.80,.32,.70,'human',1.1],
     Waxwell:      ['assets/toon-art/Waxwell/Waxwell.png',263,405,.51,.79,.32,.70,'human',.82],
     Yatta:        ['assets/toon-art/Yatta/Yatta.png',281,406,.52,.78,.32,.70,'human',1.12],
-    TenderheartSprout: ['uploads/tenderheartsprout.png',204,492,.52,.79,.32,.69,'human',.85],
-    ShareBearCosmo:    ['uploads/sharebearcosmo.png',252,380,.56,.81,.33,.68,'human',.82]
+    TenderheartSprout: ['assets/uploads/tenderheartsprout.png',204,492,.52,.79,.32,.69,'human',.85],
+    ShareBearCosmo:    ['assets/uploads/sharebearcosmo.png',252,380,.56,.81,.33,.68,'human',.82]
   };
   const clamp = (n, a = 0, b = 1) => Math.min(b, Math.max(a, n));
   const pulse = p => Math.sin(Math.PI * clamp(p));

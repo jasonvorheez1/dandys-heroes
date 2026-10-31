@@ -2,10 +2,10 @@
 var ReviewedCareBearRigs=(()=>{
  const NS='http://www.w3.org/2000/svg';let serial=0;
  const design={
- CheerbearShelly:{src:'uploads/Cheerbearshelly.png',size:[227,241],hip:[114,188],neck:[114,130],badge:[114,151],parts:{legs:[73,188,148,241],torso:[58,125,165,198],armL:[31,132,88,188],armR:[142,132,180,182],head:[25,0,196,133]},pivots:{armL:[76,139],armR:[148,140]}},
- WishBearGigi:{src:'uploads/wishgigi.png',size:[197,299],hip:[99,233],neck:[99,163],badge:[98,202],parts:{legs:[64,226,135,299],pack:[25,151,83,232],torso:[52,158,137,236],armL:[45,165,111,242],armR:[101,169,176,260],head:[27,93,169,168],cap:[26,0,169,100]},pivots:{armL:[65,174],armR:[122,178],cap:[99,97]}},
- TenderheartSprout:{src:'uploads/tenderheartsprout.png',size:[204,492],hip:[111,421],neck:[106,257],badge:[112,370],parts:{pack:[0,236,78,347],legs:[67,413,161,492],torso:[49,256,161,429],armL:[15,286,81,419],armR:[139,279,202,423],head:[0,0,204,262]},pivots:{armL:[65,291],armR:[147,291]}},
- ShareBearCosmo:{src:'uploads/sharebearcosmo.png',size:[252,380],hip:[130,314],neck:[128,181],badge:[132,277],parts:{legs:[92,309,182,380],torso:[83,201,187,321],armL:[57,157,116,250],armR:[153,156,216,250],head:[0,0,252,186]},pivots:{armL:[98,213],armR:[174,213]}}
+ CheerbearShelly:{src:'assets/uploads/Cheerbearshelly.png',size:[227,241],hip:[114,188],neck:[114,130],badge:[114,151],parts:{legs:[73,188,148,241],torso:[58,125,165,198],armL:[31,132,88,188],armR:[142,132,180,182],head:[25,0,196,133]},pivots:{armL:[76,139],armR:[148,140]}},
+ WishBearGigi:{src:'assets/uploads/wishgigi.png',size:[197,299],hip:[99,233],neck:[99,163],badge:[98,202],parts:{legs:[64,226,135,299],pack:[25,151,83,232],torso:[52,158,137,236],armL:[45,165,111,242],armR:[101,169,176,260],head:[27,93,169,168],cap:[26,0,169,100]},pivots:{armL:[65,174],armR:[122,178],cap:[99,97]}},
+ TenderheartSprout:{src:'assets/uploads/tenderheartsprout.png',size:[204,492],hip:[111,421],neck:[106,257],badge:[112,370],parts:{pack:[0,236,78,347],legs:[67,413,161,492],torso:[49,256,161,429],armL:[15,286,81,419],armR:[139,279,202,423],head:[0,0,204,262]},pivots:{armL:[65,291],armR:[147,291]}},
+ ShareBearCosmo:{src:'assets/uploads/sharebearcosmo.png',size:[252,380],hip:[130,314],neck:[128,181],badge:[132,277],parts:{legs:[92,309,182,380],torso:[83,201,187,321],armL:[57,157,116,250],armR:[153,156,216,250],head:[0,0,252,186]},pivots:{armL:[98,213],armR:[174,213]}}
  };
  const outlines={
  CheerbearShelly:{armL:'76,130 86,142 71,164 61,184 33,188 33,173 58,160 68,144',armR:'143,137 151,144 159,152 172,157 173,174 156,174 141,160'},

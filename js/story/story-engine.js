@@ -16,7 +16,7 @@ const ST_ROLE_ICON = { Guardian: '🛡', Broadcaster: '📺', Baker: '🧁', Exc
 const ST_HANDLERS = {
   Devan: {
     name: 'Devan', full: 'Devan Reed', toon: 'Pebble', assignment: 'Dandy & Pebble', role: 'Guardian', color: '#d9dde2', accent: '#8f98a3',
-    art: 'uploads/Devanbattle.webp', basicName: 'Rocky Nudge', basicKind: 'phys', improvised: 'Mop Swing',
+    art: 'assets/uploads/Devanbattle.webp', basicName: 'Rocky Nudge', basicKind: 'phys', improvised: 'Mop Swing',
     base: { hp: 132, fp: 22, atk: 14, mag: 6, def: 13, mdef: 9, spd: 10.5, luck: 6 },
     grow: { hp: 15, fp: 1.4, atk: 1.55, mag: .55, def: 1.45, mdef: 1.05, spd: .16, luck: .2 },
     passive: { name: 'Small Target', desc: 'Devan dodges 12% of incoming attacks, and Taunted enemies hit him 15% softer.' },
@@ -34,7 +34,7 @@ const ST_HANDLERS = {
   },
   Veronica: {
     name: 'Veronica', full: 'Veronica Hurley', toon: 'Vee', role: 'Broadcaster', color: '#46d65a', accent: '#1f8a31',
-    art: 'uploads/veronicabattle.webp', basicName: 'Static Mote', basicKind: 'mag', improvised: 'Extinguisher Blast',
+    art: 'assets/uploads/veronicabattle.webp', basicName: 'Static Mote', basicKind: 'mag', improvised: 'Extinguisher Blast',
     base: { hp: 86, fp: 30, atk: 8, mag: 17.5, def: 7, mdef: 11, spd: 12, luck: 8 },
     grow: { hp: 9.2, fp: 2.1, atk: .8, mag: 2.0, def: .8, mdef: 1.2, spd: .2, luck: .25 },
     passive: { name: 'Ratings Chase', desc: 'Each hit in a row on the same enemy deals 10% more (up to +40%). Switching targets resets the streak.' },
@@ -52,7 +52,7 @@ const ST_HANDLERS = {
   },
   Sam: {
     name: 'Sam', full: 'Sam McLaughlin', toon: 'Sprout', role: 'Baker', color: '#ff5a5f', accent: '#b52a35',
-    art: 'uploads/Sambattle.webp', basicName: 'Tossed Sweets', basicKind: 'mag', improvised: 'Rolling Pin',
+    art: 'assets/uploads/Sambattle.webp', basicName: 'Tossed Sweets', basicKind: 'mag', improvised: 'Rolling Pin',
     base: { hp: 94, fp: 34, atk: 7, mag: 13, def: 8.5, mdef: 12, spd: 12.5, luck: 7 },
     grow: { hp: 10.4, fp: 2.4, atk: .7, mag: 1.45, def: .9, mdef: 1.3, spd: .2, luck: .2 },
     passive: { name: 'Overprotective', desc: 'The first time each ally drops under 30% HP in a battle, Sam instantly tosses them a treat (15% Max HP).' },
@@ -70,7 +70,7 @@ const ST_HANDLERS = {
   },
   Shannon: {
     name: 'Shanon', full: 'Shanon Mendez', toon: 'Shelly', role: 'Excavator', color: '#f3b04a', accent: '#a86b17',
-    art: 'uploads/Shanonbattle.webp', basicName: 'Trowel Strike', basicKind: 'phys', improvised: 'Trowel Strike',
+    art: 'assets/uploads/Shanonbattle.webp', basicName: 'Trowel Strike', basicKind: 'phys', improvised: 'Trowel Strike',
     base: { hp: 100, fp: 28, atk: 12.5, mag: 11, def: 9.5, mdef: 10, spd: 13.5, luck: 9 },
     grow: { hp: 11.2, fp: 2.0, atk: 1.35, mag: 1.2, def: 1.0, mdef: 1.1, spd: .22, luck: .3 },
     passive: { name: 'Field Notes', desc: 'Shanon’s first hit on each enemy deals 30% more and double Stagger.' },
@@ -88,7 +88,7 @@ const ST_HANDLERS = {
   },
   Austin: {
     name: 'Austin', full: 'Austin Russo', toon: 'Astro', role: 'Dreamkeeper', color: '#4d6fe0', accent: '#24357e',
-    art: 'uploads/austinbattle.webp', basicName: 'Lullaby Mote', basicKind: 'mag', improvised: 'Lullaby Mote',
+    art: 'assets/uploads/austinbattle.webp', basicName: 'Lullaby Mote', basicKind: 'mag', improvised: 'Lullaby Mote',
     base: { hp: 90, fp: 32, atk: 9, mag: 15.5, def: 7.5, mdef: 13.5, spd: 10, luck: 8 },
     grow: { hp: 9.8, fp: 2.3, atk: .9, mag: 1.75, def: .8, mdef: 1.4, spd: .16, luck: .25 },
     passive: { name: 'Well Rested', desc: 'While Austin stands, every party member regains 2 FP at the start of their turn.' },
@@ -117,7 +117,7 @@ const ST_ITEMS = {
   jumper: { name: 'Jumper Cable', icon: ItemSheet.url('Jumpercable'), target: 'ko', desc: 'Revive a fallen ally at 45% HP.' },
   jawbreaker: { name: 'Jawbreaker', icon: ItemSheet.url('jawbreaker'), target: 'ally', desc: 'A Shield worth 30% of the ally’s Max HP for 3 turns.' },
   tonic: { name: 'Clean Tonic', icon: ItemSheet.url('Marmalade'), target: 'allies', desc: 'Wash off every ailment and restore 20% HP to the whole party.' },
-  barrier: { name: 'Barrier Sign', icon: 'uploads/barriersign.png', target: 'allies', desc: 'Plant it in front of everyone: counts as a Tank for 3 turns, with Ward 25%.' },
+  barrier: { name: 'Barrier Sign', icon: 'assets/uploads/barriersign.png', target: 'allies', desc: 'Plant it in front of everyone: counts as a Tank for 3 turns, with Ward 25%.' },
   stealth: { name: 'Stealth Candy', icon: ItemSheet.url('Stealthcandy'), target: 'ally', desc: 'The ally can’t be singled out for 2 turns.' }
 };
 

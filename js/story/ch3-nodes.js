@@ -8,19 +8,19 @@
 'use strict';
 
 Object.assign(ST_BG, {
-  park: 'assets/backgrounds/maps/park-gate.webp', station: 'uploads/gardenviewtrainstation.webp', station2: 'uploads/gardenviewtrainstation.webp',
-  renovation: 'uploads/gardenviewsignclosedforrenovation.png'
+  park: 'assets/backgrounds/maps/park-gate.webp', station: 'assets/uploads/gardenviewtrainstation.webp', station2: 'assets/uploads/gardenviewtrainstation.webp',
+  renovation: 'assets/uploads/gardenviewsignclosedforrenovation.png'
 });
 
 /* Pictures a scene can lay over the stage with `@image key`. Caption is optional. */
 const ST3_IMAGES = {
-  news: { src: 'uploads/news_paper.webp', cap: 'City Newspaper · 6/24/2002' },
-  sign: { src: 'uploads/gardenviewsignclosedforrenovation.png', cap: 'GARDENVIEW · CLOSED FOR RENOVATIONS.' },
-  barrier: { src: 'uploads/barriersign.png', cap: '' },
-  park: { src: 'uploads/gardenviewparkbackground.webp', cap: 'Gardenview Park' },
-  station: { src: 'uploads/gardenviewtrainstation.webp', cap: 'FIND ME!' },
-  note1: { src: 'uploads/Get_Her_1.webp', cap: 'The note, front.' },
-  note2: { src: 'uploads/Get_Her_2.webp', cap: 'The note, back.' }
+  news: { src: 'assets/uploads/news_paper.webp', cap: 'City Newspaper · 6/24/2002' },
+  sign: { src: 'assets/uploads/gardenviewsignclosedforrenovation.png', cap: 'GARDENVIEW · CLOSED FOR RENOVATIONS.' },
+  barrier: { src: 'assets/uploads/barriersign.png', cap: '' },
+  park: { src: 'assets/uploads/gardenviewparkbackground.webp', cap: 'Gardenview Park' },
+  station: { src: 'assets/uploads/gardenviewtrainstation.webp', cap: 'FIND ME!' },
+  note1: { src: 'assets/uploads/Get_Her_1.webp', cap: 'The note, front.' },
+  note2: { src: 'assets/uploads/Get_Her_2.webp', cap: 'The note, back.' }
 };
 
 /* Horror stills painted at runtime by websim.imageGen; each falls back to a procedural one. */
@@ -215,12 +215,12 @@ const ST3_DYLE_LINES = [
 
 /* ------------------------------------------------------------ Evidence */
 const ST3_TAPES = [
-  { id: 'e1', unlock: 'c3h1', title: 'City Newspaper · 6/24', place: 'Outside the Gates', img: 'uploads/news_paper.webp', lines: [
+  { id: 'e1', unlock: 'c3h1', title: 'City Newspaper · 6/24', place: 'Outside the Gates', img: 'assets/uploads/news_paper.webp', lines: [
     'CITY NEWSPAPER: Gardenview Educational Center™ is to shut its doors on 6/29 due to recent allegations and lack of safety regulations…',
     'CITY NEWSPAPER: Little has been revealed following a case of the “Malfunction” incident. One of the creators, known as Arthur Walton, was questioned on the matter. He chose to remain silent.',
     '(Under the print, a black smear. Most of a second article has been scratched out. The word “silly” is still readable.)'
   ] },
-  { id: 'e2', unlock: 'c3h2', title: 'Platform Zero', place: 'Freight Station', img: 'uploads/gardenviewtrainstation.webp', lines: [
+  { id: 'e2', unlock: 'c3h2', title: 'Platform Zero', place: 'Freight Station', img: 'assets/uploads/gardenviewtrainstation.webp', lines: [
     'WRITTEN ON THE WALL, IN WET BLACK INK: FIND ME!',
     'NOTE (Sam): None of us knows the handwriting. Shannon thinks it might be Devan. Veronica says Devan would have signed it.',
     'NOTE (Sam): The ink was still wet when we got there. Nobody was around.'
@@ -235,7 +235,7 @@ const ST3_TAPES = [
     'BOBETTE (on a second tag): I wrote “welcome back” on this one before he got here. I don’t know why. I just did.',
     'BOBETTE (on a third tag, blank): In case I need it.'
   ] },
-  { id: 'e5', unlock: 'c3s1', img: 'uploads/Get_Her_1.webp', title: 'The Note', place: 'Easter Floor', lines: [
+  { id: 'e5', unlock: 'c3s1', img: 'assets/uploads/Get_Her_1.webp', title: 'The Note', place: 'Easter Floor', lines: [
     'FRONT: Get her. get her. Get Her. get her. NOW. Get Her…',
     'BACK: NOW. Her. GetHer. get her. NOW. Her. (The ink covers the middle of the page. The pen has gone through the paper twice.)',
     'NOTE: The handwriting gets bigger with every line. Whoever wrote it could not stop. Bassie says the S is hers.'

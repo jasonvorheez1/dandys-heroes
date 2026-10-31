@@ -48,7 +48,7 @@
     cut.style.setProperty('--ah-cut-time', duration + 'ms');
     const sprite = (id, cls) => `<img class="ah-cut-toon ${cls || ''}" src="${art(id)}" alt="${id}">`;
     if (door) {
-      const bg = kind === 'door-loop' ? 'assets/backgrounds/maps/diner.png' : kind === 'door-out' ? 'uploads/backgroundlobby2.png' : 'uploads/backgroundlobby1.webp';
+      const bg = kind === 'door-loop' ? 'assets/backgrounds/maps/diner.png' : kind === 'door-out' ? 'assets/uploads/backgroundlobby2.png' : 'assets/uploads/backgroundlobby1.webp';
       cut.innerHTML = `<div class="ah-door-wall"></div><div class="ah-door-space"><div class="ah-door-view" style="background-image:url('${ASSET + bg}')"></div><div class="ah-door-leaf"><div class="ah-door-panel"></div><span class="ah-door-sign">${kind === 'door-loop' ? 'STAFF ONLY' : kind === 'door-out' ? 'STATION' : 'EAST WING'}</span><i class="ah-door-handle"></i></div><div class="ah-door-trim"></div></div><div class="ah-door-light"></div>`;
     } else if (kind === 'tea') {
       cut.innerHTML = `<div class="ah-cut-table"></div>${sprite('Dango','ah-cut-left')}<svg class="ah-pour" viewBox="0 0 500 300"><g class="ah-pot"><path d="M65 80q-20 100 70 100t65-100Z" fill="#bde3d3" stroke="#665166" stroke-width="6"/><path d="M196 108l51-35-24 69-26 8" fill="#bde3d3" stroke="#665166" stroke-width="6"/><path d="M71 110q-72-36-39 39l43 11" fill="none" stroke="#665166" stroke-width="10"/><ellipse cx="133" cy="79" rx="66" ry="13" fill="#f3c9d8" stroke="#665166" stroke-width="6"/><circle cx="133" cy="60" r="12" fill="#f3c9d8" stroke="#665166" stroke-width="5"/></g><path class="ah-tea-stream" d="M265 132Q320 145 334 217" fill="none" stroke="#c59355" stroke-width="8" stroke-linecap="round"/><ellipse cx="340" cy="276" rx="62" ry="10" fill="#fceedd"/><path d="M298 216h85v29q0 32-42 32t-43-32Z" fill="#f3c9d8" stroke="#665166" stroke-width="5"/><ellipse cx="340" cy="216" rx="42" ry="7" fill="#ac7b50"/><path d="M384 225q39-12 25 19l-25 6" fill="none" stroke="#665166" stroke-width="7"/></svg>`;
@@ -104,7 +104,7 @@
      ============================================================ */
   const story = [
     scene('01 · Unlawful Entry', 'Gardenview Lobby', `
-@bg uploads/backgroundlobby1.webp
+@bg assets/uploads/backgroundlobby1.webp
 @ah lobby
 @music ahCandy
 @cut door-in
@@ -262,7 +262,7 @@ Jessie~: At last, the basket peasant has a thought! We are FOUNDING ROYALTY of o
 Vee: Still a headache. But if the halls shift between worlds, one Toon holds the master keys. Station platform. Now.`),
 
     scene('05 · The Flower’s Explanation', 'Gardenview Station', `
-@bg uploads/gardenviewtrainstation.webp
+@bg assets/uploads/gardenviewtrainstation.webp
 @ah station
 @music ahCandy
 @cut door-out
@@ -394,7 +394,7 @@ Nugget~: IT REACHED MY BONES! MY MUSTARD IS VIBRATING!
 Jessie [smug] (bow): Perfection. If nobody's ears are ringing by intermission, I haven't done my job.`),
 
     scene('Cody · Perimeter Traps & Fashion Statements', 'Gardenview Lobby', `
-@bg uploads/backgroundlobby1.webp
+@bg assets/uploads/backgroundlobby1.webp
 @ah lobby
 @music ahCandy
 @enter Dango left
@@ -522,7 +522,7 @@ Jessie [note]: Yes, yes, I'm a benevolent monarch. Now fetch me tea before I fai
         title: 'Bonus Challenge · ' + cast[i],
         floorLabel: 'Non-canon · Scene unlock',
         roomIdx: 1, roomTotal: 1,
-        bg: ASSET + 'uploads/backgroundlobby1.webp',
+        bg: ASSET + 'assets/uploads/backgroundlobby1.webp',
         timeLimit: 180, mods: [], mutations: []
       },
       rewards: () => ({}),

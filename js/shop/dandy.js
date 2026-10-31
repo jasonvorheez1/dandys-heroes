@@ -138,7 +138,7 @@
 
   const RESOURCE_STOCK = [
     { id:'tape', unlock:0, name:'Field Tape', desc:'A tidy bundle for upgrading Hero skills and Dandy’s counter.', img:'./assets/objects/Tape.png', cost:{ichor:450}, gain:{tape:10}, limit:2, say:"Field Tape! It fixes skills, machines, shelves... hmm. Let's stop the list there." },
-    { id:'exp', unlock:0, name:'EXP Bottle', desc:'A concentrated bottle of experience for Hero levels.', img:'uploads/exp-bottle-icon.png', cost:{ichor:500}, gain:{exp:1600}, limit:2, say:"An EXP Bottle! Carefully concentrated, delightfully sparkly, and much easier to pour than a whole training session!" },
+    { id:'exp', unlock:0, name:'EXP Bottle', desc:'A concentrated bottle of experience for Hero levels.', img:'assets/uploads/exp-bottle-icon.png', cost:{ichor:500}, gain:{exp:1600}, limit:2, say:"An EXP Bottle! Carefully concentrated, delightfully sparkly, and much easier to pour than a whole training session!" },
     { id:'star', unlock:8, name:'Star Dust', desc:'Promotion dust with a suspicious sparkle.', img:ItemSheet.url('Star'), emoji:'⭐', cost:{ichor:700}, gain:{star:35}, limit:2, say:"Star Dust! Pretty, powerful, and impossible to sweep up. Please open it somewhere else!" },
     { id:'gold', unlock:16, name:'Gold Crate', desc:'A crate of Hero research and useful materials.', emoji:'📦', cost:{star:55}, gain:{gold:1}, limit:1, say:"A Gold Crate! It rattles a little, but that's normal... I think. Crates are supposed to rattle, right?" },
     { id:'manual', unlock:22, name:'Training Manuals', desc:'Field notes used to rank up Classes and Subclasses.', emoji:'📘', cost:{ichor:850}, gain:{manual:7}, limit:2, say:"Training Manuals! Read every page carefully. If a diagram looks upside down, try turning the book first." },
@@ -151,10 +151,10 @@
   ];
 
   const PROFILE_ICON_STOCK = [
-    { id:'profile-icon-dandy', name:"Dandy's Signature", desc:'A shopkeeper portrait for your Dandy’s Heroes profile.', img:'./uploads/dandyhimself.webp', cost:{ichor:1800}, profileIcon:'dandy', limit:1, say:"My own portrait? Oh! Well, if you insist... I suppose I do photograph rather well!" },
-    { id:'profile-icon-buds', name:"Dandy's Buds", desc:'The Buds mark for players who appreciate a guided beginning.', img:'./uploads/dandysbudicon.png', cost:{tape:24}, profileIcon:'buds', limit:1, say:"Dandy's Buds! A tidy little reminder that I did ask you to click it eventually!" },
+    { id:'profile-icon-dandy', name:"Dandy's Signature", desc:'A shopkeeper portrait for your Dandy’s Heroes profile.', img:'./assets/uploads/dandyhimself.webp', cost:{ichor:1800}, profileIcon:'dandy', limit:1, say:"My own portrait? Oh! Well, if you insist... I suppose I do photograph rather well!" },
+    { id:'profile-icon-buds', name:"Dandy's Buds", desc:'The Buds mark for players who appreciate a guided beginning.', img:'./assets/uploads/dandysbudicon.png', cost:{tape:24}, profileIcon:'buds', limit:1, say:"Dandy's Buds! A tidy little reminder that I did ask you to click it eventually!" },
     { id:'profile-icon-journal', name:'Journal Seal', desc:'A bright seal for players who keep their discoveries together.', emoji:'📖', cost:{notes:30}, profileIcon:'journal', limit:1, say:"A Journal Seal! Very official. Try not to lose it between all those achievement pages!" },
-    { id:'profile-icon-ichor', name:'Ichor Crest', desc:'A Black Ichor crest for a profile with a little extra danger.', img:'./uploads/ichor.png', cost:{star:80}, profileIcon:'ichor', limit:1, say:"The Ichor Crest! Dramatic, isn't it? It makes even a perfectly sensible profile look dangerous!" }
+    { id:'profile-icon-ichor', name:'Ichor Crest', desc:'A Black Ichor crest for a profile with a little extra danger.', img:'./assets/uploads/ichor.png', cost:{star:80}, profileIcon:'ichor', limit:1, say:"The Ichor Crest! Dramatic, isn't it? It makes even a perfectly sensible profile look dangerous!" }
   ];
 
   const TOON_NAMES = { RnD:'Razzle & Dazzle', Delilah:'Delilah Keen' };
@@ -318,7 +318,7 @@
   function dandyLine(lines) { return Array.isArray(lines) ? pick(lines) : lines; }
   function toonName(id) { return TOON_NAMES[id] || (HEROES[id] && HEROES[id].name) || id; }
   function toonPortrait(id) {
-    if (id === 'Dandy') return './uploads/image-removebg-preview.png';
+    if (id === 'Dandy') return './assets/uploads/image-removebg-preview.png';
     if (HEROES[id]) return Art.icon(id);
     return ItemSheet.icon(id);
   }

@@ -40,7 +40,7 @@ const QOMGourdyRig = (() => {
       const id = `qom-gourdy-rig-${++serial}`;
       const svg = node('svg', { viewBox: '0 0 578 432', class: 'rig-svg', 'aria-hidden': 'true' }, host);
       const defs = node('defs', {}, svg);
-      const src = (typeof ASSET === 'string' ? ASSET : './') + 'uploads/gourdyQOM.png';
+      const src = (typeof ASSET === 'string' ? ASSET : './') + 'assets/uploads/gourdyQOM.png';
       const cut = (name, d, parent) => {
         const cid = `${id}-${name}`;
         node('path', { d, 'clip-rule': 'evenodd' }, node('clipPath', { id: cid, clipPathUnits: 'userSpaceOnUse' }, defs));

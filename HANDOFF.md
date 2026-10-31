@@ -13,6 +13,13 @@ is inside an `<iframe>`; read its globals with `document.querySelector('iframe')
   (`playerSpec`, `payoutBattle`...) can be reassigned from a later script; classes via `Battle.prototype.x`.
 - Run `node --check file.js` after every JS edit. Git is the safety net (commit often).
 
+## Folder layout (reorganised 2026-10-31)
+Root holds only index.html, server.js, Play_Game.bat, HANDOFF.md, js/, css/, tools/, vendor/, plus SFX/, ui/, meta/, item/, icons/ (left in place on purpose).
+Assets moved under assets/: toon-art (was Characters), enemies, objects (was OBJECT), vfx (was VFX), backgrounds (was Stagebackgrounds), uploads.
+`tools/move-folders.js` did the move (dry run by default) and rewrote paths in js/, css/, index.html, server.js. It leaves remote paths alone (githubAsset(...), the jsDelivr uploads URL) and assets/ff7/enemies. Paths built at run time cannot be checked by script; test in the browser.
+**Lesson:** tools/shrink-files.js once scanned only js/*.js and deleted 25 uploads used by js/story/*; it now scans every script. Never judge a file unused from a top-level search only.
+Known old bug, not ours: SPECIAL_HERO_ICONS.Discard points at Discard/icon.png but the file is icon.webp.
+
 ## Assets (do not rename or delete casually)
 - Files are referenced by path string inside the bundle. Some audio/music loads from CDN/GitHub (`uploadUrl`, `UPLOADS_CDN`, `GITHUB_ASSETS` in core.js).
 - Audio: `tools/convert-audio.js` makes `.ogg` beside each local `.wav` (SFX/, assets/) and regenerates `js/audio-redirect.js`

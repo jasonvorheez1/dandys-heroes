@@ -787,7 +787,7 @@ const FF7_VOICE_CUES = {
   ff7_seph_flare: ['sephirothfearnot.wav'],
   ff7_seph_horse: ['sephirothtoolateforlaments.wav', 'sephirothyoulookgood.wav']
 };
-CUE_SOURCES.push([FF7_VOICE_CUES, ASSET + 'uploads/']);
+CUE_SOURCES.push([FF7_VOICE_CUES, ASSET + 'assets/uploads/']);
 
 function playFF7Voice(unit, battle, cue, basic = false) {
   if (!unit || !unit.alive || !battle || battle.offscreen || !Sound.on) return;

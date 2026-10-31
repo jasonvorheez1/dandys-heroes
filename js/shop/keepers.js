@@ -55,7 +55,7 @@ const ShopKeepers = (() => {
     if (!dyle && Save.data?.opt?.animatedChars !== true) {
       const art = document.createElement('img');
       art.className = 'market-keeper-still';
-      art.src = (typeof ASSET === 'string' ? ASSET : './') + 'uploads/dandyhimself.webp';
+      art.src = (typeof ASSET === 'string' ? ASSET : './') + 'assets/uploads/dandyhimself.webp';
       art.alt = '';
       host.setAttribute('aria-label', 'Dandy');
       host.appendChild(art);

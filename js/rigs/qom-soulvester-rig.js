@@ -40,7 +40,7 @@ const QOMSoulvesterRig = (() => {
       const id = `qom-soulvester-rig-${++serial}`;
       const svg = node('svg', { viewBox: '0 0 370 436', class: 'rig-svg', 'aria-hidden': 'true' }, host);
       const defs = node('defs', {}, svg);
-      const src = (typeof ASSET === 'string' ? ASSET : './') + 'uploads/SoulvesterQOM.png';
+      const src = (typeof ASSET === 'string' ? ASSET : './') + 'assets/uploads/SoulvesterQOM.png';
       const cut = (name, d, parent) => {
         const cid = `${id}-${name}`;
         node('path', { d }, node('clipPath', { id: cid, clipPathUnits: 'userSpaceOnUse' }, defs));

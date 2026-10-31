@@ -7,7 +7,7 @@
 'use strict';
 
 const ST_BG = {
-  lobby: 'uploads/backgroundlobby1.webp', sign: 'uploads/backgroundlobby2.png', launcher: 'uploads/launcher-room.webp',
+  lobby: 'assets/uploads/backgroundlobby1.webp', sign: 'assets/uploads/backgroundlobby2.png', launcher: 'assets/uploads/launcher-room.webp',
   diner: 'assets/backgrounds/maps/diner.png', rainbow: 'assets/backgrounds/maps/rainbow-rooms.png', art: 'assets/backgrounds/maps/art-floor.png',
   gift: 'assets/backgrounds/maps/gift-floor.png', aquatic: 'assets/backgrounds/maps/aquatic-floor.png', astro: 'assets/backgrounds/maps/astro-floor.png',
   library: 'assets/backgrounds/maps/library-floor.png', artist: 'assets/backgrounds/maps/artist.png', greenhouse: 'assets/backgrounds/maps/greenhouse.png',
@@ -91,11 +91,11 @@ const ST_HARD = { lv: 4, mult: { hp: 1.25, atk: 1.15, def: 1.06 } };
 
 /* Handler skins: the Toon wears its Handler's look. Earned from Hard clears. */
 const ST_SKINS = {
-  Sprout: { handler: 'Sam', node: 'b3', id: 'handler-sam', name: 'Toon Handler · Sam', art: 'uploads/Sambattle.webp' },
-  Shelly: { handler: 'Shannon', node: 'b5', id: 'handler-shannon', name: 'Toon Handler · Shanon', art: 'uploads/Shanonbattle.webp' },
-  Vee: { handler: 'Veronica', node: 'b7', id: 'handler-veronica', name: 'Toon Handler · Veronica', art: 'uploads/veronicabattle.webp' },
-  Astro: { handler: 'Austin', node: 'b9', id: 'handler-austin', name: 'Toon Handler · Austin', art: 'uploads/austinbattle.webp' },
-  Pebble: { handler: 'Devan', node: 'b12', id: 'handler-devan', name: 'Toon Handler · Devan', art: 'uploads/Devanbattle.webp' }
+  Sprout: { handler: 'Sam', node: 'b3', id: 'handler-sam', name: 'Toon Handler · Sam', art: 'assets/uploads/Sambattle.webp' },
+  Shelly: { handler: 'Shannon', node: 'b5', id: 'handler-shannon', name: 'Toon Handler · Shanon', art: 'assets/uploads/Shanonbattle.webp' },
+  Vee: { handler: 'Veronica', node: 'b7', id: 'handler-veronica', name: 'Toon Handler · Veronica', art: 'assets/uploads/veronicabattle.webp' },
+  Astro: { handler: 'Austin', node: 'b9', id: 'handler-austin', name: 'Toon Handler · Austin', art: 'assets/uploads/austinbattle.webp' },
+  Pebble: { handler: 'Devan', node: 'b12', id: 'handler-devan', name: 'Toon Handler · Devan', art: 'assets/uploads/Devanbattle.webp' }
 };
 
 if (typeof module !== 'undefined') module.exports = { ST_NODES, ST_ITEMS_FOR, ST_HARD, ST_SKINS };

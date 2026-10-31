@@ -169,7 +169,7 @@ const DyleShop = (() => {
     BOOK_SHOP_STICKERS.forEach(sticker => {
       const owned = hasSticker(sticker.id), locked = !owned && bookLocked(sticker);
       const card = el('article', 'dyle-sticker-card' + (owned ? ' owned' : '') + (locked ? ' locked' : ''));
-      card.innerHTML = `<img src="assets/stickers/${sticker.id}.webp" alt="" loading="lazy"><b>${sticker.label}</b><button class="market-primary dyle-sticker-action" type="button">${owned ? 'In your book' : locked ? `🔒 Mastery ${sticker.mastery}` : `<img class="currency-icon ichor-icon" src="uploads/ichor.png" alt="Ichor"> ${fmt(sticker.cost)}`}</button>`;
+      card.innerHTML = `<img src="assets/stickers/${sticker.id}.webp" alt="" loading="lazy"><b>${sticker.label}</b><button class="market-primary dyle-sticker-action" type="button">${owned ? 'In your book' : locked ? `🔒 Mastery ${sticker.mastery}` : `<img class="currency-icon ichor-icon" src="assets/uploads/ichor.png" alt="Ichor"> ${fmt(sticker.cost)}`}</button>`;
       const action = $('.dyle-sticker-action', card);
       action.disabled = owned || locked || !Save.can({ ichor:sticker.cost });
       action.onclick = () => {

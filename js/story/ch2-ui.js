@@ -4,11 +4,11 @@
 
 Object.assign(ST_VN_ART, {
   Cody:'assets/toon-art/Cody/vn.webp', Jessie:'assets/toon-art/Jessie/vn.webp', Dango:'assets/toon-art/Dango/vn.webp', Nugget:'assets/toon-art/Nugget/vn.webp',
-  Tisha: 'uploads/tishavnportrait.webp', Rodger: 'uploads/rodgervnportrait.webp', Dyle: 'uploads/dylevnportrait.webp',
-  Scraps: 'uploads/scraps-vn.png', Rudie: 'uploads/rudievnportrait.webp', Coal: 'uploads/coalvnportrait.webp',
-  Connie: 'uploads/connievnportrait.webp', Boxten: 'uploads/boxtenvnportrait.webp',
-  Goob: 'uploads/goobvnportrait.webp', Cosmo: 'uploads/cosmovnportrait.webp',
-  Glisten: 'uploads/Glisten.png', Flutter: 'uploads/Fltuter.png', Ribecca: 'uploads/Ribecca.png',
+  Tisha: 'assets/uploads/tishavnportrait.webp', Rodger: 'assets/uploads/rodgervnportrait.webp', Dyle: 'assets/uploads/dylevnportrait.webp',
+  Scraps: 'assets/uploads/scraps-vn.png', Rudie: 'assets/uploads/rudievnportrait.webp', Coal: 'assets/uploads/coalvnportrait.webp',
+  Connie: 'assets/uploads/connievnportrait.webp', Boxten: 'assets/uploads/boxtenvnportrait.webp',
+  Goob: 'assets/uploads/goobvnportrait.webp', Cosmo: 'assets/uploads/cosmovnportrait.webp',
+  Glisten: 'assets/uploads/Glisten.png', Flutter: 'assets/uploads/Fltuter.png', Ribecca: 'assets/uploads/Ribecca.png',
   Eclipse: 'assets/kh/vn/eclipse.webp'
 });
 

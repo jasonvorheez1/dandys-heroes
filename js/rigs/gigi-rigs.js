@@ -32,7 +32,7 @@ const GigiRigs = (() => {
   // A little overlap at the shoulders and hips keeps the joints filled in motion.
   const designs = {
     WishBearGigi: {
-      image: 'uploads/wishgigi.png', size: [197, 299], center: 99,
+      image: 'assets/uploads/wishgigi.png', size: [197, 299], center: 99,
       ground: 291, neck: [103, 161], hips: [[105, 232], [83, 232]],
       waist: [99, 231], arms: [[63, 176], [115, 175]],
       propAt: [151, 229], capPivot: [100, 98],

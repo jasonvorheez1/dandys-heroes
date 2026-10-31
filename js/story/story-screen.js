@@ -17,8 +17,8 @@ Object.assign(MUSIC_TRACKS, {
 Object.assign(MUSIC_TRACK_TRIMS, { stColossus: .39, stQom: .66 });
 
 const ST_VN_ART = {
-  Arthur: 'uploads/arthurvmportrait.webp', Delilah: 'uploads/delilahvmportrait.webp', Sprout: 'uploads/sproutvmportrait.webp',
-  Dandy: 'uploads/dandyhimself.webp', Ginger: 'uploads/gingervnportait.webp', Shrimpo: 'uploads/shrimpovnportrait.webp'
+  Arthur: 'assets/uploads/arthurvmportrait.webp', Delilah: 'assets/uploads/delilahvmportrait.webp', Sprout: 'assets/uploads/sproutvmportrait.webp',
+  Dandy: 'assets/uploads/dandyhimself.webp', Ginger: 'assets/uploads/gingervnportait.webp', Shrimpo: 'assets/uploads/shrimpovnportrait.webp'
 };
 /* Still portraits drawn facing left; they are flipped the other way round. */
 const ST_ART_FACES_LEFT = new Set(['Sprout', 'Shrimpo']);
@@ -960,7 +960,7 @@ StoryUI.shopTab = function (body) {
   if (!this._dandyLine) this._dandyLine = LINES[Math.floor(Math.random() * LINES.length)];
   const draw = () => {
     const ichor = (Save.data.res && Save.data.res.ichor) || 0;
-    box.innerHTML = `<div class="ms-shop-head"><img src="${ASSET}uploads/dandyhimself.webp" alt="Dandy"><div><small>DANDY’S SHOP${ch3 ? ' · OPEN AGAIN' : ''}</small><b>“${this._dandyLine}”</b>
+    box.innerHTML = `<div class="ms-shop-head"><img src="${ASSET}assets/uploads/dandyhimself.webp" alt="Dandy"><div><small>DANDY’S SHOP${ch3 ? ' · OPEN AGAIN' : ''}</small><b>“${this._dandyLine}”</b>
         <em>${RES.ichor.icon}<span>${fmt(ichor)}</span></em></div></div>
       <p class="ms-shop-note">Stock you buy here rides along in every battle and is used after the free supplies. You can carry ${ST2_SHOP_CAP} of each.</p>
       <div class="ms-shop-grid">${SHOP.map(p => {

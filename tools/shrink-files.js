@@ -13,6 +13,7 @@ const ROOT = path.resolve(__dirname, '..');
 const apply = process.argv.includes('--apply'), uploads = process.argv.includes('--uploads');
 const rel = f => path.relative(ROOT, f).split(path.sep).join('/');
 const victims = [];
+const ROOT_SCAN = ROOT;
 
 const redirect = fs.readFileSync(path.join(ROOT, 'js', 'audio-redirect.js'), 'utf8');
 JSON.parse(redirect.match(/new Set\((\[.*?\])\)/s)[1]).forEach(w => {
@@ -21,9 +22,16 @@ JSON.parse(redirect.match(/new Set\((\[.*?\])\)/s)[1]).forEach(w => {
 const wavCount = victims.length;
 
 if (uploads) {
-  const code = fs.readdirSync(path.join(ROOT, 'js')).filter(f => f.endsWith('.js'))
-    .map(f => fs.readFileSync(path.join(ROOT, 'js', f), 'utf8')).join('\n') + fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8')
-    + fs.readdirSync(path.join(ROOT, 'css')).map(f => fs.readFileSync(path.join(ROOT, 'css', f), 'utf8')).join(" ");
+  // every script, including js/story, js/rigs and js/shop, plus css, html and server.js
+  let code = '';
+  (function walk(dir) {
+    for (const name of fs.readdirSync(dir)) {
+      const full = path.join(dir, name);
+      if (/^(\.git|vendor|node_modules|tools|assets|uploads|SFX)$/.test(name) && dir === ROOT) continue;
+      if (fs.statSync(full).isDirectory()) walk(full);
+      else if (/\.(js|css|html)$/.test(name)) code += fs.readFileSync(full, 'utf8') + '\n';
+    }
+  })(ROOT_SCAN);
   fs.readdirSync(path.join(ROOT, 'uploads')).forEach(name => {
     const full = path.join(ROOT, 'uploads', name);
     if (fs.statSync(full).isFile() && !code.includes(name)) victims.push(rel(full));

@@ -42,7 +42,7 @@ const SoulvesterRig = (() => {
       const svg = node('svg', { viewBox: '0 0 214 313', class: 'rig-svg', 'aria-hidden': 'true' }, host);
       const defs = node('defs', {}, svg);
       const src = (typeof ASSET === 'string' ? ASSET : './') + 'assets/toon-art/Soulvester/Soulvester.png';
-      const sword = (typeof ASSET === 'string' ? ASSET : './') + 'uploads/image-31.png';
+      const sword = (typeof ASSET === 'string' ? ASSET : './') + 'assets/uploads/image-31.png';
       const cut = (name, d, parent) => {
         const cid = `${id}-${name}`;
         node('path', { d }, node('clipPath', { id: cid, clipPathUnits: 'userSpaceOnUse' }, defs));

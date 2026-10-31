@@ -37,7 +37,7 @@ const QOMConnieRig = (() => {
       const id = `qom-connie-rig-${++serial}`;
       const svg = node('svg', { viewBox: '0 0 432 578', class: 'rig-svg', 'aria-hidden': 'true' }, host);
       const defs = node('defs', {}, svg);
-      const src = (typeof ASSET === 'string' ? ASSET : './') + 'uploads/ConnieQOM.png';
+      const src = (typeof ASSET === 'string' ? ASSET : './') + 'assets/uploads/ConnieQOM.png';
       const cut = (name, d, parent) => {
         const cid = `${id}-${name}`;
         node('path', { d }, node('clipPath', { id: cid, clipPathUnits: 'userSpaceOnUse' }, defs));

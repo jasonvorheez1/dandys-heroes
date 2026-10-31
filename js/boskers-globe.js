@@ -212,7 +212,7 @@
   const scene = (title, place, script) => ({ title, place, script: script.trim(), time: 'OCTOBER', date: 'THE GLOBE' });
         const STORY = [
     scene('01 · do not open lol', 'Gardenview Lobby', `
-@bg uploads/backgroundlobby1.webp
+@bg assets/uploads/backgroundlobby1.webp
 @enter Vee left
 @enter Gourdy right
 > A door has appeared behind the Gardenview elevator. There's a sticky note on it that says do not open lol.
