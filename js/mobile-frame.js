@@ -1,5 +1,6 @@
 /* mobile-frame.js - on a wide (desktop) window, show the game inside a
-   Samsung Galaxy S25 sized frame (360x780 CSS px). The game runs in an
+   Samsung Galaxy S25 sized frame (360x780 CSS px), portrait or turned
+   sideways with the rotate button. The game runs in an
    iframe so its media queries and viewport units see a real phone viewport.
    Add ?desktop to the URL to bypass. Inside the frame this file only makes
    the websim runtime reachable. */
@@ -46,9 +47,27 @@
   phone.appendChild(frame);
   document.body.appendChild(phone);
 
+  let sideways = false;
+  try { sideways = localStorage.getItem('phoneFrameLandscape') === '1'; } catch (e) {}
   const fit = () => {
-    const k = Math.min(1, (innerHeight - 40) / (H + 22), (innerWidth - 40) / (W + 22));
+    const w = sideways ? H : W, h = sideways ? W : H;
+    phone.style.width = frame.style.width = w + 'px';
+    phone.style.height = frame.style.height = h + 'px';
+    const k = Math.min(1, (innerHeight - 90) / (h + 22), (innerWidth - 40) / (w + 22));
     phone.style.transform = 'scale(' + k + ')';
   };
+  const rotate = document.createElement('button');
+  rotate.type = 'button';
+  rotate.textContent = '⟳';
+  rotate.title = rotate.ariaLabel = 'Rotate phone';
+  Object.assign(rotate.style, { position: 'fixed', left: '50%', bottom: '14px', transform: 'translateX(-50%)',
+    width: '44px', height: '44px', border: '2px solid #3a4052', borderRadius: '50%', background: '#1b1f2a',
+    color: '#d8deea', font: '22px/1 Arial,sans-serif', cursor: 'pointer' });
+  rotate.onclick = () => {
+    sideways = !sideways;
+    try { localStorage.setItem('phoneFrameLandscape', sideways ? '1' : '0'); } catch (e) {}
+    fit();
+  };
+  document.body.appendChild(rotate);
   addEventListener('resize', fit); fit();
 })();

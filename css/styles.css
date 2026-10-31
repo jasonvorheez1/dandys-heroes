@@ -486,7 +486,7 @@ h2.sec:first-child{margin-top:3px}
 .status-chip.status-overflow{width:25px;color:#fff3bd;border-color:#c99b4b;background:linear-gradient(180deg,#65501f,#3d3018);cursor:pointer}
 .status-chip.status-overflow>b{font-size:9px}
 .status-chip.status-overflow>i{font-size:7px}
-.battle-status-detail{position:fixed;z-index:1000;width:min(270px,calc(100vw - 16px));max-height:min(60vh,420px);overflow:auto;padding:9px;color:#f9f5e9;background:linear-gradient(180deg,#202a31f7,#11171cf7);border:2px solid #d9b864;border-radius:8px;box-shadow:0 5px 0 #050708cc,0 0 18px #000b;font:700 11px/1.25 Arial,sans-serif;pointer-events:auto;animation:statusDetailIn .14s ease-out}
+.battle-status-detail{position:fixed;z-index:1000;width:min(270px,calc(100vw - 16px));max-height:min(32vh,240px);overflow:auto;padding:7px 9px;color:#f9f5e9;background:linear-gradient(180deg,#202a31f7,#11171cf7);border:2px solid #d9b864;border-radius:8px;box-shadow:0 5px 0 #050708cc,0 0 18px #000b;font:700 11px/1.25 Arial,sans-serif;pointer-events:auto;animation:statusDetailIn .14s ease-out}
 .battle-status-detail-head{position:relative;display:flex;flex-direction:column;gap:2px;padding:0 24px 7px 0;margin-bottom:6px;border-bottom:1px solid #ffffff2b}
 .battle-status-detail-close{position:absolute;top:-4px;right:-3px;width:26px;height:26px;padding:0;border:1px solid #ffffff45;border-radius:6px;color:#fff3ca;background:#ffffff12;font:900 18px/22px Arial,sans-serif;cursor:pointer;touch-action:manipulation}.battle-status-detail-close:focus-visible{outline:2px solid #ffe59a;outline-offset:1px}
 .battle-status-detail-head>b{font-size:13px;color:#ffe49a}.battle-status-detail-head>span{font-size:8px;color:#afc2c5;text-transform:uppercase;letter-spacing:.45px}

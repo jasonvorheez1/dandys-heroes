@@ -23,5 +23,5 @@ input, textarea { font-size: 16px; -webkit-user-select: text; user-select: text;
   #modalBox button, .launcher-actions button { min-height: 44px; }
   #modalBox { max-height: calc(100dvh - 24px); overflow-y: auto; -webkit-overflow-scrolling: touch; }
   #screen { -webkit-overflow-scrolling: touch; overscroll-behavior-y: contain; }
-  #allyDock button, #allyDock [role="button"] { min-height: 44px; }
+  #allyDock button, #allyDock [role="button"]:not(.status-chip) { min-height: 44px; }
 }

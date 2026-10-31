@@ -1,0 +1,172 @@
+/* Portrait-phone combat overhaul.
+   One slim hero dock at the bottom, the field above it left clear, and every
+   on-stage label trimmed so the fighters themselves are what you read.
+   The engine (BattleScreen.fitField) stands the front row just above the dock. */
+@media (max-width:600px) and (orientation:portrait){
+
+  /* ---------- hero dock: one compact row of cards ---------- */
+  #battle#battle:not(.kh-battle):not(.unknown-world-battle):not(.story-tb) #allyDock{
+    left:6px!important;right:6px!important;bottom:calc(6px + env(safe-area-inset-bottom,0px))!important;
+    gap:4px!important;padding:6px 5px!important;border:2px solid #080b0c!important;border-radius:14px!important;
+    background:linear-gradient(180deg,#1d2829f2,#0e1516f7)!important;
+    box-shadow:inset 0 1px #ffffff1c,0 4px 14px #000a!important;backdrop-filter:none!important}
+  #battle#battle:not(.kh-battle):not(.unknown-world-battle):not(.story-tb) #allyDock:before{display:none!important}
+
+  #battle#battle:not(.kh-battle):not(.unknown-world-battle):not(.story-tb) .unitcard:not(.kh-card):not(.ff7-card){
+    flex:1 1 0!important;width:auto!important;min-width:0!important;max-width:76px!important;
+    display:flex;flex-direction:column;align-items:stretch;gap:3px;
+    padding:3px 3px 4px!important;border-width:2px!important;border-radius:10px!important;
+    box-shadow:inset 0 1px #ffffff30,0 2px #050708!important}
+  #battle#battle:not(.kh-battle):not(.unknown-world-battle):not(.story-tb) .unitcard:not(.kh-card):not(.ff7-card):hover{transform:none}
+  #battle#battle:not(.kh-battle):not(.unknown-world-battle):not(.story-tb) .unitcard:not(.kh-card):not(.ff7-card) .uc-port{
+    width:100%!important;max-width:none!important;height:44px!important;aspect-ratio:auto!important;
+    border-width:2px!important;border-radius:7px!important;box-shadow:inset 0 1px #fff8!important}
+  #battle#battle:not(.kh-battle):not(.unknown-world-battle):not(.story-tb) .unitcard:not(.kh-card):not(.ff7-card) .uc-stars{display:none}
+  #battle#battle:not(.kh-battle):not(.unknown-world-battle):not(.story-tb) .unitcard:not(.kh-card):not(.ff7-card) .uc-lv{
+    top:-5px!important;left:-4px!important;padding:0 4px!important;font-size:8px!important;line-height:12px}
+  #battle#battle:not(.kh-battle):not(.unknown-world-battle):not(.story-tb) .unitcard:not(.kh-card):not(.ff7-card) .uc-hpwrap,
+  #battle#battle:not(.kh-battle):not(.unknown-world-battle):not(.story-tb) .unitcard:not(.kh-card):not(.ff7-card) .uc-enwrap{
+    width:100%!important;max-width:none!important;margin:0!important;border-width:1.5px!important;border-radius:3px!important}
+  #battle#battle:not(.kh-battle):not(.unknown-world-battle):not(.story-tb) .unitcard:not(.kh-card):not(.ff7-card) .uc-hpwrap{height:8px!important}
+  #battle#battle:not(.kh-battle):not(.unknown-world-battle):not(.story-tb) .unitcard:not(.kh-card):not(.ff7-card) .uc-enwrap{height:6px!important}
+  #battle#battle:not(.kh-battle):not(.unknown-world-battle):not(.story-tb) .unitcard:not(.kh-card):not(.ff7-card) .uc-enwrap:before{display:none}
+
+  /* ready to cast: the whole card lights up instead of the portrait bouncing */
+  #battle#battle:not(.kh-battle):not(.unknown-world-battle):not(.story-tb) .unitcard.can-cast:not(.kh-card):not(.ff7-card){
+    border-color:#ffe27a!important;animation:bpReady .9s ease-in-out infinite alternate}
+  #battle#battle:not(.kh-battle):not(.unknown-world-battle):not(.story-tb) .unitcard.can-cast:not(.kh-card):not(.ff7-card) .uc-port{
+    border-color:#fff3a0!important;animation:none!important;transform:none}
+  #battle .unitcard.can-cast:after{top:-7px!important;right:-4px!important}
+  #battle#battle:not(.kh-battle):not(.unknown-world-battle):not(.story-tb) .unitcard.ko,
+  #battle#battle:not(.kh-battle):not(.unknown-world-battle):not(.story-tb) .unitcard.gone{opacity:.42;filter:grayscale(1)!important}
+  @keyframes bpReady{from{box-shadow:inset 0 1px #ffffff30,0 0 4px 1px #ffd23f88}to{box-shadow:inset 0 1px #ffffff30,0 0 13px 4px #ffd23fdd}}
+
+  /* status icons on a card: one row, icon only (timers live in the detail sheet) */
+  #battle #allyDock .uc-sts{width:100%!important;height:15px;min-height:15px!important;margin:0!important;
+    flex-wrap:nowrap!important;justify-content:center;gap:1px!important;overflow:hidden}
+  #battle #allyDock .uc-sts:empty{visibility:hidden}
+  #battle #allyDock .status-chip{width:15px!important;height:15px!important;min-height:0!important;flex:0 0 15px!important;
+    padding:0;grid-template-columns:1fr;border-radius:4px}
+  #battle #allyDock .status-chip>b{width:12px;height:12px;font-size:10px}
+  #battle #allyDock .status-chip>i{display:none}
+  #battle #allyDock .status-chip>em{right:-1px;top:-2px;padding:0 1px;font-size:5px}
+  #battle #allyDock .status-chip:after{height:2px}
+  #battle #allyDock .status-chip.status-overflow{width:17px!important;flex-basis:17px!important}
+  #battle #allyDock .status-chip.status-overflow>b{display:none}
+  #battle #allyDock .status-chip.status-overflow>i{display:block;text-align:center;font-size:8px;color:#fff3bd}
+  #battle #allyDock .status-chip.status-overflow>i:before{content:"+"}
+
+  /* ---------- combat log: a quiet ticker under the top bar, off the field ---------- */
+  #battle#battle:not(.kh-battle):not(.unknown-world-battle):not(.story-tb) #logBox{
+    top:calc(60px + env(safe-area-inset-top,0px))!important;bottom:auto!important;left:8px!important;right:auto!important;
+    width:auto!important;max-width:72%!important;max-height:40px!important;padding:3px 7px!important;
+    background:#090f14a6!important;border-left-width:2px!important;box-shadow:none!important;backdrop-filter:none!important}
+  #battle#battle:not(.kh-battle):not(.unknown-world-battle):not(.story-tb) #logBox:empty{display:none}
+  #battle#battle:not(.kh-battle):not(.unknown-world-battle):not(.story-tb) #logBox div{font-size:10px!important;line-height:1.25!important;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  #battle#battle:not(.story-tb):has(.mutation-live) #logBox{top:calc(104px + env(safe-area-inset-top,0px))!important}
+}
+
+/* ---------- the field, either orientation: team-colored footing, lighter labels ---------- */
+@media (max-width:600px) and (orientation:portrait),(orientation:landscape) and (max-height:520px){
+  #battle .unit.ally .shadow,#battle .unit.foe .shadow{width:62px;height:20px;filter:none;
+    background:radial-gradient(ellipse,#000a 0 38%,transparent 56%),
+      radial-gradient(ellipse,transparent 52%,var(--team-ring) 60%,transparent 72%)}
+  #battle .unit.ally{--team-ring:#55d8ffcc}
+  #battle .unit.foe{--team-ring:#ff5f5fcc}
+  #battle .unit.dead .shadow{opacity:0}
+
+  #battle .unit .nameplate{font-size:9.5px!important;-webkit-text-stroke-width:.8px;letter-spacing:0}
+  #battle .unit .nameplate.rankBoss{font-size:10.5px!important}
+  #battle .unit .nameplate .buildIcon{display:none}
+  #battle .unit .hpmini{width:46px!important;height:7px!important}
+  #battle .unit-loadout{display:none!important}
+
+  /* allies' effects are already on their dock card; foes keep a small icon strip */
+  #battle:not(.story-tb) .unit.ally .stats{display:none!important}
+  #battle .unit.foe .stats{width:max-content!important;max-width:none!important;gap:1px!important}
+  #battle .unit.foe .stats .status-chip{width:15px!important;height:15px!important;flex:0 0 15px!important;
+    padding:0;grid-template-columns:1fr;border-radius:4px}
+  #battle .unit.foe .stats .status-chip>b{width:12px;height:12px;font-size:10px}
+  #battle .unit.foe .stats .status-chip>i{display:none}
+  #battle .unit.foe .stats .status-chip>em{font-size:5px;padding:0 1px}
+  #battle .unit.foe .stats .status-chip.status-overflow{width:17px!important;flex-basis:17px!important}
+  #battle .unit.foe .stats .status-chip.status-overflow>b{display:none}
+  #battle .unit.foe .stats .status-chip.status-overflow>i{display:block;text-align:center;font-size:8px}
+  #battle .unit.foe .stats .status-chip.status-overflow>i:before{content:"+"}
+
+  /* callouts: still punchy, about half the footprint */
+  #battle .pop-banner{padding:2px 7px!important;font-size:9px!important;letter-spacing:.3px!important;gap:3px!important}
+  #battle .hero-skill-dialogue{max-width:40vw;padding:4px 8px 5px;border-width:3px;border-radius:11px;font-size:10px;
+    -webkit-text-stroke-width:1.2px}
+  #battle .hero-skill-dialogue:after{width:11px;height:11px;bottom:-7px;border-right-width:3px;border-bottom-width:3px}
+}
+
+/* ---------- landscape phones: hero rail down the left edge ----------
+   The rail's footprint (6px inset + 118px cards) matches the formation's
+   left wall in BattleScreen.start, so nobody stands underneath it. */
+@media (orientation:landscape) and (max-height:520px){
+  #battle#battle:not(.kh-battle):not(.unknown-world-battle):not(.story-tb) #allyDock{
+    top:calc(50px + env(safe-area-inset-top,0px))!important;bottom:auto!important;
+    left:max(6px,env(safe-area-inset-left,0px))!important;right:auto!important;width:auto!important;max-width:none!important;
+    flex-direction:column!important;justify-content:flex-start!important;align-items:stretch!important;
+    gap:4px!important;padding:5px!important;border:2px solid #080b0c!important;border-radius:12px!important;
+    background:linear-gradient(90deg,#1d2829f2,#0e1516f2)!important;
+    box-shadow:inset 0 1px #ffffff1c,0 4px 14px #000a!important;backdrop-filter:none!important}
+  #battle#battle:not(.kh-battle):not(.unknown-world-battle):not(.story-tb) #allyDock:before{display:none!important}
+
+  #battle#battle:not(.kh-battle):not(.unknown-world-battle):not(.story-tb) .unitcard:not(.kh-card):not(.ff7-card){
+    display:grid!important;grid-template-columns:38px 1fr;grid-template-rows:repeat(3,auto);column-gap:5px;row-gap:3px;align-items:center;
+    width:118px!important;min-width:118px!important;max-width:118px!important;flex:0 0 auto!important;
+    padding:3px 5px 3px 3px!important;border-width:2px!important;border-radius:9px!important;
+    box-shadow:inset 0 1px #ffffff30,0 2px #050708!important}
+  #battle#battle:not(.kh-battle):not(.unknown-world-battle):not(.story-tb) .unitcard:not(.kh-card):not(.ff7-card):hover{transform:none}
+  #battle#battle:not(.kh-battle):not(.unknown-world-battle):not(.story-tb) .unitcard:not(.kh-card):not(.ff7-card) .uc-port{
+    grid-column:1;grid-row:1 / span 3;width:38px!important;max-width:none!important;height:38px!important;aspect-ratio:auto!important;
+    border-width:2px!important;border-radius:7px!important;box-shadow:inset 0 1px #fff8!important}
+  #battle#battle:not(.kh-battle):not(.unknown-world-battle):not(.story-tb) .unitcard:not(.kh-card):not(.ff7-card) .uc-stars{display:none}
+  #battle#battle:not(.kh-battle):not(.unknown-world-battle):not(.story-tb) .unitcard:not(.kh-card):not(.ff7-card) .uc-lv{
+    top:-5px!important;left:-4px!important;padding:0 4px!important;font-size:8px!important;line-height:12px}
+  #battle#battle:not(.kh-battle):not(.unknown-world-battle):not(.story-tb) .unitcard:not(.kh-card):not(.ff7-card) .uc-hpwrap,
+  #battle#battle:not(.kh-battle):not(.unknown-world-battle):not(.story-tb) .unitcard:not(.kh-card):not(.ff7-card) .uc-enwrap{
+    grid-column:2;width:100%!important;max-width:none!important;margin:0!important;border-width:1.5px!important;border-radius:3px!important}
+  #battle#battle:not(.kh-battle):not(.unknown-world-battle):not(.story-tb) .unitcard:not(.kh-card):not(.ff7-card) .uc-hpwrap{grid-row:1;height:8px!important}
+  #battle#battle:not(.kh-battle):not(.unknown-world-battle):not(.story-tb) .unitcard:not(.kh-card):not(.ff7-card) .uc-enwrap{grid-row:2;height:6px!important}
+  #battle#battle:not(.kh-battle):not(.unknown-world-battle):not(.story-tb) .unitcard:not(.kh-card):not(.ff7-card) .uc-enwrap:before{display:none}
+
+  #battle#battle:not(.kh-battle):not(.unknown-world-battle):not(.story-tb) .unitcard.can-cast:not(.kh-card):not(.ff7-card){
+    border-color:#ffe27a!important;animation:bpReady .9s ease-in-out infinite alternate}
+  #battle#battle:not(.kh-battle):not(.unknown-world-battle):not(.story-tb) .unitcard.can-cast:not(.kh-card):not(.ff7-card) .uc-port{
+    border-color:#fff3a0!important;animation:none!important;transform:none}
+  #battle .unitcard.can-cast:after{top:-6px!important;right:-4px!important}
+  #battle#battle:not(.kh-battle):not(.unknown-world-battle):not(.story-tb) .unitcard.ko,
+  #battle#battle:not(.kh-battle):not(.unknown-world-battle):not(.story-tb) .unitcard.gone{opacity:.42;filter:grayscale(1)!important}
+
+  #battle#battle:not(.kh-battle):not(.unknown-world-battle):not(.story-tb) #allyDock .uc-sts{grid-column:2;grid-row:3;
+    width:100%!important;height:15px;min-height:15px!important;margin:0!important;
+    flex-wrap:nowrap!important;justify-content:flex-start;gap:1px!important;overflow:hidden}
+  #battle #allyDock .status-chip{width:15px!important;height:15px!important;min-height:0!important;flex:0 0 15px!important;
+    padding:0;grid-template-columns:1fr;border-radius:4px}
+  #battle #allyDock .status-chip>b{width:12px;height:12px;font-size:10px}
+  #battle #allyDock .status-chip>i{display:none}
+  #battle #allyDock .status-chip>em{right:-1px;top:-2px;padding:0 1px;font-size:5px}
+  #battle #allyDock .status-chip.status-overflow{width:17px!important;flex-basis:17px!important}
+  #battle #allyDock .status-chip.status-overflow>b{display:none}
+  #battle #allyDock .status-chip.status-overflow>i{display:block;text-align:center;font-size:8px;color:#fff3bd}
+  #battle #allyDock .status-chip.status-overflow>i:before{content:"+"}
+
+  /* log tucks under the rail, so the whole left column is HUD and the rest is fight */
+  #battle#battle:not(.kh-battle):not(.unknown-world-battle):not(.story-tb) #logBox{
+    top:auto!important;bottom:calc(6px + env(safe-area-inset-bottom,0px))!important;
+    left:max(6px,env(safe-area-inset-left,0px))!important;right:auto!important;
+    width:122px!important;max-width:none!important;max-height:42px!important;padding:3px 6px!important;
+    background:#090f14b3!important;border-left-width:2px!important;box-shadow:none!important;backdrop-filter:none!important}
+  #battle#battle:not(.kh-battle):not(.unknown-world-battle):not(.story-tb) #logBox:empty{display:none}
+  #battle#battle:not(.kh-battle):not(.unknown-world-battle):not(.story-tb) #logBox div{font-size:9px!important;line-height:1.25!important;
+    white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+}
+
+/* status detail sheet opens just above the slimmer portrait dock */
+@media (max-width:600px) and (orientation:portrait){
+  .battle-status-detail{bottom:calc(126px + env(safe-area-inset-bottom,0px))!important}
+}

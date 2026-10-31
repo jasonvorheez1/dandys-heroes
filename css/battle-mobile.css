@@ -59,9 +59,17 @@
   /* status chips on hero cards are hold/tap targets; give them some size */
   #battle #allyDock .status-chip{width:26px;height:20px;flex-basis:26px}
 
+  /* Floating buff/debuff strips sit on their team's inward-facing side.
+     The stage units are positioned at their horizontal center; centering a
+     full five-chip row there can push its ends beyond a narrow phone screen. */
+  #battle .unit .stats{box-sizing:border-box;width:min(130px,calc(100vw - 16px));max-width:calc(100vw - 16px);overflow:hidden}
+  #battle .unit .stats .status-chip{flex:0 1 23px;min-width:0}
+  #battle .unit.ally .stats{left:0;right:auto;transform:none}
+  #battle .unit.foe .stats{left:auto;right:0;transform:none}
+
   /* status details open as a bottom sheet above the dock instead of a tiny popover at the finger */
-  .battle-status-detail{left:8px!important;right:8px!important;top:auto!important;width:auto!important;max-width:460px;margin:0 auto;
-    bottom:calc(150px + env(safe-area-inset-bottom,0px))!important;max-height:min(46vh,380px);padding:12px;font-size:13px;border-radius:12px}
+  .battle-status-detail{left:8px!important;right:8px!important;top:auto!important;width:auto!important;max-width:340px;max-height:34vh;margin:0 auto;
+    bottom:calc(150px + env(safe-area-inset-bottom,0px))!important;max-height:min(34vh,260px);padding:10px;font-size:13px;border-radius:12px}
   .battle-status-detail-close{width:36px;height:36px;top:-6px;right:-4px;font-size:22px;line-height:32px}
   .battle-status-detail-head{padding-right:40px}
   .battle-status-detail-head>b{font-size:15px}.battle-status-detail-head>span{font-size:10px}
@@ -96,6 +104,9 @@
 /* sideways phones: results scroll in two columns would be cramped; keep one column but tighten height */
 @media (orientation:landscape) and (max-height:520px){
   #battleEnd{padding-top:10px}
-  .battle-status-detail{bottom:calc(10px + env(safe-area-inset-bottom,0px))!important;max-height:70vh;left:auto!important;width:min(360px,60vw)!important}
+  .battle-status-detail{bottom:calc(10px + env(safe-area-inset-bottom,0px))!important;max-height:50vh;left:auto!important;width:min(300px,42vw)!important}
   .mutation-live{top:calc(46px + env(safe-area-inset-top,0px))}
 }
+
+/* status chips on hero cards must stay small (the generic 44px tap-target rule made them cover the screen) */
+#battle #allyDock .status-chip{min-height:0!important;height:20px!important}
