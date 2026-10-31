@@ -18,9 +18,16 @@ is inside an `<iframe>`; read its globals with `document.querySelector('iframe')
 - Audio: `tools/convert-audio.js` makes `.ogg` beside each local `.wav` (SFX/, assets/) and regenerates `js/audio-redirect.js`
   (loaded first in index.html), which swaps `.wav` URLs for `.ogg` at runtime. Re-run it after adding any `.wav`.
   Where an `.ogg` exists the `.wav` was deleted by `tools/shrink-files.js`, so very old Safari/iOS without Ogg will lack those sounds.
+- Sound pack: `tools/pack-audio.js` packs the 413 short .ogg effects into `SFX/sfx-pack.bin` + `js/audio-pack.js` (index and loader). `js/item-sheet.js` holds the game on the loading screen until the pack arrives; `audio-redirect.js` then serves each sound as a blob URL. `node tools/pack-audio.js --apply` deletes the loose packed .ogg files (git restores them). After adding a sound: run convert-audio.js, then delete the pack and the loose files are needed again (git checkout the oggs) and re-run pack-audio.js.
 - File count was cut from ~2,360 to ~1,887 with `tools/shrink-files.js` (dry run by default; `--apply`, `--uploads`).
   It searches js/, css/ and index.html for names; check anything it flags before applying.
 - Spritesheets / sound bins were NOT done: the game loads every image and sound by its own filename, so packing means rewriting loaders.
+
+### Reusing a sound that already exists
+- Every effect is a named **cue**, not a filename. List them in the preview console (inside the iframe, see top): `CUE_SOURCES.flatMap(([table, dir]) => Object.entries(table).map(([cue, files]) => cue + " -> " + dir + files))` and aliases with `CUE_ALIAS`.
+- Play one with `Sound.play("hit_heavy", { vol: .6, rate: 1 })` (`rate` changes pitch; `throttle: 0` allows rapid repeats). Prefer an existing cue over adding a file.
+- Short effects ship inside `SFX/sfx-pack.bin` (see Sound pack); you never load those files by path. Music keys are in `MUSIC_TRACKS`.
+- Looking for a sound by what it is: search cue names in the bundle's audio.js (`node -e` on `tools/bundle.py get audio.js out.js` output) or grep the list above. No separate sound catalog file exists yet.
 
 ### Adding a new sound
 1. Put the file under `SFX/` or `assets/<feature>/sfx/`; short, normalized. Run `node tools/convert-audio.js`.
