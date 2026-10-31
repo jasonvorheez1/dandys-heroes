@@ -5,7 +5,7 @@ const vm = require('node:vm');
 const bundle = fs.readFileSync('js/game.js', 'utf8');
 const scripts = new Map(JSON.parse(bundle.split('var S=')[1].split(';\nfor(var i=')[0]));
 const heroes = Object.fromEntries(['A','B','C','D','E','F'].map(id => [id, {
-  name: id, role: id === 'A' ? 'Tank' : 'Damage', base: { atk: 100, mag: 20 }
+  name: id, role: id === 'A' ? 'Tank' : 'Damage', base: { atk: 100, mag: 20 }, hidden: { range: 200 }
 }]));
 const owned = new Set(['A','B','C','D','E','F']);
 let writes = 0;
@@ -14,6 +14,9 @@ const ctx = vm.createContext({
   HEROES: heroes, PLAYABLE_IDS: Object.keys(heroes), HERO_GENDER: { A:'Female',B:'Female',C:'Female',D:'Female',E:'Female',F:'Female' },
   KH_CAST_IDS: [], FF7_HERO_IDS: [], DW_MODDED_HERO_IDS: new Set(),
   heroRole: role => role, TEAM_P: 0, TEAM_E: 1,
+  statTags: () => ({ sturdy: new Set(), swift: new Set(), arcane: new Set(), frontline: new Set(), support: new Set() }),
+  HERO_MOTIF_TAGS: { Performer: { ids: new Set() }, Food: { ids: new Set() }, Healer: { ids: new Set() }, Tragic: { ids: new Set() } },
+  HERO_ANIMAL: {},
   Save: { data, owns: id => owned.has(id), write: () => { writes++; } },
   Screens: {},
   UI: { toast() {}, refreshBar() {} }, Sound: { play() {} },
@@ -53,7 +56,7 @@ assert.equal(collections.recordVictory(battle('lost', [fighter('A')], { result: 
 for (let n = 2; n <= 61; n++) collections.recordVictory(battle('win-' + n, [fighter('A'), fighter('B'), fighter('C'), fighter('D'), fighter('E')]));
 assert.equal(collections.progress(physical, collections.tiers[3]).complete, true);
 ctx.PLAYABLE_IDS.push('G');
-ctx.HEROES.G = { name: 'G', role: 'Damage', base: { atk: 20, mag: 100 } };
+ctx.HEROES.G = { name: 'G', role: 'Damage', base: { atk: 20, mag: 100 }, hidden: { range: 200 } };
 owned.add('G');
 assert.equal(collections.members(physical).includes('G'), false, 'new Hero is outside the collection');
 const initialIchor = data.res.ichor || 0;

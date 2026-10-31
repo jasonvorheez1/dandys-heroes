@@ -202,7 +202,7 @@ const testScript = `
   const fullText = allStory + '\\n' + allBonus;
 
   // Characterization assertions:
-  if (!fullText.includes('filthy peasant') && !fullText.includes('filthy peasants')) throw new Error('Missing "filthy peasant"');
+  if (!fullText.toLowerCase().includes('filthy peasant') && !fullText.toLowerCase().includes('filthy peasants')) throw new Error('Missing "filthy peasant"');
   if (!fullText.includes('My Space')) throw new Error('Missing "My Space"');
   if (!fullText.includes('7/24/1998')) throw new Error('Missing "7/24/1998"');
   if (!fullText.toLowerCase().includes('chains are fashion') && !fullText.toLowerCase().includes('fashion statement')) throw new Error('Missing chains as fashion');

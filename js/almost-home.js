@@ -414,7 +414,7 @@ Nugget [note]: CODY! I made you a ketchup packet shaped like a heart for your to
 > He holds up a red foil pouch folded into a lumpy little heart.
 @ah close
 Cody [dots]: ...
-Dango [smug]: Is the terrifying trap master blushing?
+Dango [smug]: Is the terrifying trap master blushing for his boyfriend?
 Cody [glare]: The heater's too high.
 Nugget: Put it by your wrench! It'll keep you company in the forge!
 Cody [dots]: ...Yeah. Thanks, puppy. Into the pocket it goes.
