@@ -125,6 +125,9 @@ const ItemSheet = (() => {
     "js/shop/dango-festival.js",
     "js/veteran-events.js",
     "js/boskers-globe.js",
+    "js/chell-kit.js",
+    "js/aperture-fight.js",
+    "js/aperture.js",
     "js/settings-hub.js"
   ];
   let finishScripts, failScripts;
