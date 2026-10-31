@@ -1,0 +1,46 @@
+# HANDOFF: Dandy's Heroes (read this first)
+
+Static browser game. Run with `Play_Game.bat` or `node server.js` (the Claude preview served it on port 8123). In the preview the game
+is inside an `<iframe>`; read its globals with `document.querySelector('iframe').contentWindow.eval('Save.data')`
+(top-level `const`/`class` globals are not on `window`).
+
+## Code layout (easy to get wrong)
+- `js/game.js` (~4.8 MB, one line) is a **bundle**: `var S=[["core.js","<source>"], ...]`. Do not hand-edit it.
+  `tools/bundle.py list | get NAME OUT | put NAME IN` inspects/replaces a script (change its hardcoded `SRC` path first).
+- Newer code is separate scripts loaded AFTER the bundle: list is `GAME_SCRIPTS` in `js/item-sheet.js`; CSS is linked in `index.html`.
+  Prefer adding/wrapping in a new script (see `js/boskers-globe.js`, `js/roster-refresh.js`).
+- Wrapping pattern: `const f = Obj.fn; Obj.fn = function () { ...; return f.apply(this, arguments); }`. Bundle `function` declarations
+  (`playerSpec`, `payoutBattle`...) can be reassigned from a later script; classes via `Battle.prototype.x`.
+- Run `node --check file.js` after every JS edit. Git is the safety net (commit often).
+
+## Assets (do not rename or delete casually)
+- Files are referenced by path string inside the bundle. Some audio/music loads from CDN/GitHub (`uploadUrl`, `UPLOADS_CDN`, `GITHUB_ASSETS` in core.js).
+- Audio: `tools/convert-audio.js` makes `.ogg` beside each local `.wav` (SFX/, assets/) and regenerates `js/audio-redirect.js`
+  (loaded first in index.html), which swaps `.wav` URLs for `.ogg` at runtime. Re-run it after adding any `.wav`.
+  Where an `.ogg` exists the `.wav` was deleted by `tools/shrink-files.js`, so very old Safari/iOS without Ogg will lack those sounds.
+- File count was cut from ~2,360 to ~1,887 with `tools/shrink-files.js` (dry run by default; `--apply`, `--uploads`).
+  It searches js/, css/ and index.html for names; check anything it flags before applying.
+- Spritesheets / sound bins were NOT done: the game loads every image and sound by its own filename, so packing means rewriting loaders.
+
+### Adding a new sound
+1. Put the file under `SFX/` or `assets/<feature>/sfx/`; short, normalized. Run `node tools/convert-audio.js`.
+2. Register a cue: `CUE_SOURCES.push([{ my_cue: ['file.wav'] }, ASSET + 'SFX/']);` (verified: the cue resolves and plays),
+   then `Sound.play('my_cue', { vol: .6 })`. Per-cue mixing is `soundMix(cue)` and `SFX_FILE_GAIN` in the bundle's audio.js.
+3. Self-contained features can use a local `new Audio(...)` helper like `sfx()` at the top of `js/boskers-globe.js`.
+4. Music: `MUSIC_TRACKS` (key -> URL), `Music.play(key)`. Autoplay is blocked until a click.
+
+## Bosker's Globe (js/boskers-globe.js, css/boskers-globe.css, assets/boskers-globe/)
+Roblox-2011-styled roguelite Climb + visual-novel story + skins + Globe versions. State: `Raid.state().boskers`.
+- Skins (`SKINS`) only for toons with real Globe art: Astro, Bassie, Shelly, Vee, Cocoa, Looey, Pebble (Rock), Bobette, Gourdy, Sprout, Yatta.
+  Each has a sound `pack` (attack/hit/skill) that replaces the game's combat cues while worn.
+- Globe versions are virtual heroes `g:<BaseId>`: follow the original's upgrades, own two trinkets (`copyTrinkets`); they appear in the Heroes tab,
+  team editor and PvP; hero page is the original's with only trinkets editable (`HeroPage.globe`). A toon cannot wear its skin and bring its Globe version.
+- `ADDICTED` art replaces Twisted sprites only inside the event. The Globe is its own world: no Builderman, no studs. The Face is a harmless gag.
+- Writing: lowercase, deadpan, surreal Roblox-chat humor (r/gocommitdie), skin text in the game's "u/k?" voice. UI: flat grey, black buttons red text, stepped animation.
+
+## Working with the user
+- Use only supplied art; no fabricated sprites. Toons without Globe art get no skin. Keep Dandy's World personalities; avoid AI-slop dialogue.
+- Rejected: stat cards on skins, top-bar menu/chat buttons, studs/Builderman, Cosmo skin, oversized sprites.
+- Stay inside `dandys heroes`; never delete outside it. Zip tools skip hidden folders (.git), so never "zip then delete".
+- Say plainly what was and was not tested. Audio was never verified by ear; the test browser throttles timers so battles do not finish.
+- Windows tips: write patch scripts with the Write tool, then `node patch.js` (bash heredocs mangle quotes). Edit needs a fresh Read.
