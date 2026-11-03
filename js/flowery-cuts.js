@@ -172,58 +172,6 @@
     if (t > 1.5 && t < 4.2) text(ctx, '* ...the stones are bleeding.', VW / 2, 20, { size: 11, alpha: seg(t, 1.5, 2) });
   }, [[.2, () => { sfx('rumble', .6); S.fx.shake = 6; }], [1.0, () => sfx('noise', .3)], [1.9, () => sfx('creepyjingle', .35)], [3, () => { S.fx.shake = 8; sfx('screenshake', .5); }]]);
 
-  /* ---------------------------------------------------------- 5. every flower holds their wing */
-  C.flowersCall = S => run(S, 8.5, (ctx, t) => {
-    ctx.fillStyle = '#000'; ctx.fillRect(0, 0, VW, VH);
-    const panels = [
-      { y: 0, c: '#3c1f4a', from: -1, t0: 0, label: 'THE ROAD', draw: (x, y, lt) => {
-        P().draw(ctx, 'seth_throw_' + Math.min(6, Math.floor(lt * 7)), x + 70, y + 74, { s: 1 });
-        P().draw(ctx, 'aqua_walk_right_' + (Math.floor(lt * 8) % 4), x + 110, y + 74);
-        for (let i = 0; i < 4; i++) P().draw(ctx, 'faqua_knife_spinning_' + (Math.floor(lt * 10 + i) % 4), x + 140 + ((lt * 160 + i * 30) % 130), y + 40 + i * 8, { ax: .5, ay: .5, s: .3 });
-        P().draw(ctx, 'enemy_floradin_' + (Math.floor(lt * 6) % 4), x + 270, y + 74, { tint: '#120018', alpha: lt > 1.6 ? .3 : 1 });
-      } },
-      { y: 80, c: '#4a2a14', from: 1, t0: 2.2, label: 'THE CAFE', draw: (x, y, lt) => {
-        P().draw(ctx, 'enemy_green_pan_widerswing_' + (Math.floor(lt * 6) % 3), x + 80, y + 76);
-        P().draw(ctx, 'orange_animepunch_' + Math.min(5, Math.floor(lt * 5)), x + 170, y + 76, { s: 1.1 });
-        P().draw(ctx, 'kawkaw_' + (Math.floor(lt * 6) % 3), x + 265, y + 76, { tint: '#120018', alpha: lt > 1.5 ? .3 : 1 });
-      } },
-      { y: 160, c: '#14234a', from: -1, t0: 4.4, label: 'THE LEFT WING', draw: (x, y, lt) => {
-        P().draw(ctx, 'yellow_shoot_' + (Math.floor(lt * 4) % 2), x + 70, y + 78);
-        P().draw(ctx, 'enemy_blue_spintopose_' + (Math.floor(lt * 6) % 4), x + 120, y + 78);
-        for (let i = 0; i < 3; i++) P().draw(ctx, 'petal_blue2_' + (Math.floor(lt * 8 + i) % 4), x + 100 + ((lt * 140 + i * 40) % 140), y + 44 + i * 6, { ax: .5, ay: .5 });
-        P().draw(ctx, 'mantis_idle_' + (Math.floor(lt * 5) % 3), x + 265, y + 78, { tint: '#120018', alpha: lt > 1.6 ? .3 : 1 });
-      } }
-    ];
-    panels.forEach(p => {
-      const lt = t - p.t0; if (lt < 0) return;
-      const slide = (1 - ease(seg(lt, 0, .45))) * VW * p.from;
-      ctx.save(); ctx.beginPath(); ctx.rect(0, p.y + 2, VW, 76); ctx.clip();
-      ctx.fillStyle = p.c; ctx.fillRect(slide, p.y, VW, 80);
-      speedLines(ctx, t + p.t0, 'side', 'rgba(255,255,255,.12)', 10);
-      p.draw(slide, p.y, lt);
-      text(ctx, p.label, slide + 8, p.y + 12, { size: 9, align: 'left', color: '#ffd84a' });
-      ctx.restore();
-      ctx.strokeStyle = '#fff'; ctx.lineWidth = 2; ctx.strokeRect(slide + 1, p.y + 2, VW - 2, 76);
-    });
-    if (t > 6.8) { const a = seg(t, 6.8, 7.4); ctx.fillStyle = 'rgba(0,0,0,' + a * .7 + ')'; ctx.fillRect(0, 0, VW, VH); text(ctx, 'THE FLOWERS HOLD THE CASTLE.', VW / 2, VH / 2, { size: 15, color: '#ffe066', alpha: a }); }
-  }, [[0, () => FW.music('flFlowers')], [.3, () => sfx('weaponpull', .5)], [1.2, () => sfx('hit', .5)], [2.5, () => sfx('heavyswing', .5)], [3.4, () => sfx('impact', .6)], [4.7, () => sfx('drive', .3)], [5.4, () => sfx('magicsprinkle', .5)], [6.8, () => sfx('orchhit', .5)]]);
-
-  /* ---------------------------------------------------------- 6. LV 99 (Flowery types in his stats) */
-  const FAKE = ['LV 99', 'ATK 99', 'DEF 99', 'MAGIC 99', 'FLOWERS LV.99', 'FLOWERINESS ✿✿✿', 'GUTS ✿✿✿✿✿', 'ROMANCE 999', 'HAIR 100%', 'STYLE: YES', 'HUMILITY 0'];
-  C.powerUp = S => run(S, 6, (ctx, t) => {
-    ctx.fillStyle = 'rgba(10,0,20,' + (.6 + .3 * seg(t, 0, 1)) + ')'; ctx.fillRect(0, 0, VW, VH);
-    radial(ctx, VW / 2, 150, t * 3, 'rgba(255,220,90,' + (.12 + .1 * Math.sin(t * 9)) + ')', 24);
-    for (let r = 0; r < 4; r++) { const rr = ((t * 70 + r * 30) % 120); ctx.strokeStyle = 'rgba(255,230,120,' + (1 - rr / 120) + ')'; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(VW / 2, 190, rr, rr * .3, 0, 0, 7); ctx.stroke(); }
-    const f = t < 3.6 ? 'flowery_poweringup_' + (Math.floor(t * 8) % 5) : 'flowery_powering_up_finish_' + Math.min(4, Math.floor((t - 3.6) * 7));
-    P().draw(ctx, f, VW / 2, 196 + Math.sin(t * 30) * (t < 3.6 ? 1 : 0), { s: 2.4, add: '#ffe066', addA: .25 + .2 * Math.sin(t * 12) });
-    FAKE.forEach((s, i) => {
-      const st = .3 + i * .38; if (t < st) return;
-      const lt = t - st, x = 40 + ((i * 83) % 240), y = 200 - lt * 60;
-      text(ctx, s, x, y, { size: 11 + (i % 3) * 2, color: i % 2 ? '#ffe066' : '#ff9ad0', alpha: 1 - seg(lt, 1.6, 2.4) });
-    });
-    if (t > 5.4) { ctx.fillStyle = 'rgba(255,255,255,' + seg(t, 5.4, 6) + ')'; ctx.fillRect(0, 0, VW, VH); }
-  }, [[0, () => FW.voiceLine(null, 'powering_up', 'Powering up!', { quiet: true })], [.2, () => sfx('power', .6)], [1.6, () => sfx('boost', .5)], [3.6, () => { sfx('great_shine', .7); S.fx.shake = 6; }], [5.4, () => sfx('tensionhorn', .6)]]);
-
   /* ---------------------------------------------------------- 7. NO ONE CAN OUTSPEED A FLOWER (after the fight) */
   C.omegaChase = S => run(S, 17, (ctx, t) => {
     const slow = t > 12 && t < 14.2 ? .18 : 1;
@@ -322,6 +270,65 @@
     if (t < 2.4) text(ctx, 'RALSEI: Almost there! Don\'t look at the walls!', VW / 2, 20, { size: 10, color: '#9ff0b0' });
     if (t > 5) { ctx.fillStyle = 'rgba(255,255,255,' + seg(t, 5, 6) + ')'; ctx.fillRect(0, 0, VW, VH); }
   }, [[0, () => sfx('magicsprinkle', .5)], [1, () => sfx('step1', .3)], [2, () => sfx('step2', .3)], [4.8, () => sfx('great_shine', .6)]], { endBlack: true });
+
+  /* ---------------------------------------------------------- between the courtyard waves: Asgore */
+  C.asgoreCharge = async S => {
+    const foes = [['enemy_floradin_0', 200, 150], ['kawkaw_0', 236, 176], ['mantis_idle_0', 268, 140], ['blockguy_overworld_0', 290, 182]].map(([n, x, y]) => ({ n, x, y, vy: 0, vx: 0, r: 0, hit: false }));
+    S.root.style.display = '';
+    await run(S, 3.4, (ctx, t) => {
+      ctx.fillStyle = 'rgba(12,0,24,.86)'; ctx.fillRect(0, 0, VW, VH);
+      ctx.fillStyle = '#07000e'; ctx.fillRect(0, 196, VW, 44);
+      const ax = -60 + t * 150;
+      foes.forEach(f => {
+        if (!f.hit && ax > f.x - 20) { f.hit = true; f.vx = 120 + Math.random() * 80; f.vy = -220 - Math.random() * 80; sfx('impact', .6); S.fx.shake = 8; }
+        if (f.hit) { f.x += f.vx / 60; f.y += f.vy / 60; f.vy += 9; f.r += .2; }
+        P().draw(ctx, f.n, f.x, f.y, { tint: '#1a0028', rot: f.r, alpha: .95 });
+      });
+      P().draw(ctx, 'asgore_armor_charge_verymad_' + (Math.floor(t * 12) % 6), ax, 200, { s: 1.4 });
+      FlowerCuts.speedLines(ctx, t, 'side', 'rgba(255,220,120,.25)', 12);
+      if (t < .6) { ctx.fillStyle = 'rgba(255,255,255,' + (.6 - t) + ')'; ctx.fillRect(0, 0, VW, VH); }
+    }, [[0, () => { FW.music('flAsgore'); sfx('rumble', .7); }]]);
+    S.root.style.display = '';
+    await FW.say('Asgore', '', 'NOT IN MY GARDEN!', { shout: true });
+    await FW.say('Asgore', '', "...Oh! Hello again, little ones. | I'll hold the gate. You take care of the rest.");
+    FW.hideBox();
+  };
+
+  /* ---------------------------------------------------------- Lend me your power (the start of the final fight, as in Chapter 5):
+     the vine tower, the kingdom's Darkners as ghosts lending him their power, then the climb */
+  C.lendPower = async S => {
+    const A = window.FlArena; if (!A) return;
+    const st = { t0: performance.now(), k: 0, pose: 'up', speed: 6, flash: 0, y: 176, spark: 0 };
+    const f = ctx => {
+      const t = (performance.now() - st.t0) / 1000;
+      A.bg(ctx, t, { x: 112, w: 96, speed: st.speed });
+      if (st.speed > 50) { ctx.fillStyle = 'rgba(0,0,0,.25)'; ctx.fillRect(0, 0, VW, VH); FlowerCuts.speedLines(ctx, t, 'up', 'rgba(220,230,160,.35)', 18); }
+      A.ghosts(ctx, t, st.k, 160, st.y - 40);
+      const fr = st.pose === 'up' ? 'flowery_poweringup_' + (Math.floor(t * 10) % 5) : st.pose === 'finish' ? 'flowery_powering_up_finish_' + Math.min(4, Math.floor((t - st.pt) * 10)) : 'flowery_punch_up_chase_0';
+      if (st.spark > 0) radial(ctx, 160, st.y - 34, t * 4, 'rgba(255,240,170,' + (.12 * st.spark) + ')', 20);
+      P().draw(ctx, fr, 160, st.y + (st.pose === 'climb' ? Math.sin(t * 9) * 2 : 0), { s: 1.4 });
+      if (st.flash > 0) { ctx.fillStyle = 'rgba(255,255,255,' + st.flash + ')'; ctx.fillRect(0, 0, VW, VH); st.flash = Math.max(0, st.flash - .03); }
+    };
+    S.overlays.push(f);
+    const wait = ms => new Promise(r => setTimeout(r, FW.test ? 0 : ms));
+    const tw = (key, to, ms) => new Promise(r => { const a = st[key], t0 = performance.now(); const step = () => { const k = Math.min(1, (performance.now() - t0) / ms); st[key] = a + (to - a) * ease(k); if (k < 1 && !FW.test) requestAnimationFrame(step); else { st[key] = to; r(); } }; step(); });
+    try {
+      FW.music('flBoss'); sfx('rumble', .5);
+      await tw('k', 1, 1800);
+      FW.voiceLine(null, 'lend_power', '');
+      await FW.say('Flowery', 'hair3', 'Lend me your power!', { clip: 'none' });
+      FW.hideBox();
+      st.spark = 1; sfx('great_shine', .7); S.fx.shake = 4;
+      await wait(900);
+      st.pose = 'finish'; st.pt = (performance.now() - st.t0) / 1000; sfx('power', .7);
+      await tw('k', 0, 700); st.flash = .9;
+      await wait(500);
+      st.pose = 'climb'; st.speed = 220; sfx('wing', .6); FW.voiceLine(null, 'hoo', '');
+      await tw('y', 120, 1800);
+      st.flash = 1; sfx('orchhit', .5);
+      await wait(400);
+    } finally { const i = S.overlays.indexOf(f); if (i >= 0) S.overlays.splice(i, 1); }
+  };
 
   /* ---------------------------------------------------------- 10. credits */
   const CREDITS = [

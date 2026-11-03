@@ -81,16 +81,20 @@ fight Flowery on the roof. Ten segments (FL_STORY), Deltarune-style overworld, c
   the event menu opens (progress shown). Missing music falls back to the game's tracks (FALLBACK in flowery-world.js).
 - **Files.** flowery-pack.js (reads the bin, FlPack.draw/blit/url, Web Audio sounds), flowery-world.js (FW: rooms painted from
   tileset rectangles TX + props PROP, walking party with followers, textbox/portraits/text blips, script runner; the command list
-  is the comment above `parse`), flowery-cuts.js (FW.CUTS: door, fall, castle, ichorRise, flowersCall, powerUp, omegaChase,
-  thatDay, doorHome, credits), flowery-battle.js (FW.BATTLES: floradinn, ichor, flowery), flowery-story.js + flowery-story2.js
+  is the comment above `parse`), flowery-cuts.js (FW.CUTS: door, fall, castle, ichorRise, lendPower, asgoreCharge, omegaChase,
+  thatDay, doorHome, credits), flowery-arena.js (FlArena: the vine-tower stage from Chapter 5's Flowery fight and the side-on
+  bullet box: arrows move the flower soul, Z dashes with i-frames, grazing gives TP; PAT holds each attacker's pattern),
+  flowery-battle.js (the turn-based boss; also preview stand-ins), flowery-realbattle.js (in the game: the event's fights run on
+  the real BattleScreen auto battler; trio hits on Darkners land as 1 while meta.flWeak is set), flowery-story.js + flowery-story2.js
   (the script), flowery-event.js (menu, card, play loop, save in Raid.state().flowery: seg, done, cur, losses, beaten).
 - **Script rules.** `@end` ends the current block (an NPC talk); `@finish` ends the whole segment (use it in the block that
   leaves the segment from a walk-around `@roam`). `@call` follows `@goto`s. " | " is a line break in one textbox.
 - **Toons are not pixel art on purpose**: their normal cutouts are drawn small; the story comments on it. No fabricated sprites.
 - **Inked enemies** (Inked Floradinn/Kawkaw/Mantis/Bloxer/Conductor + Ichor Drop/Ball art) exist only inside this event and are
   never called Weaklings in game text.
-- **Boss.** Opens as a fake auto battle; Flowery breaks the AUTO button and it becomes turn-based (FIGHT bars, SKILL with TP,
-  ITEM, DEFEND; Ralsei is an AI guest; every enemy hit can be Braced with Z, a perfect Brace on a charge or Jarona counters).
+- **Boss.** Opens as a real auto battle; Flowery takes the AUTO button off the real HUD and it becomes turn-based on the vine
+  tower (FIGHT bars, SKILL with TP, ITEM, DEFEND; Ralsei is an AI guest). Flowery's turns are dodged in the bullet box; taking no
+  hits from a charge or a Jarona leaves him reeling. His friends join beside him as the duos start (sunset behind Seth & Aqua).
   Phases: 100-65% solo moves, 65-30% the duos (Seth & Aqua, Orange & Green with the "Just kidding" fake-out and the recipe heal,
   Yellow & Blue), then Omega Flowery (HIGH/LOW with arrows or tapping the top/bottom half). Losing restarts the phase; after six
   losses damage taken drops and TP gain rises (Raid.state().flowery.losses). Debug hook: `window.__flDbg` (G, fl, P0, B).

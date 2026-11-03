@@ -17,6 +17,7 @@ Flowery.cheer[hey_guys]: Ta-daaa! The heart of the castle! | Every petal, placed
 @emote Flowery !
 @wait 0.5
 @emote Flowery off
+@anim Flowery flowery_shake_head_ 5 12 once
 Flowery.wide[nonono]: That's him!
 Flowery.yell[none]: Into the bush, Princesses! NOW!
 @party off
@@ -298,6 +299,13 @@ Pink: Oh, and the goat boy behind the bush can come out. I can see his ears.
 * (Behind the bush, a small voice says "eep.")
 @end
 # balcony
+@sfx noise 0.4
+* (Behind you, the bathwater goes black. Something's coming up out of it.)
+Yatta: HEY!! THAT'S MY BATH!!!
+@battle ichorSmall bath
+@music flNight
+Ginger: It's following us.
+Scraps: ...Roof. Now.
 @fade out 0.8
 @room roof 160 214 up
 @party Scraps
@@ -327,6 +335,7 @@ Flowery.calm[none]: Before all this, I was a flower in a pot. By the shop window
 Flowery.calm[none]: I watched a kid grow up through that window. | Grew like a turnip.
 Flowery.calm[none]: Then one day I woke up in here with legs. | First thing I did was run around the castle. Second thing, I fell down the stairs.
 Scraps: Did it hurt?
+@anim Flowery flowery_shrug_upright_shakehead_ 4 8 once
 Flowery.smirk[hah]: Everything hurts when you've never had a body. | I loved it.
 Flowery.calm[none]: I don't know anything about coming back, Origami.
 Flowery.serious[none]: But don't go spending your next one. Look both ways. | Stop running in front of canes.
@@ -360,30 +369,92 @@ Ginger!: (from below) SCRAPS!! FLOWERY!! | THE WATER'S GONE BLACK!
 /* ======================================================================= 8 */
 { id: 'ichor', title: 'Ichor in the Garden', sub: 'SEGMENT 8', place: 'The Courtyard', script: String.raw`
 @party Scraps,Ginger,Yatta
-@room courtyard 320 270 up
+@room courtyard 300 214 right
 @fx ichor 0.6
 @fx tint rgba(20,0,40,.25)
 @music flTension
 @cut ichorRise
-@spawn Flowery 320 230 up
+@spawn Flowery 350 200 right
 @frame Flowery flowery_powering_up_kneel_0
 @fade in 0.6
 * (Black ichor is coming up between the stones.)
 * (There are shapes in it. Boxten's crank. Brightney's bulb. Dandy's grin.)
 Yatta: ...Those are OURS.
-Ginger: That's Gardenview ichor. | That's from home.
+Ginger: Same as the hall. Same as the bath. | It's from home.
 Flowery.yell[huh]: What IS that!?
 Scraps: When something goes wrong at our place, it leaks. | It fills up the floors.
 Flowery.snarl[show_you]: In MY garden!? On the KING'S stones!?
 @frame Flowery flowery_fists_0
-@cut flowersCall
-@battle ichor
+@spawn Ink1 420 192 left
+@spawn Ink2 466 212 left
+@tint Ink1 #1a0828
+@tint Ink2 #1a0828
+@sfx noise 0.4
+@shake 3
+* (Two of them pull themselves up out of the black.)
+@face Flowery left
+Flowery.grin[take_that]: Princesses. | You take the left one. I'll take the one on the left.
+Yatta: That's the SAME one!
+Flowery.wink[none]: Then we'll get there faster.
+@battle ichor1
+@remove Ink1
+@remove Ink2
+@idle Flowery
+@spawn Flowery 350 200 right
+@spawn Ink1 410 186 left
+@spawn Ink2 452 208 left
+@spawn Ink3 494 190 left
+@spawn Ink4 536 210 left
+@tint Ink1 #1a0828
+@tint Ink2 #1a0828
+@tint Ink3 #1a0828
+@tint Ink4 #1a0828
+@fx ichor 0.75
+@shake 5
+* (More of them. Bigger ones.)
+Ginger: There's too many...
+@frame Flowery flowery_crouch_left_0
+Flowery.sweat[none]: Okay. | Okay, that's a lot.
+@music stop
+@sfx rumble 0.7
+@shake 8
+Asgore: NOT IN MY GARDEN!
+@spawn Asgore 150 204 right
+@anim Asgore asgore_armor_charge_verymad_ 6 14
+@slide Asgore 470 204 0.55
+@sfx impact 0.8
+@flash #fff
+@shake 10
+&@jump Ink1 260
+&@spin Ink1 14
+&@slide Ink1 700 150 0.6
+&@jump Ink2 220
+&@spin Ink2 -12
+&@slide Ink2 720 200 0.6
+@jump Ink3 240
+@remove Ink1
+@remove Ink2
+@remove Ink3
+@frame Asgore asgore_armor_shock_right_0
+@music flAsgore
+@wait 0.4
+@face Asgore left
+Asgore: ...Oh! Hello again, little ones.
+@frame Flowery flowery_pose_point_cooler_right_0
+Flowery.beam[my_king]: MY KING!
+Asgore: Flowery. I'll hold the gate. | You take care of the big one.
+@face Ink4 left
+@battle ichor2
 @fx ichor 0.3
-@room courtyard 320 270 up
-@spawn Flowery 360 230 left
+@remove Ink4
+@room courtyard 300 214 right
+@spawn Flowery 360 200 left
+@spawn Asgore 470 200 left
 @fade in 0.6
 @music flTension
 * (The last of the shapes sinks back into the stones.)
+Asgore: Is everyone all right? | Good. Good.
+@frame Asgore asgore_armor_sad_down_0
 Flowery.wide[wow]: You hit them. | And they BROKE.
 Flowery.serious[none]: You couldn't scratch a Floradinn yesterday.
 Ginger: Because that stuff's from our world. | We can't hurt things from yours.
@@ -392,8 +463,8 @@ Flowery.calm[none]: But you can hurt things from yours.
 Flowery.calm[none]: It followed you here. | Through the back door.
 Scraps: We didn't know.
 Flowery.calm[none]: I know you didn't.
-@spawn Ralsei 200 300 up
-@walk Ralsei 270 254 0.8 run
+@spawn Ralsei 160 230 right
+@walk Ralsei 250 214 0.8 run
 Ralsei.worry: Everyone! Are you okay!?
 @face Flowery left
 Flowery.squint[huh]: ...Raly. | Who let you out?
@@ -402,22 +473,26 @@ Flowery.smirk[none]: Of course. Cats and cupboards.
 Ralsei.serious: Flowery, listen. That door isn't a Fountain. | Somebody DREW it. Between two places that were never supposed to touch.
 Ralsei.serious: As long as it's open, their darkness will keep coming in.
 @party off
-@spawn Seth 120 200 right
-@spawn Aqua 100 220 right
-@spawn Green 520 200 left
-@spawn Orange 520 164 left
+@spawn Seth 196 178 right
+@spawn Aqua 172 200 right
+@spawn Green 452 176 left
+@spawn Orange 424 160 left
 @ghost Orange
-@spawn Blue 560 240 left
-@spawn Yellow 540 260 left
-@spawn Pink 320 160 down
+@spawn Blue 418 214 left
+@spawn Yellow 470 212 left
+@spawn Pink 320 158 down
 @alpha Pink 0.8
 @music flFlowers
 * (The flowers come out into the courtyard, one by one.)
+@anim Seth seth_point_ 3 8 once
 Seth: It's in the road! It's in the garden! It's not on ANY list!
 Yellow: Blue's flowerbed's gone. | I tried to arrest it.
+@anim Blue enemy_blue_ballet_ 8 12 once
 Blue: He read it its rights, dear. I watched.
+@anim Aqua aqua_confused_ 2 4
 Orange: I-I punched eleven of them!! | They keep coming back...
 * (Green is holding a pan with a hole melted through it.)
+@idle Aqua
 Aqua: Uuu... is the world ending?
 Seth: Aqua...
 Aqua: ...Blue.
@@ -450,6 +525,7 @@ Flowery.serious[show_you]: Top of the castle. | If you really want to go home, c
 Flowery.serious[none]: Petals. | With me.
 * (Seth closes the book. Aqua hides her knife in her sleeve. Green puts down the pan. Orange climbs up onto Green's hat.)
 Blue: You can't even land a pirouette, dear.
+@anim Flowery flowery_pirouette_ 8 14 once
 Flowery.soft[none]: Then catch me, Blue.
 Blue: ...If you fall on my flowers again, I'm letting you.
 @walk Flowery 320 120 1.6
@@ -469,7 +545,7 @@ Ginger: I know.
 @remove Yellow
 @party Scraps,Ginger,Yatta,Ralsei
 @party on
-@lead 320 260 up
+@lead 320 222 up
 @music stop
 Yatta: ...I don't wanna fight him.
 Scraps: Me neither.
@@ -510,10 +586,8 @@ Flowery.hair2[none]: We just sat in our pots and smiled. | Useless, pretty flowe
 @frame Flowery flowery_pose_0
 Flowery.serious[none]: So no. | You don't get to come in here, make him laugh, and LEAVE.
 Flowery.yell[none]: Not while I've got petals left!
-Flowery.yell[none]: Petals! Everybody!
-Flowery.yell[none]: LEND ME YOUR POWER!
-@voice lend_power Lend me your power!
-@cut powerUp
+Flowery.yell[none]: Petals! Everybody! | Every Darkner in this kingdom!
+@cut lendPower
 @battle flowery
 @music stop
 @fx petals off
@@ -590,6 +664,15 @@ Asgore: And then let me go home too. | There's a very important pot by the windo
 * (Flowery laughs. It comes out wet.)
 Flowery.sigh[none]: ...Use the good fertilizer.
 Asgore: Only the best.
+@hide Flowery
+@hide Asgore
+@spawn Bump 160 184 down
+@anim Bump asgore_flowery_fistbump_ 3 5 once
+@sfx impact 0.4
+@wait 1.2
+@remove Bump
+@show Flowery
+@show Asgore
 @walk Flowery 150 196 1
 @face Flowery left
 Flowery.calm[none]: ...Raly.
@@ -632,6 +715,7 @@ Yatta!: IT COUNTS FOREVER!!!
 Seth: I wrote you a page. Ginger decorated it. | It's the best page in the book.
 Aqua: Uuu, I'm Confetti now!
 Seth: Aqua...
+@anim Aqua aqua_wave_ 4 8 once
 Aqua: Thanks for watching my dream, Confetti Number One!
 Yatta: THANKS FOR BEING IN IT, CONFETTI NUMBER TWO!!!
 Orange: W-was I brave? | You'll say I was brave, right?
@@ -639,8 +723,11 @@ Ginger: You were very brave.
 Orange: Th-thanks for watching my dream.
 * (Green hands Ginger a perfectly round cookie with "YOURS" written on it in icing.)
 * (Thank you for watching their dream.)
+@anim Yellow yellow_cool_point_raise_ 5 10 once
 Yellow: Thanks fer watchin' my dream. | It was an honor to wrongly accuse y'all.
+@anim Blue enemy_blue_ballet_ 8 12 once
 Blue: Come back when you can dance, dears. | Or don't, and come back anyway. Adieu!
+@anim Pink pink_overjoyed_ 6 10 once
 Pink: Eighth Club forever!
 Ginger: Eighth Club forever.
 @walk Flowery 400 214 1.2

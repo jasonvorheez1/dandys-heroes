@@ -125,3 +125,14 @@
 .fk-vl.out{animation:fkVlOut .26s ease-in both}
 @keyframes fkVl{from{transform:translateX(-50%) rotate(-14deg) scale(.2);opacity:0}to{transform:translateX(-50%) rotate(-4deg) scale(1);opacity:1}}
 @keyframes fkVlOut{to{transform:translateX(-50%) rotate(6deg) scale(1.4);opacity:0}}
+
+/* real battles: the event overlay turns see-through so Flowery can talk over the game's own battle screen */
+.fk-root.fk-ghost{background:transparent;pointer-events:none}
+.fk-root.fk-ghost .fk-cv,.fk-root.fk-ghost .fk-pad,.fk-root.fk-ghost .fk-a,.fk-root.fk-ghost .fk-quit{visibility:hidden}
+.fk-root.fk-ghost .fk-box{pointer-events:auto}
+.fk-walker{position:fixed;z-index:9500;height:200px;image-rendering:pixelated;transform:translate(-50%,-100%);pointer-events:none}
+#btnAuto.fk-auto-taken{transform:translateY(40px) rotate(-12deg) scale(1.2);transition:transform .3s}
+#btnAuto.fk-auto-snap{animation:fkSnap .7s forwards}
+@keyframes fkSnap{30%{transform:translateY(40px) scale(1.4);clip-path:inset(0 0 0 0)}100%{transform:translateY(180px) rotate(70deg) scale(.6);opacity:0}}
+#battle.fk-shake{animation:fkShake .4s steps(6) 2}
+@keyframes fkShake{0%,100%{transform:none}25%{transform:translate(-8px,4px)}75%{transform:translate(8px,-4px)}}
