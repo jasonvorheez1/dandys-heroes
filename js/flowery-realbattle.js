@@ -212,6 +212,8 @@
     battle.paused = false; battle.finish(true, 'scripted');
     await new Promise(r => { const iv = setInterval(() => { if (!BattleScreen.active) { clearInterval(iv); r(); } }, 100); });
     root.classList.remove('fk-ghost'); $('#app').hidden = true;
+    // the rest is the Main Story's turn-based battle (flowery-storyboss.js); Hard is the event-menu rematch
+    if (window.FlStoryBoss) return FlStoryBoss.run(S, args && args[0] === 'hard' ? 'hard' : 'easy');
     return jrpg(S, Object.assign([], args || [], { skipIntro: true }));
   };
 })();

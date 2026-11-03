@@ -92,12 +92,14 @@ fight Flowery on the roof. Ten segments (FL_STORY), Deltarune-style overworld, c
 - **Toons are not pixel art on purpose**: their normal cutouts are drawn small; the story comments on it. No fabricated sprites.
 - **Inked enemies** (Inked Floradinn/Kawkaw/Mantis/Bloxer/Conductor + Ichor Drop/Ball art) exist only inside this event and are
   never called Weaklings in game text.
-- **Boss.** Opens as a real auto battle; Flowery takes the AUTO button off the real HUD and it becomes turn-based on the vine
-  tower (FIGHT bars, SKILL with TP, ITEM, DEFEND; Ralsei is an AI guest). Flowery's turns are dodged in the bullet box; taking no
-  hits from a charge or a Jarona leaves him reeling. His friends join beside him as the duos start (sunset behind Seth & Aqua).
-  Phases: 100-65% solo moves, 65-30% the duos (Seth & Aqua, Orange & Green with the "Just kidding" fake-out and the recipe heal,
-  Yellow & Blue), then Omega Flowery (HIGH/LOW with arrows or tapping the top/bottom half). Losing restarts the phase; after six
-  losses damage taken drops and TP gain rises (Raid.state().flowery.losses). Debug hook: `window.__flDbg` (G, fl, P0, B).
+- **Boss.** Opens as a real auto battle; Flowery takes the AUTO button off the real HUD, then the fight runs on the Main Story's
+  turn-based battle (js/flowery-storyboss.js on story-battle.js / story-engine.js, Chapter 3 rules). No Deltarune battle mechanics.
+  Easy (segment 9): one bar, friends summoned at 66%/33%. Hard (REMATCH on the event menu after a clear): three "tutorial" bars,
+  friends summoned per bar, and cheats as enemy moves (Skip the Line, Five-Finger Bouquet steals an item, Number Edit cuts your
+  damage to 20% until he is Broken, Trade You swaps HP, Intermission silences, Pause), each with a fourth-wall animation over the
+  real battle HUD. Ralsei heals from the side. Tuning lives in FlStoryBoss.TUNE; check it with `node tools/flowery/boss_sim.js`
+  (autoplay: Easy about 90%, Hard about 7%). flowery-arena.js now only draws the vine-tower background (its old bullet-box code and
+  flowery-battle.js's old menu boss are unused in the game).
 - **Testing.** Serve the repo (`python3 -m http.server`) and open tools/flowery/preview.html (`?room=cliffs`, `?cut=omegaChase`,
   `?battle=flowery`) or tools/flowery/smoke.html (runs all ten segments in FW.test mode: instant text, every NPC and trigger,
   warns about unknown frames/voices; `?choice=1` takes the other branches). A new save has Events locked: use Settings → Full
