@@ -205,15 +205,15 @@ Flowery.look: Hold still.
 * He walks a slow circle around the three of you, the way somebody walks around a used car.
 Flowery.side: You're... smooth.
 Scraps: ...Thanks?
-Flowery.side: Everything here is drawn with about four hundred little squares, princess. You're drawn with a hundred thousand. | You look like a commercial that wandered into the wrong show.
+Flowery.side: Everything here is drawn with about four hundred little squares, princess. You three are... not. | You look like a commercial that wandered into the wrong show.
 Scraps: We ARE a show! Were. We were a show.
 Flowery.soft: ...Were, huh.
 @frame Flowery flowery_pose_0
-Flowery.beam: Well! A show! Then you'll need a tour guide. And it just so happens I'm the best tour guide in the history of tours, and of guides.
+Flowery.beam: Well! Then you need a tour guide. Lucky you.
 Ginger: We really just want to go home...
-Flowery.smile: And you will, cupcake! After a little stroll. The back door doesn't open from this side until it's ready. Doors are like that. Sensitive.
+Flowery.smile: And you will, cupcake! After a little stroll. The back door only opens one way. I'll figure it out. Probably.
 Ginger: ...Cupcake?
-Flowery.wink: You look like a cupcake. It's a compliment. Take it, it's free.
+Flowery.wink: You look like one. It's a compliment.
 Flowery.smirk: You're "Origami," you're "Confetti," and the three of you together are "princesses."
 Yatta: I'M CONFETTI!!!
 Scraps: I'm a paper craft. Origami is folding. I CUT.
@@ -224,7 +224,7 @@ Scraps: It said "thank goodness."
 Flowery.smile: Very interactive art piece. Ahead of its time. | Moving on!
 @frame Flowery off
 @face Flowery right
-Flowery.smile: Follow me! Stay close, stay cute, and if anything else with a sword shows up, scream my name. | Two syllables. Flow-ery. Very easy to scream.
+Flowery.smile: Follow me! And if anything else with a sword shows up, scream my name.
 @walk Flowery 800 200 2.2
 @remove Flowery
 @party on
@@ -504,11 +504,11 @@ Flowery.calm: Cupcake. A word?
 @face Ginger left
 Flowery.calm: Your friends. The paper one and the loud one. Do they go everywhere you go?
 Ginger: ...No. I'm only around at Christmas. I'm a Holiday Toon. | The rest of the year I'm in storage. Well, it's a room. But it has the same feeling as storage.
-Flowery.serious: So somebody keeps you. On a shelf. Until you're useful.
+Flowery.serious: So somebody puts you on a shelf until you're useful.
 Ginger: That's... not how Bobette would say it.
 Flowery.serious: How would you say it?
-Flowery.soft: Did somebody send you, Cupcake? A kid, maybe. Hair like a curtain. Told you to come through the back door and look around?
-Ginger: ...No. Nobody sends us anywhere. That's the whole problem. Everybody who used to tell us what to do is gone.
+Flowery.soft: Did somebody send you, Cupcake? A kid, maybe? Told you to come through the back door and look around?
+Ginger: ...No. Nobody sends us anywhere anymore. Everybody who used to is gone.
 * Flowery looks at her for a while. Then he laughs.
 @frame Flowery flowery_pose_0
 Flowery.beam: Ha! Of course not! Look at you, you couldn't spy on a sandwich. | Come on. The king wants to meet you.
@@ -545,7 +545,7 @@ Yellow!: FREEZE.
 * A tall flower in a cowboy hat steps out from behind the yellow door. He is pointing a very serious gun.
 Yatta: I'M FROZEN!!! LOOK HOW FROZEN I AM!!!
 @jump Yatta
-Yellow: Somebody trampled Blue's flowerbed. And a man doesn't trample a flowerbed. Not in my town.
+Yellow: Somebody trampled Blue's flowerbed. Nobody tramples a flowerbed in my town.
 Scraps: It's a castle, not a town.
 Yellow: Not in my castle-town.
 @spawn Blue 180 150 down

@@ -480,7 +480,23 @@ const FW = (() => {
     for (const [id, label] of Object.entries(S.npcs)) { if (seen.has(label + '#2')) continue; seen.add(label + '#2'); await runBlock(label); if (S.finished) return; }
     for (let i = 0; i < S.triggers.length; i++) { const tr = S.triggers[i]; if (tr.fired) continue; tr.fired = true; await runBlock(tr.label); if (S.finished) return; i = -1; }
   }
+  /* Flowery opens a lot of his lines with one of his voice clips, like in Chapter 5: on the first line after somebody else
+     talks (and on any line that names one, Flowery.face[clip]:), picked by his expression. [none] keeps a line quiet. */
+  const FLOWERY_CLIPS = {
+    cheer: ['hey_guys', 'wow', 'thats_great', 'itsme'], beam: ['wow', 'thats_great', 'hah', 'yes'], grin: ['hah', 'yes', 'leaf_it'], laugh: ['hah'],
+    smile: ['hoo', 'hah', 'yes'], wink: ['hoo', 'hah'], smirk: ['hah', 'hoo'], look: ['huh'], wide: ['huh', 'wow'], side: ['huh', 'hoo'],
+    squint: ['huh'], yell: ['show_you', 'take_that', 'nonono'], snarl: ['show_you', 'nonono'], sweat: ['nonono', 'forget_it'], ugh: ['forget_it', 'nonono']
+  };
+  let lastSpeaker = null;
+  function floweryClip(face, clip, speaker) {
+    const first = lastSpeaker !== speaker; lastSpeaker = speaker;
+    if (speaker !== 'Flowery' || clip === 'none') return;
+    let k = clip;
+    if (!k && first) { const list = FLOWERY_CLIPS[face]; if (list && Math.random() < .75) k = list[Math.floor(Math.random() * list.length)]; }
+    if (k) voiceLine(null, k, '');
+  }
   async function say(speaker, face, text, opt = {}) {
+    if (!FW.test) floweryClip(face, opt.clip, speaker);
     if (FW.test) { FW.testLog && FW.testLog.push((speaker || '*') + ': ' + text); if (speaker && !CAST[speaker]) console.warn('[flowery] unknown speaker ' + speaker); return; }
     const box = S.root.querySelector('.fk-box'), tEl = box.querySelector('.fk-text'), fEl = box.querySelector('.fk-face');
     const c = CAST[speaker];
@@ -601,8 +617,8 @@ const FW = (() => {
   const CUTS = {};    // name -> async (S, args) ; filled by flowery-cuts / battle files
   const BATTLES = {}; // name -> async (S, args) -> result
   async function exec(line) {
-    const dm = line.match(/^([A-Z][\w]*)(!)?(?:\.([\w]*))?(!)?:\s?(.*)$/);
-    if (dm) { await say(dm[1], dm[3] || '', dm[5], { shout: !!(dm[2] || dm[4]) }); return; }
+    const dm = line.match(/^([A-Z][\w]*)(!)?(?:\.([\w]*))?(!)?(?:\[(\w+)\])?:\s?(.*)$/);
+    if (dm) { await say(dm[1], dm[3] || '', dm[6], { shout: !!(dm[2] || dm[4]), clip: dm[5] }); return; }
     if (line.startsWith('*')) { await say(null, null, line.replace(/^\*\s?/, '')); return; }
     if (!line.startsWith('@')) { await say(null, null, line); return; }
     const parts = line.slice(1).match(/"[^"]*"|\S+/g).map(s => s.replace(/^"|"$/g, ''));

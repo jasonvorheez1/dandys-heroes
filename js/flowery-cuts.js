@@ -149,7 +149,6 @@
     P().draw(ctx, 'castle_distance_small_0', VW / 2, 210 - rise * 40, { s: 1.15 + rise * .25 });
     drawPetals(ctx, t, a);
     text(ctx, 'FLOWER CASTLE', VW / 2, 34, { size: 22, color: '#ffe066', alpha: seg(t, 1.2, 2), stroke: 5, strokeColor: '#5a1030' });
-    text(ctx, 'Population: seven. Plus whoever Flowery lets in.', VW / 2, 56, { size: 9, alpha: seg(t, 2, 2.6) });
   }, [[.1, () => sfx('great_shine', .4)], [1.2, () => sfx('orchhit', .4)]]);
 
   /* ---------------------------------------------------------- 4. the ichor comes up */

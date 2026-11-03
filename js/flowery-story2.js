@@ -179,7 +179,7 @@ Flowery.soft: (quietly) ...Goregore...
 * The king has gone to bed wearing the crown. Flowery hasn't moved from the window.
 @walk Scraps 150 200 0.8
 Scraps: You're staring.
-Flowery.calm: I'm thinking. It looks the same from the outside. It's a common mistake.
+Flowery.calm: I'm thinking. It's different from staring. Slightly.
 Scraps: What are you thinking?
 @frame Flowery off
 @face Flowery down
@@ -232,13 +232,13 @@ Ralsei.tired: ...Floor. | Hello, floor.
 @idle Ralsei
 @face Ralsei left
 Ralsei.happy: Oh! Oh, thank you! Thank you so much!
-Ralsei.smile: I'm Ralsei. I'm, um, a prince. Of darkness. It's much less scary than it sounds.
-Scraps: I'm Scraps. I'm a paper cat. I'm exactly as scary as I sound.
+Ralsei.smile: I'm Ralsei! I'm a prince. | ...Of darkness. Hello!
+Scraps: Scraps. You've got dust on your face.
 Ralsei.nervous: Ha! Ha ha. | ...You're not from here, are you? You're not even from Kris's town.
 Scraps: We're from Gardenview.
 Ralsei.wow: I've never heard of it!
 Ralsei.serious: My friends, Kris and Susie, came here to close this world's fountain. The king sent them away. | Flowery put me in there so the king wouldn't see me. He says I remind the king of somebody.
-Ralsei.worry: If you came in through the back door... then that door's been open this whole time. That's... not good. | Things that aren't supposed to cross can cross.
+Ralsei.worry: If you came in through the back door... then that door's been open this whole time. That's... not good. | Anything could wander through it.
 Ralsei.determined: I'll help you get home. I know a little about doors. | Prince's honor.
 Ralsei.nervous: But, um. Please don't tell Flowery I'm out yet. He'll just find a bigger cupboard.
 Scraps: ...Deal.
@@ -331,7 +331,7 @@ Flowery.smile: Ha. | Sit. The edge doesn't bite. I asked it.
 @face Scraps up
 @frame Scraps off
 Scraps: ...Can I tell you something weird?
-Flowery.calm: Princess, I'm a golden flower with a cape. "Weird" is my love language.
+Flowery.calm: Princess, I'm a flower in a cape. Go ahead.
 Scraps: Two days ago I died.
 Flowery.wide: ...You what?
 Scraps: There was a machine. If we died, it brought us back. So I came back, and everybody cried, and I was still me. I counted my claws. All there.
@@ -455,7 +455,7 @@ Flowery.calm: ...And you'll be on the other side of it.
 Scraps: ...Yeah.
 * Flowery laughs.
 Flowery.dark: Of course. Of COURSE.
-Flowery.dark: Everybody leaves him. His wife. His son. His other kid, the one with the curtain hair, with their fountains and their secrets. | And now three cartoons who made him laugh ONCE.
+Flowery.dark: Everybody leaves him. His wife. His son. His other kid, with their fountains and their secrets. | And now three cartoons who made him laugh ONCE.
 Flowery.calm: And Raly closes the door. Again. | Funny. You never seem to close KRIS'S doors, little guy. Only other people's.
 Ralsei.angry: That's... that's not fair!
 Flowery.calm: No. It's true, though.
@@ -469,7 +469,7 @@ Yatta: YOU CAN'T DO THAT!!!
 Flowery.darkgrin: Watch me, Confetti.
 @frame Flowery flowery_pose_0
 @voice show_you Huh! I'll show you!
-Flowery.serious: Top of the castle. Come and stop me, if you want to go home so badly. | Bring everything you've got. I'll bring everything I've got.
+Flowery.serious: Top of the castle. Come and stop me, if you want to go home so badly.
 Flowery.serious: Petals. | ...With me.
 * The flowers look at each other. Seth closes the book. Aqua puts the knife in her sleeve. Green puts down the pan. Orange climbs onto Green's hat.
 Blue: Darling. You can't land a pirouette.
@@ -533,7 +533,7 @@ Flowery.hair1: ...and we sat in our pots. And smiled. Because it's all flowers k
 Flowery.hair2: Do you know what that's like? To be loved by somebody, and be completely, perfectly USELESS to them?
 * Ginger nods.
 @frame Flowery flowery_pose_0
-Flowery.serious: So no. You don't get to come in here with your smooth little faces and your hundred thousand pixels and make him laugh, | and then LEAVE.
+Flowery.serious: So no. You don't get to come in here, make him laugh, | and then LEAVE.
 Flowery.yell: Not while I'm still standing. Not while I've got petals left!
 Flowery.yell: Petals! Recruits! Everybody I've ever been nice to!
 Flowery.yell: LEND ME YOUR POWER!!
