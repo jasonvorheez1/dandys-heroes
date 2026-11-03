@@ -31,10 +31,9 @@ Ginger: Something like that. Everything smells like sunscreen and nobody wants c
 Scraps: I'd want cookies.
 Ginger: Mine are bad, Scraps.
 Scraps: I'd still want them.
-* Ginger doesn't answer. Her icing hair has a small dent where she's been pressing it flat.
 @shake 3
 @sfx hit_light 0.3
-* Something bangs inside the ceiling. Then again. Then a very long, very excited scrape.
+* Something bangs inside the ceiling. Twice. Then it scrapes along the whole length of the room, excited about something.
 Scraps.!: Hsss! | ...It's the vents.
 Ginger: It's... always the vents.
 @spawn Yatta 250 150 down
@@ -57,7 +56,7 @@ Scraps: I drew that flower.
 Ginger: You did?
 Scraps: Yesterday. When everybody was crying about Shelly. I didn't know what to do with my paws, so I drew. | I drew it sad. It came out sad.
 Yatta: WELL NOW IT'S A DOOR!!
-* There's a short silence. Somewhere far above them the building creaks, the way it's been creaking all week.
+* The building creaks somewhere upstairs. It's been doing that all week.
 Ginger: We should tell Tisha. Or Rodger.
 Scraps: Rodger's asleep on a filing cabinet. Tisha cried until three yesterday.
 Scraps: ...We could just look.
@@ -114,7 +113,7 @@ Yatta: I BELIEVE YOU, SIGN!!
 @fade out 0.6
 @room garden 40 214 right
 @fade in 0.6
-* A garden where the trees grow upward in tidy blocks. Every flower here faces the same direction. Toward you.
+* A garden where the trees grow in tidy blocks. Every flower in it is turned toward you. You check behind you. Nope. You.
 Ginger: ...They're watching us.
 Scraps: Flowers do that. They watch the sun.
 Ginger: It's not sunny, Scraps.
@@ -195,7 +194,7 @@ Flowery.wide: ...
 Flowery.look: Huh.
 Flowery.side: You're not Kris.
 Ginger: ...Who's Kris?
-Flowery.calm: Nobody. Nobody you'd know. A kid. Tall. Hair like a curtain somebody gave up on. | Came in the front door yesterday. I was sort of expecting them back through the BACK door.
+Flowery.calm: Nobody you'd know. Tall kid, hair like a curtain somebody gave up on. | They came in the front door yesterday, and I was SURE they'd come back through the back one.
 Flowery.plain: Instead, the back door coughed up... you.
 Yatta: WE CAME FROM THE VENTS!!!
 Flowery.squint: The vents. | Of course you did.
@@ -206,8 +205,7 @@ Flowery.side: You're... smooth.
 Scraps: People keep saying that.
 Flowery.side: Everything here is drawn with about four hundred little squares, princess. You're drawn with a hundred thousand. | You look like a commercial that wandered into the wrong show.
 Scraps: We ARE a show! Were. We were a show.
-Flowery.soft: ...Were.
-* For half a second his face does something that isn't a pose. Then it's gone.
+Flowery.soft: ...Were, huh.
 @frame Flowery flowery_pose_0
 Flowery.beam: Well! A show! Then you'll need a tour guide. And it just so happens I'm the best tour guide in the history of tours, and of guides.
 Ginger: We really just want to go home...
@@ -262,7 +260,7 @@ Flowery.smile: Need something, princess? Directions? Compliments? I have both, a
 Flowery.wink: Bold of you to talk to me and then say nothing. I respect it.
 @end
 # askKris
-Flowery.calm: Kris? A kid. Belongs to a family that doesn't stay in one place very long. | You'd like them. Everybody likes them. That's the problem.
+Flowery.calm: Kris? Quiet kid. Very likable. Very good at leaving a room without anybody noticing they're gone. | Their dad noticed. Every time.
 @end
 # askHim
 Flowery.beam: Me? I'm a flower. A golden one. I was one-seventh of a very important question, once.
@@ -298,7 +296,7 @@ Flowery.grin: Solved.
 Scraps: That's not solving it. That's skateboarding on it.
 Flowery.smile: The puzzle didn't say "no skateboards." I read the whole puzzle.
 Yatta!: TEACH ME!!! TEACH ME TO DO THAT!!!
-Flowery.wink: Can't. It's not a skill. It's a lifestyle.
+Flowery.wink: Can't. You need hair like this. It's load-bearing.
 Flowery.smirk: But since you asked so nicely... | ...have you heard my voice lines?
 Scraps: Your what?
 Flowery.cheer: My VOICE LINES. Everybody important has them. Listen.
@@ -313,7 +311,7 @@ Flowery.cheer: My VOICE LINES. Everybody important has them. Listen.
 @frame Flowery flowery_idle_0
 Flowery.ugh: ...Wrong audience. That one's for somebody else. Forget you heard it.
 @frame Flowery flowery_idle_0
-* (Somewhere, very faintly, a romantic-comedy saxophone plays and then stops, embarrassed.)
+* (Somewhere, faintly, a romantic-comedy saxophone plays and then stops, embarrassed.)
 Ginger: ...Where is that sound coming from?
 Flowery.smile: From me. I'm surrounded by it. It's a condition.
 Scraps: Does anybody else here have voice lines?
@@ -354,7 +352,7 @@ Yatta: ...
 Yatta: ...YES!!! WE'RE BOTH CONFETTI!!!
 Seth: Oh no. There's two now.
 Flowery.smile: Seth, these are my new friends. They came in the back door. | Isn't that interesting?
-* Seth looks at Flowery for a long moment. Then at you. Then back at Flowery. They push their glasses up their nose.
+* Seth looks at Flowery, then at you, then at Flowery again, and pushes their glasses up.
 Seth: The back door. | The back door you told us to watch.
 Flowery.plain: Mm-hm.
 Seth: For Kris.
@@ -415,10 +413,10 @@ Yatta: I HAVE A BEST FRIEND NOW!!! HER NAME IS SETH!!!
 @spawn Orange 270 132 down
 @ghost Orange
 @spawn Flowery 90 165 right
-* A cafe inside the castle. It smells like butter and somebody being very patient.
-* A tall green person in a chef's hat is standing very still. A small orange rat is standing very still on top of the hat.
-Flowery.cheer: Green! My partner in flavor!
-@music flOrange And Orange, my favorite little sister in the entire universe!
+* A cafe inside the castle. It smells like butter.
+* A tall green chef is standing behind the counter. A small orange rat is standing on the chef's hat.
+@music flOrange
+Flowery.cheer: Green! My partner in flavor! And Orange, my favorite little sister in the entire universe!
 Orange!: I'M YOUR ONLY LITTLE SISTER!!!
 Flowery.smile: And my favorite.
 Orange!: WHO ARE THE SHINY ONES?! WHY ARE THEY SHINY?! I DON'T TRUST SHINY!!
@@ -427,10 +425,10 @@ Orange!: I'M ORANGE!!!
 Yatta!: I'M CONFETTI!!!
 Orange!: THAT'S NOT A COLOR!!!
 Yatta!: IT'S EVERY COLOR!!!
-* Orange opens her mouth. Closes it. Opens it again. She has met her match and she knows it.
+* Orange opens her mouth, then closes it again.
 Orange.: ...okay that's pretty good.
 @music flShop
-* Green raises one hand and waves. Slowly. Warmly. That seems to be the whole sentence.
+* Green waves at you. That's the whole conversation. It was a good one.
 @npc Green greenTalk
 @npc Orange orangeTalk
 @npc Flowery flTalk
@@ -466,8 +464,8 @@ Ginger: They came out round. They're ROUND, Scraps. Cookies are supposed to be r
 @frame Cake green_cake_0
 Scraps: You decorated them like...
 Ginger: Like flowers. Seven colors. | ...I didn't plan that. My hands just did it.
-* Green looks at the cookies for a long time. Then, very gently, Green puts one hand on Ginger's head. Just for a second.
-Flowery.soft: ...They do that. Green's hands. They make you better at things.
+* Green looks at the cookies, then pats Ginger on the head.
+Flowery.soft: Green does that. You walk in bad at something and walk out a little less bad.
 @flag baked
 @party on
 @idle Green
@@ -503,14 +501,13 @@ Flowery.calm: Cupcake. A word?
 @walk Ginger 150 200 0.6
 @face Ginger left
 Flowery.calm: Your friends. The paper one and the loud one. Do they go everywhere you go?
-Ginger: ...No. I'm only around at Christmas. I'm a Holiday Toon. The rest of the year I'm in a box. | Well. Not a box. A room. It feels like a box.
+Ginger: ...No. I'm only around at Christmas. I'm a Holiday Toon. | The rest of the year I'm in storage. Well, it's a room. But it has the same feeling as storage.
 Flowery.serious: So somebody keeps you. On a shelf. Until you're useful.
 Ginger: That's... not how Bobette would say it.
 Flowery.serious: How would you say it?
-* Ginger doesn't answer. Flowery's voice gets softer. He sounds, for a second, almost like somebody else.
 Flowery.soft: Did somebody send you, Cupcake? A kid, maybe. Hair like a curtain. Told you to come through the back door and look around?
 Ginger: ...No. Nobody sends us anywhere. That's the whole problem. Everybody who used to tell us what to do is gone.
-* He studies her face for a long, long time. Then he laughs, and it's the bright laugh again.
+* Flowery looks at her for a while. Then he laughs.
 @frame Flowery flowery_pose_0
 Flowery.beam: Ha! Of course not! Look at you, you couldn't spy on a sandwich. | Come on. The king wants to meet you.
 Ginger: The king?
@@ -618,7 +615,7 @@ Yellow: The court finds Flowery... GUILTY. Of trampling. And of not landing it.
 * Yellow fires. A small blue flower pops out of the barrel and lands in Flowery's hair.
 Yellow: ...it always does that.
 Blue.soft: I put those in there, darling. Every morning. I'd rather you shot something pretty.
-* Yellow goes very red under his hat.
+* Yellow goes red under his hat.
 Yatta: THAT WAS THE BEST COURT I'VE EVER SEEN!!!
 Ginger: It's the only court you've ever seen.
 Yatta: AND IT WAS THE BEST ONE!!!
@@ -627,14 +624,14 @@ Yatta: AND IT WAS THE BEST ONE!!!
 @face Flowery right
 Flowery.smirk: Origami. You're sharp.
 Scraps: I'm paper. It's the edges.
-Flowery.calm: No. You watch people. You watched me walk in. You remembered which foot.
+Flowery.calm: I mean you watch people. You clocked which foot I walked in on.
 Flowery.calm: Most people don't look that hard at me. They look at the hair and stop.
 Scraps: Your hair's very loud.
 Flowery.smile: Thank you. | ...Do you always look that hard at people?
 Scraps: Since I got back.
 Flowery.side: Back from where?
 Scraps: ...Somewhere you don't get to come back from anymore. | So now I look at everybody really hard. In case it's the last time I get to.
-* Flowery doesn't say anything clever. He just nods, once. Like he knows what that's like.
+* Flowery doesn't have a comeback for that one. He looks at his blue-dirt shoe instead.
 @music flAsgore
 @party on
 @lead 160 200 right
@@ -643,8 +640,8 @@ Scraps: ...Somewhere you don't get to come back from anymore. | So now I look at
 @trigger 520 150 40 90 next
 @roam
 # blueTalk
-Blue.soft: Love is the only thing in this castle that isn't decoration, darling. Everything else, Flowery painted.
-Blue.sly: Ask him how long he's been pretending to be fine. It's a fun number.
+Blue.soft: Everything in this castle is painted, darling. The walls, the sky, the grin on him. I've watched him do the touch-ups.
+Blue.sly: Ask him how long he's been "fine." It's a fun number.
 @end
 # yellowTalk
 Yellow: Ma'am. Sir. Small loud ma'am. | If you ever need justice, just holler. I'll be there. I'll probably shoot a flower at it.

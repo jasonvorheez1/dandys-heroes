@@ -10,7 +10,7 @@ FL_STORY.push(
 @music flFlowery
 @fade in 0.8
 @spawn Flowery 160 186 down
-* The foyer. A wall of flowers, painted so carefully that you can't tell which ones are real.
+* The foyer. One whole wall is flowers. Some of them are painted on. Some aren't. Good luck.
 Flowery.cheer: Ta-daaa! The heart of the castle. Every petal hand-placed. Every lantern hand-lit. Every—
 @shake 3
 @sfx step_metal 0.6
@@ -39,7 +39,7 @@ Flowery.yell: Into the bush! Into the bush, princesses, NOW!
 @frame Asgore asgore_armor_surprised_up_0
 @walk Asgore 160 166 1.2
 @frame Asgore asgore_armor_sad_down_0
-* A huge figure in golden armor and a purple cape walks in. On his head, the armor has two little horn-shaped notches. He's holding a teacup.
+* A huge figure in golden armor and a purple cape walks in. He's holding a teacup with his pinky out.
 Asgore: Flowery? | I heard shouting.
 @voice my_king My king!
 Flowery.cheer: Gorey! Ol' buddy! Goregore! There was no shouting. That was... | ...the castle. Settling. Into its foundations. Beautifully.
@@ -64,7 +64,6 @@ Yatta!: I CAN'T STAY STILL THIS LONG!!! IT'S PHYSICALLY ILLEGAL FOR ME!!!
 @shake 4
 Asgore: ...!
 Asgore: Who... | Who are you three? How did you get into my kingdom?
-* His voice is deep. It fills the room like a bell.
 Asgore: Flowery. You told me nobody else would come. You promised me a day with no... | ...surprises.
 Flowery.serious: I know, Gorey. I'm sorry. I didn't plan for these.
 @frame Asgore asgore_armor_yell_0
@@ -113,9 +112,9 @@ Scraps: It's where we live. It's a big building. There's a lobby, and floors for
 Ginger: It's closed now.
 Asgore: Closed?
 Ginger: The people who made us went away. Something bad happened. Nobody watches the show anymore. | We're still there, though. We just... keep being there.
-* The king is quiet for a while. He turns the teacup in his big hands.
+* The king turns the teacup around in his hands.
 Asgore: ...I know a little about that.
-Asgore: About being kept. About things that were only supposed to last a day, and didn't.
+Asgore: I have a few things in my shop that were only supposed to last a day.
 @face Flowery up
 @frame Flowery flowery_lookup_0
 * Flowery looks up at the ceiling very hard.
@@ -128,7 +127,7 @@ Asgore: Hm.
 @frame Asgore asgore_kneel_sad_0
 Asgore: I once gave a person seven flowers. I thought they would last one day. | They lasted twenty years.
 Asgore: I don't think anybody wanted them to last that long except me. | But I am so glad they did.
-* Flowery has stopped looking at the ceiling. He isn't looking at anybody now.
+* Flowery has found something very interesting on the floor.
 Ginger: ...Thank you.
 @frame Asgore asgore_kneel_0
 Yatta: KING!!! KING KING KING!!!
@@ -150,7 +149,7 @@ Asgore: ...
 @frame Asgore asgore_surprised_hand_1
 Asgore: HA! HA HA HA HA!
 @shake 3
-* The king laughs so hard his armor rattles. It goes on for a long time. Flowery's mouth falls a little bit open.
+* The king laughs so hard his armor rattles. Flowery's mouth falls open.
 Asgore: Oh... oh, I'm sorry, I haven't— | I haven't laughed like that since...
 Asgore: ...since my son was small.
 @walk Scraps 140 200 0.6
@@ -160,12 +159,12 @@ Scraps: Here.
 Scraps: I made it while you were talking. Everybody here's a king except you. You're just wearing a helmet.
 @frame Asgore asgore_kneel_look_up_0
 Asgore: ...
-* He takes off the horned helmet. Under it, he's just an old goat with a beard. He puts the paper crown on. It's much too small. He wears it anyway.
+* He takes off the horned helmet and puts the paper crown on. It's much too small. It sits on top of his head like a little boat.
 Asgore: How do I look?
-Scraps: Like a king. A real one. Not a costume one.
+Scraps: Like a king who's having a nice day.
 Asgore: ...Thank you, Scraps.
 @frame Flowery flowery_sad_downleft_0
-Flowery.soft: (very quietly) ...Goregore...
+Flowery.soft: (quietly) ...Goregore...
 @fade out 1
 @card The Same Night|THE BALCONY
 @room foyer 160 222 up
@@ -188,7 +187,6 @@ Flowery.serious: That you did something in one afternoon I couldn't do in a whol
 Flowery.serious: Then a paper cat folds him a hat out of a MENU, and he laughs like the world's ending.
 Scraps: It was a crown.
 Flowery.soft: I know what it was, Origami.
-* He's quiet. When he speaks again, his voice has gone careful, like somebody stepping on ice.
 Flowery.calm: ...Where do you go? When you leave here.
 Scraps: Home.
 Flowery.calm: And there's somebody there who'll laugh like that? | Who needs you to make their hats?
@@ -300,7 +298,7 @@ Pink: YOU'RE LIKE ME!!
 @frame Pink pink_peace_sign_0
 Pink: Okay! Okay! New rule! You and me, we're both the eighth! We'll be eighth together! That's a club! That's TWO people!
 Ginger: ...That's two people.
-* Ginger laughs. It's a small laugh, but it's the first one she's done since the cafe.
+* Ginger laughs.
 @idle Pink
 Pink: Don't tell Flowery I said I was nobody, okay? He gets SO mad. | He says nobody in his kingdom gets to be nobody. It's like, his whole thing.
 @npc Pink pinkTalk
@@ -310,7 +308,7 @@ Pink: Don't tell Flowery I said I was nobody, okay? He gets SO mad. | He says no
 @trigger 280 150 30 80 balcony
 @roam
 # pinkTalk
-Pink: Eighth Club meetings are whenever. Bring snacks. Bring yourself. Mostly bring yourself.
+Pink: Eighth Club meetings are whenever. Bring snacks. I can't eat them, but I like to look at them.
 Pink: Oh, and tell the goat boy behind the bush he can come out. I can see his ears.
 * Behind the bush: a very small, very guilty "eep."
 @end
@@ -334,31 +332,26 @@ Flowery.smile: Ha. | Sit. The edge doesn't bite. I asked it.
 Scraps: ...Can I tell you something weird?
 Flowery.calm: Princess, I'm a golden flower with a cape. "Weird" is my love language.
 Scraps: Two days ago I died.
-* Flowery doesn't move. He doesn't say anything clever.
-Scraps: There was a machine. If we died, it brought us back. So I came back, and everybody cried, and I was still me. Same paws. Same everything.
+Flowery.wide: ...You what?
+Scraps: There was a machine. If we died, it brought us back. So I came back, and everybody cried, and I was still me. I counted my claws. All there.
 Scraps: But we broke the machine. We had to. It was hurting people. | So next time, there's no next time.
 Scraps: And Goob's really small. He doesn't sleep unless I'm in the next room. | If I'm gone for real... who makes his hats?
 Flowery.soft: ...
 Flowery.calm: Can I tell YOU something weird?
 Scraps: Okay.
 @frame Flowery flowery_lookdown_upright_0
-Flowery.calm: I was a flower in a pot. Golden. One of seven. A man grew us to ask a woman to marry him.
-Flowery.calm: We were supposed to be for one day. One smiling day. You get picked, you get carried somewhere nice, you make somebody cry happy tears, | and then you're compost.
-Flowery.serious: He didn't let us go. Twenty years, he watered us. Talked to us. Sang to us, badly. | And the whole time, we couldn't do anything for him. Not one thing. His friend got sick. His money ran out. His family left.
-Flowery.serious: We just sat in our little pots. Being pretty. Being kept.
-Flowery.dark: Then one day I woke up in here. With legs. With a voice. With stats.
-Flowery.darksmile: Level ninety-nine, Origami. I typed that number in myself. | Do you know how easy it is to type a number?
-Scraps: ...So it's fake?
-Flowery.calm: It's all fake, princess. The castle's fake. The sunset's fake. My Level's fake. | The only real thing here is him.
-Flowery.soft: And maybe you three. I haven't decided.
-* The wind blows the cape off his knees. He doesn't fix it.
-Flowery.calm: So. You got one more chance, and you're scared you used it up.
+Flowery.calm: Before all this, I was a flower in a pot. In a shop. By the window. | Then one day I woke up in here with legs, and a voice, and a stat screen.
+Flowery.darksmile: You know what my stat screen said? Nothing. It was blank. | I typed in the ninety-nines myself.
+Scraps: ...You can DO that?
+Flowery.smirk: Apparently! Nobody stopped me. Nobody stops you from much, in here.
+Flowery.calm: So I don't know anything about coming back, Origami. I just know about being somewhere longer than you were supposed to be.
+Flowery.calm: You got one extra life, and you're scared you spent it.
 Scraps: ...Yeah.
-Flowery.serious: Here's the only thing twenty years in a pot taught me, Origami. | Nobody gets to be useful forever. You just get to be useful today.
-Flowery.serious: So be careful tomorrow. | But make the hat today.
-Scraps: ...That's actually really good advice.
-Flowery.smile: I'm full of it. Ask anyone. They'll say "full of it," and I'll take it as a compliment.
-* Scraps doesn't say anything for a while. Then she puts her paw on the roof tile, very close to his hand. Not on it. Close.
+Flowery.serious: Then don't spend the next one. Look both ways. Stop running in front of canes.
+Scraps: How do you know about the cane?
+Flowery.smirk: I didn't. Lucky guess. You have a running-in-front-of-canes face.
+Flowery.calm: And make the kid his hat. Don't wait. Hats go out of style.
+* Scraps scoots a little closer on the roof tiles.
 @music stop
 Flowery.calm: ...Scraps.
 Scraps: Yeah?
@@ -367,12 +360,12 @@ Scraps: Yeah?
 Flowery.serious: Stay.
 Scraps: ...What?
 Flowery.serious: Stay here. All three of you. He laughed today, Scraps. He wore your crown to BED.
-Flowery.serious: Your building's closed. Your show's over. Nobody's watching. | Here, somebody would be. Every single day. He'd make you tea until the sun went out.
+Flowery.serious: Your building's closed and nobody's watching your show. | Here, somebody would be. He'd make you tea until the sun went out. And the sun doesn't go out here. I made sure.
 Flowery.soft: I'm asking. I'm not... I'm not very good at asking. Usually I just do things and hope they're right.
 Scraps: ...I...
 @sfx earth_quake 0.4
 @shake 2
-* Something drips. Somewhere below them, in the bath. A sound like ink falling into a glass of water.
+* Down in the bath, something goes "plip."
 @fx ichor 0.2
 Flowery.wide: ...What was that?
 @sfx ui_alert 0.6
@@ -394,8 +387,8 @@ Ginger!: (from below) SCRAPS!! FLOWERY!! THE WATER— | THE WATER'S GONE BLACK!
 @spawn Flowery 320 230 up
 @frame Flowery flowery_powering_up_kneel_0
 @fade in 0.6
-* The courtyard. Black ichor is welling up between the paving stones, thick and slow, like the whole kingdom is bleeding.
-* It has shapes in it. Shapes you know. A box with a crank. A balloon. A grin with too many teeth.
+* The courtyard. Black ichor is coming up between the paving stones.
+* There are shapes in it. You know them. Boxten's crank. Brightney's bulb. Dandy's grin, with too many teeth.
 Yatta: ...those are OURS.
 Ginger: Twisteds. That's... that's Gardenview ichor. That's from HOME.
 Flowery.yell: What IS it?!
@@ -409,16 +402,16 @@ Flowery.snarl: In MY garden?! On the KING'S stones?!
 @spawn Flowery 360 230 left
 @fade in 0.6
 @music flTension
-* The last of the shapes sinks back into the stones. For now.
+* The last of the shapes sinks back into the stones.
 Flowery.wide: ...You hit them. | You hit them, and they BROKE.
 Scraps: Yeah.
 Flowery.serious: You couldn't scratch a Floradinn yesterday. Today you tore through those like they were tissue.
 Ginger: ...Because they're ours. | They came from the same place we did. Everything here is made of your world's stuff. We can't touch it. But that—
 Flowery.calm: That's made of yours.
-* Flowery looks at the black stain spreading out across the courtyard. His voice goes very flat.
+* Flowery looks at the black stain spreading across the courtyard.
 Flowery.calm: It followed you. | Through the back door.
 Scraps: ...We didn't know.
-Flowery.calm: I know you didn't. That's almost worse.
+Flowery.calm: I know you didn't. I'd feel better if you had.
 @spawn Ralsei 200 300 up
 @walk Ralsei 270 254 0.8 run
 Ralsei.worry: Everyone! Are you all right?!
@@ -442,7 +435,7 @@ Ralsei.serious: While it stays open, their world's darkness leaks into yours. It
 * One by one, the flowers come out into the courtyard. Seth's book is splattered. Orange is still punching the air. Pink floats over the wall, looking scared.
 Seth: It's in the road. It's in the garden. It's coming up through the bridge.
 Yellow: Blue's bed is gone. All of it. | ...I couldn't even arrest it.
-Blue: Oh, darling. | Nobody arrests the tide.
+Blue: Darling, you tried to read it its rights. I watched you.
 Orange!: I PUNCHED ELEVEN OF THEM!! THEY KEEP COMING BACK!!
 * Green says nothing. Green is holding a pan with a hole melted through it.
 Aqua: Is the world ending? | I've never seen a world end. Is it like this?
@@ -458,10 +451,8 @@ Ralsei.determined: If they walk back through, I can seal it behind them. From th
 Ginger: Our side has people who can help, too. Rodger knows about doors. Tisha knows about ichor.
 Scraps: We'll close it. We'll make sure it stays closed.
 Flowery.calm: ...And you'll be on the other side of it.
-Scraps: Yeah.
-Flowery.calm: And you'll be on your side.
 Scraps: ...Yeah.
-* Very slowly, the golden flower starts to laugh. It isn't the bright laugh.
+* Flowery laughs.
 Flowery.dark: Of course. Of COURSE.
 Flowery.dark: Everybody leaves him. His wife. His son. His other kid, the one with the curtain hair, with their fountains and their secrets. | And now three cartoons who made him laugh ONCE.
 Flowery.calm: And Raly closes the door. Again. | Funny. You never seem to close KRIS'S doors, little guy. Only other people's.
@@ -472,7 +463,7 @@ Ginger: We DO know! That's why we have to go! | Somebody kept us too. They're wa
 Flowery.hair2: ...
 @frame Flowery flowery_idle3_0
 Flowery.hair3: Then here's the other way.
-Flowery.hair3: You stay. The door stays open. And I hold back the ichor. Myself. Every day. Forever.
+Flowery.hair3: You stay. The door stays open. And I hold the ichor back myself. I have nothing but time.
 Yatta: YOU CAN'T DO THAT!!!
 Flowery.darkgrin: Confetti. | I'm Level Ninety-Nine.
 Scraps: You TYPED that!
@@ -484,8 +475,7 @@ Flowery.serious: Petals. | ...With me.
 * The flowers look at each other. Seth closes the book. Aqua puts the knife in her sleeve. Green puts down the pan. Orange climbs onto Green's hat.
 Blue: Darling. You can't land a pirouette.
 Flowery.soft: Then catch me, Blue.
-Blue: ...
-Blue: I always do.
+Blue: ...Fine. But if you fall on my flowers again, I'm letting you.
 @walk Flowery 320 120 1.6
 @remove Flowery
 @walk Seth 320 120 1.6
@@ -508,10 +498,10 @@ Ginger: ...I know.
 @music stop
 Yatta: ...I don't want to fight him.
 Scraps: Me neither.
-Ginger: ...Then we don't fight him. We just get past him. And we tell him the truth until he hears it.
-Scraps: That's a fight, Ginger.
-Ginger: ...Yeah. I know.
-Ralsei.sad: He's not wrong about me. About the doors. | ...But he's not right about you. I'll be right beside you. All the way home.
+Ginger: ...Then we don't win. We just don't lose until he's done.
+Scraps: That's still a fight, Ginger.
+Ginger: I know. I'm trying to make it sound nicer.
+Ralsei.sad: What he said about me and Kris's doors... | ...We can talk about that some other time. Let's get you home first.
 @trigger 290 140 60 30 next
 @roam
 # next
@@ -542,7 +532,7 @@ Flowery.serious: And for twenty years, he never let us go.
 Flowery.soft: His friend got sick, and we sat in our pots. | His money ran out, and we sat in our pots. | His family left him...
 Flowery.hair1: ...and we sat in our pots. And smiled. Because it's all flowers know how to do.
 Flowery.hair2: Do you know what that's like? To be loved by somebody, and be completely, perfectly USELESS to them?
-* Ginger nods. She doesn't say anything. She doesn't have to.
+* Ginger nods.
 @frame Flowery flowery_pose_0
 Flowery.serious: So no. You don't get to come in here with your smooth little faces and your hundred thousand pixels and make him laugh, | and then LEAVE.
 Flowery.yell: Not while I'm still standing. Not while I've got petals left!
@@ -571,7 +561,7 @@ Scraps: You're the one on the floor.
 Flowery.hair4: I know that. I'm talking to myself. | Get up, Flowery. Get UP. One more. You've got one more.
 Ginger: You don't.
 Flowery.hair2: ...
-Ginger: You don't have one more. That's okay. | You did everything. You did more than everything.
+Ginger: You don't have one more. That's okay. | You did everything. We were there. It was a lot.
 @sfx step_metal 0.6
 @shake 2
 Asgore: ...That's enough, my friend.
@@ -616,14 +606,14 @@ Asgore: I knew the garden wasn't real. I knew the sunset didn't end. I knew you 
 Flowery.tear: ...You KNEW?
 Asgore: Of course I knew. You're terrible at hiding things. You put a bush on three children and the bush GIGGLED.
 @frame Asgore asgore_kneel_look_up_1
-Asgore: But I let you. Because nobody had done anything for me without being asked in so very long. | It was strange. Being looked after. I'd forgotten how it felt.
+Asgore: But I let you. Nobody had done anything for me without being asked in a very long time. | It's a strange thing, being looked after. I'd forgotten.
 Asgore: Thank you. | Truly. Thank you.
 Flowery.weep: I didn't do ANYTHING. I typed numbers. I built a fake sunset.
-Asgore: You built it for me. That's the part that was real.
+Asgore: You built it for me. Do you know how many people have built me anything? | It's you. You're the whole list.
 @frame Asgore asgore_kneel_0
 Asgore: And now these three need to go home. | Somebody is waiting for them. The way I used to wait for my children.
 Asgore: Let them go, Flowery. And then let me go home too. My shop doesn't water itself. | ...And there's a very important pot by the window. Golden. It needs looking after.
-* Flowery looks at the king for a long time. Then he laughs. A wet, broken, real laugh.
+* Flowery laughs. It comes out wet.
 Flowery.sigh: ...You'd better use the good fertilizer.
 Asgore: Only the best.
 @walk Flowery 150 196 1
@@ -676,12 +666,12 @@ Ginger: ...I'll keep it forever.
 * Green shakes their head, and mimes eating it.
 Ginger: ...Okay. I'll eat it. Eventually. After forever.
 Yellow: Ma'am. Ma'am. Sir. | It was an honor to wrongly accuse you.
-Blue: Darling. All three of you. | Love is the only real thing here. You brought some. Thank you for that.
+Blue: Darlings. Come back when you can dance. | Or don't, and come back anyway.
 Pink: Eighth Club! Don't forget! You're a member now, that means you're a member everywhere!
 Ginger: I won't forget.
 @walk Flowery 400 214 1.2
 @face Flowery left
-* Flowery stops in front of you. He's put the cape back on. It's still torn. He's wearing it anyway.
+* Flowery has his cape back on. There's a big rip in it. He's standing so the rip doesn't show.
 Flowery.calm: Well, princesses. | Thank you for watching my dream.
 Scraps: ...It was a good show.
 Flowery.smile: Of course it was. I was in it.
@@ -692,7 +682,7 @@ Flowery.smile: Of course it was. I was in it.
 @ghost Locker
 @walk Ralsei 300 214 0.8
 @face Ralsei left
-* Ralsei stands by the cupboard. Behind its doors, where the back of a cupboard should be, there's a long dark hallway. At the end of it, very small, there's a vent grate.
+* Ralsei stands by the cupboard. Behind its doors, where the back of a cupboard should be, there's a long dark hallway. At the far end there's a vent grate.
 Ralsei.smile: The back door. Flowery kept it in the cupboard, with me. | I suppose he thought nobody would look in there twice.
 Ralsei.determined: Follow me. Stay close. Don't look at the walls too long, they look back.
 @sfx magiccircle 0.5
@@ -727,24 +717,21 @@ Ralsei.blush: ...That's the nicest thing anyone's said to me all week.
 @sfx doorclose 0.6
 @remove Ralsei
 * The grate clicks shut. Behind it there's nothing but a vent, and a candy stash that is NOT a candy stash.
-* The vents are quiet. There's a little door back there, behind a candy stash that is NOT a candy stash. It's closed. It's very, very closed.
 @party off
 @walk Yatta 120 196 0.6
 @walk Ginger 200 206 0.6
 @face Scraps up
 Yatta: ...did that happen?
 Ginger: I have a cookie that says "YOURS." | So I think it happened.
-* Scraps walks over to the sign. The CLOSED sheet. The little sad flower somebody drew on it yesterday.
+* Scraps walks over to the CLOSED sheet with the little sad flower on it.
 @walk Scraps 160 170 1
 @face Scraps up
-* She takes a pen out of her apron, very carefully, and adds one thing.
+* She takes out her pen and gives the flower a smile. Then, after thinking about it, a little hat with ears.
 @wait 1
-* A smile.
-Scraps: There.
-Ginger: ...It's smiling now.
-Scraps: Yeah. | It's still a little sad. But it's smiling anyway.
+Ginger: ...You gave it a hat.
+Scraps: Hats with ears fix things.
 @face Scraps down
-Scraps: Come on. Goob's going to wake up soon. | I'm going to make him a hat.
+Scraps: Come on. Goob's going to wake up soon.
 @fade out 2
 @cut credits
 @end

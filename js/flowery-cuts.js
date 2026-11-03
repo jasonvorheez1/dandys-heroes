@@ -283,7 +283,7 @@
   /* ---------------------------------------------------------- 8. that day (Asgore remembers) */
   const BOUQUET = [['#ffe066', 0, -14], ['#7ff07f', -14, -6], ['#ff9a5a', 14, -6], ['#8ff8ff', -20, 6], ['#c49bff', 20, 6], ['#9fb6ff', -8, 10], ['#ffe37a', 8, 12]];
   const MEMORY = ['Twenty years ago, I grew seven flowers.', 'I asked her a question with them.', 'She said yes. For a while.',
-    'When the shop was quiet, I talked to them. I sang to them. Badly.', 'I never once thought they were listening.', '...I should have known. Flowers always face whoever is looking after them.'];
+    'When the shop was quiet, I talked to them. I sang to them. Badly.', 'I never once thought they were listening.', '...They were, of course. Flowers are very nosy.'];
   C.thatDay = S => run(S, 15, (ctx, t) => {
     ctx.fillStyle = '#1a0f08'; ctx.fillRect(0, 0, VW, VH);
     // a window, light falling in
