@@ -91,7 +91,8 @@
     if (u.hidden) return;
     const ctx = B.ctx, x = u.x + (u.ox || 0) + (u.shk ? (Math.random() - .5) * u.shk : 0), y = u.y + (u.oy || 0);
     u.shk = Math.max(0, (u.shk || 0) - .6);
-    if (!u.noShadow) { ctx.fillStyle = 'rgba(0,0,0,.25)'; ctx.beginPath(); ctx.ellipse(u.x + (u.ox || 0), u.y, 12 * (u.s || 1), 3.5, 0, 0, 7); ctx.fill(); }
+    if (u.pad != null && window.FlArena) FlArena.pad(ctx, u.x, u.y, u.pad, B.rt);
+    else if (!u.noShadow) { ctx.fillStyle = 'rgba(0,0,0,.25)'; ctx.beginPath(); ctx.ellipse(u.x + (u.ox || 0), u.y, 12 * (u.s || 1), 3.5, 0, 0, 7); ctx.fill(); }
     const alpha = (u.alpha == null ? 1 : u.alpha) * (u.alive === false ? .35 : 1);
     if (u.toon) {
       const im = FW.toonImg[u.toon]; if (!im || !im.naturalWidth) return;
@@ -354,7 +355,12 @@
     speed: { name: 'Speed Candy', n: 2, target: 'none', desc: '+30% TP.' }
   };
 
-  FW.BATTLES.flowery = async S => {
+  // stand-ins for the preview page (the game uses flowery-realbattle.js)
+  FW.BATTLES.ichor1 = async () => 'win';
+  FW.BATTLES.ichor2 = async () => 'win';
+  FW.BATTLES.ichorSmall = async () => 'win';
+  FW.BATTLES.flowery = async (S, args) => {
+    const skipIntro = !!(args && (args.skipIntro || args[0] === 'skip'));   // flowery-realbattle.js runs the real auto battle and the fourth wall first
     const st = BST(); st.losses = st.losses || 0;
     const B = mount(S, BG.roof);
     const P0 = ['Scraps', 'Ginger', 'Yatta', 'Ralsei'].map((k, i) => mkUnit(TOON[k], 'p', i));
@@ -364,6 +370,7 @@
     B.units.push(...P0, fl);
     FW.music('flBoss');
 
+    if (!skipIntro) {
     /* ------------------------------------------ phase 0: it starts as one of OUR fights */
     hudAuto(B, P0.slice(0, 3), 'THE TOP OF THE CASTLE · Flowery');
     B.ui.querySelector('.fb-auto [data-b="auto"]').classList.add('auto-btn');
@@ -426,16 +433,43 @@
     await wait(500); B.over.length = 0;
     fl.pose = 'flowery_pose_point_cooler_0';
     await say('Flowery', 'beam', 'There. Now every punch is YOUR fault. | Isn\'t that romantic?');
-    await say('Ralsei', 'worry', 'Everyone, listen! He\'s fast, but he telegraphs! When he swings, press [Z] right as it lands to BRACE!');
-    await say('Ralsei', 'determined', 'A perfect Brace on a charge knocks him back! And I\'ll keep you healed. I promise!');
+    await say('Ralsei', 'worry', 'Everyone, listen! When he attacks, keep moving. Arrows to move, [Z] to dash right through things!');
+    await say('Ralsei', 'determined', 'And I\'ll keep you healed. I promise!');
     await say('Flowery', 'smirk', 'Hey, tutorial boy. You\'re very cute when you\'re useful.');
     await say('Ralsei', 'pout', '...');
     FW.hideBox(); fl.pose = null;
     FW.music('flBoss');
 
-    /* ------------------------------------------ the turn-based fight */
-    // the command menu covers the bottom of the stage: everyone steps up
-    P0.forEach((u, i) => tween(u, { y: [150, 168, 186, 160][i], x: [96, 70, 104, 44][i] }, 500)); tween(fl, { y: 176 }, 500);
+    }
+    FW.music('flBoss');
+    /* ------------------------------------------ the turn-based fight, on the vine tower */
+    B.sunsetK = 0;
+    B.bg = (ctx, t) => FlArena.bg(ctx, t, { sunset: B.sunsetK });
+    P0.forEach((u, i) => { u.pad = i; u.h = 34; u.noShadow = true; tween(u, { x: [58, 44, 58, 44][i], y: [86, 118, 150, 182][i] }, 500); });
+    ral.s = .9;
+    fl.frame = (t, u) => u.pose || ('flowery_idle3_' + (Math.floor(t * 6) % 5)); fl.noShadow = true; fl.s = 1.15;
+    tween(fl, { x: 256, y: 168 }, 500);
+    const guests = {};
+    const GUEST = { Aqua: ['aqua_centered_', 4, 286, 104], Seth: ['seth_idle_', 4, 300, 196], Green: ['enemy_green_', 1, 222, 196], Orange: ['orange_proud_left_', 1, 218, 132],
+      Yellow: ['yellow_quarter_', 1, 296, 150], Blue: ['blue_poses_', 3, 300, 92] };
+    async function guest(names, line) {
+      const fresh = names.filter(n => !guests[n]);
+      if (!fresh.length) return;
+      fresh.forEach(n => { const [b, k, x, y] = GUEST[n]; const u = { side: 'x', name: n, x: x + 40, y, s: 1, alpha: 0, noShadow: true, frame: t => b + (Math.floor(t * 5) % k) }; guests[n] = u; B.units.push(u); tween(u, { x, alpha: 1 }, 500); });
+      sfx('magicsprinkle', .5); log(line); await wait(1300);
+    }
+    if (skipIntro && !st.tutSeen) {
+      st.tutSeen = true;
+      await say('Ralsei', 'worry', 'Everyone, listen! When he attacks, keep moving. Arrows to move, [Z] to dash right through things!');
+      await say('Ralsei', 'determined', 'And I\'ll keep you healed. I promise!');
+      FW.hideBox();
+    }
+    const dodgeTurn = (label, pat, power, o = {}) => FlArena.dodge(B, {
+      dur: o.dur || 6, phase: G.phase, label, tutorial: !G.tut, laneSpeed: o.lane,
+      pattern: pat,
+      onHit: pw => { const u = o.target ? o.target() : target(); if (u) { hitParty(u, power * pw); if (o.onHitU) o.onHitU(u); } },
+      onGraze: dt => { G.graze = (G.graze || 0) + dt; if (G.graze > .2) { G.graze = 0; tpGain(1); } }
+    }).then(r => { G.tut = true; if (r.hits === 0) { pop(B, fl, 'NO HITS!', '#ffe066', 10); tpGain(6); } return r; });
     const easyMode = () => st.losses >= 6;
     const G = { tp: 0, phase: 1, duo: 0, round: 0, items: {}, lastDealer: null, dmgThisRound: 0, cook: false, charge: false, chargeKind: null };
     const resetItems = () => { Object.keys(ITEMS).forEach(k => { G.items[k] = ITEMS[k].n; }); };
@@ -544,7 +578,7 @@
       if (u.grapple && !o.aoe) { pop(B, u, 'UNTARGETABLE', '#ffd36b', 10); return 0; }
       if (u.spring && !o.aoe) { pop(B, u, 'DODGE!', '#ffe95c', 11); sfx('jump', .4); tpGain(6); return 0; }
       if (fl.dizzy && Math.random() < .4) { pop(B, u, 'MISS', '#bbb'); sfx('graze', .3); return 0; }
-      const b = o.noBrace ? 'none' : await brace(u, o.dur || .75);
+      const b = o.brace ? await brace(u, o.dur || .75) : 'none';
       if (o.counter && b === 'perfect') return 'counter';
       let d = (fl.atk * power) * (G.phase === 2 ? 1.15 : G.phase === 3 ? 1.3 : 1) * (fl.atkUp ? 1.25 : 1) - u.def * .6;
       d *= b === 'perfect' ? .2 : b === 'good' ? .5 : 1;
@@ -644,79 +678,61 @@
     /* ---- Flowery's moves (his Chapter 5 attacks, turned into turns) */
     const pose = async (p, ms) => { fl.pose = p; await wait(ms); };
     const MOVES = {
-      async vines() {
-        log('Flowery sends a wall of vines!'); await pose('flowery_gestureup_0', 300);
-        const n = 5 - (fl.slow ? 2 : 0);
-        for (let i = 0; i < n; i++) { const u = target(); if (!u) break; B.over.push(vineFx(u)); await hitParty(u, .9, { dur: .6 }); }
-      },
-      async bamboo() { log('Flowery raises a Bamboo Barrier! It blocks all damage until it breaks.'); await pose('flowery_pose_0', 500); fl.barrier = 380; sfx('grow', .6); pop(B, fl, 'BAMBOO BARRIER', '#8fdc6a', 11); },
+      async vines() { log('Flowery sends a wall of vines!'); await pose('flowery_gestureup_0', 300); fl.pose = null; await dodgeTurn('VINES', D => FlArena.PAT.vines(D, 6 - (fl.slow ? 2 : 0)), .9, { dur: 6 - (fl.slow ? 2 : 0) }); },
+      async dash() { log('Flowery dashes back and forth. You can barely see him.'); voice('hah', 'Hah!'); await dodgeTurn('DASH', D => FlArena.PAT.dash(D, 4 + G.phase), 1.0, { dur: 6 }); },
+      async pillars() { log('Light comes down between the petals.'); await dodgeTurn('', D => FlArena.PAT.pillars(D, 6), .9, { dur: 6.5 }); },
+      async bamboo() { log('Flowery raises a Bamboo Barrier! It blocks all damage until it breaks.'); await pose('flowery_pose_0', 500); fl.barrier = 380; sfx('grow', .6); pop(B, fl, 'BAMBOO BARRIER', '#8fdc6a', 11); fl.pose = null; await dodgeTurn('', D => FlArena.PAT.petals(D, 4), .7, { dur: 4 }); },
       async chargeUp() { log('Flowery turns blue and lowers his head. He\'s going to CHARGE next turn!'); fl.charge = 'charge'; await pose('flowery_crouch_left_0', 700); sfx('boost', .5); },
       async charge() {
-        const u = target(); if (!u) return; log('Flowery charges at ' + u.name + '! BRACE!');
-        fl.pose = 'flowery_fair_left_0'; const r = await hitParty(u, 3.2, { counter: true, dur: .7 });
-        if (r === 'counter') { fl.pose = 'flowery_deflected_0'; pop(B, u, 'COUNTER!', '#ffe066', 13); sfx('rudebuster_hit', .8); B.shake = 10; hitFlowery(240, u, { sure: true }); fl.stun = 1; }
+        log('Flowery charges! Dash out of the way!'); fl.hidden = true;
+        const r = await dodgeTurn('CHARGE', D => FlArena.PAT.charge(D), 2.6, { dur: 4 });
+        fl.hidden = false;
+        if (r.hits === 0) { fl.pose = 'flowery_deflected_0'; pop(B, fl, 'HE OVERSHOT!', '#ffe066', 12); sfx('rudebuster_hit', .8); B.shake = 10; hitFlowery(240, null, { sure: true }); fl.stun = 1; await wait(600); }
       },
-      async shine() { const u = target(); if (!u) return; log('Flowery flashes his teeth at ' + u.name + '. Dazzling!'); await pose('flowery_teethshine_3', 600); sfx('great_shine', .5); u.dazzle = 1; pop(B, u, 'DAZZLED', '#ffe066', 10); },
+      async shine() { const u = target(); if (!u) return; log('Flowery flashes his teeth at ' + u.name + '. Dazzling!'); await pose('flowery_teethshine_3', 600); sfx('great_shine', .5); u.dazzle = 1; pop(B, u, 'DAZZLED', '#ffe066', 10); fl.pose = null; await dodgeTurn('', D => FlArena.PAT.petals(D, 4.5), .7, { dur: 4.5 }); },
       async hat() {
         const u = Math.random() < .5 && ral.alive ? ral : target(); if (!u) return;
         log(u === ral ? 'Flowery plops a green hat on Raly. "There. Now you\'re decent."' : 'Flowery plops a green hat on ' + u.name + '. They can\'t act next turn!');
-        await pose('flowery_gestureup_right_0', 500); sfx('equip', .5); u.hat = 1; pop(B, u, 'HAT', '#7ff07f', 11);
+        await pose('flowery_gestureup_right_0', 500); sfx('equip', .5); u.hat = 1; pop(B, u, 'HAT', '#7ff07f', 11); fl.pose = null;
+        await dodgeTurn('', D => FlArena.PAT.pillars(D, 4), .8, { dur: 4.5 });
       },
-      async pirouette() { log('Flowery pirouettes!'); voice('spiral', 'Spiral dance!'); fl.pose = 'flowery_pirouette_0'; for (let i = 0; i < 8; i++) { fl.pose = 'flowery_pirouette_' + i; await wait(70); } sfx('pirouette', .5); fl.evade = 2; pop(B, fl, 'EVADE UP', '#fff', 10); },
-      async statEdit() { log('Flowery types in a bigger number. ATTACK UP!'); voice('powering_up', 'Powering up!'); fl.pose = 'flowery_poweringup_2'; await wait(800); fl.atkUp = 3; sfx('power', .6); pop(B, fl, 'ATK 99 → 999', '#ffe066', 11); },
-      async kick() {
-        log('Flowery flash-kicks everyone!'); voice('take_that', 'Take that!'); await pose('flowery_kick_crescent_0', 300);
-        for (const u of living()) await hitParty(u, 1.0, { aoe: true, dur: .55 });
-      },
-      async fire() { log('Flowery throws a bouquet of fire!'); await pose('flowery_puuunch_0', 300); for (let i = 0; i < 2; i++) { const u = target(); if (!u) break; const d = await hitParty(u, 1.0, { dur: .65 }); if (d > 0) { u.burn = 2; pop(B, u, 'BURN', '#ff8a4a', 10); } } },
+      async pirouette() { log('Flowery pirouettes!'); voice('spiral', 'Spiral dance!'); for (let i = 0; i < 8; i++) { fl.pose = 'flowery_pirouette_' + i; await wait(70); } sfx('pirouette', .5); fl.evade = 2; pop(B, fl, 'EVADE UP', '#fff', 10); fl.pose = null; await dodgeTurn('', D => FlArena.PAT.dash(D, 3), .9, { dur: 4.5 }); },
+      async flex() { log('Flowery rolls up his sleeves. ATTACK UP!'); voice('powering_up', 'Powering up!'); fl.pose = 'flowery_poweringup_2'; await wait(800); fl.atkUp = 3; sfx('power', .6); pop(B, fl, 'ATTACK UP', '#ffe066', 11); fl.pose = null; },
+      async kick() { log('Flowery flash-kicks!'); voice('take_that', 'Take that!'); await pose('flowery_kick_crescent_0', 300); fl.pose = null; await dodgeTurn('KICK', D => FlArena.PAT.kick(D), 1.0, { dur: 5.5 }); },
+      async fire() { log('Flowery throws bouquets. They burst.'); await pose('flowery_puuunch_0', 300); fl.pose = null; await dodgeTurn('', D => FlArena.PAT.fire(D), .9, { dur: 6, onHitU: u => { if (!u.burn) { u.burn = 2; pop(B, u, 'BURN', '#ff8a4a', 10); } } }); },
       async blow() {
-        const u = target(); if (!u) return; log('Flowery blows ' + u.name + ' right off the roof! A mysterious wind!'); voice('wind', 'A mysterious wind...!');
-        await pose('flowery_kiss_2', 600); sfx('wing', .6); await tween(u, { ox: -120, alpha: 0 }, 400); u.blown = 1; pop(B, u, 'BLOWN AWAY', '#9fe', 10);
+        const u = target(); if (!u) return; log('Flowery blows ' + u.name + ' clean off their flower! A mysterious wind!'); voice('wind', 'A mysterious wind...!');
+        await pose('flowery_kiss_2', 600); sfx('wing', .6); await tween(u, { ox: -120, alpha: 0 }, 400); u.blown = 1; pop(B, u, 'BLOWN AWAY', '#9fe', 10); fl.pose = null;
       },
       async jarona(withOrange) {
-        log(withOrange ? 'Orange rides on Flowery\'s fist! JARONA, FEATURING ORANGE!' : 'Flowery\'s FLOWER POWER is full. Here it comes!');
-        voice('my_jarona', 'Heh, it\'s my Jarona!'); await pose('flowery_punch_windup_4', 900);
-        let perfect = 0; const n = 7;
-        for (let i = 0; i < n; i++) {
-          const u = target(); if (!u) break;
-          const fake = withOrange && (i === 2 || i === 5);
-          voice(['jarona1', 'jarona2', 'jarona3', 'jarona4'][i % 4], 'Jarona!', { ms: 500 });
-          fl.pose = 'flowery_puuunch_0';
-          if (fake) {
-            const r = await brace(u, .55);
-            voice('just_kidding', 'Just kidding!'); log('"Just kidding!" Green throws a fireball instead!');
-            if (r !== 'early' && r !== 'none') { pop(B, u, 'FAKED OUT', '#f88', 10); }
-            await wait(250); await hitParty(u, 1.1, { dur: .5 }); continue;
-          }
-          const r = await hitParty(u, withOrange ? 1.25 : 1.1, { counter: true, dur: .55 });
-          if (r === 'counter') { perfect++; pop(B, u, 'KNOCKBACK!', '#ffe066', 11); sfx('rudebuster_hit', .6); hitFlowery(40, u, { sure: true }); }
-        }
-        fl.fp = 0;
-        if (perfect >= 5) { voice('nonono', 'No no no!'); log('You knocked back the whole Jarona! Flowery is reeling!'); hitFlowery(260, null, { sure: true }); fl.stun = 1; }
+        log(withOrange ? 'Orange rides on Flowery\'s fist! Stay out of its row!' : 'Flowery\'s FLOWER POWER is full. Here it comes!');
+        voice('my_jarona', 'Heh, it\'s my Jarona!'); await pose('flowery_punch_windup_4', 900); fl.pose = 'flowery_puuunch_0';
+        const r = await dodgeTurn('JARONA', D => FlArena.PAT.jarona(D, { orange: withOrange, fakes: withOrange ? [2, 5] : null,
+          onBeat: i => voice(withOrange && (i === 2 || i === 5) ? 'just_kidding' : ['jarona1', 'jarona2', 'jarona3', 'jarona4'][i % 4], '', { ms: 400 }) }), withOrange ? 1.25 : 1.1, { dur: 5.4 });
+        fl.fp = 0; fl.pose = null;
+        if (r.hits <= 1) { voice('nonono', 'No no no!'); log('He punched himself out. Flowery is reeling!'); hitFlowery(260, null, { sure: true }); fl.stun = 1; }
       },
-      // the duos
+      // his friends
       async sethAqua() {
-        log('Flowery shows Aqua how to safely hold a knife!'); voice('leaf_it', 'Leaf it to me!');
-        duoShow(['seth_throw_aqua_0', 'aqua_walk_down_0']);
-        for (let i = 0; i < 6 - (fl.slow ? 2 : 0); i++) { const u = target(); if (!u) break; B.over.push(knifeFx(u)); await hitParty(u, .7, { dur: .5 }); }
-        if (Math.random() < .5) { log('Seth reads from a list of your weaknesses. Party Defense down!'); living().forEach(u => { u.defDown = 2; }); sfx('noise', .3); }
-        duoHide();
+        await guest(['Aqua', 'Seth'], '* Flowery\'s friends Aqua and Seth appeared!');
+        log(pick(['Flowery shows Seth how to be more confident!', 'Flowery shows Aqua how to safely hold a knife!'])); voice('leaf_it', 'Leaf it to me!');
+        await dodgeTurn('SETH & AQUA', D => FlArena.PAT.words(D), .75, { dur: 6.5 });
+        if (Math.random() < .5) { log('Seth reads from a list of your weaknesses. Party Defense down!'); living().forEach(u => { u.defDown = 2; }); sfx('noise', .3); await wait(700); }
       },
       async orangeGreen() {
+        await guest(['Green', 'Orange'], '* Green and Orange came up the vine!');
         if (!G.cook) {
-          log('Green and Flowery come up with a new recipe! (Deal 300+ damage this turn or Green heals him!)'); duoShow(['green_pan_0', 'orange_proud_0']); G.cook = true; G.cookDmg = 0;
-          await wait(900); duoHide(); return;
+          log('Green and Flowery come up with a new recipe! (Deal 300+ damage next turn or Green feeds it to him!)'); G.cook = true; G.cookDmg = 0;
+          await dodgeTurn('GREEN', D => FlArena.PAT.green(D), .85, { dur: 6 }); return;
         }
         await this.jarona(true);
       },
       async yellowBlue() {
-        log('Flowery and Yellow point at you side by side!'); duoShow(['yellow_point_left_0', 'blue_poses_0']); voice('predictable', 'What a predictable creature.');
-        const u = G.lastDealer && G.lastDealer.alive ? G.lastDealer : target();
-        if (u) { log('Yellow\'s Punishment Gun targets whoever hit Flowery hardest: ' + u.name + '!'); for (let i = 0; i < 3; i++) { await hitParty(u, 1.0, { dur: .5 }); sfx('bomb', .3); } }
-        log('Blue\'s flowers turn into butterflies!');
-        for (let i = 0; i < 4; i++) { const t = target(); if (!t) break; await hitParty(t, .55, { dur: .45 }); }
-        if (Math.random() < .4) { log('Flowery pirouettes! ... But Blue shakes his head.'); }
-        duoHide();
+        await guest(['Yellow', 'Blue'], '* Flowery\'s sparring partner Yellow and dance rival Blue appeared!');
+        log('Flowery and Yellow point at you side by side!'); voice('predictable', 'What a predictable creature.');
+        const u = G.lastDealer && G.lastDealer.alive ? G.lastDealer : null;
+        if (u) log('Yellow has his eye on whoever hit Flowery hardest: ' + u.name + '.');
+        await dodgeTurn('YELLOW & BLUE', D => FlArena.PAT.yellowBlue(D), .9, { dur: 6.5, target: () => (u && u.alive && Math.random() < .6 ? u : target()) });
       }
     };
     let duoEls = [];
@@ -732,7 +748,7 @@
       else if (G.phase === 1) {
         if (fl.fp >= 100) await MOVES.jarona(false);
         else {
-          const opts = ['vines', 'vines', 'shine', 'kick', 'fire', 'hat', 'pirouette', 'statEdit', 'blow'];
+          const opts = ['vines', 'dash', 'dash', 'pillars', 'shine', 'kick', 'fire', 'hat', 'pirouette', 'flex', 'blow'];
           if (!fl.barrier && G.round % 4 === 1) opts.push('bamboo', 'bamboo');
           if (G.round % 3 === 2) opts.push('chargeUp', 'chargeUp');
           await MOVES[pick(opts)]();
@@ -743,7 +759,7 @@
         await MOVES[duo]();
         if (!(duo === 'orangeGreen' && G.cook)) G.duo++;
         else if (G.cookDone) { G.duo++; G.cook = false; G.cookDone = false; }
-        if (Math.random() < .5 && living().length) await MOVES[pick(['vines', 'fire', 'shine', 'hat'])]();
+        if (Math.random() < .35 && living().length) await MOVES[pick(['dash', 'fire', 'shine', 'hat'])]();
       } else await omegaTurn();
       fl.pose = null; fl.slow = Math.max(0, (fl.slow || 0) - 1);
       ['fray', 'atkUp', 'dizzy'].forEach(k => { if (fl[k]) fl[k]--; });
@@ -760,12 +776,12 @@
           const ok = await dirPrompt(high ? 'up' : 'down', .9 - i * .06);
           fl.omegaPose = 'omegaflowery_jarona';
           if (ok) { good++; sfx('rudebuster_hit', .5); hitFlowery(70, null, { sure: true }); pop(B, fl, 'COUNTER!', '#ffe066', 11); }
-          else for (const u of living()) await hitParty(u, .8, { aoe: true, noBrace: true });
+          else for (const u of living()) await hitParty(u, .8, { aoe: true });
         }
         if (good === 5) { log('You read every move! Omega Flowery staggers!'); hitFlowery(200, null, { sure: true }); }
       } else {
         log('Omega Flowery shines with every color. WITH YOUR POWERS COMBINED!'); voice('powers_combined', 'With your powers combined!');
-        for (const u of living()) await hitParty(u, 1.3, { aoe: true, dur: .55 });
+        await dodgeTurn('OMEGA', D => FlArena.PAT.omega(D), 1.2, { dur: 7, lane: 160 });
       }
     }
     function dirPrompt(want, dur) {
@@ -796,17 +812,25 @@
       await say('Seth', '', 'We did NOT practice this!');
       await say('Aqua', '', 'Uuu, I practiced! With knives!');
       await say('Orange', '', 'I-I practiced too! I\'m EXTRA now!');
-      FW.hideBox(); FW.music('flFlowers'); fl.pose = null;
+      FW.hideBox(); fl.pose = null;
+      tween(B, { sunsetK: 1 }, 1600);
+      await guest(['Aqua', 'Seth'], '* Flowery\'s friends Aqua and Seth appeared!');
     }
     async function phaseThree() {
       G.phase = 3; save();
       await say('Flowery', 'hair2', '...Not yet. I said NOT YET.');
       await say('Flowery', 'hair3', 'Everybody. All of you. | Lend me ALL of it.');
       FW.hideBox();
+      tween(B, { sunsetK: 0 }, 900);
+      const gh = { k: 0 }; const ghF = ctx => FlArena.ghosts(ctx, B.rt, gh.k, fl.x, fl.y - 40);
+      B.over.push(ghF); fl.pose = 'flowery_poweringup_2';
+      await tween(gh, { k: 1 }, 1400);
       voice('lend_power', 'Lend me your power!'); sfx('great_shine', .7);
+      await wait(1600);
       for (let i = 0; i < 12; i++) { B.flash = .5; B.flashCol = ['#7ff07f', '#8ff8ff', '#c49bff', '#ffe37a', '#9fb6ff', '#ff9a5a'][i % 6]; await wait(110); }
+      B.over.splice(B.over.indexOf(ghF), 1); Object.values(guests).forEach(u => { u.hidden = true; }); fl.pose = null;
       B.bg = BG.omega; fl.omega = true; fl.s = 1.3; fl.omegaPose = 'omegaflowery_jarona'; fl.y = 196; fl.x = 240;
-      P0.forEach((u, i) => { u.y = 192 + (i % 2) * 8; u.x = 36 + i * 34; });
+      P0.forEach((u, i) => { u.pad = null; u.noShadow = false; u.h = 44; u.y = 192 + (i % 2) * 8; u.x = 36 + i * 34; });
       voice('omega', 'OMEGA FLOWERY!'); B.flash = 1; B.flashCol = '#fff'; B.shake = 12;
       FW.music('flBoss');
       await say('Ralsei', 'shock', 'All seven flowers at once...! | Everyone, dodge with ▲ and ▼! Counter when he commits!');

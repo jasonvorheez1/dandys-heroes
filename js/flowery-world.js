@@ -17,18 +17,18 @@ const FW = (() => {
   Object.entries(toonArt).forEach(([k, src]) => { const i = new Image(); i.src = (typeof ASSET !== 'undefined' ? ASSET : './') + src; toonImg[k] = i; });
 
   /* ------------------------------------------------------------ cast: sprites per direction, portraits, voices */
-  const W4 = (b, n = 4) => ({ down: [b + 'down', n], up: [b + 'up', n], left: [b + 'left', n], right: [b + 'right', n] });
+  const W4 = (b, n = 4) => ({ down: [b + 'down_', n], up: [b + 'up_', n], left: [b + 'left_', n], right: [b + 'right_', n] });
   const CAST = {
     Scraps: { name: 'Scraps', toon: true, h: 46, voice: 520, color: '#ffd36b' },
     Ginger: { name: 'Ginger', toon: true, h: 44, voice: 400, color: '#ff9db0' },
     Yatta: { name: 'Yatta', toon: true, h: 46, voice: 640, color: '#ffe95c' },
     Flowery: { name: 'Flowery', idleAnim: ['flowery_idle_', 5, 5],  walk: { down: ['flowery_walk_down_jacket_', 4], left: ['flowery_walk_left_jacket_', 4], right: ['flowery_walk_right_jacket_', 4], up: ['flowery_lookup_', 1, 'flowery_lookup_0'] },
       idle: { down: 'flowery_walk_down_jacket_0', left: 'flowery_walk_left_jacket_0', right: 'flowery_walk_right_jacket_0', up: 'flowery_lookup_0' }, voice: 300, color: '#ffe066' },
-    Asgore: { name: 'Asgore', idle: { down: 'asgore_armor_sad_down_0', left: 'asgore_armor_run_left_0', right: 'asgore_expressions_right_0', up: 'asgore_lookup_documents_0' },
-      walk: { left: ['asgore_armor_run_left_', 4], right: ['asgore_expressions_right_', 1], down: ['asgore_armor_sad_down_', 1], up: ['asgore_lookup_documents_', 1] }, voice: 150, color: '#f4c95d' },
-    Seth: { name: 'Seth', idleAnim: ['seth_idle_', 4, 4],  walk: { down: ['seth_walk_down_', 4], up: ['seth_walk_up_', 4], left: ['seth_walk_left_', 2], right: ['seth_walk_right_', 2] }, voice: 360, color: '#c77dff' },
+    Asgore: { name: 'Asgore', mirror: { right: 1 }, idle: { down: 'asgore_armor_sad_down_0', left: 'asgore_armor_run_left_0', right: 'asgore_armor_run_left_0', up: 'asgore_lookup_documents_0' },
+      walk: { left: ['asgore_armor_run_left_', 4], right: ['asgore_armor_run_left_', 4], down: ['asgore_armor_sad_down_', 1], up: ['asgore_lookup_documents_', 1] }, voice: 150, color: '#f4c95d' },
+    Seth: { name: 'Seth', idleAnim: ['seth_idle_', 4, 4], idleAnimR: ['seth_idle_r_', 4, 4],  walk: { down: ['seth_walk_down_', 4], up: ['seth_walk_up_', 4], left: ['seth_walk_left_', 2], right: ['seth_walk_right_', 2] }, voice: 360, color: '#c77dff' },
     Aqua: { name: 'Aqua', idleAnim: ['aqua_centered_', 4, 5],  walk: { down: ['aqua_walk_down_', 4], up: ['aqua_walk_up_', 4], left: ['aqua_walk_left_', 4], right: ['aqua_walk_right_', 4] }, voice: 760, color: '#5ce1e6' },
-    Blue: { name: 'Blue', walk: { down: ['blue_walk_back_', 6], up: ['blue_walk_back_', 6], left: ['blue_walk_l_', 4], right: ['blue_walk_r_', 4] },
+    Blue: { name: 'Blue', walk: { down: ['blue_walk_r_', 4], up: ['blue_walk_back_', 6], left: ['blue_walk_l_', 4], right: ['blue_walk_r_', 4] },
       idle: { down: 'blue_poses_0', up: 'blue_up_0', left: 'blue_turn_head_l_0', right: 'blue_poses_r_0' }, voice: 470, color: '#8fa8ff' },
     Yellow: { name: 'Yellow', walk: W4('yellow_walk_'), idle: { down: 'yellow_centered_0', up: 'yellow_walk_up_0', left: 'yellow_quarter_0', right: 'yellow_quarter_right_0' }, voice: 230, color: '#ffcf4a' },
     Orange: { name: 'Orange', walk: W4('enemy_orange_walk_'), idle: { down: 'orange_centered_0', up: 'orange_lookup_0', left: 'enemy_orange_walk_left_0', right: 'enemy_orange_walk_right_0' }, voice: 900, color: '#ff9a3c' },
@@ -39,6 +39,11 @@ const FW = (() => {
     Floradinn: { name: 'Floradinn', idle: { down: 'enemy_floradin_0', left: 'enemy_floradin_flipped_0', right: 'enemy_floradin_0', up: 'enemy_floradin_0' }, walk: { down: ['enemy_floradin_', 4], left: ['enemy_floradin_flipped_', 4], right: ['enemy_floradin_', 4], up: ['enemy_floradin_', 4] }, voice: 600, color: '#c6ff4a' },
     Floradinn2: { name: 'Floradinn', same: 'Floradinn' },
     Sign: { name: '', idle: { down: 'npc_sign_0' } },
+    // Darkners the Gardenview ichor got into (drawn as black shapes with @tint)
+    Ink1: { name: '', idle: { down: 'enemy_floradin_flipped_0', left: 'enemy_floradin_flipped_0', right: 'enemy_floradin_0', up: 'enemy_floradin_0' } },
+    Ink2: { name: '', idle: { down: 'kawkaw_0', left: 'kawkaw_0', right: 'kawkaw_0', up: 'kawkaw_0' } },
+    Ink3: { name: '', idle: { down: 'mantis_idle_0', left: 'mantis_idle_0', right: 'mantis_idle_0', up: 'mantis_idle_0' } },
+    Ink4: { name: '', idle: { down: 'blockguy_overworld_0', left: 'blockguy_overworld_0', right: 'blockguy_overworld_0', up: 'blockguy_overworld_0' } },
     Locker: { name: '???', voice: 420, color: '#bbb' }
   };
   CAST.Floradinn2 = Object.assign({}, CAST.Floradinn);
@@ -304,8 +309,14 @@ const FW = (() => {
       if (S.trail.length > 200) S.trail.length = 200;
       S.party.slice(1).forEach((id, i) => {
         const a = S.actors[id]; if (!a || a.scripted) return;
-        const p = S.trail[Math.min(S.trail.length - 1, (i + 1) * 14)];
-        if (p) { a.moving = Math.hypot(p.x - a.x, p.y - a.y) > .4; if (a.moving) a.walkT += dt; a.x = p.x; a.y = p.y; a.dir = p.dir; }
+        const p = S.trail[Math.min(S.trail.length - 1, (i + 1) * 20)];
+        if (p) {
+          // walk (don't jump) to the trail point: after a scene, followers catch up instead of teleporting
+          const dx = p.x - a.x, dy = p.y - a.y, d = Math.hypot(dx, dy), mx = Math.max(2, 170 * dt);
+          a.moving = d > .4; if (a.moving) a.walkT += dt;
+          if (d <= mx) { a.x = p.x; a.y = p.y; a.dir = p.dir; }
+          else { a.x += dx / d * mx; a.y += dy / d * mx; a.dir = Math.abs(dx) > Math.abs(dy) ? (dx < 0 ? 'left' : 'right') : (dy < 0 ? 'up' : 'down'); }
+        }
       });
     }
     Object.values(S.actors).forEach(a => {
@@ -322,7 +333,16 @@ const FW = (() => {
     });
     // camera
     const R = S.room;
-    if (S.cam.follow && lead) { S.cam.tx = lead.x - VW / 2; S.cam.ty = lead.y - VH / 2 - 10; }
+    if (S.cam.follow && lead) {
+      S.cam.tx = lead.x - VW / 2; S.cam.ty = lead.y - VH / 2 - 10;
+      // someone off to the side is talking: frame them and the party together
+      const f = S.talkFocus;
+      if (f && !S.roaming && !f.hidden && S.actors[f.id] === f && Math.abs(f.x - lead.x) < 520) {
+        const k = dt ? Math.min(1, dt * 4) : 1; S.talkK = (S.talkK || 0) + (1 - (S.talkK || 0)) * k;
+        const cx = Math.max(f.x - 120, Math.min(f.x + 120, (f.x + lead.x) / 2)), cy = Math.max(f.y - 70, Math.min(f.y + 60, (f.y + lead.y) / 2));
+        S.cam.tx += (cx - lead.x) * S.talkK; S.cam.ty += (cy - lead.y) * S.talkK;
+      } else { S.talkK = 0; if (S.roaming) S.talkFocus = null; }
+    }
     if (S.cam.tween) {
       const c = S.cam.tween; c.t += dt; const k = Math.min(1, c.t / c.d), e = k * k * (3 - 2 * k);
       S.cam.tx = c.x0 + (c.x1 - c.x0) * e; S.cam.ty = c.y0 + (c.y1 - c.y0) * e; if (k >= 1) { S.cam.tween = null; c.done(); }
@@ -407,7 +427,7 @@ const FW = (() => {
     const c = a.c.same ? CAST[a.c.same] : a.c;
     const w = c.walk && c.walk[a.dir];
     if (a.moving && w) return w[0] + (Math.floor(a.walkT * 7) % w[1]);
-    if (c.idleAnim && (a.dir === 'down' || !c.idle || !c.idle[a.dir])) { const [b, n, fps] = c.idleAnim; return b + (Math.floor((S.t + (a.x % 7)) * fps) % n); }
+    if (c.idleAnim && (a.dir === 'down' || !c.idle || !c.idle[a.dir])) { const [b, n, fps] = (a.dir === 'right' && c.idleAnimR) || c.idleAnim; return b + (Math.floor((S.t + (a.x % 7)) * fps) % n); }
     if (c.idle && c.idle[a.dir]) return c.idle[a.dir];
     if (w) return w[2] || w[0] + '0';
     return null;
@@ -436,7 +456,8 @@ const FW = (() => {
     } else {
       const f = actorFrame(a);
       const tb = a.talk ? Math.abs(Math.sin(S.t * 14)) * 1.2 : 0;
-      if (f) P().draw(ctx, f, x, y - tb, { alpha: a.alpha, flip: a.flip, s: a.s, rot: a.spinA || 0, tint: a.tint || undefined });
+      const mir = !a.frame && !a.anim && a.c.mirror && a.c.mirror[a.dir];
+      if (f) P().draw(ctx, f, x, y - tb, { alpha: a.alpha, flip: !!a.flip !== !!mir, s: a.s, rot: a.spinA || 0, tint: a.tint || undefined });
     }
     if (a.emote) {
       const e = a.emote; ctx.fillStyle = '#fff'; ctx.font = 'bold 12px monospace'; ctx.textAlign = 'center';
@@ -483,6 +504,19 @@ const FW = (() => {
     raf = requestAnimationFrame(loop);
   }
 
+  /* ------------------------------------------------------------ the party's trail */
+  function seedTrail(place = true) {
+    const lead = S.actors[S.party[0]]; S.trail = [];
+    if (!lead) return;
+    const back = { right: [-1, 0], left: [1, 0], up: [0, 1], down: [0, -1] }[lead.dir] || [-1, 0];
+    const R = S.room, b = R && R.bounds;
+    for (let k = 0; k <= S.party.length * 20 + 1; k++) {
+      let x = lead.x + back[0] * k, y = lead.y + back[1] * k * .6;
+      if (b) { x = Math.max(b[0], Math.min(b[2], x)); y = Math.max(b[1], Math.min(b[3], y)); }
+      S.trail.push({ x, y, dir: lead.dir });
+    }
+    if (place) S.party.slice(1).forEach((id, i) => { const f = S.actors[id]; if (!f || f.scripted) return; const p = S.trail[(i + 1) * 20]; f.x = p.x; f.y = p.y; f.dir = p.dir; });
+  }
   /* ------------------------------------------------------------ rooms in/out */
   function loadRoom(key, x, y, dir) {
     const R = ROOMS[key]; if (!R) throw new Error('no room ' + key);
@@ -492,7 +526,8 @@ const FW = (() => {
     Object.keys(S.actors).forEach(id => { if (!S.party.includes(id)) delete S.actors[id]; });
     const sp = [x != null ? x : (R.spawn || [160, 200])[0], y != null ? y : (R.spawn || [160, 200])[1]];
     S.party.forEach((id, i) => { const a = S.actors[id] || (S.actors[id] = actor(id)); a.x = sp[0] - i * 3; a.y = sp[1]; a.dir = dir || 'right'; a.hidden = false; a.scripted = false; a.frame = null; a.anim = null; });
-    S.cam.follow = true; const lead = S.actors[S.party[0]]; if (lead) { S.cam.tx = lead.x - VW / 2; S.cam.ty = lead.y - VH / 2; }
+    seedTrail();
+    S.cam.follow = true; S.talkFocus = null; const lead = S.actors[S.party[0]]; if (lead) { S.cam.tx = lead.x - VW / 2; S.cam.ty = lead.y - VH / 2; }
     else { S.cam.tx = 0; S.cam.ty = 0; }
   }
 
@@ -522,9 +557,25 @@ const FW = (() => {
     if (!k && first) { const list = FLOWERY_CLIPS[face]; if (list && Math.random() < .75) k = list[Math.floor(Math.random() * list.length)]; }
     if (k) voiceLine(null, k, '');
   }
+  function turnToSpeaker(id) {
+    const sp = S && S.actors[id]; if (!sp || sp.hidden) return;
+    const free = a => !a.hidden && !a.frame && !a.anim && !a.moving && !a.tween && a.dir !== 'up' && !a.c.noTurn && a.alpha > .3;
+    const near = Object.values(S.actors).filter(a => a !== sp && Math.abs(a.x - sp.x) < 170 && Math.abs(a.y - sp.y) < 90 && !a.c.noTurn && a.c.name !== '');
+    near.forEach(a => { if (!free(a)) return; const dx = sp.x - a.x; if (Math.abs(dx) > 10) a.dir = dx < 0 ? 'left' : 'right'; });
+    if (free(sp) && near.length) {
+      const mx = near.reduce((m, a) => m + a.x, 0) / near.length - sp.x;
+      if (Math.abs(mx) > 14) sp.dir = mx < 0 ? 'left' : 'right';
+    }
+  }
   async function say(speaker, face, text, opt = {}) {
+    if (speaker) turnToSpeaker(speaker);
+    if (speaker && S && S.actors[speaker]) {
+      const a = S.actors[speaker], inParty = S.party && S.party.includes(speaker);
+      if (!inParty && (a.x < S.cam.x + 36 || a.x > S.cam.x + VW - 36 || a.y < S.cam.y + 40 || a.y > S.cam.y + VH - 20)) S.talkFocus = a;
+      else if (!inParty && S.talkFocus && S.talkFocus !== a) S.talkFocus = null;
+    }
     if (!FW.test) floweryClip(face, opt.clip, speaker);
-    if (FW.test) { FW.testLog && FW.testLog.push((speaker || '*') + ': ' + text); if (speaker && !CAST[speaker]) console.warn('[flowery] unknown speaker ' + speaker); return; }
+    if (FW.test) { FW.testLog && FW.testLog.push((speaker || '*') + ': ' + text); if (FW.testShots) { try { const f0 = S.fx.fade; S.fx.fade = 0; step(0); draw(); S.fx.fade = f0; FW.testShots.push({ who: speaker, text, img: S.cv.toDataURL('image/jpeg', .7), pos: Object.values(S.actors).map(a => a.id + '@' + Math.round(a.x) + ',' + Math.round(a.y) + (a.hidden ? 'H' : '') + a.dir[0]).join(' ') + ' cam' + Math.round(S.cam.x) + ',' + Math.round(S.cam.y) + ' room' + S.roomId }); } catch (e) { console.warn(e); } } if (speaker && !CAST[speaker]) console.warn('[flowery] unknown speaker ' + speaker); return; }
     const box = S.root.querySelector('.fk-box'), tEl = box.querySelector('.fk-text'), fEl = box.querySelector('.fk-face');
     const c = CAST[speaker];
     const p = speaker ? portrait(speaker, face) : null;
@@ -654,10 +705,10 @@ const FW = (() => {
       case 'room': hideBox(); loadRoom(a[0], a[1] != null ? num(a[1]) : null, a[2] != null ? num(a[2]) : null, a[3]); return;
       case 'party': {
         if (a[0] === 'off') { S.party.forEach(id => { if (S.actors[id]) S.actors[id].scripted = true; }); S.followOff = true; return; }
-        if (a[0] === 'on') { S.followOff = false; S.trail = []; S.party.forEach(id => { if (S.actors[id]) S.actors[id].scripted = false; }); return; }
+        if (a[0] === 'on') { S.followOff = false; S.party.forEach(id => { if (S.actors[id]) S.actors[id].scripted = false; }); seedTrail(false); return; }
         const ids = a[0].split(','); const lead = S.actors[S.party[0]];
         ids.forEach((id, i) => { if (!S.actors[id]) { S.actors[id] = actor(id, lead ? lead.x - i * 10 : 160, lead ? lead.y : 200); } });
-        S.party = ids; S.trail = []; return;
+        S.party = ids; seedTrail(); return;
       }
       case 'spawn': { const o = actor(a[0], num(a[1]), num(a[2]), a[3] || 'down'); S.actors[a[0]] = o; return; }
       case 'remove': delete S.actors[a[0]]; delete S.npcs[a[0]]; return;
@@ -677,8 +728,8 @@ const FW = (() => {
       case 'tint': act(a[0]).tint = a[1] === 'off' ? null : a[1]; return;
       case 'shakeA': act(a[0]).shake = num(a[1] || 6); return;
       case 'ghost': act(a[0]).ghost = a[1] !== 'off'; return;
-      case 'lead': { const o = act(S.party[0]); o.x = num(a[0]); o.y = num(a[1]); if (a[2]) o.dir = a[2]; S.trail = []; S.party.slice(1).forEach((id, i) => { const f = act(id); f.x = o.x - (i + 1) * 3; f.y = o.y; f.dir = o.dir; }); return; }
-      case 'follow': S.followOff = a[0] === 'off'; if (!S.followOff) S.trail = []; return;
+      case 'lead': { const o = act(S.party[0]); o.x = num(a[0]); o.y = num(a[1]); if (a[2]) o.dir = a[2]; seedTrail(); return; }
+      case 'follow': S.followOff = a[0] === 'off'; if (!S.followOff) seedTrail(false); return;
       case 'cam': {
         if (a[0] === 'follow') { S.cam.follow = true; return; }
         S.cam.follow = false;

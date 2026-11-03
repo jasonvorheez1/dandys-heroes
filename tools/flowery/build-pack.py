@@ -37,6 +37,13 @@ MANIFEST = [
     E + 'Flowery/Battle/Attacks', E + 'Flowery/Overworld/Walk/Cardinal/With Jacket', E + 'Flowery/Overworld/Flowery & Asgore',
     E + 'Flowery/Battle/Background/Thorns', E + 'Flowery/Battle/Background/Platforms', E + 'Flowery/Battle/Background/Tower/Decor/Flower',
     E + 'Flowery/Misc/Bush',
+    # the final fight's arena (the vine tower) and the flowers' bullet sprites
+    E + 'Flowery/Battle/Background/Tower/Texture', E + 'Flowery/Battle/Background/Tower/Decor/Leaf', E + 'Flowery/Battle/Background/Tower/Boosters',
+    E + 'Flowery/Battle/Background/Tower/Lattice/Section B',
+    E + 'Seth/Battle/Attacks', E + 'Green/Battle/Attacks', E + 'Orange/Battle/Bullet Pattern', E + 'Blue/Battle/Attacks',
+    E + 'Yellow/Battle/Attacks', E + 'Yellow/Battle/Bullet Pattern/Punishment Gun', E + 'Aqua/Battle/Attacks',
+    # the Darkners who lend Flowery their power (drawn as ghosts)
+    E + 'Umbrella Yokai/Regular', E + 'Ramb', E + 'Zenlooker',
     # Floradinn
     E + 'Floradinn', E + 'Floradinn/Idle', E + 'Floradinn/Flattened', E + 'Floradinn/ACTs', E + 'Floradinn/Attacks',
     # Asgore

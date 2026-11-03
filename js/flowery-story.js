@@ -153,18 +153,33 @@ Ginger: We're just lost...
 Floradinn: Then get MORE lost! En garde!
 Scraps.!: Hsssss!
 @battle floradinn
-@remove Floradinn
-@remove Floradinn2
 @party off
 @lead 360 206 right
 @walk Ginger 340 196 0.01
 @walk Yatta 336 218 0.01
-@spawn Flowery 420 196 left
+@frame Floradinn floradin_up_0
+@frame Floradinn2 floradin_up_1
+Floradinn: Ha! You can't even scratch us!
+Scraps: It said "one." | I hit it SO hard and it said "one."
+@sfx wing 0.6
+@spawn Flowery 485 40 down
+@frame Flowery flowery_spin_to_idle_0
+@slide Flowery 485 205 0.4
+@shake 6
+@flash #ffe066
+@sfx impact 0.7
+@anim Flowery flowery_spin_to_idle_ 8 14 once
+@voice keep_waiting Sorry to keep you waiting!
+@hide Floradinn
+@hide Floradinn2
+@anim Flowery flowery_grabfloradins_ 17 12 once
+@sfx heavyswing 0.7
+@remove Floradinn
+@remove Floradinn2
 @frame Flowery flowery_pose_point_cooler_0
 @music flFlowery
-* (The Floradinns are somewhere at the bottom of the cliff now.)
-Yatta: ...ow.
-Scraps: I hit it SO hard. It said "one."
+* (Flowery threw both Floradinns off the cliff.)
+Yatta: ...WHOA.
 Flowery.grin[hah]: Heh. Sunflowers. All stem, no style.
 @frame Flowery flowery_idle_0
 Scraps: ...Who are YOU?
@@ -646,6 +661,18 @@ Blue.sly: Ask Flowery how long he's been "fine." It's a fun number.
 Yellow: If y'all ever need justice, just holler. | I'll probably shoot a flower at it.
 @end
 # next
+@sfx noise 0.4
+@shake 2
+* (At the end of the hall, something black is dripping down the wall.)
+* (It pools on the floor. Then it stands up.)
+Yatta: ...That's not a flower.
+Ginger: That's from the Gardens.
+@battle ichorSmall
+@music flAsgore
+* (The puddle soaks into the floorboards and is gone.)
+Scraps: Don't tell Flowery.
+Ginger: Scraps...
+Scraps: Not yet. | He's got enough going on.
 @fade out 0.6
 @finish
 ` }
