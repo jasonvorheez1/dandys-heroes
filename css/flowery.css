@@ -217,3 +217,7 @@
 #battle.eg-battle .unit.eg-tele .body { animation: egTele .5s steps(5); }
 @keyframes egTele { 0% { opacity: 1; } 20% { opacity: 0; transform: translateX(-60px); } 40% { opacity: 1; transform: translateX(40px) scaleX(-1); } 60% { opacity: 0; } 80% { opacity: 1; transform: translateX(-10px); } 100% { transform: none; } }
 .eg-qte-fake { border-color: #b07bff; } .eg-ring.fake b { border-color: #b07bff; } .eg-ring.fake i { border-color: #d9b8ff; }
+/* Deltarune sprites already face left (toward the party); the battle's enemy mirror is for the game's right-facing art */
+.unit.foe.fl-pix .body img { transform: none; }
+#battle.eg-battle .unit.eg-huge .body img { image-rendering: pixelated; }
+#battle.eg-battle .unit.eg-huge .shadow { transform: scale(3); }

@@ -304,9 +304,22 @@
   EG.makeUnit = function (u) {
     const n = makeUnit0.call(this, u);
     if ((u.side === 'e' && u.def.art.startsWith('f:')) || (u.side === 'p' && pixel(u.key))) n.classList.add('fl-pix');
-    if (u.key === 'egSneo') n.classList.add('eg-strings');
+    if (u.key === 'egSneo') {
+      // Spamton NEO is HUGE: the body is drawn 3.4x, and everything on it (name, HP bar, markers) is moved up to match
+      const k = 3.4, body = n.querySelector('.body'), w = parseFloat(body.style.width);
+      n.classList.add('eg-strings', 'eg-huge');
+      body.style.width = (w * k) + 'px'; body.style.marginLeft = (-w * k / 2) + 'px';
+      n.querySelectorAll('.nameplate,.hpmini,.stb-sg,.stats,.stb-arrow,.stb-charge,.ms-pops').forEach(e => { const b0 = parseFloat(e.style.bottom); if (!isNaN(b0)) e.style.bottom = (b0 * k * .92) + 'px'; });
+    }
     if (u.key === 'egJevil') n.classList.add('eg-jevil');
     return n;
+  };
+  // Spamton NEO hangs at the far right; Jevil dances in front of him
+  EG.spot = function (u) {
+    const p = StoryBattleUI.spot.call(this, u);
+    if (u.key === 'egSneo') { p.x = this.W * .86; p.d = Math.min(p.d, .35); p.y = this.ground - p.d * this.depthSpan + 8; }
+    if (u.key === 'egJevil') p.x = this.W * .6;
+    return p;
   };
   EG.say = function (text, cls) { return StoryBattleUI.say.call(this, String(text).replace('calls more Ichor!', 'calls a Pipis!'), cls); };
   EG.lobbyReturn = () => false;
