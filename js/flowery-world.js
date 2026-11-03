@@ -38,7 +38,8 @@ const FW = (() => {
     Ralsei: { name: 'Ralsei', walk: W4('ralsei_walk_'), idle: { down: 'ralsei_walk_down_0', up: 'ralsei_walk_up_0', left: 'ralsei_walk_left_0', right: 'ralsei_walk_right_0' }, voice: 420, color: '#7fe07f' },
     Floradinn: { name: 'Floradinn', idle: { down: 'enemy_floradin_0', left: 'enemy_floradin_flipped_0', right: 'enemy_floradin_0', up: 'enemy_floradin_0' }, walk: { down: ['enemy_floradin_', 4], left: ['enemy_floradin_flipped_', 4], right: ['enemy_floradin_', 4], up: ['enemy_floradin_', 4] }, voice: 600, color: '#c6ff4a' },
     Floradinn2: { name: 'Floradinn', same: 'Floradinn' },
-    Sign: { name: '', idle: { down: 'npc_sign_0' } }
+    Sign: { name: '', idle: { down: 'npc_sign_0' } },
+    Locker: { name: '???', voice: 420, color: '#bbb' }
   };
   CAST.Floradinn2 = Object.assign({}, CAST.Floradinn);
   // Flowery's portraits (spr_face_flowery_N), by mood
@@ -233,7 +234,7 @@ const FW = (() => {
   function newWorld(root) {
     return { root, cv: null, ctx: null, K: 2, room: null, roomKey: '', actors: {}, party: [], trail: [], cam: { x: 0, y: 0, follow: true, tx: 0, ty: 0 },
       keys: {}, locked: true, t: 0, fx: { petals: false, ichor: 0, tint: null, fade: 0, fadeTo: 0, fadeCol: '#000', flash: 0, flashCol: '#fff', shake: 0, glitch: 0, rain: false, stars: false },
-      npcs: {}, triggers: [], flags: {}, roaming: null, parts: [], overlays: [], speed: 1 };
+      npcs: {}, triggers: [], flags: {}, roaming: null, roams: [], finished: false, parts: [], overlays: [], speed: 1 };
   }
   function actor(id, x, y, dir = 'down') {
     const c = CAST[id] || CAST[id.replace(/\d+$/, '')] || { name: id };
@@ -472,7 +473,15 @@ const FW = (() => {
   /* ------------------------------------------------------------ textbox */
   const faceCache = {};
   function faceURL(p) { if (!p || !p.pix) return ''; return faceCache[p.pix] || (faceCache[p.pix] = P().url(p.pix, p.mini ? 3 : 2)); }
+  async function testRoam() {
+    const seen = S._seen || (S._seen = new Set());
+    for (const [id, label] of Object.entries(S.npcs)) { if (seen.has(label)) continue; seen.add(label); await runBlock(label); if (S.finished) return; }
+    for (const p of S.room._props) { if (!p.label || seen.has(p.label)) continue; seen.add(p.label); await runBlock(p.label); if (S.finished) return; }
+    for (const [id, label] of Object.entries(S.npcs)) { if (seen.has(label + '#2')) continue; seen.add(label + '#2'); await runBlock(label); if (S.finished) return; }
+    for (let i = 0; i < S.triggers.length; i++) { const tr = S.triggers[i]; if (tr.fired) continue; tr.fired = true; await runBlock(tr.label); if (S.finished) return; i = -1; }
+  }
   async function say(speaker, face, text, opt = {}) {
+    if (FW.test) { FW.testLog && FW.testLog.push((speaker || '*') + ': ' + text); if (speaker && !CAST[speaker]) console.warn('[flowery] unknown speaker ' + speaker); return; }
     const box = S.root.querySelector('.fk-box'), tEl = box.querySelector('.fk-text'), fEl = box.querySelector('.fk-face');
     const c = CAST[speaker];
     const p = speaker ? portrait(speaker, face) : null;
@@ -507,6 +516,7 @@ const FW = (() => {
   }
   function hideBox() { const b = S.root.querySelector('.fk-box'); if (b) b.hidden = true; }
   async function choice(opts) {
+    if (FW.test) { S._cn = (S._cn || 0) + 1; return ((FW.testChoice || 0) + (S._cn > 1 && opts.length > 2 ? S._cn - 1 : 0)) % opts.length; }
     const el = S.root.querySelector('.fk-choice');
     el.hidden = false; el.innerHTML = opts.map((o, i) => `<button type="button" data-i="${i}"><i>♥</i>${o}</button>`).join('');
     let sel = 0; const btns = [...el.querySelectorAll('button')];
@@ -523,6 +533,7 @@ const FW = (() => {
     });
   }
   async function card(title, sub, ms = 2600) {
+    if (FW.test) return;
     const el = S.root.querySelector('.fk-card');
     el.innerHTML = `<div><small>${sub || ''}</small><h2>${title}</h2></div>`; el.classList.add('on');
     await new Promise(r => setTimeout(r, ms)); el.classList.remove('on');
@@ -559,6 +570,7 @@ const FW = (() => {
   async function runLines(lines) {
     for (let i = 0; i < lines.length; i++) {
       if (S._abort) return 'abort';
+      if (S.finished) return 'stop';
       let line = lines[i], bg = false;
       if (line.startsWith('&')) { bg = true; line = line.slice(1).trim(); }
       const p = exec(line);
@@ -572,7 +584,7 @@ const FW = (() => {
     let r = await runLines(b);
     while (r && r.goto) r = await runLines(program[r.goto] || []);
     hideBox();
-    if (S.roaming && r !== 'abort') S.locked = false; else S.locked = was && !S.roaming;
+    if (S.roaming && r !== 'abort' && !S.finished) S.locked = false; else S.locked = was && !S.roaming;
     return r;
   }
   const num = v => parseFloat(v);
@@ -581,7 +593,7 @@ const FW = (() => {
     return new Promise(res => {
       const dx = x - a.x, dy = y - a.y, d = Math.hypot(dx, dy);
       if (d < .5) { res(); return; }
-      const t = secs != null && !isNaN(secs) ? secs : d / (o.run ? 140 : 70);
+      const t = FW.test ? .001 : secs != null && !isNaN(secs) ? secs : d / (o.run ? 140 : 70);
       if (!o.keepDir) a.dir = Math.abs(dy) > Math.abs(dx) ? (dy < 0 ? 'up' : 'down') : (dx < 0 ? 'left' : 'right');
       a.tween = { x0: a.x, y0: a.y, x1: x, y1: y, t: 0, d: Math.max(.05, t), done: res, run: o.run, slide: o.slide };
     });
@@ -611,10 +623,10 @@ const FW = (() => {
       case 'walk': case 'run': { const o = act(a[0]); o.frame = null; o.anim = null; o.scripted = true; await walkTo(o, num(a[1]), num(a[2]), a[3] && a[3] !== 'run' ? num(a[3]) : null, { run: cmd === 'run' || a.includes('run') }); return; }
       case 'slide': { const o = act(a[0]); o.scripted = true; await walkTo(o, num(a[1]), num(a[2]), num(a[3]), { slide: true, keepDir: true }); return; }
       case 'face': act(a[0]).dir = a[1]; act(a[0]).frame = null; act(a[0]).anim = null; return;
-      case 'frame': { const o = act(a[0]); o.anim = null; o.frame = a[1] === 'off' ? null : a[1]; return; }
-      case 'anim': { const o = act(a[0]); o.frame = null; o.anim = [a[1], num(a[2]), num(a[3] || 8), a[4] === 'once']; o.animT0 = S.t; if (a[4] === 'once') await new Promise(r => setTimeout(r, num(a[2]) / num(a[3] || 8) * 1000)); return; }
+      case 'frame': { const o = act(a[0]); o.anim = null; o.frame = a[1] === 'off' ? null : a[1]; if (FW.test && o.frame && !P().has(o.frame)) console.warn('[flowery] missing frame ' + o.frame); return; }
+      case 'anim': { const o = act(a[0]); if (FW.test && !P().has(a[1] + '0')) console.warn('[flowery] missing anim ' + a[1]); o.frame = null; o.anim = [a[1], num(a[2]), num(a[3] || 8), a[4] === 'once']; o.animT0 = S.t; if (a[4] === 'once' && !FW.test) await new Promise(r => setTimeout(r, num(a[2]) / num(a[3] || 8) * 1000)); return; }
       case 'idle': { const o = act(a[0]); o.frame = null; o.anim = null; o.scripted = false; return; }
-      case 'jump': { const o = act(a[0]); o.vz = num(a[1] || 150); o.z = .01; sfx('bounce', { vol: .3 }); await new Promise(r => setTimeout(r, 420)); return; }
+      case 'jump': { const o = act(a[0]); o.vz = num(a[1] || 150); o.z = .01; sfx('bounce', { vol: .3 }); if (!FW.test) await new Promise(r => setTimeout(r, 420)); return; }
       case 'spin': act(a[0]).spin = num(a[1]); if (!num(a[1])) act(a[0]).spinA = 0; return;
       case 'emote': act(a[0]).emote = a[1] === 'off' ? null : a.slice(1).join(' '); if (a[1] !== 'off') { sfx('ui_alert', { vol: .25 }); } return;
       case 'alpha': act(a[0]).alpha = num(a[1]); return;
@@ -629,13 +641,13 @@ const FW = (() => {
         S.cam.follow = false;
         let x, y, secs;
         if (isNaN(num(a[0]))) { const o = act(a[0]); x = o.x - VW / 2; y = o.y - VH / 2 - 10; secs = num(a[1] || .8); } else { x = num(a[0]); y = num(a[1]); secs = num(a[2] || .8); }
-        await new Promise(res => { S.cam.tween = { x0: S.cam.x, y0: S.cam.y, x1: x, y1: y, t: 0, d: Math.max(.01, secs), done: res }; });
+        await new Promise(res => { S.cam.tween = { x0: S.cam.x, y0: S.cam.y, x1: x, y1: y, t: 0, d: FW.test ? .001 : Math.max(.01, secs), done: res }; });
         return;
       }
-      case 'wait': await new Promise(r => setTimeout(r, num(a[0]) * 1000 / (S.speed || 1))); return;
+      case 'wait': if (FW.test) return; await new Promise(r => setTimeout(r, num(a[0]) * 1000 / (S.speed || 1))); return;
       case 'shake': S.fx.shake = num(a[0] || 6); sfx('earth_quake', { vol: .25 }); return;
       case 'flash': S.fx.flash = 1; S.fx.flashCol = a[0] || '#fff'; return;
-      case 'fade': S.fx.fadeTo = a[0] === 'out' ? 1 : 0; S.fx.fadeD = num(a[1] || .6); if (a[2]) S.fx.fadeCol = a[2]; await new Promise(r => setTimeout(r, S.fx.fadeD * 1000)); return;
+      case 'fade': if (FW.test) { S.fx.fadeTo = S.fx.fade = a[0] === 'out' ? 1 : 0; return; } S.fx.fadeTo = a[0] === 'out' ? 1 : 0; S.fx.fadeD = num(a[1] || .6); if (a[2]) S.fx.fadeCol = a[2]; await new Promise(r => setTimeout(r, S.fx.fadeD * 1000)); return;
       case 'fx': {
         if (a[0] === 'petals') S.fx.petals = a[1] !== 'off';
         if (a[0] === 'ichor') S.fx.ichor = num(a[1] || 0);
@@ -655,12 +667,14 @@ const FW = (() => {
       case 'roam': {
         hideBox();
         const hint = S.root.querySelector('.fk-hint'); hint.textContent = a.length ? a.join(' ') : ''; hint.classList.toggle('on', !!a.length);
-        await new Promise(res => { S.roaming = { done: res }; S.locked = false; });
-        hint.classList.remove('on'); return;
+        if (FW.test) { await testRoam(); hint.classList.remove('on'); return S.finished ? 'stop' : undefined; }
+        await new Promise(res => { S.roaming = { done: res }; S.roams.push(S.roaming); S.locked = false; });
+        hint.classList.remove('on'); return S.finished ? 'stop' : undefined;
       }
-      case 'done': if (S.roaming) { const r = S.roaming; S.roaming = null; S.locked = true; r.done(); } return 'stop';
+      case 'done': if (S.roaming) { const r = S.roaming; S.roams.pop(); S.roaming = S.roams[S.roams.length - 1] || null; S.locked = true; r.done(); } return 'stop';
+      case 'finish': { S.finished = true; hideBox(); const all = S.roams.splice(0); S.roaming = null; S.locked = true; all.forEach(r => r.done()); return 'stop'; }
       case 'goto': return { goto: a[0] };
-      case 'call': { const b = program[a[0]]; if (b) { const r = await runLines(b); if (r === 'stop' || r === 'abort') return r; } return; }
+      case 'call': { const b = program[a[0]]; if (b) { let r = await runLines(b); while (r && r.goto) r = await runLines(program[r.goto] || []); if (r === 'stop' || r === 'abort') return r; } return; }
       case 'flag': S.flags[a[0]] = a[1] !== 'off'; return;
       case 'if': case 'ifnot': {
         const [k, v] = a[0].split('=');
@@ -669,9 +683,9 @@ const FW = (() => {
         return;
       }
       case 'choice': { const r = await choice(a.join(' ').split('|')); vars.choice = r + 1; return; }
-      case 'cut': { hideBox(); const f = CUTS[a[0]]; if (f) await f(S, a.slice(1), FW); return; }
-      case 'battle': { hideBox(); const f = BATTLES[a[0]]; if (f) { const r = await f(S, a.slice(1), FW); vars.battle = r; if (r === 'quit') return 'abort'; } return; }
-      case 'voice': { const r = voiceLine(null, a[0], a.slice(1).join(' ')); if (!line.startsWith('&')) await r; return; }
+      case 'cut': { hideBox(); const f = CUTS[a[0]]; if (!f) console.warn('[flowery] missing cut ' + a[0]); if (f && !FW.test) await f(S, a.slice(1), FW); return; }
+      case 'battle': { hideBox(); const f = BATTLES[a[0]]; if (!f) console.warn('[flowery] missing battle ' + a[0]); if (FW.test) return; if (f) { const r = await f(S, a.slice(1), FW); vars.battle = r; if (r === 'quit') return 'abort'; } return; }
+      case 'voice': { if (FW.test) { if (P().voice && !P().voice[a[0]]) console.warn('[flowery] missing voice ' + a[0]); return; } const r = voiceLine(null, a[0], a.slice(1).join(' ')); if (!line.startsWith('&')) await r; return; }
       case 'end': return 'stop';
       default: console.warn('[flowery] unknown command', line);
     }
@@ -732,7 +746,7 @@ const FW = (() => {
   }
   async function play(script, opt = {}) {
     program = parse(script);
-    S.locked = true;
+    S.locked = true; S.finished = false; S.roams = []; S.roaming = null;
     const r = await runBlock('main');
     return r;
   }
@@ -746,6 +760,6 @@ const FW = (() => {
     const fb = FALLBACK[key] || key;
     if (MUSIC_TRACKS[fb]) Music.play(fb); else if (typeof stTrack === 'function' && MUSIC_TRACKS[stTrack(fb)]) Music.play(stTrack(fb));
   }
-  return { open, close, play, say, voiceLine, sting, choice, card, CUTS, BATTLES, CAST, ROOMS, PROP, TX, tileFill, sunsetSky, music, blip, sfx, walkTo, act, get S() { return S; }, VW, VH, toonImg, hideBox, runBlock };
+  return { test: false, testChoice: 0, testLog: null, open, close, play, say, voiceLine, sting, choice, card, CUTS, BATTLES, CAST, ROOMS, PROP, TX, tileFill, sunsetSky, music, blip, sfx, walkTo, act, get S() { return S; }, VW, VH, toonImg, hideBox, runBlock };
 })();
 window.FW = FW;

@@ -69,3 +69,32 @@ Story event: slow-burn visual novel (Looey, Wheatley, a rebuilt GLaDOS 300 floor
 - Stay inside `dandys heroes`; never delete outside it. Zip tools skip hidden folders (.git), so never "zip then delete".
 - Say plainly what was and was not tested. Audio was never verified by ear; the test browser throttles timers so battles do not finish.
 - Windows tips: write patch scripts with the Write tool, then `node patch.js` (bash heredocs mangle quotes). Edit needs a fresh Read.
+
+## Flower Kingdom (Deltarune Chapter 5 crossover; js/flowery-*.js, css/flowery.css, assets/flowery/flowery.bin)
+Story event set the night after Main Story Chapter 3: Scraps, Ginger and Yatta go through a door in the vents into Deltarune's
+Flower Kingdom, meet Flowery (who was expecting Kris), the seven flowers, Asgore and Ralsei (freed from Flowery's cupboard), and
+fight Flowery on the roof. Ten segments (FL_STORY), Deltarune-style overworld, cutscenes, three battles. Card on the Events tab.
+- **One pack.** `tools/flowery/build-pack.py <drspritearchive> --music <Ch5 OST folder> --voice <Flowery clips rip> --sfx <common sfx rip>`
+  writes assets/flowery/flowery.bin (~14 MB): only the sprites listed in MANIFEST (atlas sheets; tilesets kept untrimmed),
+  13 OST tracks (MUSIC_WANTED), 53 Flowery voice clips (VOICE_WANTED, English only) and 67 common Deltarune sounds (SFX_WANTED),
+  all re-encoded to Ogg. The five hand-supplied Flowery poses live in tools/flowery/extra (already 1x). The bin loads only when
+  the event menu opens (progress shown). Missing music falls back to the game's tracks (FALLBACK in flowery-world.js).
+- **Files.** flowery-pack.js (reads the bin, FlPack.draw/blit/url, Web Audio sounds), flowery-world.js (FW: rooms painted from
+  tileset rectangles TX + props PROP, walking party with followers, textbox/portraits/text blips, script runner; the command list
+  is the comment above `parse`), flowery-cuts.js (FW.CUTS: door, fall, castle, ichorRise, flowersCall, powerUp, omegaChase,
+  thatDay, doorHome, credits), flowery-battle.js (FW.BATTLES: floradinn, ichor, flowery), flowery-story.js + flowery-story2.js
+  (the script), flowery-event.js (menu, card, play loop, save in Raid.state().flowery: seg, done, cur, losses, beaten).
+- **Script rules.** `@end` ends the current block (an NPC talk); `@finish` ends the whole segment (use it in the block that
+  leaves the segment from a walk-around `@roam`). `@call` follows `@goto`s. " | " is a line break in one textbox.
+- **Toons are not pixel art on purpose**: their normal cutouts are drawn small; the story comments on it. No fabricated sprites.
+- **Inked enemies** (Inked Floradinn/Kawkaw/Mantis/Bloxer/Conductor + Ichor Drop/Ball art) exist only inside this event and are
+  never called Weaklings in game text.
+- **Boss.** Opens as a fake auto battle; Flowery breaks the AUTO button and it becomes turn-based (FIGHT bars, SKILL with TP,
+  ITEM, DEFEND; Ralsei is an AI guest; every enemy hit can be Braced with Z, a perfect Brace on a charge or Jarona counters).
+  Phases: 100-65% solo moves, 65-30% the duos (Seth & Aqua, Orange & Green with the "Just kidding" fake-out and the recipe heal,
+  Yellow & Blue), then Omega Flowery (HIGH/LOW with arrows or tapping the top/bottom half). Losing restarts the phase; after six
+  losses damage taken drops and TP gain rises (Raid.state().flowery.losses). Debug hook: `window.__flDbg` (G, fl, P0, B).
+- **Testing.** Serve the repo (`python3 -m http.server`) and open tools/flowery/preview.html (`?room=cliffs`, `?cut=omegaChase`,
+  `?battle=flowery`) or tools/flowery/smoke.html (runs all ten segments in FW.test mode: instant text, every NPC and trigger,
+  warns about unknown frames/voices; `?choice=1` takes the other branches). A new save has Events locked: use Settings → Full
+  test save. Audio was not verified by ear; the boss was played by a bot (all phases, a loss, the win), not by a person.

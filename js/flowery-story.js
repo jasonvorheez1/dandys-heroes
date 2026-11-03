@@ -104,7 +104,6 @@ Yatta: I LOOK AMAZING!!!
 @party on
 @lead 130 170 right
 * (You can walk now. Look around. The way forward is east.)
-@npc Sign signA
 @sign 120 140 scare dw_scarecrow_not_enemy_sign_0
 @trigger 600 120 40 90 toGarden
 @roam Walk with the arrows · Z to talk
@@ -120,8 +119,27 @@ Ginger: ...They're watching us.
 Scraps: Flowers do that. They watch the sun.
 Ginger: It's not sunny, Scraps.
 Scraps: ...I really wish you hadn't said that. Somebody said that to Veronica once and it went bad.
+@sign 250 176 lockerKnock dw_ralseicupboard_0
 @trigger 380 120 60 160 meet
 @roam
+# lockerKnock
+@if metLocker lockerAgain
+@sfx knock 0.6
+* It's a cupboard. Somebody has planted it in the middle of the garden, like a tree.
+@wait 0.4
+@sfx knock 0.6
+* ...Something inside knocks back. Politely.
+Yatta!: HELLO?!
+Locker: H-hello?! Oh, thank goodness! Could you possibly— | the handle's on your side—
+* You try the handle. It's locked. There's a little golden flower painted over the keyhole.
+Ginger: It's locked. We'll... we'll find somebody. We'll come back. I promise.
+Locker: ...Okay. I'll, um. I'll be here. Obviously.
+@flag metLocker
+@end
+# lockerAgain
+@sfx knock 0.4
+Locker: Still here! Don't worry about me! I'm very comfortable! | ...I'm not, actually. But don't worry about me!
+@end
 # meet
 @party off
 @spawn Floradinn 470 200 left
@@ -143,39 +161,25 @@ Floradinn: Too late! The king must have a PERFECT day! There can be no stray any
 Floradinn: En garde, smooth ones!
 Scraps.!: Hsssss!
 @battle floradinn
+@remove Floradinn
+@remove Floradinn2
 @party off
-@spawn Floradinn 470 200 left
-@spawn Floradinn2 500 222 left
-@frame Floradinn enemy_floradin_up_0
-@frame Floradinn2 enemy_floradin_up_1
 @lead 360 206 right
 @walk Ginger 340 196 0.01
 @walk Yatta 336 218 0.01
 @frame Scraps off
-* The fight is over. It did not go well. Nobody can stand up yet.
+@spawn Flowery 420 196 left
+@frame Flowery flowery_pose_point_cooler_0
+@music flFlowery
+* The Floradinns are somewhere far below the cliff now. Their swords are still up here.
 Yatta: ...ow. | ow ow ow. Ow.
 Scraps: Why didn't it HURT them. I hit it. I hit it SO hard.
 Ginger: You did. It said "one."
-Scraps: It said one?!
-@sfx swing_light 0.5
-@spawn Flowery 420 60 down
-@frame Flowery flowery_spin_to_idle_0
-@slide Flowery 420 170 0.45
-@anim Flowery flowery_spin_to_idle_ 8 14 once
-@shake 4
-@flash #ffe066
-@sfx flash 0.4
-@anim Flowery flowery_grabfloradins_ 17 14 once
-@remove Floradinn
-@remove Floradinn2
-@frame Flowery flowery_pose_point_cooler_0
-@music flFlowery
-@voice keep_waiting Sorry to keep you waiting!
 Flowery.grin: ...and THAT'S how you treat a Floradinn, princesses.
 @frame Flowery flowery_idle_0
 Flowery.smirk: You were hitting them like you were afraid to dent them. | They're SUNFLOWERS. They have stems. Show the stem who's boss.
 Scraps: ...Who are YOU?
-@anim Flowery flowery_teeth_shine_ 12 12 once
+@anim Flowery flowery_teethshine_ 6 12 once
 @sfx magiccircle 0.3
 @frame Flowery flowery_pose_0
 Flowery.cheer: Who am I? WHO AM I?! | Petals, did you hear that? They don't know.
@@ -214,6 +218,10 @@ Flowery.smirk: You're "Origami," you're "Confetti," and the three of you togethe
 Yatta: I'M CONFETTI!!!
 Scraps: I'm a paper craft. Origami is folding. I CUT.
 Flowery.grin: Then I'll be very careful around you, Origami.
+Ginger: Um... Flowery? There's somebody in that cupboard.
+Flowery.wide: That? | That's an art piece. It's called "Cupboard." It knocks. That's the art.
+Scraps: It said "thank goodness."
+Flowery.smile: Very interactive art piece. Ahead of its time. | Moving on!
 @frame Flowery off
 @face Flowery right
 Flowery.smile: Follow me! Stay close, stay cute, and if anything else with a sword shows up, scream my name. | Two syllables. Flow-ery. Very easy to scream.
@@ -229,7 +237,7 @@ Scraps: Yeah. | He looked at us like we were the wrong present.
 @roam
 # next
 @fade out 0.6
-@end
+@finish
 ` },
 
 /* ======================================================================= 3 */
@@ -394,7 +402,7 @@ Yatta: I HAVE A BEST FRIEND NOW!!! HER NAME IS SETH!!!
 @roam
 # next
 @fade out 0.6
-@end
+@finish
 ` },
 
 /* ======================================================================= 4 */
@@ -426,10 +434,18 @@ Orange.: ...okay that's pretty good.
 @npc Green greenTalk
 @npc Orange orangeTalk
 @npc Flowery flTalk
+@sign 22 176 cafeLocker dw_ralseicupboard_0
 @roam Talk to everyone
+# cafeLocker
+* It's the cupboard from the garden. Somebody has moved it here. Somebody has put a little doily on top.
+@sfx knock 0.5
+Locker: ...Is that the paper one? Hello again! I recognize your footsteps! They're very soft!
+Orange!: DON'T OPEN THAT!! BIG BROTHER SAYS IT'S A "SURPRISE FOR LATER"!!
+Orange.: ...he's been saying that for two days.
+@end
 # greenTalk
-* Green nods at you. Green points at the oven. Green points at Ginger. Green tilts their head.
 @if baked greenAfter
+* Green nods at you. Green points at the oven. Green points at Ginger. Green tilts their head.
 Ginger: ...Me? | Oh, no, I'm... my cookies are...
 Ginger: Goob said they don't taste like Cosmo's. He was being nice about it. That's how I know they're really bad.
 * Green walks to the counter. Green takes down a second apron. Green holds it out.
@@ -506,7 +522,7 @@ Flowery.smile: He doesn't know it yet. But he does.
 @roam
 # next
 @fade out 0.6
-@end
+@finish
 ` },
 
 /* ======================================================================= 5 */
@@ -535,7 +551,7 @@ Scraps: It's a castle, not a town.
 Yellow: Not in my castle-town.
 @spawn Blue 180 150 down
 @walk Blue 200 186 0.8
-@anim Blue blue_spin_ 24 20 once
+@anim Blue enemy_blue_spintopose_ 4 10 once
 @frame Blue blue_poses_0
 Blue: Oh, Yellow. You found the culprits. | How very... dramatic of you.
 Blue: Three strangers. Shiny. Out of place. Standing right next to my poor, crushed bed. | I could just cry.
@@ -635,6 +651,6 @@ Yellow: Ma'am. Sir. Small loud ma'am. | If you ever need justice, just holler. I
 @end
 # next
 @fade out 0.6
-@end
+@finish
 ` }
 ];

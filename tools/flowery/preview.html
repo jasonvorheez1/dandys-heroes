@@ -12,11 +12,14 @@ const ItemSheet={icon:n=>'../../icons/sprites/'+n+'.png'};
 <script src="../../js/flowery-cuts.js" onerror="0"></script>
 <script src="../../js/flowery-battle.js" onerror="0"></script>
 <script src="../../js/flowery-story.js" onerror="0"></script>
+<script src="../../js/flowery-story2.js" onerror="0"></script>
 <script>
 const q=new URLSearchParams(location.search);
 FlPack.load().then(()=>{
   FW.open(document.getElementById('root'),{});
   if(q.get('seg')!=null && window.FL_STORY){ FW.play(FL_STORY[+q.get('seg')].script); return; }
+  if(q.get('battle')){ FW.play(`@party Scraps,Ginger,Yatta\n@room roof\n@battle ${q.get('battle')}\n@roam`); return; }
+  if(q.get('cut')){ FW.play(`@party Scraps,Ginger,Yatta\n@room ${q.get('room')||'cliffs'}\n@cut ${q.get('cut')}\n@roam`); return; }
   const room=q.get('room')||'cliffs';
   FW.play(`@party Scraps,Ginger,Yatta\n@room ${room}\n@spawn Flowery ${q.get('fx')||200} ${q.get('fy')||170} left\n@roam`);
 });

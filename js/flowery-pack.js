@@ -5,14 +5,22 @@
 
 (() => {
   const URL_BIN = (typeof ASSET !== 'undefined' ? ASSET : './') + 'assets/flowery/flowery.bin';
-  const P = { frames: {}, sheets: [], music: {}, voice: {}, sfx: {}, raw: {}, buf: {}, ok: false, tints: {} };
+  const P = { frames: {}, sheets: [], music: {}, voice: {}, sfx: {}, raw: {}, buf: {}, ok: false, tints: {}, progress: 0 };
   let readyResolve;
   P.ready = new Promise(r => { readyResolve = r; });
   let started = false;
   P.load = () => {
     if (started) return P.ready;
     started = true;
-    fetch(URL_BIN).then(r => { if (!r.ok) throw new Error('flowery.bin ' + r.status); return r.arrayBuffer(); }).then(buf => {
+    fetch(URL_BIN).then(async r => {
+      if (!r.ok) throw new Error('flowery.bin ' + r.status);
+      const total = +r.headers.get('content-length') || 0;
+      if (!r.body || !total || !r.body.getReader) return r.arrayBuffer();
+      // stream it so the event menu can show progress (the bin is ~14 MB)
+      const reader = r.body.getReader(), out = new Uint8Array(total); let got = 0;
+      for (;;) { const { done, value } = await reader.read(); if (done) break; out.set(value, got); got += value.length; P.progress = got / total; if (P.onProgress) P.onProgress(P.progress); }
+      return out.buffer;
+    }).then(buf => {
       const u8 = new Uint8Array(buf);
       const magic = String.fromCharCode(...u8.slice(0, 8));
       if (magic !== 'DHFLWR01') throw new Error('bad pack');
@@ -100,8 +108,11 @@
     AC.decodeAudioData(raw.slice(0)).then(b => { P.buf[id] = b; }).catch(() => {});
     return null;
   };
-  P.warm = () => { Object.keys(P.raw).forEach(id => { if (id.startsWith('sfx:') || /voice:noise/.test(id)) P.decode(id); }); };
+  let gestured = false;
+  ['pointerdown', 'keydown'].forEach(ev => window.addEventListener(ev, () => { if (!gestured) { gestured = true; if (P.ok) P.warm(); } }, { capture: true }));
+  P.warm = () => { if (!gestured) return; Object.keys(P.raw).forEach(id => { if (id.startsWith('sfx:') || /voice:noise/.test(id)) P.decode(id); }); };
   P.play = (id, vol = .6, rate = 1) => {
+    if (!gestured) return false;
     const b = P.decode(id) || P.buf[id];
     if (!b || !AC) return false;
     try {

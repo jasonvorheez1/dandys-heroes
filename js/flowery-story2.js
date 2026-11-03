@@ -197,6 +197,52 @@ Flowery.plain: Mm.
 Flowery.side: Get some sleep, princess. Tomorrow I'll show you the bath. It's got a very good view.
 Scraps: I don't do baths.
 Flowery.grin: You will.
+@walk Flowery 330 176 1.4
+@remove Flowery
+@spawn Locker 270 196 down
+@frame Locker dw_ralseicupboard_0
+@ghost Locker
+@wait 0.8
+@sfx knock 0.5
+* Knock, knock. | The cupboard is in the foyer now. Somebody has been carrying it around all day.
+@face Scraps right
+Scraps: ...You again.
+Locker: Hello again! I'm so sorry. I don't want to be a bother. | It's only that I've been in here since the day before yesterday, and I think my legs have forgotten they're legs.
+Scraps: Flowery put you in there.
+Locker: ...He did. He was very polite about it.
+@walk Scraps 248 200 0.6
+@face Scraps right
+@choice Cut the lock|Cut the lock, but dramatically
+@if choice=2 dramatic
+@goto cut
+# dramatic
+@spin Scraps 14
+@jump Scraps 220
+@wait 0.4
+@spin Scraps 0
+Scraps: Hsssss— SNIP.
+@goto cut
+# cut
+@sfx scissorbell 0.8
+@anim Locker dw_ralseicupboard_ 6 12 once
+@sfx locker 0.7
+@spawn Ralsei 272 214 down
+@shake 2
+@frame Ralsei ralsei_walk_down_sad_0
+* A fluffy white goat boy tumbles out of the cupboard, face-first, and lies on the floor for a moment.
+Ralsei.tired: ...Floor. | Hello, floor.
+@idle Ralsei
+@face Ralsei left
+Ralsei.happy: Oh! Oh, thank you! Thank you so much!
+Ralsei.smile: I'm Ralsei. I'm, um, a prince. Of darkness. It's much less scary than it sounds.
+Scraps: I'm Scraps. I'm a paper cat. I'm exactly as scary as I sound.
+Ralsei.nervous: Ha! Ha ha. | ...You're not from here, are you? You're not even from Kris's town. You look... drawn differently.
+Scraps: Everybody keeps saying that.
+Ralsei.serious: My friends, Kris and Susie, came here to close this world's fountain. The king sent them away. | Flowery put me in there so the king wouldn't see me. He says I remind the king of somebody.
+Ralsei.worry: If you came in through the back door... then that door's been open this whole time. That's... not good. | Things that aren't supposed to cross can cross.
+Ralsei.determined: I'll help you get home. I know a little about doors. | Prince's honor.
+Ralsei.nervous: But, um. Please don't tell Flowery I'm out yet. He'll just find a bigger cupboard.
+Scraps: ...Deal.
 @fade out 1
 @end
 ` },
@@ -265,6 +311,8 @@ Pink: Don't tell Flowery I said I was nobody, okay? He gets SO mad. | He says no
 @roam
 # pinkTalk
 Pink: Eighth Club meetings are whenever. Bring snacks. Bring yourself. Mostly bring yourself.
+Pink: Oh, and tell the goat boy behind the bush he can come out. I can see his ears.
+* Behind the bush: a very small, very guilty "eep."
 @end
 # balcony
 @fade out 0.8
@@ -332,7 +380,7 @@ Ginger!: (from below) SCRAPS!! FLOWERY!! THE WATER— | THE WATER'S GONE BLACK!
 @fx glitch 0.6
 @flash #000
 @fade out 0.6 #000
-@end
+@finish
 ` },
 
 /* ======================================================================= 8 */
@@ -371,6 +419,15 @@ Flowery.calm: That's made of yours.
 Flowery.calm: It followed you. | Through the back door.
 Scraps: ...We didn't know.
 Flowery.calm: I know you didn't. That's almost worse.
+@spawn Ralsei 200 300 up
+@walk Ralsei 270 254 0.8 run
+Ralsei.worry: Everyone! Are you all right?!
+@face Flowery left
+Flowery.squint: ...Raly. | Who let you out?
+Scraps: Me.
+Flowery.smirk: Of course. Cats and cupboards. I should've seen that coming.
+Ralsei.serious: Flowery, please listen. That door isn't a fountain door. Fountains make Dark Worlds. | This is something else. A door somebody DREW, between two places that were never supposed to touch.
+Ralsei.serious: While it stays open, their world's darkness leaks into yours. It won't stop by itself. It'll just... keep coming.
 @party off
 @spawn Seth 120 200 right
 @spawn Aqua 100 220 right
@@ -396,16 +453,20 @@ Flowery.serious: How long until it reaches the king's room?
 Seth: ...An hour. Maybe less.
 Scraps: Then we have to go.
 Flowery.wide: What?
-Scraps: It came through the door because the door's open. Because WE opened it. | If we go back through and close it from our side, it stops. Right? It's not a door for ichor if nobody's holding it.
-Ginger: Our side has... people who can help. Rodger knows about doors. Tisha knows about ichor. Dandy...
+Scraps: It came through the door because the door's open. Because WE opened it.
+Ralsei.determined: If they walk back through, I can seal it behind them. From this side. Then it's closed for good. Nothing gets through, either way.
+Ginger: Our side has people who can help, too. Rodger knows about doors. Tisha knows about ichor.
 Scraps: We'll close it. We'll make sure it stays closed.
-Flowery.calm: ...From your side.
+Flowery.calm: ...And you'll be on the other side of it.
 Scraps: Yeah.
 Flowery.calm: And you'll be on your side.
 Scraps: ...Yeah.
 * Very slowly, the golden flower starts to laugh. It isn't the bright laugh.
 Flowery.dark: Of course. Of COURSE.
 Flowery.dark: Everybody leaves him. His wife. His son. His other kid, the one with the curtain hair, with their fountains and their secrets. | And now three cartoons who made him laugh ONCE.
+Flowery.calm: And Raly closes the door. Again. | Funny. You never seem to close KRIS'S doors, little guy. Only other people's.
+Ralsei.angry: That's... that's not fair!
+Flowery.calm: No. It's true, though.
 Flowery.snarl: You were supposed to be different! You were supposed to be KEPT, like us! You know what it's like!
 Ginger: We DO know! That's why we have to go! | Somebody kept us too. They're waiting.
 Flowery.hair2: ...
@@ -441,6 +502,7 @@ Ginger: ...I know.
 @remove Orange
 @remove Blue
 @remove Yellow
+@party Scraps,Ginger,Yatta,Ralsei
 @party on
 @lead 320 260 up
 @music stop
@@ -449,16 +511,17 @@ Scraps: Me neither.
 Ginger: ...Then we don't fight him. We just get past him. And we tell him the truth until he hears it.
 Scraps: That's a fight, Ginger.
 Ginger: ...Yeah. I know.
+Ralsei.sad: He's not wrong about me. About the doors. | ...But he's not right about you. I'll be right beside you. All the way home.
 @trigger 290 140 60 30 next
 @roam
 # next
 @fade out 1
-@end
+@finish
 ` },
 
 /* ======================================================================= 9 */
 { id: 'flowery', title: 'Thank You For Watching', sub: 'SEGMENT 9', place: 'The Top of the Castle', script: String.raw`
-@party Scraps,Ginger,Yatta
+@party Scraps,Ginger,Yatta,Ralsei
 @room roof 160 222 up
 @spawn Flowery 160 172 down
 @frame Flowery flowery_idle3_0
@@ -468,7 +531,9 @@ Ginger: ...Yeah. I know.
 * The top of the castle. The sunset that never ends is ending.
 Flowery.calm: You came.
 Scraps: We said we would.
-Flowery.calm: People say a lot of things.
+Flowery.calm: People say a lot of things. | ...And you brought Raly. How thoughtful. Did you bring him a hat? He looks cold without a hat.
+Ralsei.pout: I'm not cold.
+Flowery.smile: You're a little cold.
 @frame Flowery flowery_lookdown_upleft_0
 Flowery.serious: Listen. Just for a minute. Then you can hit me as much as you want.
 Flowery.serious: In the whole world, there were seven of us. One golden. One green. One orange, one aqua, one purple, one blue, one yellow.
@@ -496,7 +561,9 @@ Flowery.yell: LEND ME YOUR POWER!!
 @lead 110 210 right
 @walk Ginger 130 214 0.01
 @walk Yatta 190 214 0.01
+@walk Ralsei 90 214 0.01
 @face Yatta left
+@face Ralsei right
 @fade in 1
 * He's on his knees. His cape is torn. There are petals everywhere, and some of them are his.
 Flowery.hair4: ...Get up.
@@ -513,7 +580,7 @@ Asgore: ...That's enough, my friend.
 
 /* ======================================================================= 10 */
 { id: 'feather', title: 'Petal Feather', sub: 'SEGMENT 10', place: 'Home', script: String.raw`
-@party Scraps,Ginger,Yatta
+@party Scraps,Ginger,Yatta,Ralsei
 @room roof 160 222 up
 @party off
 @spawn Flowery 160 184 down
@@ -521,10 +588,12 @@ Asgore: ...That's enough, my friend.
 @lead 110 210 right
 @walk Ginger 130 214 0.01
 @walk Yatta 190 214 0.01
+@walk Ralsei 90 214 0.01
+@face Ralsei right
 @spawn Asgore 160 110 down
 @walk Asgore 160 150 1.6
 * The king climbs up onto the roof. He's still wearing the paper crown. It has a tear in one of the flowers now.
-@frame Flowery flowery_turn_shocked_mono_0
+@frame Flowery flowery_turn_shocked_more_0
 Flowery.wide: G-Gorey— | You shouldn't be up here, the ichor— it's not safe—
 Asgore: I know. | I saw it. From the window. And I saw these three run straight into it to keep it away from my room.
 @frame Asgore asgore_kneel_0
@@ -540,6 +609,8 @@ Asgore: Flowery. | I'd like to tell you something. And I need you to let me fini
 @lead 110 210 right
 @walk Ginger 130 214 0.01
 @walk Yatta 190 214 0.01
+@walk Ralsei 90 214 0.01
+@face Ralsei right
 @fade in 1
 Asgore: I knew the garden wasn't real. I knew the sunset didn't end. I knew you hid things from me. | I played along.
 Flowery.tear: ...You KNEW?
@@ -557,6 +628,11 @@ Flowery.sigh: ...You'd better use the good fertilizer.
 Asgore: Only the best.
 @walk Flowery 150 196 1
 @face Flowery left
+Flowery.calm: ...Raly.
+Ralsei.nervous: Y-yes?
+Flowery.calm: Take them home. Properly. All the way to their door. | If anything so much as SNIFFS at them on the way, I'm holding you personally responsible.
+Ralsei.determined: ...I will. I promise.
+Flowery.smirk: And put a hat on. You look cold.
 Flowery.calm: ...Origami. Cupcake. Confetti.
 Flowery.soft: Close your door. Close it tight. | And when you get home, give that little brother of yours a hat, Scraps. A good one.
 Scraps: ...I will.
@@ -575,6 +651,8 @@ Yatta!: IT COUNTS FOREVER!!!
 @lead 380 214 right
 @walk Ginger 360 220 0.01
 @walk Yatta 340 214 0.01
+@walk Ralsei 320 220 0.01
+@face Ralsei right
 @spawn Seth 470 186 left
 @spawn Aqua 495 200 left
 @spawn Green 520 190 left
@@ -608,6 +686,15 @@ Flowery.calm: Well, princesses. | Thank you for watching my dream.
 Scraps: ...It was a good show.
 Flowery.smile: Of course it was. I was in it.
 @voice goodbye Goodbye!
+@party off
+@spawn Locker 300 200 down
+@frame Locker dw_ralseicupboard_0
+@ghost Locker
+@walk Ralsei 300 214 0.8
+@face Ralsei left
+* Ralsei stands by the cupboard. Behind its doors, where the back of a cupboard should be, there's a long dark hallway. At the end of it, very small, there's a vent grate.
+Ralsei.smile: The back door. Flowery kept it in the cupboard, with me. | I suppose he thought nobody would look in there twice.
+Ralsei.determined: Follow me. Stay close. Don't look at the walls too long, they look back.
 @sfx magiccircle 0.5
 @flash
 @cut doorHome
@@ -618,6 +705,28 @@ Flowery.smile: Of course it was. I was in it.
 @fade in 1.5
 @music flHome
 @card JULY 11, 2002|6:02 AM
+@party off
+@spawn Ralsei 160 156 down
+@walk Scraps 140 190 0.01
+@walk Ginger 170 196 0.01
+@walk Yatta 196 190 0.01
+@face Scraps up
+@face Ginger up
+@face Yatta up
+* The vent grate is open. A fluffy white prince is crouched just inside it, careful not to put even one foot into the lobby.
+Ralsei.smile: This is where I stop. If I come any further, the door can't close.
+Ralsei.calm: Scraps. You drew it open. | I think you're the one who can draw it closed.
+Scraps: ...How?
+Ralsei.smile: The same way you drew it in the first place. Without thinking too hard. Just... mean it.
+@sfx scissorbell 0.6
+* Scraps takes out her pen. On the inside of the grate, where the little flower is, she draws one neat line. Like closing a book.
+Ralsei.happy: There. | Goodbye, Scraps. Goodbye, Ginger. Goodbye, Yatta.
+Ralsei.content: Please tell your friends... somebody in another world is rooting for them. A whole kingdom of somebodies.
+Yatta!: BYE RALSEI!!! YOU'RE THE BEST CUPBOARD WE EVER OPENED!!!
+Ralsei.blush: ...That's the nicest thing anyone's said to me all week.
+@sfx doorclose 0.6
+@remove Ralsei
+* The grate clicks shut. Behind it there's nothing but a vent, and a candy stash that is NOT a candy stash.
 * The vents are quiet. There's a little door back there, behind a candy stash that is NOT a candy stash. It's closed. It's very, very closed.
 @party off
 @walk Yatta 120 196 0.6

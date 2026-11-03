@@ -129,6 +129,13 @@ const ItemSheet = (() => {
     "js/chell-visuals.js",
     "js/aperture-fight.js",
     "js/aperture.js",
+    "js/flowery-pack.js",
+    "js/flowery-world.js",
+    "js/flowery-cuts.js",
+    "js/flowery-battle.js",
+    "js/flowery-story.js",
+    "js/flowery-story2.js",
+    "js/flowery-event.js",
     "js/skill-progression.js",
     "js/settings-hub.js"
   ];
