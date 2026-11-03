@@ -1,0 +1,127 @@
+/* flowery.css - "Flower Kingdom" event: the overworld screen, Deltarune-style textbox, title cards, the event menu and the battles. */
+.fk-root{position:fixed;inset:0;z-index:9000;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;user-select:none;-webkit-user-select:none;touch-action:none;
+  font-family:"Courier New",Courier,monospace;color:#fff}
+.fk-screen{position:relative;width:100%;height:100%;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.fk-cv{image-rendering:pixelated;image-rendering:crisp-edges;display:block}
+/* textbox: black, white double border, asterisk lines, a portrait on the left */
+.fk-box{position:absolute;left:50%;bottom:max(14px,3vh);transform:translateX(-50%);width:min(94vw,calc(var(--fk-w,640px) * .96),900px);min-height:clamp(96px,22vh,170px);
+  background:#000;border:4px solid #fff;box-shadow:0 0 0 3px #000,inset 0 0 0 3px #000;padding:clamp(10px,2vh,18px) clamp(12px,2.4vw,24px);display:flex;gap:clamp(10px,2vw,20px);align-items:flex-start;z-index:5}
+.fk-box[hidden]{display:none}
+.fk-box.shout{animation:fkShout .28s steps(4) 2}
+@keyframes fkShout{0%,100%{transform:translateX(-50%)}25%{transform:translate(calc(-50% - 4px),2px)}75%{transform:translate(calc(-50% + 4px),-2px)}}
+.fk-face{flex:0 0 auto;display:none}
+.fk-box.has-face .fk-face{display:block}
+.fk-face img{display:block;height:clamp(64px,15vh,124px);width:auto;image-rendering:pixelated}
+.fk-box.mini .fk-face img{height:clamp(30px,6vh,48px);margin-top:6px}
+.fk-box.toon .fk-face img{image-rendering:auto;height:clamp(70px,16vh,130px);border-radius:6px;background:radial-gradient(circle at 50% 60%,#2a2238,#000 70%)}
+.fk-text{flex:1;font-size:clamp(15px,2.6vh,26px);line-height:1.38;letter-spacing:.04em;font-weight:700;white-space:pre-wrap}
+.fk-text b{display:block;font-size:.72em;letter-spacing:.14em;margin-bottom:2px;text-transform:uppercase}
+.fk-text p{margin:0;display:flex;gap:.6em}
+.fk-text .ast{flex:0 0 auto}
+.fk-next{position:absolute;right:12px;bottom:8px;width:0;height:0;border-left:7px solid transparent;border-right:7px solid transparent;border-top:9px solid #fff;opacity:0}
+.fk-box.done .fk-next{opacity:1;animation:fkNext .6s steps(2) infinite}
+@keyframes fkNext{50%{transform:translateY(3px)}}
+.fk-choice{position:absolute;left:50%;bottom:calc(max(14px,3vh) + clamp(110px,24vh,190px));transform:translateX(-50%);display:flex;gap:28px;z-index:6;background:#000;border:3px solid #fff;padding:10px 22px}
+.fk-choice[hidden]{display:none}
+.fk-choice button{background:none;border:0;color:#fff;font:inherit;font-size:clamp(16px,2.6vh,24px);font-weight:700;cursor:pointer;display:flex;gap:.4em;align-items:center}
+.fk-choice button i{color:#f00;font-style:normal;visibility:hidden}
+.fk-choice button.on{color:#ff0}.fk-choice button.on i{visibility:visible}
+.fk-card{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:7;opacity:0;transition:opacity .5s}
+.fk-card.on{opacity:1}
+.fk-card div{text-align:center;background:rgba(0,0,0,.82);padding:24px 48px;border-top:3px solid #fff;border-bottom:3px solid #fff;width:100%}
+.fk-card small{display:block;letter-spacing:.4em;font-size:clamp(11px,1.8vh,15px);color:#ffd84a;margin-bottom:8px}
+.fk-card h2{margin:0;font-size:clamp(24px,5.2vh,46px);letter-spacing:.12em;text-transform:uppercase}
+.fk-hint{position:absolute;top:12px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,.7);border:2px solid #fff;padding:4px 12px;font-size:13px;opacity:0;transition:opacity .4s;pointer-events:none}
+.fk-hint.on{opacity:1}
+.fk-pad{position:absolute;left:14px;bottom:14px;display:none;grid-template-columns:repeat(3,46px);grid-template-rows:repeat(3,46px);z-index:8;opacity:.65}
+.fk-pad button{background:#111;border:2px solid #fff;color:#fff;border-radius:8px;font-size:16px;touch-action:none}
+.fk-pad [data-d=up]{grid-column:2;grid-row:1}.fk-pad [data-d=left]{grid-column:1;grid-row:2}.fk-pad [data-d=right]{grid-column:3;grid-row:2}.fk-pad [data-d=down]{grid-column:2;grid-row:3}
+.fk-a{position:absolute;right:18px;bottom:30px;width:62px;height:62px;border-radius:50%;background:#111;border:3px solid #fff;color:#fff;font:700 20px "Courier New",monospace;display:none;z-index:8;opacity:.75}
+.fk-quit{position:absolute;top:10px;right:10px;width:36px;height:36px;background:#000;border:2px solid #fff;color:#fff;font-size:16px;z-index:9;cursor:pointer;opacity:.6}
+.fk-quit:hover{opacity:1}
+@media (pointer:coarse){.fk-pad{display:grid}.fk-a{display:block}}
+
+/* ---------------- event menu */
+.fl-wrap{position:relative;min-height:100%;background:#120a14;color:#fff;font-family:"Courier New",monospace;padding-bottom:40px}
+.fl-hero{position:relative;height:clamp(220px,42vh,380px);overflow:hidden;border-bottom:4px solid #fff}
+.fl-hero canvas{width:100%;height:100%;display:block;image-rendering:pixelated}
+.fl-back{position:absolute;top:10px;left:10px;width:40px;height:40px;background:#000;border:3px solid #fff;color:#fff;font-size:24px;cursor:pointer;z-index:2}
+.fl-title{position:absolute;left:0;right:0;bottom:16px;text-align:center;text-shadow:0 3px 0 #000,0 0 16px #000}
+.fl-title small{letter-spacing:.5em;color:#ffd84a;font-size:12px}
+.fl-title h2{margin:4px 0 0;font-size:clamp(28px,6vh,52px);letter-spacing:.14em;font-weight:900}
+.fl-title p{margin:2px 0 0;font-size:14px;letter-spacing:.2em;color:#ffcce0}
+.fl-grid{display:grid;gap:14px;padding:16px;max-width:980px;margin:0 auto}
+@media (min-width:760px){.fl-grid{grid-template-columns:1.4fr 1fr}}
+.fl-panel{background:#000;border:3px solid #fff;padding:14px}
+.fl-panel h3{margin:0 0 10px;font-size:15px;letter-spacing:.24em;color:#ffd84a}
+.fl-go{width:100%;padding:14px;background:#000;border:3px solid #ffd84a;color:#ffd84a;font:900 20px "Courier New",monospace;letter-spacing:.2em;cursor:pointer}
+.fl-go:hover{background:#ffd84a;color:#000}
+.fl-chapters{display:grid;gap:6px;margin-top:12px}
+.fl-ch{display:flex;align-items:center;gap:10px;width:100%;text-align:left;background:#0d0d0d;border:2px solid #555;color:#fff;font:700 14px "Courier New",monospace;padding:8px 10px;cursor:pointer}
+.fl-ch b{color:#ffd84a;min-width:2.4em}
+.fl-ch.lock{opacity:.35;cursor:default}
+.fl-ch.cur{border-color:#ffd84a}
+.fl-ch:not(.lock):hover{border-color:#fff}
+.fl-cast{display:flex;flex-wrap:wrap;gap:8px}
+.fl-cast img{height:54px;image-rendering:pixelated}
+.fl-meta{font-size:13px;color:#bbb;margin:8px 0 0;line-height:1.5}
+.fl-event-card .eb-art img{image-rendering:pixelated}
+
+/* ---------------- battles (canvas + DOM menus) */
+.fb-root{position:absolute;inset:0;z-index:4}
+.fb-cv{position:absolute;inset:0;width:100%;height:100%;image-rendering:pixelated}
+.fb-ui{position:absolute;inset:0;pointer-events:none}
+.fb-ui>*{pointer-events:auto}
+.fb-menu{position:absolute;left:50%;bottom:8px;transform:translateX(-50%);width:min(96vw,900px);background:#000;border-top:3px solid #fff;display:grid;grid-template-columns:repeat(3,1fr);gap:0}
+.fb-pc{border-right:2px solid #333;padding:6px 8px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.fb-pc:last-child{border-right:0}
+.fb-pc.turn{background:linear-gradient(#20120a,#000);box-shadow:inset 0 3px 0 var(--c)}
+.fb-pc.ko{opacity:.45}
+.fb-pc header{display:flex;align-items:center;gap:6px;font:700 13px "Courier New",monospace}
+.fb-pc header img{height:26px;width:26px;object-fit:contain;border-radius:4px}
+.fb-pc header span{color:var(--c)}
+.fb-hp{height:8px;background:#400;position:relative}
+.fb-hp i{position:absolute;inset:0 auto 0 0;background:var(--c)}
+.fb-hpn{font:700 12px "Courier New",monospace;color:#fff;display:flex;justify-content:space-between}
+.fb-btns{display:flex;gap:4px;flex-wrap:wrap}
+.fb-btns button{flex:1 1 0;min-width:40px;height:34px;background:#000;border:2px solid #ff8a00;color:#ff8a00;font:900 11px "Courier New",monospace;cursor:pointer;padding:0 2px;display:flex;align-items:center;justify-content:center;gap:3px}
+.fb-btns button img{height:22px;image-rendering:pixelated}
+.fb-btns button.on,.fb-btns button:hover{border-color:#ff0;color:#ff0;background:#201400}
+.fb-btns button:disabled{opacity:.3;cursor:default}
+.fb-sub{position:absolute;left:50%;bottom:120px;transform:translateX(-50%);width:min(94vw,700px);background:#000;border:3px solid #fff;padding:8px 10px;display:grid;grid-template-columns:1fr 1fr;gap:4px 14px;max-height:40vh;overflow:auto}
+.fb-sub button{background:none;border:0;color:#fff;font:700 14px "Courier New",monospace;text-align:left;cursor:pointer;padding:4px 2px;display:flex;justify-content:space-between;gap:10px}
+.fb-sub button em{color:#ff8a00;font-style:normal}
+.fb-sub button:hover,.fb-sub button.on{color:#ff0}
+.fb-sub button:disabled{opacity:.35}
+.fb-sub .fb-desc{grid-column:1/-1;color:#aaa;font-size:12px;border-top:1px solid #333;padding-top:6px;min-height:2.6em}
+.fb-tp{position:absolute;left:10px;top:50%;transform:translateY(-50%);width:26px;height:200px;background:#2a0f00;border:2px solid #fff}
+.fb-tp i{position:absolute;left:0;right:0;bottom:0;background:linear-gradient(#ffa040,#ff6a00)}
+.fb-tp b{position:absolute;top:-22px;left:-4px;font:900 13px "Courier New",monospace;color:#ff8a00}
+.fb-tp em{position:absolute;bottom:-22px;left:-6px;font:900 13px "Courier New",monospace;font-style:normal}
+.fb-log{position:absolute;left:50%;top:12px;transform:translateX(-50%);background:#000;border:2px solid #fff;padding:6px 14px;font:700 14px "Courier New",monospace;max-width:90vw;text-align:center}
+.fb-log:empty{display:none}
+.fb-press{position:absolute;left:50%;bottom:150px;transform:translateX(-50%);font:900 18px "Courier New",monospace;color:#ff0;text-shadow:0 2px 0 #000;letter-spacing:.2em;pointer-events:none}
+/* the fake autobattler HUD the boss tears up */
+.fb-auto{position:absolute;top:8px;right:8px;display:flex;gap:6px}
+.fb-auto button{width:52px;height:40px;border-radius:10px;background:linear-gradient(#ffe36a,#f2a91c);border:3px solid #3b2200;font:900 13px Arial Black,Arial,sans-serif;color:#3b2200;box-shadow:0 3px 0 #3b2200}
+.fb-auto button.gone{visibility:hidden}
+.fb-autobar{position:absolute;left:8px;top:8px;background:rgba(0,0,0,.55);border-radius:12px;padding:6px 12px;font:900 13px Arial Black,Arial,sans-serif;color:#fff}
+.fb-dock{position:absolute;left:50%;bottom:8px;transform:translateX(-50%);display:flex;gap:8px}
+.fb-dock div{width:86px;background:rgba(0,0,0,.6);border:2px solid #fff3;border-radius:12px;padding:5px;display:flex;flex-direction:column;align-items:center;gap:3px;font:900 11px Arial Black,Arial,sans-serif}
+.fb-dock img{height:44px}
+.fb-dock i{display:block;height:6px;width:100%;background:#333;border-radius:3px;position:relative;overflow:hidden}
+.fb-dock i u{position:absolute;inset:0 auto 0 0;background:#56e05a}
+.fb-dock i.en u{background:#4fc3ff}
+.fb-retry{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;background:rgba(0,0,0,.85);font:900 18px "Courier New",monospace;text-align:center;padding:20px}
+.fb-retry button{background:#000;border:3px solid #fff;color:#fff;font:900 16px "Courier New",monospace;padding:10px 26px;cursor:pointer}
+.fb-retry button:hover{border-color:#ff0;color:#ff0}
+
+/* Flowery's voice lines: a rom-com title-card burst */
+.fk-vl{position:absolute;left:50%;top:22%;transform:translateX(-50%) rotate(-4deg);z-index:12;pointer-events:none;text-align:center;padding:10px 28px 14px;
+  background:radial-gradient(ellipse at center,rgba(255,236,120,.95),rgba(255,140,190,.9) 60%,rgba(255,140,190,0) 72%);animation:fkVl .35s cubic-bezier(.2,1.6,.4,1) both}
+.fk-vl small{display:block;font:900 11px "Courier New",monospace;letter-spacing:.4em;color:#7a2a00}
+.fk-vl b{display:block;font:italic 900 clamp(22px,5vh,44px) "Arial Black",Arial,sans-serif;color:#fff;letter-spacing:.02em;
+  text-shadow:3px 3px 0 #e0207a,-2px -2px 0 #ff9a00,0 0 18px #fff;-webkit-text-stroke:1px #7a2a00;white-space:nowrap}
+.fk-vl.out{animation:fkVlOut .26s ease-in both}
+@keyframes fkVl{from{transform:translateX(-50%) rotate(-14deg) scale(.2);opacity:0}to{transform:translateX(-50%) rotate(-4deg) scale(1);opacity:1}}
+@keyframes fkVlOut{to{transform:translateX(-50%) rotate(6deg) scale(1.4);opacity:0}}

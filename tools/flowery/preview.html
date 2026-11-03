@@ -1,0 +1,23 @@
+<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Flower Kingdom preview</title><link rel="stylesheet" href="../../css/flowery.css">
+<style>body{margin:0;background:#000}</style></head><body>
+<!-- Dev preview of the Flower Kingdom overworld without booting the whole game: ?room=cliffs  or  ?seg=3 -->
+<div id="root" class="fk-root"></div>
+<script>
+const ASSET='../../'; const Sound={on:true,vol:1,play(){}}; const Music={play(){},stop(){}}; const MUSIC_TRACKS={};
+const ItemSheet={icon:n=>'../../icons/sprites/'+n+'.png'};
+</script>
+<script src="../../js/flowery-pack.js"></script>
+<script src="../../js/flowery-world.js"></script>
+<script src="../../js/flowery-cuts.js" onerror="0"></script>
+<script src="../../js/flowery-battle.js" onerror="0"></script>
+<script src="../../js/flowery-story.js" onerror="0"></script>
+<script>
+const q=new URLSearchParams(location.search);
+FlPack.load().then(()=>{
+  FW.open(document.getElementById('root'),{});
+  if(q.get('seg')!=null && window.FL_STORY){ FW.play(FL_STORY[+q.get('seg')].script); return; }
+  const room=q.get('room')||'cliffs';
+  FW.play(`@party Scraps,Ginger,Yatta\n@room ${room}\n@spawn Flowery ${q.get('fx')||200} ${q.get('fy')||170} left\n@roam`);
+});
+</script></body></html>
