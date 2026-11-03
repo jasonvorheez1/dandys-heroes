@@ -139,7 +139,7 @@ const FW = (() => {
         tileFill(ctx, TX.cliffFace, 0, 206, 640, 60);
         ctx.fillStyle = 'rgba(70,20,40,.18)'; ctx.fillRect(0, 118, 640, 6);
       },
-      props: [['scarecrow', 120, 140], ['grass', 210, 128], ['grass', 330, 125], ['grass', 520, 130], ['savepoint', 300, 160], ['grassF', 160, 214], ['grassF', 430, 216]] },
+      props: [['scarecrow', 120, 140], ['grass', 210, 128], ['grass', 330, 125], ['grass', 520, 130], ['grassF', 160, 214], ['grassF', 430, 216]] },
     /* the Garden of Hopes and Dreams: glade, shrine, trees */
     garden: { w: 800, h: 300, bounds: [10, 120, 790, 280], spawn: [40, 210],
       sky(ctx, cam, t) { sunsetSky(ctx, cam, t, { cliffY: 120 }); },
@@ -207,8 +207,8 @@ const FW = (() => {
   };
   // props: [frame or animation, anchor, solid footprint]
   const PROP = {
-    scarecrow: { anim: ['dw_scarecrow_not_enemy_sign_', 9, 6], solid: [12, 6] }, grass: { n: 'dw_aquaplant_3_0' }, grassF: { n: 'dw_aquaplant_7_0', front: true },
-    savepoint: { anim: ['savepoint_', 6, 8], solid: [10, 6] }, tree: { n: 'darkfruit_tree_big_0', solid: [40, 12] }, shrine: { anim: ['dw_aquashrine_', 16, 6], solid: [50, 14] },
+    scarecrow: { n: 'dw_scarecrow_not_enemy_sign_0', solid: [12, 6] }, grass: { n: 'dw_aquaplant_3_0' }, grassF: { n: 'dw_aquaplant_7_0', front: true },
+    savepoint: { anim: ['savepoint_', 6, 8], solid: [10, 6] }, tree: { n: 'darkfruit_tree_big_0', solid: [40, 12] }, shrine: { parts: [2, 0, 3, 5, 6, 7, 8, 12, 1, 11, 14, 15, 9, 10, 13, 4].map(i => 'dw_aquashrine_' + i), solid: [50, 14] },
     plant: { n: 'dw_aquaplant_12_0' }, flowerA: { n: 'asgore_flower_0' }, bushF: { n: 'bigbush_0', front: true },
     hang: { anim: ['dw_moving_charm_cliff_', 6, 5] }, bell: { anim: ['dw_moving_bell_cliff_', 5, 5] }, shop: { n: 'dw_fox_statue_0', solid: [20, 8] },
     bigdoor: { n: 'fcastle_bigdoor_0', solid: [110, 10] }, lanternP: { anim: ['dw_moving_lantern_', 6, 5] }, lanternO: { anim: ['dw_moving_lantern_', 6, 5], solid: [12, 6] },
@@ -294,7 +294,7 @@ const FW = (() => {
         tryMove(lead, dx / len * sp, dy / len * sp);
         lead.dir = dy < 0 && Math.abs(dy) >= Math.abs(dx) ? 'up' : dy > 0 && Math.abs(dy) >= Math.abs(dx) ? 'down' : dx < 0 ? 'left' : 'right';
         lead.moving = true; lead.walkT += dt * (S.keys.run ? 1.6 : 1);
-        checkTriggers(lead);
+        checkTriggers(lead); checkSwitches(lead);
       } else lead.moving = false;
     }
     // caterpillar: followers walk the leader's path
@@ -359,6 +359,29 @@ const FW = (() => {
       if (inside && !tr.inside) { tr.inside = true; tr.fired = true; runBlock(tr.label); return; }
       if (!inside) tr.inside = false;
     }
+  }
+  function checkSwitches(a) {
+    const W = S.switches; if (!W || W.solved || W.busy) return;
+    let on = -1;
+    W.cols.forEach((c, i) => { if (Math.abs(a.x - (W.x + i * W.gap)) < 9 && Math.abs(a.y - W.y) < 7) on = i; });
+    if (on === W.last) return;
+    W.last = on; if (on < 0 || W.lit.includes(on)) return;
+    if (on === W.order[W.step]) {
+      W.lit.push(on); W.step++; sfx('select', { vol: .5 });
+      if (W.step === W.order.length) { W.solved = true; sfx('great_shine', { vol: .5 }); runBlock(W.done); }
+    } else {
+      W.lit = []; W.step = 0; W.fails++; sfx('cantselect', { vol: .5 }); S.fx.shake = 2;
+      if (W.fail && W.fails >= 2) { W.busy = true; runBlock(W.fail).then(() => { W.busy = false; }); }
+    }
+  }
+  function drawSwitches(ctx) {
+    const W = S.switches; if (!W || W.hide) return;
+    W.cols.forEach((c, i) => {
+      const x = W.x + i * W.gap, y = W.y, lit = W.solved || W.lit.includes(i);
+      ctx.fillStyle = 'rgba(0,0,0,.45)'; ctx.fillRect(x - 9, y - 4, 18, 10);
+      ctx.fillStyle = lit ? c : 'rgba(0,0,0,.35)'; ctx.fillRect(x - 8, y - 6 + (lit ? 1 : 0), 16, 9);
+      ctx.strokeStyle = c; ctx.lineWidth = 1; ctx.strokeRect(x - 7.5, y - 5.5 + (lit ? 1 : 0), 15, 8);
+    });
   }
   function interact() {
     const a = S.actors[S.party[0]]; if (!a) return;
@@ -428,8 +451,9 @@ const FW = (() => {
     if (R.sky) R.sky(ctx, S.cam, S.t);
     ctx.save(); ctx.translate(-Math.round(S.cam.x), -Math.round(S.cam.y));
     R.back && R.back(ctx, S.t);
+    drawSwitches(ctx);
     const list = [];
-    R._props.forEach(p => { if (!p.def.front) list.push({ y: p.y, draw: () => { const f = propFrame(p.def, S.t); if (f) P().draw(ctx, f, p.x, p.y); } }); });
+    R._props.forEach(p => { if (!p.def.front) list.push({ y: p.y, draw: () => { if (p.def.parts) { p.def.parts.forEach(n => P().draw(ctx, n, p.x, p.y)); return; } const f = propFrame(p.def, S.t); if (f) P().draw(ctx, f, p.x, p.y); } }); });
     ctx.restore();
     Object.values(S.actors).forEach(a => list.push({ y: a.y + (a.zBias || 0), draw: () => drawActor(ctx, a), actor: true }));
     list.sort((a, b) => a.y - b.y);
@@ -460,7 +484,7 @@ const FW = (() => {
   /* ------------------------------------------------------------ rooms in/out */
   function loadRoom(key, x, y, dir) {
     const R = ROOMS[key]; if (!R) throw new Error('no room ' + key);
-    S.room = R; S.roomKey = key; S.npcs = {}; S.triggers = []; S.trail = [];
+    S.room = R; S.roomKey = key; S.npcs = {}; S.triggers = []; S.trail = []; S.switches = null;
     R._props = (R.props || []).map(([k, px, py, solid]) => ({ def: PROP[k] || { n: k }, x: px, y: py, solid }));
     S.solids = R._props.filter(p => p.solid && p.def.solid).map(p => [p.x - p.def.solid[0] / 2, p.y - p.def.solid[1], p.x + p.def.solid[0] / 2, p.y + 2]);
     Object.keys(S.actors).forEach(id => { if (!S.party.includes(id)) delete S.actors[id]; });
@@ -475,12 +499,29 @@ const FW = (() => {
   function faceURL(p) { if (!p || !p.pix) return ''; return faceCache[p.pix] || (faceCache[p.pix] = P().url(p.pix, p.mini ? 3 : 2)); }
   async function testRoam() {
     const seen = S._seen || (S._seen = new Set());
+    if (S.switches && !S.switches.solved) { S.switches.solved = true; await runBlock(S.switches.done); if (S.finished) return; }
     for (const [id, label] of Object.entries(S.npcs)) { if (seen.has(label)) continue; seen.add(label); await runBlock(label); if (S.finished) return; }
     for (const p of S.room._props) { if (!p.label || seen.has(p.label)) continue; seen.add(p.label); await runBlock(p.label); if (S.finished) return; }
     for (const [id, label] of Object.entries(S.npcs)) { if (seen.has(label + '#2')) continue; seen.add(label + '#2'); await runBlock(label); if (S.finished) return; }
     for (let i = 0; i < S.triggers.length; i++) { const tr = S.triggers[i]; if (tr.fired) continue; tr.fired = true; await runBlock(tr.label); if (S.finished) return; i = -1; }
   }
+  /* Flowery opens a lot of his lines with one of his voice clips, like in Chapter 5: on the first line after somebody else
+     talks (and on any line that names one, Flowery.face[clip]:), picked by his expression. [none] keeps a line quiet. */
+  const FLOWERY_CLIPS = {
+    cheer: ['hey_guys', 'wow', 'thats_great', 'itsme'], beam: ['wow', 'thats_great', 'hah', 'yes'], grin: ['hah', 'yes', 'leaf_it'], laugh: ['hah'],
+    smile: ['hoo', 'hah', 'yes'], wink: ['hoo', 'hah'], smirk: ['hah', 'hoo'], look: ['huh'], wide: ['huh', 'wow'], side: ['huh', 'hoo'],
+    squint: ['huh'], yell: ['show_you', 'take_that', 'nonono'], snarl: ['show_you', 'nonono'], sweat: ['nonono', 'forget_it'], ugh: ['forget_it', 'nonono']
+  };
+  let lastSpeaker = null;
+  function floweryClip(face, clip, speaker) {
+    const first = lastSpeaker !== speaker; lastSpeaker = speaker;
+    if (speaker !== 'Flowery' || clip === 'none') return;
+    let k = clip;
+    if (!k && first) { const list = FLOWERY_CLIPS[face]; if (list && Math.random() < .75) k = list[Math.floor(Math.random() * list.length)]; }
+    if (k) voiceLine(null, k, '');
+  }
   async function say(speaker, face, text, opt = {}) {
+    if (!FW.test) floweryClip(face, opt.clip, speaker);
     if (FW.test) { FW.testLog && FW.testLog.push((speaker || '*') + ': ' + text); if (speaker && !CAST[speaker]) console.warn('[flowery] unknown speaker ' + speaker); return; }
     const box = S.root.querySelector('.fk-box'), tEl = box.querySelector('.fk-text'), fEl = box.querySelector('.fk-face');
     const c = CAST[speaker];
@@ -601,8 +642,8 @@ const FW = (() => {
   const CUTS = {};    // name -> async (S, args) ; filled by flowery-cuts / battle files
   const BATTLES = {}; // name -> async (S, args) -> result
   async function exec(line) {
-    const dm = line.match(/^([A-Z][\w]*)(!)?(?:\.([\w]*))?(!)?:\s?(.*)$/);
-    if (dm) { await say(dm[1], dm[3] || '', dm[5], { shout: !!(dm[2] || dm[4]) }); return; }
+    const dm = line.match(/^([A-Z][\w]*)(!)?(?:\.([\w]*))?(!)?(?:\[(\w+)\])?:\s?(.*)$/);
+    if (dm) { await say(dm[1], dm[3] || '', dm[6], { shout: !!(dm[2] || dm[4]), clip: dm[5] }); return; }
     if (line.startsWith('*')) { await say(null, null, line.replace(/^\*\s?/, '')); return; }
     if (!line.startsWith('@')) { await say(null, null, line); return; }
     const parts = line.slice(1).match(/"[^"]*"|\S+/g).map(s => s.replace(/^"|"$/g, ''));
@@ -661,7 +702,7 @@ const FW = (() => {
       case 'card': { hideBox(); const [t, s] = a.join(' ').split('|'); await card(t, s); return; }
       case 'npc': S.npcs[a[0]] = a[1]; return;
       case 'unnpc': delete S.npcs[a[0]]; return;
-      case 'sign': S.room._props.push({ def: { n: a[3] || 'npc_sign_0' }, x: num(a[0]), y: num(a[1]), label: a[2] }); return;
+      case 'sign': S.room._props.push({ def: PROP[a[3]] || { n: a[3] || 'npc_sign_0' }, x: num(a[0]), y: num(a[1]), label: a[2] }); return;
       case 'trigger': S.triggers.push({ x: num(a[0]), y: num(a[1]), w: num(a[2]), h: num(a[3]), label: a[4], once: a[5] !== 'repeat' }); return;
       case 'untrigger': S.triggers = S.triggers.filter(t => t.label !== a[0]); return;
       case 'roam': {
@@ -685,6 +726,12 @@ const FW = (() => {
       case 'choice': { const r = await choice(a.join(' ').split('|')); vars.choice = r + 1; return; }
       case 'cut': { hideBox(); const f = CUTS[a[0]]; if (!f) console.warn('[flowery] missing cut ' + a[0]); if (f && !FW.test) await f(S, a.slice(1), FW); return; }
       case 'battle': { hideBox(); const f = BATTLES[a[0]]; if (!f) console.warn('[flowery] missing battle ' + a[0]); if (FW.test) return; if (f) { const r = await f(S, a.slice(1), FW); vars.battle = r; if (r === 'quit') return 'abort'; } return; }
+      case 'saved': if (S.onSave) S.onSave(); return;
+      case 'switches': {
+        const cols = a[3].split(','), order = a[4].split(',').map(Number);
+        S.switches = { x: num(a[0]), y: num(a[1]), gap: num(a[2]), cols, order, step: 0, lit: [], fails: 0, done: a[5], fail: a[6], last: -1, solved: false };
+        return;
+      }
       case 'voice': { if (FW.test) { if (P().voice && !P().voice[a[0]]) console.warn('[flowery] missing voice ' + a[0]); return; } const r = voiceLine(null, a[0], a.slice(1).join(' ')); if (!line.startsWith('&')) await r; return; }
       case 'end': return 'stop';
       default: console.warn('[flowery] unknown command', line);
@@ -706,21 +753,16 @@ const FW = (() => {
       });
     } catch (_) { /* decoration */ }
   }
+  // Flowery's voice clips play as plain audio (no on-screen text)
   function voiceLine(host, key, text, opt = {}) {
     const url = P() && P().voice && P().voice[key];
-    let a = null, ms = opt.ms || 1700;
-    if (url) {
-      try { a = new Audio(url); a.volume = Math.min(1, .95 * (typeof Sound !== 'undefined' && typeof Sound.vol === 'number' ? Sound.vol : 1)); if (typeof Sound !== 'undefined' && Sound.on === false) a.volume = 0; a.play().catch(() => {}); } catch (_) { a = null; }
-      if (!opt.quiet) sting();
-    } else sting();
-    const el = document.createElement('div');
-    el.className = 'fk-vl' + (opt.cls ? ' ' + opt.cls : '');
-    el.innerHTML = '<small>' + (url ? '♪ VOICE LINE' : '★ VOICE LINE ★') + '</small><b>' + text + '</b>';
-    (host || (S && S.root.querySelector('.fk-screen')) || document.body).appendChild(el);
+    if (!url || (typeof Sound !== 'undefined' && Sound.on === false)) return Promise.resolve();
     return new Promise(res => {
-      const end = () => { el.classList.add('out'); setTimeout(() => { el.remove(); res(); }, 260); };
-      if (a) { a.addEventListener('ended', end, { once: true }); a.addEventListener('error', () => setTimeout(end, ms), { once: true }); setTimeout(end, 6000); }
-      else setTimeout(end, ms);
+      try {
+        const a = new Audio(url); a.volume = Math.min(1, .95 * (typeof Sound !== 'undefined' && typeof Sound.vol === 'number' ? Sound.vol : 1));
+        a.addEventListener('ended', res, { once: true }); a.addEventListener('error', res, { once: true }); setTimeout(res, 6000);
+        a.play().catch(res);
+      } catch (_) { res(); }
     });
   }
 
@@ -729,7 +771,7 @@ const FW = (() => {
     close();
     S = newWorld(rootEl); vars = {};
     build(rootEl); resize();
-    S.onQuit = opt.onQuit;
+    S.onQuit = opt.onQuit; S.onSave = opt.onSave;
     S._kd = e => onKey(e, true); S._ku = e => onKey(e, false);
     document.addEventListener('keydown', S._kd); document.addEventListener('keyup', S._ku);
     S._rs = () => resize(); window.addEventListener('resize', S._rs);

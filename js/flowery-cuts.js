@@ -149,7 +149,6 @@
     P().draw(ctx, 'castle_distance_small_0', VW / 2, 210 - rise * 40, { s: 1.15 + rise * .25 });
     drawPetals(ctx, t, a);
     text(ctx, 'FLOWER CASTLE', VW / 2, 34, { size: 22, color: '#ffe066', alpha: seg(t, 1.2, 2), stroke: 5, strokeColor: '#5a1030' });
-    text(ctx, 'Population: seven. Plus whoever Flowery lets in.', VW / 2, 56, { size: 9, alpha: seg(t, 2, 2.6) });
   }, [[.1, () => sfx('great_shine', .4)], [1.2, () => sfx('orchhit', .4)]]);
 
   /* ---------------------------------------------------------- 4. the ichor comes up */
@@ -222,7 +221,6 @@
       const lt = t - st, x = 40 + ((i * 83) % 240), y = 200 - lt * 60;
       text(ctx, s, x, y, { size: 11 + (i % 3) * 2, color: i % 2 ? '#ffe066' : '#ff9ad0', alpha: 1 - seg(lt, 1.6, 2.4) });
     });
-    if (t > 4.2) text(ctx, 'FLOWERY · LV 99 (TYPED IN BY HAND)', VW / 2, 26, { size: 12, color: '#fff', alpha: seg(t, 4.2, 4.6) });
     if (t > 5.4) { ctx.fillStyle = 'rgba(255,255,255,' + seg(t, 5.4, 6) + ')'; ctx.fillRect(0, 0, VW, VH); }
   }, [[0, () => FW.voiceLine(null, 'powering_up', 'Powering up!', { quiet: true })], [.2, () => sfx('power', .6)], [1.6, () => sfx('boost', .5)], [3.6, () => { sfx('great_shine', .7); S.fx.shake = 6; }], [5.4, () => sfx('tensionhorn', .6)]]);
 
