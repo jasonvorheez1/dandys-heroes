@@ -273,7 +273,7 @@
     await Promise.all(thrown.map((u, i) => tween(u, { x: 380 + i * 30, y: -40 - i * 30, rot: 9 + i * 3 }, 800)));
     sfx('stardrop', .5);
     fl.frame = 'flowery_idle_0';
-    await resultCard(B, 'VICTORY...?', ['Flowery got 99 EXP.', 'You got 0 EXP.', '(Flowery also got the D$. He says it\'s a "guide fee.")']);
+    await resultCard(B, 'YOU WON?', ['* Got 0 EXP and 0 D$.', '* (Flowery took the D$. He called it a guide fee.)']);
     unmount(B); return 'win';
   };
 
@@ -320,8 +320,8 @@
         B.units = B.units.filter(u => u.side !== 'e');
         party.forEach(u => { if (u.alive) u.hp = Math.min(u.max, u.hp + Math.round(u.max * .2)); });
       }
-      if (result === 'win') { await resultCard(B, 'VICTORY', ['The ichor sinks back into the stones.', 'For now.']); unmount(B); return 'win'; }
-      const c = await retryCard(B, ['The ichor swallows the courtyard.', 'Flowery hauls you out by your collars.', '"Again! And this time, hit them FIRST!"']);
+      if (result === 'win') { await resultCard(B, 'YOU WON!', ['* The ichor sinks back into the stones.']); unmount(B); return 'win'; }
+      const c = await retryCard(B, ['* Flowery drags you out by the collars.', '* "Again! Hit them FIRST this time!"']);
       unmount(B); if (c === 1) return 'quit';
     }
   };
@@ -631,7 +631,7 @@
     // Ralsei, guest: heals when someone's hurt, otherwise cheers (TP); can't act with a hat on
     async function ralseiTurn() {
       if (!ral.alive) return;
-      if (ral.hat) { ral.hat = 0; log('Ralsei is wearing a hat. He refuses to do anything until it\'s off. (It\'s off now.)'); await wait(900); return; }
+      if (ral.hat) { ral.hat = 0; log('* Ralsei won\'t move until the hat comes off. It\'s off now.'); await wait(900); return; }
       const hurt = living().filter(u => u.hp < u.max * .55).sort((a, b) => a.hp / a.max - b.hp / b.max)[0];
       const down = P0.find(u => !u.alive);
       ral.act = B.rt;
@@ -816,8 +816,8 @@
     const lost = () => !party.some(u => u.alive);
     async function handleLoss() {
         st.losses++; try { Save.write(); } catch (_) { /* optional */ }
-        const lines = ['Flowery catches you before you hit the ground.', 'He carries you back to the start of the fight. Gently. Like princesses.', 'Green restores your items.'];
-        if (st.losses === 6) lines.push('<b style="color:#ffe066">Flowery: "...Fine. I\'ll go easier. Don\'t tell anyone." (Damage taken down, TP gain up)</b>');
+        const lines = ['* Flowery carried everyone back. Gently, like princesses.', '* Green put your items back.'];
+        if (st.losses === 6) lines.push('<b style="color:#ffe066">* Flowery is going easy on you. He\'d like you not to mention it.</b>');
         const c = await retryCard(B, lines, ['TRY AGAIN', 'LEAVE']);
         if (c === 1) { unmount(B); return 'quit'; }
         P0.forEach(u => { u.alive = true; u.hp = u.max; u.hat = 0; u.burn = 0; u.dazzle = 0; u.defDown = 0; u.shield = 0; u.atkUp = 0; u.lastBite = false; u.ox = 0; u.alpha = 1; });
@@ -879,7 +879,7 @@
       await ralseiTurn();
       // the Green recipe resolves
       if (G.cook && G.phase === 2) {
-        if (G.dmgThisRound >= 300) { log('You broke up the cooking! Green\'s recipe is ruined. Green looks... proud of you, actually.'); G.cook = false; G.duo++; }
+        if (G.dmgThisRound >= 300) { log('* You broke up the cooking. Green looks proud of you anyway.'); G.cook = false; G.duo++; }
         else { const h = Math.round(fl.max * .08); fl.hp = Math.min(fl.max * .65, fl.hp + h); pop(B, fl, '+' + h, '#7dff8a'); log('Green feeds Flowery the new recipe. Petalicious!'); voice('try_flavor', 'Try my flavor!'); G.cookDone = true; }
         await wait(900);
       }

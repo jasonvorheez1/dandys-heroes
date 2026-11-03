@@ -102,10 +102,16 @@ Scraps: I don't know. It feels rude. Like showing up to a costume party in a cos
 Yatta: I LOOK AMAZING!!!
 @party on
 @lead 130 170 right
-* (You can walk now. Look around. The way forward is east.)
 @sign 120 140 scare dw_scarecrow_not_enemy_sign_0
+@sign 300 160 savept savepoint
 @trigger 600 120 40 90 toGarden
-@roam Walk with the arrows · Z to talk
+@roam [Z] Talk
+# savept
+@sfx save 0.6
+* (Every flower on the cliff turns to look at you.)
+* (The power of being looked at shines within you.)
+* (HP fully restored.)
+@end
 # scare
 * "NOT AN ENEMY." The sign is very sure about that.
 Yatta: I BELIEVE YOU, SIGN!!
@@ -182,7 +188,7 @@ Scraps: ...Who are YOU?
 @sfx magiccircle 0.3
 @frame Flowery flowery_pose_0
 Flowery.cheer: Who am I? WHO AM I?! | Petals, did you hear that? They don't know.
-* (There are no petals around. He seems to be talking to himself.)
+* (There are no petals around.)
 @frame Flowery flowery_idle_0
 Flowery.smile: I'm Flowery. The Flower Kingdom's finest, freshest, most photogenic bloom. Level Ninety-Nine. Best friend to a king.
 Flowery.smile: And you three are... | ...
@@ -433,7 +439,7 @@ Orange.: ...okay that's pretty good.
 @npc Orange orangeTalk
 @npc Flowery flTalk
 @sign 22 176 cafeLocker dw_ralseicupboard_0
-@roam Talk to everyone
+@roam
 # cafeLocker
 * It's the cupboard from the garden. Somebody has moved it here. Somebody has put a little doily on top.
 @sfx knock 0.5

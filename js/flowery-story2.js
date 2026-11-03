@@ -304,7 +304,7 @@ Pink: Don't tell Flowery I said I was nobody, okay? He gets SO mad. | He says no
 @npc Pink pinkTalk
 @party on
 @lead 50 214 right
-* (Scraps leaves the bath. Somebody's on the balcony.)
+* (Somebody's up on the balcony.)
 @trigger 280 150 30 80 balcony
 @roam
 # pinkTalk

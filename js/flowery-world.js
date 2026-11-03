@@ -139,7 +139,7 @@ const FW = (() => {
         tileFill(ctx, TX.cliffFace, 0, 206, 640, 60);
         ctx.fillStyle = 'rgba(70,20,40,.18)'; ctx.fillRect(0, 118, 640, 6);
       },
-      props: [['scarecrow', 120, 140], ['grass', 210, 128], ['grass', 330, 125], ['grass', 520, 130], ['savepoint', 300, 160], ['grassF', 160, 214], ['grassF', 430, 216]] },
+      props: [['scarecrow', 120, 140], ['grass', 210, 128], ['grass', 330, 125], ['grass', 520, 130], ['grassF', 160, 214], ['grassF', 430, 216]] },
     /* the Garden of Hopes and Dreams: glade, shrine, trees */
     garden: { w: 800, h: 300, bounds: [10, 120, 790, 280], spawn: [40, 210],
       sky(ctx, cam, t) { sunsetSky(ctx, cam, t, { cliffY: 120 }); },
@@ -661,7 +661,7 @@ const FW = (() => {
       case 'card': { hideBox(); const [t, s] = a.join(' ').split('|'); await card(t, s); return; }
       case 'npc': S.npcs[a[0]] = a[1]; return;
       case 'unnpc': delete S.npcs[a[0]]; return;
-      case 'sign': S.room._props.push({ def: { n: a[3] || 'npc_sign_0' }, x: num(a[0]), y: num(a[1]), label: a[2] }); return;
+      case 'sign': S.room._props.push({ def: PROP[a[3]] || { n: a[3] || 'npc_sign_0' }, x: num(a[0]), y: num(a[1]), label: a[2] }); return;
       case 'trigger': S.triggers.push({ x: num(a[0]), y: num(a[1]), w: num(a[2]), h: num(a[3]), label: a[4], once: a[5] !== 'repeat' }); return;
       case 'untrigger': S.triggers = S.triggers.filter(t => t.label !== a[0]); return;
       case 'roam': {
