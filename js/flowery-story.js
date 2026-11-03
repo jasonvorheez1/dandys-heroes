@@ -194,10 +194,12 @@ Scraps: ...Thanks?
 Ginger: We're from a TV show.
 Flowery.soft[none]: A show, huh.
 @frame Flowery flowery_pose_0
+@anim Flowery flowery_clap_ 4 10 once
 Flowery.beam[thats_great]: Well! Any friend of the vents is a friend of mine.
 Flowery.smile[none]: Don't worry, Princesses. I'll get you home. | The back door just needs a little time.
 Ginger: ...Princesses?
 Flowery.wink[none]: It suits you.
+@anim Flowery flowery_condescend_ 7 10 once
 Flowery.smirk[none]: You're Cupcake. You're Origami. And you're Confetti.
 Yatta: I'M CONFETTI!!!
 Scraps: I'm paper. I CUT. Origami is folding.
@@ -205,6 +207,7 @@ Flowery.grin[none]: Then I'll keep my petals away from you, Origami.
 Ginger: Um... there's somebody in that cupboard.
 Flowery.wide[none]: That? | That's art. It knocks.
 Scraps: It said "thank goodness."
+@anim Flowery flowery_shrug_spin_ 4 10 once
 Flowery.smile[none]: Very interactive art. | Now, let's make like a tree and have some fun!
 @frame Flowery off
 @face Flowery right
@@ -237,6 +240,7 @@ Scraps: Yeah. | He looked at us like we were the wrong present.
 @spawn Flowery 130 160 right
 @cut castle
 @npc Flowery flTalk
+@anim Flowery flowery_jacket_flutter_ 5 8 once
 Flowery.cheer[hey_guys]: Behold! Flower Castle!
 Flowery.smile[none]: Built by a dream. Decorated by me.
 Yatta: CAN WE GO IN?!
@@ -348,7 +352,9 @@ Flowery.grin[none]: Confetti, you ARE a voice line.
 @walk Flowery 690 170 0.6
 @face Flowery right
 * (Somebody in a purple hood is reading on the road. Next to them, a girl with a red bow is spinning a knife.)
+@anim Aqua aqua_spin_ 4 10
 Aqua: Uuu, Seth! Look how fast it goes!
+@idle Aqua
 Seth: Aqua, please, not near the edge!
 Flowery.cheer[hey_guys]: Seth! Aqua! My little buds!
 @face Seth left
@@ -357,6 +363,7 @@ Flowery.smile[none]: New friends. They came in through the back door.
 Seth: ...The back door. | The one we were supposed to watch. For Kris.
 Flowery.smile[none]: For anybody, Seth.
 Seth: ...Right. Anybody.
+@anim Aqua aqua_wave_ 4 8 once
 Aqua: Uuu, new friends! I'm Blue!
 Seth: You're Aqua.
 Aqua: Blue's a better name.
@@ -366,6 +373,7 @@ Seth: You can't be Seth! I'M Seth!
 Yatta!: I'M CONFETTI!!!
 Aqua: Uuu! Can I be Confetti too?
 Yatta!: YES!!! WE'RE BOTH CONFETTI!!!
+@anim Seth seth_facepalm_down_ 2 4 once
 Seth: No... no, no, no. You can't just make friends with them! | They're not on the list!
 Scraps: What list?
 Seth: The list! Who gets to be in the garden. What the king eats. What he's allowed to see today. | You're not in it! Any of it!
@@ -373,8 +381,11 @@ Ginger: ...We could write ourselves in? | I'm good at making things look nice.
 Seth: ...
 Seth: ...You'd do that?
 * (Seth hands Ginger a pen. Very slowly.)
+@anim Aqua aqua_clapping_ 4 10 once
 Aqua: Uuu, Seth's face is red!
+@anim Seth seth_glasses_shiny_ 8 12 once
 Seth: It is NOT!
+@anim Flowery flowery_clap_ 4 10 once
 Flowery.grin[hah]: Wonderful! Everybody's friends! | Seth, make sure Gorey's breakfast is perfect.
 Seth: It's three in the afternoon.
 Flowery.wink[none]: Then make it a perfect three in the afternoon. Adieu!
@@ -423,6 +434,7 @@ Orange.!: AAAH!!
 Flowery.smile[none]: My little sister. She's very brave.
 Orange: I AM very brave!!
 @music flShop
+@anim Green enemy_green_wave_ 4 8 once
 * (Green waves at you.)
 @npc Green greenTalk
 @npc Orange orangeTalk
@@ -457,6 +469,7 @@ Ginger: Scraps! They're ROUND!
 @frame Cake green_cake_0
 Scraps: You decorated them like flowers.
 Ginger: Seven colors. | I didn't even mean to.
+@anim Green green_gesture_ 2 4 once
 * (Green pats Ginger on the head.)
 * (Green wanted to be a chef, and know the flavor of many things.)
 @flag baked
@@ -531,6 +544,7 @@ Flowery.smile[none]: The king. | He doesn't know it yet.
 @sfx b 0.5
 @frame Yellow yellow_point_left_0
 @music flYellow
+@anim Yellow yellow_cool_point_raise_ 5 10 once
 Yellow!: FREEZE, varmints!
 @shake 3
 * (A flower in a cowboy hat steps out of the yellow door, pointing a gun.)
@@ -540,12 +554,13 @@ Scraps: It's a castle.
 Yellow: ...Castle-town.
 @spawn Blue 180 150 down
 @walk Blue 200 186 0.8
-@anim Blue enemy_blue_spintopose_ 4 10 once
+@anim Blue enemy_blue_ballet_ 8 12 once
 @frame Blue blue_poses_0
 Blue: Oh, Yellow, dear. You found them.
 Blue: Three strangers, right next to my poor flowers. | How tragic.
 Flowery.squint[none]: Blue.
 Blue: Flowery. | You're standing in my light.
+@anim Flowery flowery_teethshine_ 6 12 once
 Flowery.smirk[hoo]: I AM the light, Blue.
 * (They stare at each other like two cats on a fence.)
 Yellow: Order! This here court is now in session!
@@ -601,6 +616,7 @@ Yellow: This court finds Flowery GUILTY. | Of tramplin'. And of not landin' it.
 @sfx bump 0.5
 * (Yellow fires. A blue flower pops out of the barrel and lands in Flowery's hair.)
 Yellow: ...It always does that.
+@anim Blue blue_laugh_ 2 4 once
 Blue.soft: I fill it every morning, dear. | I'd rather you shoot something pretty.
 * (Yellow's face goes red under his hat.)
 Yatta: THAT WAS THE BEST COURT EVER!!!

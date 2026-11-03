@@ -22,12 +22,12 @@ const FW = (() => {
     Scraps: { name: 'Scraps', toon: true, h: 46, voice: 520, color: '#ffd36b' },
     Ginger: { name: 'Ginger', toon: true, h: 44, voice: 400, color: '#ff9db0' },
     Yatta: { name: 'Yatta', toon: true, h: 46, voice: 640, color: '#ffe95c' },
-    Flowery: { name: 'Flowery', walk: { down: ['flowery_walk_down_jacket_', 4], left: ['flowery_walk_left_jacket_', 4], right: ['flowery_walk_right_jacket_', 4], up: ['flowery_lookup_', 1, 'flowery_lookup_0'] },
+    Flowery: { name: 'Flowery', idleAnim: ['flowery_idle_', 5, 5],  walk: { down: ['flowery_walk_down_jacket_', 4], left: ['flowery_walk_left_jacket_', 4], right: ['flowery_walk_right_jacket_', 4], up: ['flowery_lookup_', 1, 'flowery_lookup_0'] },
       idle: { down: 'flowery_walk_down_jacket_0', left: 'flowery_walk_left_jacket_0', right: 'flowery_walk_right_jacket_0', up: 'flowery_lookup_0' }, voice: 300, color: '#ffe066' },
     Asgore: { name: 'Asgore', idle: { down: 'asgore_armor_sad_down_0', left: 'asgore_armor_run_left_0', right: 'asgore_expressions_right_0', up: 'asgore_lookup_documents_0' },
       walk: { left: ['asgore_armor_run_left_', 4], right: ['asgore_expressions_right_', 1], down: ['asgore_armor_sad_down_', 1], up: ['asgore_lookup_documents_', 1] }, voice: 150, color: '#f4c95d' },
-    Seth: { name: 'Seth', walk: { down: ['seth_walk_down_', 4], up: ['seth_walk_up_', 4], left: ['seth_walk_left_', 2], right: ['seth_walk_right_', 2] }, voice: 360, color: '#c77dff' },
-    Aqua: { name: 'Aqua', walk: { down: ['aqua_walk_down_', 4], up: ['aqua_walk_up_', 4], left: ['aqua_walk_left_', 4], right: ['aqua_walk_right_', 4] }, voice: 760, color: '#5ce1e6' },
+    Seth: { name: 'Seth', idleAnim: ['seth_idle_', 4, 4],  walk: { down: ['seth_walk_down_', 4], up: ['seth_walk_up_', 4], left: ['seth_walk_left_', 2], right: ['seth_walk_right_', 2] }, voice: 360, color: '#c77dff' },
+    Aqua: { name: 'Aqua', idleAnim: ['aqua_centered_', 4, 5],  walk: { down: ['aqua_walk_down_', 4], up: ['aqua_walk_up_', 4], left: ['aqua_walk_left_', 4], right: ['aqua_walk_right_', 4] }, voice: 760, color: '#5ce1e6' },
     Blue: { name: 'Blue', walk: { down: ['blue_walk_back_', 6], up: ['blue_walk_back_', 6], left: ['blue_walk_l_', 4], right: ['blue_walk_r_', 4] },
       idle: { down: 'blue_poses_0', up: 'blue_up_0', left: 'blue_turn_head_l_0', right: 'blue_poses_r_0' }, voice: 470, color: '#8fa8ff' },
     Yellow: { name: 'Yellow', walk: W4('yellow_walk_'), idle: { down: 'yellow_centered_0', up: 'yellow_walk_up_0', left: 'yellow_quarter_0', right: 'yellow_quarter_right_0' }, voice: 230, color: '#ffcf4a' },
@@ -67,7 +67,7 @@ const FW = (() => {
     if (pk && pk.play) {
       const set = BLIP[speaker], id = set ? set[Math.floor(Math.random() * set.length)] : 'sfx:text';
       const rate = set ? 1 : Math.max(.5, Math.min(2.2, (freq || 340) / 340));
-      if (pk.play(id, set ? .55 : .45, rate)) return;
+      if (pk.play(id, speaker === 'Flowery' ? .95 : set ? .6 : .45, rate)) return;
     }
     try {
       if (typeof Sound !== 'undefined' && Sound.on === false) return;
@@ -407,6 +407,7 @@ const FW = (() => {
     const c = a.c.same ? CAST[a.c.same] : a.c;
     const w = c.walk && c.walk[a.dir];
     if (a.moving && w) return w[0] + (Math.floor(a.walkT * 7) % w[1]);
+    if (c.idleAnim && (a.dir === 'down' || !c.idle || !c.idle[a.dir])) { const [b, n, fps] = c.idleAnim; return b + (Math.floor((S.t + (a.x % 7)) * fps) % n); }
     if (c.idle && c.idle[a.dir]) return c.idle[a.dir];
     if (w) return w[2] || w[0] + '0';
     return null;
@@ -434,7 +435,8 @@ const FW = (() => {
       ctx.restore(); ctx.imageSmoothingEnabled = false;
     } else {
       const f = actorFrame(a);
-      if (f) P().draw(ctx, f, x, y, { alpha: a.alpha, flip: a.flip, s: a.s, rot: a.spinA || 0, tint: a.tint || undefined });
+      const tb = a.talk ? Math.abs(Math.sin(S.t * 14)) * 1.2 : 0;
+      if (f) P().draw(ctx, f, x, y - tb, { alpha: a.alpha, flip: a.flip, s: a.s, rot: a.spinA || 0, tint: a.tint || undefined });
     }
     if (a.emote) {
       const e = a.emote; ctx.fillStyle = '#fff'; ctx.font = 'bold 12px monospace'; ctx.textAlign = 'center';
@@ -759,7 +761,7 @@ const FW = (() => {
     if (!url || (typeof Sound !== 'undefined' && Sound.on === false)) return Promise.resolve();
     return new Promise(res => {
       try {
-        const a = new Audio(url); a.volume = Math.min(1, .95 * (typeof Sound !== 'undefined' && typeof Sound.vol === 'number' ? Sound.vol : 1));
+        const a = new Audio(url); a.volume = Math.min(1, .7 * (typeof Sound !== 'undefined' && typeof Sound.vol === 'number' ? Sound.vol : 1));
         a.addEventListener('ended', res, { once: true }); a.addEventListener('error', res, { once: true }); setTimeout(res, 6000);
         a.play().catch(res);
       } catch (_) { res(); }

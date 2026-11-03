@@ -17,6 +17,7 @@ Flowery.cheer[hey_guys]: Ta-daaa! The heart of the castle! | Every petal, placed
 @emote Flowery !
 @wait 0.5
 @emote Flowery off
+@anim Flowery flowery_shake_head_ 5 12 once
 Flowery.wide[nonono]: That's him!
 Flowery.yell[none]: Into the bush, Princesses! NOW!
 @party off
@@ -327,6 +328,7 @@ Flowery.calm[none]: Before all this, I was a flower in a pot. By the shop window
 Flowery.calm[none]: I watched a kid grow up through that window. | Grew like a turnip.
 Flowery.calm[none]: Then one day I woke up in here with legs. | First thing I did was run around the castle. Second thing, I fell down the stairs.
 Scraps: Did it hurt?
+@anim Flowery flowery_shrug_upright_shakehead_ 4 8 once
 Flowery.smirk[hah]: Everything hurts when you've never had a body. | I loved it.
 Flowery.calm[none]: I don't know anything about coming back, Origami.
 Flowery.serious[none]: But don't go spending your next one. Look both ways. | Stop running in front of canes.
@@ -413,11 +415,15 @@ Ralsei.serious: As long as it's open, their darkness will keep coming in.
 @alpha Pink 0.8
 @music flFlowers
 * (The flowers come out into the courtyard, one by one.)
+@anim Seth seth_point_ 3 8 once
 Seth: It's in the road! It's in the garden! It's not on ANY list!
 Yellow: Blue's flowerbed's gone. | I tried to arrest it.
+@anim Blue enemy_blue_ballet_ 8 12 once
 Blue: He read it its rights, dear. I watched.
+@anim Aqua aqua_confused_ 2 4
 Orange: I-I punched eleven of them!! | They keep coming back...
 * (Green is holding a pan with a hole melted through it.)
+@idle Aqua
 Aqua: Uuu... is the world ending?
 Seth: Aqua...
 Aqua: ...Blue.
@@ -450,6 +456,7 @@ Flowery.serious[show_you]: Top of the castle. | If you really want to go home, c
 Flowery.serious[none]: Petals. | With me.
 * (Seth closes the book. Aqua hides her knife in her sleeve. Green puts down the pan. Orange climbs up onto Green's hat.)
 Blue: You can't even land a pirouette, dear.
+@anim Flowery flowery_pirouette_ 8 14 once
 Flowery.soft[none]: Then catch me, Blue.
 Blue: ...If you fall on my flowers again, I'm letting you.
 @walk Flowery 320 120 1.6
@@ -511,6 +518,7 @@ Flowery.hair2[none]: We just sat in our pots and smiled. | Useless, pretty flowe
 Flowery.serious[none]: So no. | You don't get to come in here, make him laugh, and LEAVE.
 Flowery.yell[none]: Not while I've got petals left!
 Flowery.yell[none]: Petals! Everybody!
+@anim Flowery flowery_poweringup_ 5 10
 Flowery.yell[none]: LEND ME YOUR POWER!
 @voice lend_power Lend me your power!
 @cut powerUp
@@ -590,6 +598,15 @@ Asgore: And then let me go home too. | There's a very important pot by the windo
 * (Flowery laughs. It comes out wet.)
 Flowery.sigh[none]: ...Use the good fertilizer.
 Asgore: Only the best.
+@hide Flowery
+@hide Asgore
+@spawn Bump 160 184 down
+@anim Bump asgore_flowery_fistbump_ 3 5 once
+@sfx impact 0.4
+@wait 1.2
+@remove Bump
+@show Flowery
+@show Asgore
 @walk Flowery 150 196 1
 @face Flowery left
 Flowery.calm[none]: ...Raly.
@@ -632,6 +649,7 @@ Yatta!: IT COUNTS FOREVER!!!
 Seth: I wrote you a page. Ginger decorated it. | It's the best page in the book.
 Aqua: Uuu, I'm Confetti now!
 Seth: Aqua...
+@anim Aqua aqua_wave_ 4 8 once
 Aqua: Thanks for watching my dream, Confetti Number One!
 Yatta: THANKS FOR BEING IN IT, CONFETTI NUMBER TWO!!!
 Orange: W-was I brave? | You'll say I was brave, right?
@@ -639,8 +657,11 @@ Ginger: You were very brave.
 Orange: Th-thanks for watching my dream.
 * (Green hands Ginger a perfectly round cookie with "YOURS" written on it in icing.)
 * (Thank you for watching their dream.)
+@anim Yellow yellow_cool_point_raise_ 5 10 once
 Yellow: Thanks fer watchin' my dream. | It was an honor to wrongly accuse y'all.
+@anim Blue enemy_blue_ballet_ 8 12 once
 Blue: Come back when you can dance, dears. | Or don't, and come back anyway. Adieu!
+@anim Pink pink_overjoyed_ 6 10 once
 Pink: Eighth Club forever!
 Ginger: Eighth Club forever.
 @walk Flowery 400 214 1.2
