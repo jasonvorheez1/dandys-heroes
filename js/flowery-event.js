@@ -30,7 +30,7 @@
       try { Music.screen(Screens.cur); } catch (_) { /* optional */ }
       Screens._raidDossier = ID; try { Screens.render(); } catch (_) { /* optional */ }
     };
-    FW.open(root, { onQuit: () => { if (window.confirm('Leave? You\'ll start this part over next time.')) leave(); } });
+    FW.open(root, { onSave: () => { st.savedAt = st.cur; try { Save.write(); } catch (_) { /* optional */ } }, onQuit: () => { if (window.confirm('Leave? You\'ll start this part over next time.')) leave(); } });
     for (let i = from; i < FL_STORY.length && !quit; i++) {
       const S = FW.S; if (!S) break;
       Object.assign(S.fx, { petals: false, ichor: 0, tint: null, glitch: 0, fade: 1, fadeTo: 1 });

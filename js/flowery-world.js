@@ -294,7 +294,7 @@ const FW = (() => {
         tryMove(lead, dx / len * sp, dy / len * sp);
         lead.dir = dy < 0 && Math.abs(dy) >= Math.abs(dx) ? 'up' : dy > 0 && Math.abs(dy) >= Math.abs(dx) ? 'down' : dx < 0 ? 'left' : 'right';
         lead.moving = true; lead.walkT += dt * (S.keys.run ? 1.6 : 1);
-        checkTriggers(lead);
+        checkTriggers(lead); checkSwitches(lead);
       } else lead.moving = false;
     }
     // caterpillar: followers walk the leader's path
@@ -359,6 +359,29 @@ const FW = (() => {
       if (inside && !tr.inside) { tr.inside = true; tr.fired = true; runBlock(tr.label); return; }
       if (!inside) tr.inside = false;
     }
+  }
+  function checkSwitches(a) {
+    const W = S.switches; if (!W || W.solved || W.busy) return;
+    let on = -1;
+    W.cols.forEach((c, i) => { if (Math.abs(a.x - (W.x + i * W.gap)) < 9 && Math.abs(a.y - W.y) < 7) on = i; });
+    if (on === W.last) return;
+    W.last = on; if (on < 0 || W.lit.includes(on)) return;
+    if (on === W.order[W.step]) {
+      W.lit.push(on); W.step++; sfx('select', { vol: .5 });
+      if (W.step === W.order.length) { W.solved = true; sfx('great_shine', { vol: .5 }); runBlock(W.done); }
+    } else {
+      W.lit = []; W.step = 0; W.fails++; sfx('cantselect', { vol: .5 }); S.fx.shake = 2;
+      if (W.fail && W.fails >= 2) { W.busy = true; runBlock(W.fail).then(() => { W.busy = false; }); }
+    }
+  }
+  function drawSwitches(ctx) {
+    const W = S.switches; if (!W || W.hide) return;
+    W.cols.forEach((c, i) => {
+      const x = W.x + i * W.gap, y = W.y, lit = W.solved || W.lit.includes(i);
+      ctx.fillStyle = 'rgba(0,0,0,.45)'; ctx.fillRect(x - 9, y - 4, 18, 10);
+      ctx.fillStyle = lit ? c : 'rgba(0,0,0,.35)'; ctx.fillRect(x - 8, y - 6 + (lit ? 1 : 0), 16, 9);
+      ctx.strokeStyle = c; ctx.lineWidth = 1; ctx.strokeRect(x - 7.5, y - 5.5 + (lit ? 1 : 0), 15, 8);
+    });
   }
   function interact() {
     const a = S.actors[S.party[0]]; if (!a) return;
@@ -428,6 +451,7 @@ const FW = (() => {
     if (R.sky) R.sky(ctx, S.cam, S.t);
     ctx.save(); ctx.translate(-Math.round(S.cam.x), -Math.round(S.cam.y));
     R.back && R.back(ctx, S.t);
+    drawSwitches(ctx);
     const list = [];
     R._props.forEach(p => { if (!p.def.front) list.push({ y: p.y, draw: () => { if (p.def.parts) { p.def.parts.forEach(n => P().draw(ctx, n, p.x, p.y)); return; } const f = propFrame(p.def, S.t); if (f) P().draw(ctx, f, p.x, p.y); } }); });
     ctx.restore();
@@ -460,7 +484,7 @@ const FW = (() => {
   /* ------------------------------------------------------------ rooms in/out */
   function loadRoom(key, x, y, dir) {
     const R = ROOMS[key]; if (!R) throw new Error('no room ' + key);
-    S.room = R; S.roomKey = key; S.npcs = {}; S.triggers = []; S.trail = [];
+    S.room = R; S.roomKey = key; S.npcs = {}; S.triggers = []; S.trail = []; S.switches = null;
     R._props = (R.props || []).map(([k, px, py, solid]) => ({ def: PROP[k] || { n: k }, x: px, y: py, solid }));
     S.solids = R._props.filter(p => p.solid && p.def.solid).map(p => [p.x - p.def.solid[0] / 2, p.y - p.def.solid[1], p.x + p.def.solid[0] / 2, p.y + 2]);
     Object.keys(S.actors).forEach(id => { if (!S.party.includes(id)) delete S.actors[id]; });
@@ -475,6 +499,7 @@ const FW = (() => {
   function faceURL(p) { if (!p || !p.pix) return ''; return faceCache[p.pix] || (faceCache[p.pix] = P().url(p.pix, p.mini ? 3 : 2)); }
   async function testRoam() {
     const seen = S._seen || (S._seen = new Set());
+    if (S.switches && !S.switches.solved) { S.switches.solved = true; await runBlock(S.switches.done); if (S.finished) return; }
     for (const [id, label] of Object.entries(S.npcs)) { if (seen.has(label)) continue; seen.add(label); await runBlock(label); if (S.finished) return; }
     for (const p of S.room._props) { if (!p.label || seen.has(p.label)) continue; seen.add(p.label); await runBlock(p.label); if (S.finished) return; }
     for (const [id, label] of Object.entries(S.npcs)) { if (seen.has(label + '#2')) continue; seen.add(label + '#2'); await runBlock(label); if (S.finished) return; }
@@ -701,6 +726,12 @@ const FW = (() => {
       case 'choice': { const r = await choice(a.join(' ').split('|')); vars.choice = r + 1; return; }
       case 'cut': { hideBox(); const f = CUTS[a[0]]; if (!f) console.warn('[flowery] missing cut ' + a[0]); if (f && !FW.test) await f(S, a.slice(1), FW); return; }
       case 'battle': { hideBox(); const f = BATTLES[a[0]]; if (!f) console.warn('[flowery] missing battle ' + a[0]); if (FW.test) return; if (f) { const r = await f(S, a.slice(1), FW); vars.battle = r; if (r === 'quit') return 'abort'; } return; }
+      case 'saved': if (S.onSave) S.onSave(); return;
+      case 'switches': {
+        const cols = a[3].split(','), order = a[4].split(',').map(Number);
+        S.switches = { x: num(a[0]), y: num(a[1]), gap: num(a[2]), cols, order, step: 0, lit: [], fails: 0, done: a[5], fail: a[6], last: -1, solved: false };
+        return;
+      }
       case 'voice': { if (FW.test) { if (P().voice && !P().voice[a[0]]) console.warn('[flowery] missing voice ' + a[0]); return; } const r = voiceLine(null, a[0], a.slice(1).join(' ')); if (!line.startsWith('&')) await r; return; }
       case 'end': return 'stop';
       default: console.warn('[flowery] unknown command', line);
@@ -740,7 +771,7 @@ const FW = (() => {
     close();
     S = newWorld(rootEl); vars = {};
     build(rootEl); resize();
-    S.onQuit = opt.onQuit;
+    S.onQuit = opt.onQuit; S.onSave = opt.onSave;
     S._kd = e => onKey(e, true); S._ku = e => onKey(e, false);
     document.addEventListener('keydown', S._kd); document.addEventListener('keyup', S._ku);
     S._rs = () => resize(); window.addEventListener('resize', S._rs);

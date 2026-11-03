@@ -793,9 +793,9 @@
       fl.pose = 'flowery_lookdown_upleft_0';
       await say('Flowery', 'serious', 'Okay. Okay! You\'re better at choosing than I thought.');
       await say('Flowery', 'yell', 'Then I won\'t do it alone. PETALS! Two at a time, just like we practiced!');
-      await say('Seth', '', 'We didn\'t practice this.');
-      await say('Aqua', '', 'I practiced. With knives.');
-      await say('Orange', '', 'I PRACTICED YELLING!!', { shout: true });
+      await say('Seth', '', 'We did NOT practice this!');
+      await say('Aqua', '', 'Uuu, I practiced! With knives!');
+      await say('Orange', '', 'I-I practiced too! I\'m EXTRA now!');
       FW.hideBox(); FW.music('flFlowers'); fl.pose = null;
     }
     async function phaseThree() {
