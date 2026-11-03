@@ -135,6 +135,8 @@ const ItemSheet = (() => {
     "js/flowery-arena.js",
     "js/flowery-battle.js",
     "js/flowery-realbattle.js",
+    "js/flowery-storyboss.js",
+    "js/flowery-endgame.js",
     "js/flowery-story.js",
     "js/flowery-story2.js",
     "js/flowery-event.js",
