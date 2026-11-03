@@ -207,8 +207,8 @@ const FW = (() => {
   };
   // props: [frame or animation, anchor, solid footprint]
   const PROP = {
-    scarecrow: { anim: ['dw_scarecrow_not_enemy_sign_', 9, 6], solid: [12, 6] }, grass: { n: 'dw_aquaplant_3_0' }, grassF: { n: 'dw_aquaplant_7_0', front: true },
-    savepoint: { anim: ['savepoint_', 6, 8], solid: [10, 6] }, tree: { n: 'darkfruit_tree_big_0', solid: [40, 12] }, shrine: { anim: ['dw_aquashrine_', 16, 6], solid: [50, 14] },
+    scarecrow: { n: 'dw_scarecrow_not_enemy_sign_0', solid: [12, 6] }, grass: { n: 'dw_aquaplant_3_0' }, grassF: { n: 'dw_aquaplant_7_0', front: true },
+    savepoint: { anim: ['savepoint_', 6, 8], solid: [10, 6] }, tree: { n: 'darkfruit_tree_big_0', solid: [40, 12] }, shrine: { parts: [2, 0, 3, 5, 6, 7, 8, 12, 1, 11, 14, 15, 9, 10, 13, 4].map(i => 'dw_aquashrine_' + i), solid: [50, 14] },
     plant: { n: 'dw_aquaplant_12_0' }, flowerA: { n: 'asgore_flower_0' }, bushF: { n: 'bigbush_0', front: true },
     hang: { anim: ['dw_moving_charm_cliff_', 6, 5] }, bell: { anim: ['dw_moving_bell_cliff_', 5, 5] }, shop: { n: 'dw_fox_statue_0', solid: [20, 8] },
     bigdoor: { n: 'fcastle_bigdoor_0', solid: [110, 10] }, lanternP: { anim: ['dw_moving_lantern_', 6, 5] }, lanternO: { anim: ['dw_moving_lantern_', 6, 5], solid: [12, 6] },
@@ -429,7 +429,7 @@ const FW = (() => {
     ctx.save(); ctx.translate(-Math.round(S.cam.x), -Math.round(S.cam.y));
     R.back && R.back(ctx, S.t);
     const list = [];
-    R._props.forEach(p => { if (!p.def.front) list.push({ y: p.y, draw: () => { const f = propFrame(p.def, S.t); if (f) P().draw(ctx, f, p.x, p.y); } }); });
+    R._props.forEach(p => { if (!p.def.front) list.push({ y: p.y, draw: () => { if (p.def.parts) { p.def.parts.forEach(n => P().draw(ctx, n, p.x, p.y)); return; } const f = propFrame(p.def, S.t); if (f) P().draw(ctx, f, p.x, p.y); } }); });
     ctx.restore();
     Object.values(S.actors).forEach(a => list.push({ y: a.y + (a.zBias || 0), draw: () => drawActor(ctx, a), actor: true }));
     list.sort((a, b) => a.y - b.y);
@@ -706,21 +706,16 @@ const FW = (() => {
       });
     } catch (_) { /* decoration */ }
   }
+  // Flowery's voice clips play as plain audio (no on-screen text)
   function voiceLine(host, key, text, opt = {}) {
     const url = P() && P().voice && P().voice[key];
-    let a = null, ms = opt.ms || 1700;
-    if (url) {
-      try { a = new Audio(url); a.volume = Math.min(1, .95 * (typeof Sound !== 'undefined' && typeof Sound.vol === 'number' ? Sound.vol : 1)); if (typeof Sound !== 'undefined' && Sound.on === false) a.volume = 0; a.play().catch(() => {}); } catch (_) { a = null; }
-      if (!opt.quiet) sting();
-    } else sting();
-    const el = document.createElement('div');
-    el.className = 'fk-vl' + (opt.cls ? ' ' + opt.cls : '');
-    el.innerHTML = '<small>' + (url ? '♪ VOICE LINE' : '★ VOICE LINE ★') + '</small><b>' + text + '</b>';
-    (host || (S && S.root.querySelector('.fk-screen')) || document.body).appendChild(el);
+    if (!url || (typeof Sound !== 'undefined' && Sound.on === false)) return Promise.resolve();
     return new Promise(res => {
-      const end = () => { el.classList.add('out'); setTimeout(() => { el.remove(); res(); }, 260); };
-      if (a) { a.addEventListener('ended', end, { once: true }); a.addEventListener('error', () => setTimeout(end, ms), { once: true }); setTimeout(end, 6000); }
-      else setTimeout(end, ms);
+      try {
+        const a = new Audio(url); a.volume = Math.min(1, .95 * (typeof Sound !== 'undefined' && typeof Sound.vol === 'number' ? Sound.vol : 1));
+        a.addEventListener('ended', res, { once: true }); a.addEventListener('error', res, { once: true }); setTimeout(res, 6000);
+        a.play().catch(res);
+      } catch (_) { res(); }
     });
   }
 

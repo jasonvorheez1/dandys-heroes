@@ -234,8 +234,9 @@ Ralsei.tired: ...Floor. | Hello, floor.
 Ralsei.happy: Oh! Oh, thank you! Thank you so much!
 Ralsei.smile: I'm Ralsei. I'm, um, a prince. Of darkness. It's much less scary than it sounds.
 Scraps: I'm Scraps. I'm a paper cat. I'm exactly as scary as I sound.
-Ralsei.nervous: Ha! Ha ha. | ...You're not from here, are you? You're not even from Kris's town. You look... drawn differently.
-Scraps: Everybody keeps saying that.
+Ralsei.nervous: Ha! Ha ha. | ...You're not from here, are you? You're not even from Kris's town.
+Scraps: We're from Gardenview.
+Ralsei.wow: I've never heard of it!
 Ralsei.serious: My friends, Kris and Susie, came here to close this world's fountain. The king sent them away. | Flowery put me in there so the king wouldn't see me. He says I remind the king of somebody.
 Ralsei.worry: If you came in through the back door... then that door's been open this whole time. That's... not good. | Things that aren't supposed to cross can cross.
 Ralsei.determined: I'll help you get home. I know a little about doors. | Prince's honor.
@@ -340,10 +341,10 @@ Flowery.soft: ...
 Flowery.calm: Can I tell YOU something weird?
 Scraps: Okay.
 @frame Flowery flowery_lookdown_upright_0
-Flowery.calm: Before all this, I was a flower in a pot. In a shop. By the window. | Then one day I woke up in here with legs, and a voice, and a stat screen.
-Flowery.darksmile: You know what my stat screen said? Nothing. It was blank. | I typed in the ninety-nines myself.
-Scraps: ...You can DO that?
-Flowery.smirk: Apparently! Nobody stopped me. Nobody stops you from much, in here.
+Flowery.calm: Before all this, I was a flower in a pot. In a shop. By the window. | I watched a kid grow up through that window. Grew like a turnip.
+Flowery.calm: Then one day I woke up in here with legs. | First thing I did was run around the whole castle. Second thing, I fell down the stairs.
+Scraps: ...Did it hurt?
+Flowery.smirk: Everything hurts when you've never had a body before, princess. I loved it.
 Flowery.calm: So I don't know anything about coming back, Origami. I just know about being somewhere longer than you were supposed to be.
 Flowery.calm: You got one extra life, and you're scared you spent it.
 Scraps: ...Yeah.
@@ -465,9 +466,7 @@ Flowery.hair2: ...
 Flowery.hair3: Then here's the other way.
 Flowery.hair3: You stay. The door stays open. And I hold the ichor back myself. I have nothing but time.
 Yatta: YOU CAN'T DO THAT!!!
-Flowery.darkgrin: Confetti. | I'm Level Ninety-Nine.
-Scraps: You TYPED that!
-Flowery.darkcalm: And I'll type it again, as many times as it takes.
+Flowery.darkgrin: Watch me, Confetti.
 @frame Flowery flowery_pose_0
 @voice show_you Huh! I'll show you!
 Flowery.serious: Top of the castle. Come and stop me, if you want to go home so badly. | Bring everything you've got. I'll bring everything I've got.
@@ -608,7 +607,7 @@ Asgore: Of course I knew. You're terrible at hiding things. You put a bush on th
 @frame Asgore asgore_kneel_look_up_1
 Asgore: But I let you. Nobody had done anything for me without being asked in a very long time. | It's a strange thing, being looked after. I'd forgotten.
 Asgore: Thank you. | Truly. Thank you.
-Flowery.weep: I didn't do ANYTHING. I typed numbers. I built a fake sunset.
+Flowery.weep: I didn't do ANYTHING. I hid a goat in a cupboard. I built a fake sunset.
 Asgore: You built it for me. Do you know how many people have built me anything? | It's you. You're the whole list.
 @frame Asgore asgore_kneel_0
 Asgore: And now these three need to go home. | Somebody is waiting for them. The way I used to wait for my children.

@@ -93,13 +93,9 @@ Ginger: ...Carefully. | Okay. Carefully.
 @jump Yatta 200
 Yatta!: WHOAAAA!!! IT'S SUNSET!!! IT WAS NIGHT!!! I LOVE TIME ZONES!!
 @walk Ginger 100 182 1.2
-Ginger: Everything's so... sharp.
-Scraps: Pointy. Everything's got corners.
-@face Scraps down
-Scraps: ...We don't, though. Look at us. We look like stickers somebody put on a placemat.
-Ginger: Is that bad?
-Scraps: I don't know. It feels rude. Like showing up to a costume party in a costume.
-Yatta: I LOOK AMAZING!!!
+Ginger: Where... are we?
+Scraps: Outside. Somehow. | Gardenview doesn't HAVE an outside like this.
+Yatta: I LOVE IT HERE!!!
 @party on
 @lead 130 170 right
 @sign 120 140 scare dw_scarecrow_not_enemy_sign_0
@@ -190,7 +186,7 @@ Scraps: ...Who are YOU?
 Flowery.cheer: Who am I? WHO AM I?! | Petals, did you hear that? They don't know.
 * (There are no petals around.)
 @frame Flowery flowery_idle_0
-Flowery.smile: I'm Flowery. The Flower Kingdom's finest, freshest, most photogenic bloom. Level Ninety-Nine. Best friend to a king.
+Flowery.smile: I'm Flowery. The Flower Kingdom's finest, freshest, most photogenic bloom. | Best friend to a king.
 Flowery.smile: And you three are... | ...
 @walk Flowery 400 200 0.6
 @face Flowery left
@@ -200,15 +196,15 @@ Flowery.wide: ...
 Flowery.look: Huh.
 Flowery.side: You're not Kris.
 Ginger: ...Who's Kris?
-Flowery.calm: Nobody you'd know. Tall kid, hair like a curtain somebody gave up on. | They came in the front door yesterday, and I was SURE they'd come back through the back one.
-Flowery.plain: Instead, the back door coughed up... you.
+Flowery.calm: The king's kid. | I left the back door open for them.
+Flowery.plain: And instead I got... you.
 Yatta: WE CAME FROM THE VENTS!!!
 Flowery.squint: The vents. | Of course you did.
 @walk Flowery 380 200 0.8
 Flowery.look: Hold still.
 * He walks a slow circle around the three of you, the way somebody walks around a used car.
 Flowery.side: You're... smooth.
-Scraps: People keep saying that.
+Scraps: ...Thanks?
 Flowery.side: Everything here is drawn with about four hundred little squares, princess. You're drawn with a hundred thousand. | You look like a commercial that wandered into the wrong show.
 Scraps: We ARE a show! Were. We were a show.
 Flowery.soft: ...Were, huh.
