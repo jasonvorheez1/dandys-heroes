@@ -95,6 +95,7 @@
         <section class="fl-panel"><h3>ABOUT</h3><p class="fl-meta">Yatta found a door in the vents.</p>
         <p class="fl-meta">[Z] Confirm · [X] Cancel · Arrows to move</p>
         <p class="fl-meta">${st.beaten ? '* Flowery has been beaten. He says it doesn\'t count.' : ''}</p>
+        ${st.done ? `<button class="fl-endgame" type="button">??? · THE DOOR WITH NO LOCK${st.endgame ? ' ✓' : ''}</button>` : ''}
         ${st.beaten ? `<button class="fl-hard" type="button">REMATCH · FLOWERY (HARD)${st.beatenHard ? ' ✓' : ''}</button><p class="fl-meta">He's going to cheat. He told you that himself.</p>` : ''}</section></div>`;
     s.appendChild(root);
     $('.fl-back', root).onclick = () => { Screens._raidDossier = null; Screens.go('raid'); try { Music.screen(Screens.cur); } catch (_) { /* optional */ } };
@@ -107,6 +108,8 @@
       FlPack.load().then(() => { go.disabled = false; if (root.isConnected) ready(); });
     }
     go.onclick = () => { if (!FlPack.ok) return; FW.sfx('select'); play(st.done ? 0 : Math.min(st.seg, FL_STORY.length - 1)); };
+    const egB = $('.fl-endgame', root);
+    if (egB) egB.onclick = () => { if (!FlPack.ok || !window.FlEndgame || playing) return; FW.sfx('select'); playing = true; FlEndgame.play().finally(() => { playing = false; Screens._raidDossier = ID; try { Screens.render(); } catch (_) { /* optional */ } }); };
     const hardB = $('.fl-hard', root);
     if (hardB) hardB.onclick = () => { if (!FlPack.ok) return; FW.sfx('select'); playHard(); };
     $$('.fl-ch', root).forEach(b => b.onclick = () => { const i = +b.dataset.i; if (i > st.seg || !FlPack.ok) return; FW.sfx('select'); play(i); });

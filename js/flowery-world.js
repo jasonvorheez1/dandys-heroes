@@ -70,7 +70,7 @@ const FW = (() => {
   function blip(freq, vol = .035, speaker) {
     const pk = P();
     if (pk && pk.play) {
-      const set = BLIP[speaker], id = set ? set[Math.floor(Math.random() * set.length)] : 'sfx:text';
+      const set = BLIP[speaker] || (CAST[speaker] && CAST[speaker].blip), id = set ? set[Math.floor(Math.random() * set.length)] : 'sfx:text';
       const rate = set ? 1 : Math.max(.5, Math.min(2.2, (freq || 340) / 340));
       if (pk.play(id, speaker === 'Flowery' ? .95 : set ? .6 : .45, rate)) return;
     }

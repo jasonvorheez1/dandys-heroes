@@ -37,6 +37,9 @@ MANIFEST = [
     E + 'Flowery/Battle/Attacks', E + 'Flowery/Overworld/Walk/Cardinal/With Jacket', E + 'Flowery/Overworld/Flowery & Asgore',
     E + 'Flowery/Battle/Background/Thorns', E + 'Flowery/Battle/Background/Platforms', E + 'Flowery/Battle/Background/Tower/Decor/Flower',
     E + 'Flowery/Misc/Bush',
+    # the endgame: Jevil ("joker" in the game files) and Spamton NEO, plus Spamton for the cutscenes
+    E + 'Jevil/Attacks', E + 'Jevil/Body', E + 'Jevil/Misc', E + 'Spamton NEO/Attacks', E + 'Spamton NEO/Parts', E + 'Spamton NEO/Final Forme',
+    E + 'Spamton NEO/Misc', E + 'Spamton NEO/Arena', E + 'Spamton',
     # the final fight's arena (the vine tower) and the flowers' bullet sprites
     E + 'Flowery/Battle/Background/Tower/Texture', E + 'Flowery/Battle/Background/Tower/Decor/Leaf', E + 'Flowery/Battle/Background/Tower/Boosters',
     E + 'Flowery/Battle/Background/Tower/Lattice/Section B',
@@ -123,6 +126,7 @@ MUSIC_WANTED = {
     'flBoss': ['flower_man', 'flower man'],                                      # Flowery's final battle
     'flSad': ['that_day', 'that day'],                                           # Asgore's flashback after the battle
     'flHome': ['walking_home', 'walking home'],
+    'flNeo': ['world_revolving_x_big_shot', 'revolving_x_big', 'world revolving x big shot'],   # the endgame: Jevil x Spamton NEO
 }
 
 
@@ -153,6 +157,10 @@ SFX_WANTED = {k: 'snd_' + k for k in (
     'text', 'txtasg', 'menumove', 'select', 'cantselect', 'hurt1', 'hurtsmall', 'damage', 'impact', 'bump', 'battleenter', 'weaponpull', 'weaponpull_fast',
     'criticalswing', 'laz_c', 'swing', 'smallswing', 'heavyswing', 'ultraswing', 'power', 'boost', 'spellcast', 'great_shine', 'graze', 'save', 'spare', 'won',
     'levelup', 'tensionhorn', 'pirouette', 'rumble', 'screenshake', 'break1', 'break2', 'bomb', 'badexplosion', 'dooropen', 'doorclose', 'item', 'grab',
+    'joker_chaos', 'joker_anything', 'joker_ha0', 'joker_ha1', 'joker_laugh0', 'joker_laugh1', 'joker_metamorphosis', 'joker_neochaos', 'joker_oh',
+    'joker_byebye', 'spamton_laugh', 'sneo_laugh_long', 'sneo_overpower', 'txtspam', 'txtspam2', 'explosion', 'explosion_firework', 'glassbreak',
+    'chargeshot_charge', 'chargeshot_fire', 'heartshot_dr', 'punchheavythunder', 'scytheburst_bc', 'whip_hard', 'camera_flash', 'rocket', 'ominous',
+    'petrify', 'bell_bounce_short', 'slidewhistle', 'deathnoise', 'sparkle_glock', 'spearappear_choppy', 'electric_talk', 'punchmed', 'mercyadd',
     'jump', 'wing', 'magicsprinkle', 'scissorbell', 'paper_rise', 'noise', 'error', 'drumroll', 'applause', 'orchhit', 'cymbal', 'shineselect', 'crowngrowth',
     'ehurt1', 'hit', 'b', 'awkward', 'chain_extend', 'stardrop', 'egg', 'locker', 'knock', 'revival', 'usefountain', 'creepyjingle', 'rudebuster_hit', 'rudebuster_swing')}
 
@@ -276,7 +284,7 @@ def main():
         if not folder:
             continue
         index = {}
-        for f in glob.glob(os.path.join(folder, '**', '*'), recursive=True):
+        for f in [g for d in folder.split(',') for g in glob.glob(os.path.join(d, '**', '*'), recursive=True)]:
             if f.lower().endswith(('.ogg', '.wav', '.mp3')) and '/japanese/' not in f.replace(os.sep, '/').lower():
                 index.setdefault(os.path.splitext(os.path.basename(f))[0].lower(), f)
         got = 0

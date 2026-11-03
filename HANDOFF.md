@@ -104,3 +104,12 @@ fight Flowery on the roof. Ten segments (FL_STORY), Deltarune-style overworld, c
   `?battle=flowery`) or tools/flowery/smoke.html (runs all ten segments in FW.test mode: instant text, every NPC and trigger,
   warns about unknown frames/voices; `?choice=1` takes the other branches). A new save has Events locked: use Settings → Full
   test save. Audio was not verified by ear; the boss was played by a bot (all phases, a loss, the win), not by a person.
+- **Endgame (js/flowery-endgame.js).** Unlocks on the event menu after all ten segments ("??? · THE DOOR WITH NO LOCK"). Cutscene in
+  the Gardenview lobby: Ralsei came back to close Scraps' drawn door; Spamton walks out of it looking for a deal (the building
+  "prints" Toons), Jevil ("joker" in the game files) follows from his cell, Ralsei recognizes him from Chapter 1, Spamton plugs into
+  the machine downstairs and becomes Spamton NEO. Then any four from the Main Story roster plus Ralsei (playable here), all at level
+  99, on the Main Story turn-based battle. No soul or bullet box: big moves have quick-time events instead (timing ring, mash, arrow
+  dial, pick the safe suit, and Jevil's purple "KIDDING!!" ring that you must NOT press). Team attacks (NEO CHAOS, DEVIL'S DEAL) with
+  anime cut-ins; Metamorphosis, CHAOS finale, Final Forme; when one falls the other enrages. Fairness rules: team attacks and lethal
+  moves start on cooldown, and anyone above half HP survives any single non-lethal move at 1 HP. Balance: `node
+  tools/flowery/endgame_sim.js` (autoplay; QTE skill 0 / .5 / .85 → about 0% / 6-16% / 60-70%).
