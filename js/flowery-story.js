@@ -1,6 +1,8 @@
 /* flowery-story.js - "Flower Kingdom", the script. Ten segments, played in order on the overworld (js/flowery-world.js).
    Set the night after Main Story Chapter 3 (July 11, 2002): the reprinting machine is broken, so a Toon who dies now stays dead.
-   Grammar: see the comment above `parse` in flowery-world.js. " | " breaks a line inside one textbox. */
+   Grammar: see the comment above `parse` in flowery-world.js. " | " breaks a line inside one textbox.
+   Voices follow Chapter 5's own text: Flowery (puns, "Princess", "Gorey"), Aqua ("Uuu"), Seth (nervous rule-keeper),
+   Orange (trying very hard to be brave), Yellow (cowboy), Blue (love, "dear", "adieu"), Green (never speaks; narrated). */
 'use strict';
 
 const FL_STORY = [
@@ -12,62 +14,58 @@ const FL_STORY = [
 @fade out 0.01
 @music flHome
 @card Wrong Door|JULY 11, 2002 · 2:14 AM
-* The night after the machine stopped.
-* Somebody drew a little flower on the CLOSED sheet over the sign. It isn't smiling.
+* (The night after the machine stopped.)
+* (Somebody drew a little flower on the CLOSED sheet over the sign. It isn't smiling.)
 @fade in 1.2
 @party off
 @lead 70 200 right
 @walk Ginger 120 196 1.2
 @face Ginger left
-Ginger: ...Scraps? You're still up.
+Ginger: ...Scraps? You're still up?
 @walk Scraps 90 204 0.8
 @face Scraps right
 Scraps: I'm making Goob a hat.
-Ginger: At two in the morning?
-Scraps: Bassie said he cried the whole time I was gone. The whole time. | So he's getting a hat. It's got ears. Hats with ears fix things.
-Ginger: Oh. | ...I can't sleep either. It's July. I'm not... supposed to be awake in July.
-Scraps: Do you get, like, holiday-lag?
-Ginger: Something like that. Everything smells like sunscreen and nobody wants cookies.
-Scraps: I'd want cookies.
-Ginger: Mine are bad, Scraps.
-Scraps: I'd still want them.
+Ginger: Now?
+Scraps: Bassie said he cried the whole time I was gone. | So he's getting a hat. With ears.
+Ginger: ...That's nice.
+Ginger: I can't sleep either. It's July. | I'm not supposed to be awake in July.
+Scraps: Want to help? You're good at decorating.
+Ginger: I... sure.
 @shake 3
 @sfx hit_light 0.3
-* Something bangs inside the ceiling. Twice. Then it scrapes along the whole length of the room, excited about something.
-Scraps.!: Hsss! | ...It's the vents.
-Ginger: It's... always the vents.
+* (Something bangs inside the ceiling.)
+Scraps.!: Hsss!
+Ginger: ...The vents.
 @spawn Yatta 250 150 down
 @jump Yatta 220
 @walk Yatta 230 200 0.4
 @shake 4
-Yatta!: GUYS!!! GUYS GUYS GUYS!!!
-Yatta: I FOUND A DOOR!!!
+Yatta!: GUYS!!!
+Yatta!: GUYS GUYS GUYS GUYS!!!
 Scraps: Yatta, it's two in the morning.
-Yatta: I KNOW!!! The BEST doors are at TWO IN THE MORNING!!!
-Ginger: Yatta... what were you doing in the vents?
-Yatta: Checking my WINTER STORAGE!! Which is NOT candy!! It's a STRATEGIC RESERVE!!
-Yatta: And then behind the reserve there was a DOOR, and the door had a FLOWER on it!! | Like the one on the sign!! But in DOOR!!
+Yatta: I FOUND A DOOR!!!
+Ginger: In the vents?
+Yatta: BEHIND MY WINTER STORAGE!! | WHICH IS NOT CANDY!!!
+Yatta: AND IT'S GOT A FLOWER ON IT!! THE SAME ONE AS THE SIGN!!
 @emote Scraps !
 @wait 0.6
 @emote Scraps off
-Scraps: ...The sign flower?
-Yatta: YES!!
-Scraps: I drew that flower.
+Scraps: ...I drew that flower.
 Ginger: You did?
-Scraps: Yesterday. When everybody was crying about Shelly. I didn't know what to do with my paws, so I drew. | I drew it sad. It came out sad.
+Scraps: Yesterday. Everybody was crying about Shelly, and I didn't know what to do, so I drew.
+Scraps: It came out sad.
 Yatta: WELL NOW IT'S A DOOR!!
-* The building creaks somewhere upstairs. It's been doing that all week.
-Ginger: We should tell Tisha. Or Rodger.
-Scraps: Rodger's asleep on a filing cabinet. Tisha cried until three yesterday.
-Scraps: ...We could just look.
-Ginger: Scraps, nobody comes back anymore. If something happens...
-Scraps: I know. | I'll be a little careful.
-Yatta: SHE SAID THE CAREFUL THING!! We're GOING!!
-@choice Follow Yatta|Follow Yatta (carefully)
+Ginger: We should wake up Tisha. Or Rodger.
+Scraps: ...
+Scraps: Let's just look first.
+Ginger: Scraps, nobody comes back anymore.
+Scraps: I know. I'll be careful.
+Yatta: SHE SAID CAREFUL!! WE'RE GOING!!
+@choice Follow Yatta|Follow Yatta carefully
 @if choice=2 careful
 @goto go
 # careful
-Ginger: ...Carefully. | Okay. Carefully.
+Ginger: ...Carefully. Okay.
 @goto go
 # go
 @fade out 0.8
@@ -76,7 +74,6 @@ Ginger: ...Carefully. | Okay. Carefully.
 @room cliffs 70 172 right
 @party on
 @lead 70 172 right
-@fade out 0.01
 @cut fall
 ` },
 
@@ -87,155 +84,167 @@ Ginger: ...Carefully. | Okay. Carefully.
 @music flCliffs
 @fade in 1.5
 @party off
-@frame Scraps off
-* The sky is the color of a peach somebody bit into. Everything else is made of very small squares.
+* (The sky is the color of a peach somebody bit into.)
 @walk Yatta 130 166 0.6
 @jump Yatta 200
-Yatta!: WHOAAAA!!! IT'S SUNSET!!! IT WAS NIGHT!!! I LOVE TIME ZONES!!
+Yatta!: IT'S SUNSET!!! IT WAS NIGHT!!!
 @walk Ginger 100 182 1.2
-Ginger: Everything's so... sharp.
-Scraps: Pointy. Everything's got corners.
-@face Scraps down
-Scraps: ...We don't, though. Look at us. We look like stickers somebody put on a placemat.
-Ginger: Is that bad?
-Scraps: I don't know. It feels rude. Like showing up to a costume party in a costume.
-Yatta: I LOOK AMAZING!!!
+Ginger: Where... are we?
+Scraps: Not Gardenview.
+Yatta: I LOVE IT!!!
 @party on
 @lead 130 170 right
-* (You can walk now. Look around. The way forward is east.)
 @sign 120 140 scare dw_scarecrow_not_enemy_sign_0
+@sign 300 160 savept savepoint
 @trigger 600 120 40 90 toGarden
-@roam Walk with the arrows · Z to talk
+@roam [Z] Talk
+# savept
+@call save
+@end
 # scare
-* "NOT AN ENEMY." The sign is very sure about that.
-Yatta: I BELIEVE YOU, SIGN!!
+* (A sign. It says "NOT AN ENEMY.")
+Yatta: OKAY!!
+@end
 # toGarden
 @fade out 0.6
-@room garden 40 214 right
+@room garden 60 200 right
 @fade in 0.6
-* A garden where the trees grow in tidy blocks. Every flower in it is turned toward you. You check behind you. Nope. You.
+* (Every flower in the garden turns to look at you.)
 Ginger: ...They're watching us.
-Scraps: Flowers do that. They watch the sun.
-Ginger: It's not sunny, Scraps.
-Scraps: ...I really wish you hadn't said that. Somebody said that to Veronica once and it went bad.
+Scraps: Flowers do that. They follow the sun.
+Ginger: There's no sun, Scraps.
+Scraps: ...
 @sign 250 176 lockerKnock dw_ralseicupboard_0
 @trigger 380 120 60 160 meet
 @roam
 # lockerKnock
 @if metLocker lockerAgain
 @sfx knock 0.6
-* It's a cupboard. Somebody has planted it in the middle of the garden, like a tree.
-@wait 0.4
+* (It's a cupboard. Somebody put it in the middle of the garden.)
 @sfx knock 0.6
-* ...Something inside knocks back. Politely.
+* (Something inside knocks back.)
 Yatta!: HELLO?!
-Locker: H-hello?! Oh, thank goodness! Could you possibly— | the handle's on your side—
-* You try the handle. It's locked. There's a little golden flower painted over the keyhole.
-Ginger: It's locked. We'll... we'll find somebody. We'll come back. I promise.
-Locker: ...Okay. I'll, um. I'll be here. Obviously.
+Locker: Oh! Oh, thank goodness! | Um, could you open the door? The handle's on your side.
+* (It's locked. There's a golden flower painted over the keyhole.)
+Ginger: It's locked... We'll come back. I promise.
+Locker: That's okay! I'll... be here!
 @flag metLocker
 @end
 # lockerAgain
 @sfx knock 0.4
-Locker: Still here! Don't worry about me! I'm very comfortable! | ...I'm not, actually. But don't worry about me!
+Locker: Still here!
 @end
 # meet
 @party off
 @spawn Floradinn 470 200 left
 @spawn Floradinn2 500 222 left
-@sfx ui_alert 0.4
+@sfx b 0.5
 @emote Floradinn !
 @emote Floradinn2 !
 @wait 0.5
 @emote Floradinn off
 @emote Floradinn2 off
-* Two little sunflower knights hop out of a bush with swords that are much bigger than they need to be.
-Floradinn: Halt, strange ones! You are not ON the list!
-Yatta: There's a LIST?!
-Floradinn: Everyone is on the list. The list is everyone. You are not everyone.
-Scraps: I'm somebody, though.
-Floradinn: That is precisely the problem!
-Ginger: We're only lost. We'll go. We'll go right now.
-Floradinn: Too late! The king must have a PERFECT day! There can be no stray anybodies on a perfect day!
-Floradinn: En garde, smooth ones!
+* (Two sunflowers with big swords jump out of a bush.)
+Floradinn: HALT! Who goes there!?
+Yatta: YATTA GOES THERE!!!
+Floradinn: You're not on the list!
+Floradinn: Today is the king's perfect day! There's no room for strangers on a perfect day!
+Ginger: We're just lost...
+Floradinn: Then get MORE lost! En garde!
 Scraps.!: Hsssss!
 @battle floradinn
-@remove Floradinn
-@remove Floradinn2
 @party off
 @lead 360 206 right
 @walk Ginger 340 196 0.01
 @walk Yatta 336 218 0.01
-@frame Scraps off
-@spawn Flowery 420 196 left
+@frame Floradinn floradin_up_0
+@frame Floradinn2 floradin_up_1
+Floradinn: Ha! You can't even scratch us!
+Scraps: It said "one." | I hit it SO hard and it said "one."
+@sfx wing 0.6
+@spawn Flowery 485 40 down
+@frame Flowery flowery_spin_to_idle_0
+@slide Flowery 485 205 0.4
+@shake 6
+@flash #ffe066
+@sfx impact 0.7
+@anim Flowery flowery_spin_to_idle_ 8 14 once
+@voice keep_waiting Sorry to keep you waiting!
+@hide Floradinn
+@hide Floradinn2
+@anim Flowery flowery_grabfloradins_ 17 12 once
+@sfx heavyswing 0.7
+@remove Floradinn
+@remove Floradinn2
 @frame Flowery flowery_pose_point_cooler_0
 @music flFlowery
-* The Floradinns are somewhere far below the cliff now. Their swords are still up here.
-Yatta: ...ow. | ow ow ow. Ow.
-Scraps: Why didn't it HURT them. I hit it. I hit it SO hard.
-Ginger: You did. It said "one."
-Flowery.grin: ...and THAT'S how you treat a Floradinn, princesses.
+* (Flowery threw both Floradinns off the cliff.)
+Yatta: ...WHOA.
+Flowery.grin[hah]: Heh. Sunflowers. All stem, no style.
 @frame Flowery flowery_idle_0
-Flowery.smirk: You were hitting them like you were afraid to dent them. | They're SUNFLOWERS. They have stems. Show the stem who's boss.
 Scraps: ...Who are YOU?
 @anim Flowery flowery_teethshine_ 6 12 once
-@sfx magiccircle 0.3
+@sfx great_shine 0.3
 @frame Flowery flowery_pose_0
-Flowery.cheer: Who am I? WHO AM I?! | Petals, did you hear that? They don't know.
-* (There are no petals around. He seems to be talking to himself.)
-@frame Flowery flowery_idle_0
-Flowery.smile: I'm Flowery. The Flower Kingdom's finest, freshest, most photogenic bloom. Level Ninety-Nine. Best friend to a king.
-Flowery.smile: And you three are... | ...
+Flowery.cheer[itsme]: Howdy. | The name's Flowery.
+Flowery.smile[none]: Star sign: the Flower. Golden eyes. Best friend to a king.
+Flowery.smile[none]: And you three must be...
 @walk Flowery 400 200 0.6
 @face Flowery left
 @voice kris Kris!
 @music flWho
-Flowery.wide: ...
-Flowery.look: Huh.
-Flowery.side: You're not Kris.
+Flowery.wide[none]: ...
+Flowery.look[huh]: Huh.
+Flowery.side[none]: You're not Kris.
 Ginger: ...Who's Kris?
-Flowery.calm: Nobody you'd know. Tall kid, hair like a curtain somebody gave up on. | They came in the front door yesterday, and I was SURE they'd come back through the back one.
-Flowery.plain: Instead, the back door coughed up... you.
+Flowery.calm[none]: The king's kid. | I left the back door open for them.
+Flowery.plain[none]: And instead I got... you.
 Yatta: WE CAME FROM THE VENTS!!!
-Flowery.squint: The vents. | Of course you did.
+Flowery.squint[none]: The vents.
 @walk Flowery 380 200 0.8
-Flowery.look: Hold still.
-* He walks a slow circle around the three of you, the way somebody walks around a used car.
-Flowery.side: You're... smooth.
-Scraps: People keep saying that.
-Flowery.side: Everything here is drawn with about four hundred little squares, princess. You're drawn with a hundred thousand. | You look like a commercial that wandered into the wrong show.
-Scraps: We ARE a show! Were. We were a show.
-Flowery.soft: ...Were, huh.
+* (He walks a slow circle around you.)
+Flowery.side[hoo]: Well, aren't you three a strange bouquet.
+Flowery.side[none]: Everything in this kingdom is made of little squares. You three are... not.
+Scraps: ...Thanks?
+Ginger: We're from a TV show.
+Flowery.soft[none]: A show, huh.
 @frame Flowery flowery_pose_0
-Flowery.beam: Well! A show! Then you'll need a tour guide. And it just so happens I'm the best tour guide in the history of tours, and of guides.
-Ginger: We really just want to go home...
-Flowery.smile: And you will, cupcake! After a little stroll. The back door doesn't open from this side until it's ready. Doors are like that. Sensitive.
-Ginger: ...Cupcake?
-Flowery.wink: You look like a cupcake. It's a compliment. Take it, it's free.
-Flowery.smirk: You're "Origami," you're "Confetti," and the three of you together are "princesses."
+@anim Flowery flowery_clap_ 4 10 once
+Flowery.beam[thats_great]: Well! Any friend of the vents is a friend of mine.
+Flowery.smile[none]: Don't worry, Princesses. I'll get you home. | The back door just needs a little time.
+Ginger: ...Princesses?
+Flowery.wink[none]: It suits you.
+@anim Flowery flowery_condescend_ 7 10 once
+Flowery.smirk[none]: You're Cupcake. You're Origami. And you're Confetti.
 Yatta: I'M CONFETTI!!!
-Scraps: I'm a paper craft. Origami is folding. I CUT.
-Flowery.grin: Then I'll be very careful around you, Origami.
-Ginger: Um... Flowery? There's somebody in that cupboard.
-Flowery.wide: That? | That's an art piece. It's called "Cupboard." It knocks. That's the art.
+Scraps: I'm paper. I CUT. Origami is folding.
+Flowery.grin[none]: Then I'll keep my petals away from you, Origami.
+Ginger: Um... there's somebody in that cupboard.
+Flowery.wide[none]: That? | That's art. It knocks.
 Scraps: It said "thank goodness."
-Flowery.smile: Very interactive art piece. Ahead of its time. | Moving on!
+@anim Flowery flowery_shrug_spin_ 4 10 once
+Flowery.smile[none]: Very interactive art. | Now, let's make like a tree and have some fun!
 @frame Flowery off
 @face Flowery right
-Flowery.smile: Follow me! Stay close, stay cute, and if anything else with a sword shows up, scream my name. | Two syllables. Flow-ery. Very easy to scream.
 @walk Flowery 800 200 2.2
 @remove Flowery
 @party on
 @lead 360 206 right
 Scraps: ...I don't like him.
 Yatta: I LOVE HIM!!!
-Ginger: He saved us. | ...He also wanted somebody else to come through that door. Somebody named Kris.
+Ginger: He was waiting for somebody else.
 Scraps: Yeah. | He looked at us like we were the wrong present.
 @trigger 760 120 40 160 next
 @roam
 # next
 @fade out 0.6
 @finish
+# save
+@sfx save 0.6
+* (Every flower in sight turns to look at you.)
+* (The power of being looked at shines within you.)
+* (HP fully restored. Progress saved.)
+@saved
 ` },
 
 /* ======================================================================= 3 */
@@ -246,82 +255,107 @@ Scraps: Yeah. | He looked at us like we were the wrong present.
 @spawn Flowery 130 160 right
 @cut castle
 @npc Flowery flTalk
-* The road along the cliffs. Far off, a castle sits on a hill like a cake on a stand.
-Flowery.cheer: Behold! Flower Castle! Ancestral home of beauty, built by me, decorated by me, | ...well, built by a dream, decorated by me.
-Yatta: CAN WE GO IN?! CAN WE GO IN?!
-Flowery.smile: You can go anywhere you like, Confetti. As long as I'm standing next to you.
-@trigger 300 120 40 90 skate
+@anim Flowery flowery_jacket_flutter_ 5 8 once
+Flowery.cheer[hey_guys]: Behold! Flower Castle!
+Flowery.smile[none]: Built by a dream. Decorated by me.
+Yatta: CAN WE GO IN?!
+Flowery.smile[none]: Of course, Confetti. Right behind me.
+@trigger 260 120 40 90 puzzle
 @roam
 # flTalk
-Flowery.smile: Need something, princess? Directions? Compliments? I have both, and plenty of each.
-@choice Ask about Kris|Ask about him|Never mind
+Flowery.smile: Need something, Princess?
+@choice Ask about Kris|Ask about him|Nothing
 @if choice=1 askKris
 @if choice=2 askHim
-Flowery.wink: Bold of you to talk to me and then say nothing. I respect it.
+Flowery.wink: Just wanted to look at me? Understandable.
 @end
 # askKris
-Flowery.calm: Kris? Quiet kid. Very likable. Very good at leaving a room without anybody noticing they're gone. | Their dad noticed. Every time.
+Flowery.calm: Kris? | They grew up like a turnip. I watched the whole thing from a pot.
+Flowery.calm[none]: Good kid. Quiet. | Their dad worries about them more than they know.
 @end
 # askHim
-Flowery.beam: Me? I'm a flower. A golden one. I was one-seventh of a very important question, once.
-Flowery.smile: ...The answer was "yes," by the way. For a while.
+Flowery.beam: Me? I'm one of seven flowers. | We were part of a very important question, once.
+Flowery.smile[none]: The answer was "yes." For a while.
 @end
-# skate
+# puzzle
 @party off
 @unnpc Flowery
-* The road ends at a row of stone switches in the dirt. Each one's a different color. None of them are pressed.
+@switches 330 176 26 #ffd23a,#ff7ab0,#7ff07f,#7f9bff,#c49bff 1,3,0,4,2 solved fumble
+@sign 300 140 hint npc_sign_0
+* (Five colored plates are set into the road. A gate blocks the way.)
 Scraps: A puzzle.
-Ginger: I'm... bad at puzzles.
+Ginger: I'm bad at puzzles...
 Yatta: I'M GREAT AT PUZZLES!! I JUST STAND ON ALL OF THEM!!
-@walk Yatta 330 150 0.4
-@jump Yatta
-@walk Yatta 360 182 0.3
-@jump Yatta
-@sfx ui_cancel 0.4
-* Nothing happens. The switches reset with a polite little "thup."
-Yatta: ...I'M GREAT AT PUZZLES BUT DIFFERENTLY!!
-@walk Flowery 300 170 0.8
-Flowery.smirk: Step aside, Confetti. This calls for a professional.
+@walk Flowery 280 186 0.6
+@face Flowery right
+Flowery.smirk[hah]: Go on, then. I'll supervise.
+@party on
+@lead 300 186 right
+@npc Flowery flPuzzle
+@roam Step on the plates in order
+# hint
+* (A sign.)
+* ("Pink sun rises. The sky goes blue. The gold petals fall. The purple dusk comes. Green grass grows over everything.")
+@end
+# flPuzzle
+Flowery.smile: Read the sign, Princess. Signs are very polite. They tell you things.
+@end
+# fumble
+@party off
+@walk Flowery 300 176 0.5
+Flowery.smirk[hah]: Okay, okay. Step aside. | This calls for a professional.
 @music flSkate
 @frame Flowery flowery_skateboard_0
-@sfx whoosh 0.5
-@slide Flowery 640 170 0.7
-@sfx ui_select 0.4
-@shake 2
-@sfx ui_select 0.4
-* Every switch on the road clicks down at once. Somewhere a gate goes "GRAAANK."
+@sfx wing 0.5
+@slide Flowery 470 176 0.6
+@sfx select 0.5
+@sfx great_shine 0.5
 @frame Flowery flowery_pose_point_cooler_0
 @music flFlowery
-Flowery.grin: Solved.
-Scraps: That's not solving it. That's skateboarding on it.
-Flowery.smile: The puzzle didn't say "no skateboards." I read the whole puzzle.
-Yatta!: TEACH ME!!! TEACH ME TO DO THAT!!!
-Flowery.wink: Can't. You need hair like this. It's load-bearing.
-Flowery.smirk: But since you asked so nicely... | ...have you heard my voice lines?
+* (Every plate lights up at once.)
+Flowery.grin[yes]: Solved.
+Scraps: That's not solving it. You just skated over it.
+Flowery.smile[none]: The puzzle never said "no skateboards."
+@goto after
+# solved
+@party off
+@walk Flowery 300 176 0.5
+Flowery.wide[wow]: Oh! You solved it.
+Flowery.ugh[none]: I was going to skateboard on it. I brought the board and everything.
+@frame Flowery flowery_skateboard_0
+Flowery.sweat[none]: ...I'm skating to the gate anyway.
+@music flSkate
+@slide Flowery 470 176 0.6
+@music flFlowery
+@frame Flowery flowery_pose_point_cooler_0
+@goto after
+# after
+@sfx impact 0.5
+* (Somewhere ahead, a gate opens.)
+Yatta!: TEACH ME TO DO THAT!!!
+Flowery.wink[none]: Can't. You need hair like this.
+Flowery.smirk[none]: But I CAN show you my voice lines.
 Scraps: Your what?
-Flowery.cheer: My VOICE LINES. Everybody important has them. Listen.
 @frame Flowery flowery_pose_r_0
 @voice sanfrandisco Here I come, Sanfrandisco!
+@wait 0.4
 @frame Flowery flowery_pose_point_cooler_0
 @voice my_jarona My Jarona!
+@wait 0.4
 @frame Flowery flowery_kiss_2
 @voice try_flavor Try my flavor!
+@wait 0.4
 @frame Flowery flowery_pose_0
 @voice best_friend Your dad's my best friend!
 @frame Flowery flowery_idle_0
-Flowery.ugh: ...Wrong audience. That one's for somebody else. Forget you heard it.
-@frame Flowery flowery_idle_0
-* (Somewhere, faintly, a romantic-comedy saxophone plays and then stops, embarrassed.)
-Ginger: ...Where is that sound coming from?
-Flowery.smile: From me. I'm surrounded by it. It's a condition.
-Scraps: Does anybody else here have voice lines?
-Flowery.side: Seth tried once. It just said "um." For eleven minutes.
+Flowery.ugh[none]: ...Wrong audience for that one.
+Ginger: Where is that coming from?
+Flowery.smile[none]: Me. I'm just like this.
 Yatta!: I WANT VOICE LINES!!!
-Flowery.grin: You ARE a voice line, Confetti. You're all caps. All the time.
-Yatta!: THANK YOU!!!
+Flowery.grin[none]: Confetti, you ARE a voice line.
 @frame Flowery off
 @party on
-@lead 330 170 right
+@lead 470 180 right
 @trigger 700 120 40 90 sethaqua
 @npc Flowery flTalk
 @roam
@@ -332,70 +366,60 @@ Yatta!: THANK YOU!!!
 @spawn Aqua 830 180 left
 @walk Flowery 690 170 0.6
 @face Flowery right
-* Somebody in a long purple hood is reading on the path. Beside them, a small girl in a big red bow is balancing a knife on her finger.
-Aqua: Seth! Seth! Look! I'm balancing it!
-Seth: Please don't balance it.
-Aqua: I'm balancing it SO well.
-Seth: I can see that. That's why I said please.
-Flowery.cheer: Seth! Aqua! My brilliant buds!
-@face Seth left
-Seth: ...Flowery. | Who are the... | Who are they?
-Aqua: My name's Blue, by the way.
-Seth: Your name is Aqua.
-Aqua: Today it's Blue.
-Seth: Blue is a different person. Blue is a whole different person who exists.
-Aqua: Then I'm Seth.
-Seth: You can't be Seth, I'M Seth, we've talked about this every day since we were picked.
-Yatta!: I'M CONFETTI!!!
-Aqua: Ooh. Can I be Confetti?
-Yatta: ...
-Yatta: ...YES!!! WE'RE BOTH CONFETTI!!!
-Seth: Oh no. There's two now.
-Flowery.smile: Seth, these are my new friends. They came in the back door. | Isn't that interesting?
-* Seth looks at Flowery, then at you, then at Flowery again, and pushes their glasses up.
-Seth: The back door. | The back door you told us to watch.
-Flowery.plain: Mm-hm.
-Seth: For Kris.
-Flowery.smile: For anybody, Seth. Anybody at all.
-Seth: ...Right. Anybody.
-Seth: (Under their breath) He was SO sure it would be Kris.
-Scraps: What's in the book?
-@face Seth down
-Seth: Plans. Lists. Who's allowed in the garden, what the king had for breakfast, what he's allowed to see today. | You're not in it. Any of it.
-Scraps: Everybody here keeps telling us we're not on lists.
-Seth: Because you're not! I'd have to make a new page. I don't have a new page. | I'd have to make a new BOOK.
-Ginger: ...We could help you. Write the page.
-Seth: ...
-Seth: You'd help me write the page about you?
-Ginger: I'm good at decorating. I can't... do anything else very well. But I can make a page look nice.
-* Seth stares at Ginger. Very slowly, they hold out a pen.
-Aqua: Seth's blushing.
-Seth: I am NOT, Aqua.
-Aqua: Blue.
-Seth: AQUA.
-@anim Aqua aqua_laugh_ 8 10
-@wait 1.4
+* (Somebody in a purple hood is reading on the road. Next to them, a girl with a red bow is spinning a knife.)
+@anim Aqua aqua_spin_ 4 10
+Aqua: Uuu, Seth! Look how fast it goes!
 @idle Aqua
-Flowery.grin: Wonderful, wonderful! Everybody loves each other! Seth, Aqua, I'll take our guests to the castle. Make sure the king's breakfast is... perfect.
+Seth: Aqua, please, not near the edge!
+Flowery.cheer[hey_guys]: Seth! Aqua! My little buds!
+@face Seth left
+Seth: Flowery! Who are— | Who are THEY?
+Flowery.smile[none]: New friends. They came in through the back door.
+Seth: ...The back door. | The one we were supposed to watch. For Kris.
+Flowery.smile[none]: For anybody, Seth.
+Seth: ...Right. Anybody.
+@anim Aqua aqua_wave_ 4 8 once
+Aqua: Uuu, new friends! I'm Blue!
+Seth: You're Aqua.
+Aqua: Blue's a better name.
+Seth: Blue is a different PERSON.
+Aqua: Then I'm Seth!
+Seth: You can't be Seth! I'M Seth!
+Yatta!: I'M CONFETTI!!!
+Aqua: Uuu! Can I be Confetti too?
+Yatta!: YES!!! WE'RE BOTH CONFETTI!!!
+@anim Seth seth_facepalm_down_ 2 4 once
+Seth: No... no, no, no. You can't just make friends with them! | They're not on the list!
+Scraps: What list?
+Seth: The list! Who gets to be in the garden. What the king eats. What he's allowed to see today. | You're not in it! Any of it!
+Ginger: ...We could write ourselves in? | I'm good at making things look nice.
+Seth: ...
+Seth: ...You'd do that?
+* (Seth hands Ginger a pen. Very slowly.)
+@anim Aqua aqua_clapping_ 4 10 once
+Aqua: Uuu, Seth's face is red!
+@anim Seth seth_glasses_shiny_ 8 12 once
+Seth: It is NOT!
+@anim Flowery flowery_clap_ 4 10 once
+Flowery.grin[hah]: Wonderful! Everybody's friends! | Seth, make sure Gorey's breakfast is perfect.
 Seth: It's three in the afternoon.
-Flowery.wink: Then make sure it's a perfect three in the afternoon.
+Flowery.wink[none]: Then make it a perfect three in the afternoon. Adieu!
 @walk Flowery 900 170 1.4
 @remove Flowery
 @walk Seth 760 172 0.5
 @face Seth left
-Seth: Hey. | ...You. Paper one.
+Seth: H-hey. Paper one.
 Scraps: Scraps.
-Seth: Scraps. He's nice. He's really nice, okay? He's the nicest. He'd do anything for the king.
-Seth: That's what I wanted to say. | He'd do anything.
+Seth: Scraps. | Flowery's nice. He's really nice. He'd do anything for the king.
+Seth: ...Anything.
 @walk Seth 900 170 1.2
 @remove Seth
 @walk Aqua 900 190 0.9
 @remove Aqua
 @party on
 @lead 700 170 right
-Ginger: That felt like a warning.
-Scraps: It felt like a warning wearing a nice hat.
-Yatta: I HAVE A BEST FRIEND NOW!!! HER NAME IS SETH!!!
+Ginger: That sounded like a warning.
+Scraps: It was a warning in a nice hat.
 @trigger 860 120 40 90 next
 @roam
 # next
@@ -413,105 +437,101 @@ Yatta: I HAVE A BEST FRIEND NOW!!! HER NAME IS SETH!!!
 @spawn Orange 270 132 down
 @ghost Orange
 @spawn Flowery 90 165 right
-* A cafe inside the castle. It smells like butter.
-* A tall green chef is standing behind the counter. A small orange rat is standing on the chef's hat.
+* (A cafe inside the castle. It smells like butter.)
+* (A tall green chef stands behind the counter. A small orange mouse stands on the chef's hat.)
 @music flOrange
-Flowery.cheer: Green! My partner in flavor! And Orange, my favorite little sister in the entire universe!
-Orange!: I'M YOUR ONLY LITTLE SISTER!!!
-Flowery.smile: And my favorite.
-Orange!: WHO ARE THE SHINY ONES?! WHY ARE THEY SHINY?! I DON'T TRUST SHINY!!
-Yatta!: WHO'S THE LOUD ONE?! WHY IS SHE LOUD?! I LOVE LOUD!!
-Orange!: I'M ORANGE!!!
-Yatta!: I'M CONFETTI!!!
-Orange!: THAT'S NOT A COLOR!!!
-Yatta!: IT'S EVERY COLOR!!!
-* Orange opens her mouth, then closes it again.
-Orange.: ...okay that's pretty good.
+Flowery.cheer[hey_guys]: Green! Orange! Meet my new friends!
+Orange: Wh-who are THEY!?
+Orange: I-I'm not scared of them! I'm EXTRA now! I'm SUPER!
+Yatta!: HI!!! I'M CONFETTI!!!
+Orange.!: AAAH!!
+* (Orange hides behind the chef's hat.)
+Flowery.smile[none]: My little sister. She's very brave.
+Orange: I AM very brave!!
 @music flShop
-* Green waves at you. That's the whole conversation. It was a good one.
+@anim Green enemy_green_wave_ 4 8 once
+* (Green waves at you.)
 @npc Green greenTalk
 @npc Orange orangeTalk
 @npc Flowery flTalk
 @sign 22 176 cafeLocker dw_ralseicupboard_0
-@roam Talk to everyone
+@roam
 # cafeLocker
-* It's the cupboard from the garden. Somebody has moved it here. Somebody has put a little doily on top.
+* (It's the cupboard from the garden. Somebody moved it here and put a doily on it.)
 @sfx knock 0.5
-Locker: ...Is that the paper one? Hello again! I recognize your footsteps! They're very soft!
-Orange!: DON'T OPEN THAT!! BIG BROTHER SAYS IT'S A "SURPRISE FOR LATER"!!
-Orange.: ...he's been saying that for two days.
+Locker: Hello again!
+Orange: D-don't open that! Big brother says it's a "surprise for later"!
 @end
 # greenTalk
 @if baked greenAfter
-* Green nods at you. Green points at the oven. Green points at Ginger. Green tilts their head.
-Ginger: ...Me? | Oh, no, I'm... my cookies are...
-Ginger: Goob said they don't taste like Cosmo's. He was being nice about it. That's how I know they're really bad.
-* Green walks to the counter. Green takes down a second apron. Green holds it out.
-Ginger: ...
-Ginger: Okay. | Okay, I'll try.
+* (Green points at the oven. Then at Ginger.)
+Ginger: Me? | Oh, no... my cookies are...
+Ginger: Goob said they don't taste like Cosmo's. He was being nice about it.
+* (Green holds out a second apron.)
+Ginger: ...Okay. I'll try.
 @party off
 @walk Ginger 250 190 1
 @face Ginger up
 @walk Green 260 172 0.4
 @fade out 0.6
-* Time passes. It smells like vanilla. Then like smoke. Then like vanilla again, more carefully.
-* Green never says a word. Green just moves Ginger's hands a little to the left, a little slower, and nods.
+* (Time passes. It smells like vanilla. Then like smoke. Then like vanilla again.)
+* (Green never says anything. Green just moves Ginger's hands a little slower, and nods.)
 @fade in 0.6
 @frame Green green_pleased_0
-Ginger: ...They came out.
-Ginger: They came out round. They're ROUND, Scraps. Cookies are supposed to be round!
+Ginger: They came out... round!
+Ginger: Scraps! They're ROUND!
 @spawn Cake 250 200 down
 @frame Cake green_cake_0
-Scraps: You decorated them like...
-Ginger: Like flowers. Seven colors. | ...I didn't plan that. My hands just did it.
-* Green looks at the cookies, then pats Ginger on the head.
-Flowery.soft: Green does that. You walk in bad at something and walk out a little less bad.
+Scraps: You decorated them like flowers.
+Ginger: Seven colors. | I didn't even mean to.
+@anim Green green_gesture_ 2 4 once
+* (Green pats Ginger on the head.)
+* (Green wanted to be a chef, and know the flavor of many things.)
 @flag baked
 @party on
 @idle Green
 @lead 200 200 right
 @end
 # greenAfter
-* Green gives you a thumbs up. A whole, entire thumbs up.
+* (Green gives you a thumbs up.)
 @end
 # orangeTalk
-Orange!: WHAT DO YOU WANT, SHINY.
+Orange: Wh-what do you want!?
 @choice Ask about the shop|Ask about Flowery
 @if choice=2 orangeFl
-Orange!: OH! THE SHOP! IT'S GREEN'S SHOP! EVERYTHING COSTS ONE DOLLAR MORE THAN THE OTHER SHOP!
+Orange: It's Green's shop! Everything costs one dollar more than the other shop!
 Scraps: Why?
-Orange!: BECAUSE IT'S BETTER!!!
-Scraps: Is it?
-Orange.: ...it's the same stuff. | DON'T TELL GREEN I SAID THAT!!!
+Orange: B-because... because it's BETTER!
+Orange: ...It's the same stuff. | Don't tell Green!
 @end
 # orangeFl
-Orange!: MY BIG BROTHER IS THE BEST! HE'S THE TALLEST AND THE SHINIEST AND HE PUNCHES REALLY GOOD!!
-Orange.: He doesn't sleep, though. He stays up looking at the castle door. In case somebody comes in.
-Orange.: ...in case YOU came in, I guess.
+Orange: Big brother is the strongest! He protects everybody!
+Orange: ...I want to be strong like him. | Then I can protect him too.
 @end
 # flTalk
 @if baked flAfter
-Flowery.smile: Go on, try the cafe. Green doesn't talk, but Green LISTENS. It's terrifying. You'll love it.
+Flowery.smile: Try Green's cooking, Princess. | Green doesn't talk. Green listens.
 @end
 # flAfter
 @party off
 @walk Flowery 120 200 0.6
 @face Flowery right
-Flowery.calm: Cupcake. A word?
+Flowery.calm[none]: Cupcake. Got a minute?
 @walk Ginger 150 200 0.6
 @face Ginger left
-Flowery.calm: Your friends. The paper one and the loud one. Do they go everywhere you go?
-Ginger: ...No. I'm only around at Christmas. I'm a Holiday Toon. | The rest of the year I'm in storage. Well, it's a room. But it has the same feeling as storage.
-Flowery.serious: So somebody keeps you. On a shelf. Until you're useful.
+Flowery.calm[none]: The other two. Do they go everywhere you go?
+Ginger: ...No. I'm a Holiday Toon. I'm only around at Christmas.
+Ginger: The rest of the year I'm just... put away.
+Flowery.serious[none]: Put away until you're useful.
 Ginger: That's... not how Bobette would say it.
-Flowery.serious: How would you say it?
-Flowery.soft: Did somebody send you, Cupcake? A kid, maybe. Hair like a curtain. Told you to come through the back door and look around?
-Ginger: ...No. Nobody sends us anywhere. That's the whole problem. Everybody who used to tell us what to do is gone.
-* Flowery looks at her for a while. Then he laughs.
+Flowery.soft[none]: Did somebody send you, Cupcake? | Through the back door?
+Ginger: No. | Nobody tells us where to go anymore.
+* (Flowery looks at her for a while.)
 @frame Flowery flowery_pose_0
-Flowery.beam: Ha! Of course not! Look at you, you couldn't spy on a sandwich. | Come on. The king wants to meet you.
-Ginger: The king?
-Flowery.smile: He doesn't know it yet. But he does.
+Flowery.beam[hah]: Ha! Of course not. You couldn't spy on a sandwich.
+Flowery.smile[none]: C'mon. There's someone you should meet.
+Ginger: Who?
+Flowery.smile[none]: The king. | He doesn't know it yet.
 @frame Flowery off
 @party on
 @lead 150 200 right
@@ -523,115 +543,109 @@ Flowery.smile: He doesn't know it yet. But he does.
 ` },
 
 /* ======================================================================= 5 */
-{ id: 'trial', title: 'The Case of the Trampled Bed', sub: 'SEGMENT 5', place: 'Flower Castle · Left Wing', script: String.raw`
+{ id: 'trial', title: 'The Case of the Trampled Bed', sub: 'SEGMENT 5', place: 'Flower Castle · West Wing', script: String.raw`
 @party Scraps,Ginger,Yatta
 @room hall 30 200 right
 @music flAsgore
 @fade in 0.8
 @spawn Flowery 80 186 right
-* The left wing. Three big doors: blue, yellow, orange. Somebody has trampled the little flowerbed outside the blue one.
+* (The west wing. Three doors: blue, yellow, orange.)
+* (The little flowerbed by the blue door has been stepped on.)
 @trigger 230 150 60 80 crime
 @roam
 # crime
 @party off
 @spawn Yellow 330 190 left
-@sfx ui_alert 0.5
+@sfx b 0.5
 @frame Yellow yellow_point_left_0
 @music flYellow
-Yellow!: FREEZE.
+@anim Yellow yellow_cool_point_raise_ 5 10 once
+Yellow!: FREEZE, varmints!
 @shake 3
-* A tall flower in a cowboy hat steps out from behind the yellow door. He is pointing a very serious gun.
-Yatta: I'M FROZEN!!! LOOK HOW FROZEN I AM!!!
-@jump Yatta
-Yellow: Somebody trampled Blue's flowerbed. And a man doesn't trample a flowerbed. Not in my town.
-Scraps: It's a castle, not a town.
-Yellow: Not in my castle-town.
+* (A flower in a cowboy hat steps out of the yellow door, pointing a gun.)
+Yatta!: I'M FROZEN!!!
+Yellow: Somebody trampled Blue's flowerbed. | And there ain't no trampling in my town.
+Scraps: It's a castle.
+Yellow: ...Castle-town.
 @spawn Blue 180 150 down
 @walk Blue 200 186 0.8
-@anim Blue enemy_blue_spintopose_ 4 10 once
+@anim Blue enemy_blue_ballet_ 8 12 once
 @frame Blue blue_poses_0
-Blue: Oh, Yellow. You found the culprits. | How very... dramatic of you.
-Blue: Three strangers. Shiny. Out of place. Standing right next to my poor, crushed bed. | I could just cry.
-Flowery.squint: Blue.
-Blue: Flowery. | You're blocking my light.
-Flowery.smirk: I'm everybody's light, Blue. It's not my fault you're standing in me.
-* Blue and Flowery look at each other the way two cats look at each other across a fence.
-Yellow: Order! This court is now in session!
+Blue: Oh, Yellow, dear. You found them.
+Blue: Three strangers, right next to my poor flowers. | How tragic.
+Flowery.squint[none]: Blue.
+Blue: Flowery. | You're standing in my light.
+@anim Flowery flowery_teethshine_ 6 12 once
+Flowery.smirk[hoo]: I AM the light, Blue.
+* (They stare at each other like two cats on a fence.)
+Yellow: Order! This here court is now in session!
 Ginger: Court?
-Yellow: Every crime deserves a trial! A FAIR one! I'm the judge. And the sheriff. And the jury.
+Yellow: Every crime gets a fair trial! I'm the judge, the sheriff, and the jury.
 Scraps: That's not fair.
-Yellow: ...I'm a very fair jury.
+Yellow: ...It's a little fair.
 @frame Yellow yellow_cool_stance_0
 @call trial
 # trial
-Yellow: The evidence! One: the bed is trampled. Two: the footprints are small. Three: the footprints... | ...are shaped like a tiny boot.
-Yellow: Which of you wears tiny boots?
-Yatta: NOT ME!!! I'M BAREFOOT!!! I'M ALWAYS BAREFOOT!!!
+Yellow: Here's the evidence, y'all. The footprints are small. | And they're shaped like a little shoe.
+Yellow: So who wears little shoes?
+Yatta: I'M BAREFOOT!!!
 Scraps: Paws.
-Ginger: ...I have tights. With stirrups.
+Ginger: ...Tights.
 Yellow: Hmmmm.
 @choice Point at Blue|Point at Flowery|Point at Yellow
 @if choice=2 blameFl
 @if choice=3 blameYellow
-Scraps: It was HER. The ballerina. | Ballerinas wear tiny shoes.
-Blue.wide: How DARE you. These are SLIPPERS, darling.
-Yellow: ...Slippers aren't boots. Objection overruled.
-Yellow: Try again, citizen.
+Scraps: Her. Dancers wear little shoes.
+Blue.wide: How DARE you. These are slippers, dear.
+Yellow: Slippers ain't shoes. Objection overruled. | Try again, partner.
 @goto trial
 # blameYellow
-Scraps: It was you. You're wearing boots.
+Scraps: You. You're wearing boots.
 Yellow: ...
-Yellow: I... | I am wearing boots.
 @frame Yellow yellow_depressed_0
-* Yellow looks down at his own boots. His whole body droops.
-Yellow: Then justice demands... | ...that I punish myself.
+Yellow: Then justice says... | I gotta punish myself.
 @frame Yellow yellow_kneelsad_0
-Ginger: No! No, no, no, Yellow, they're cowboy boots, they're HUGE, they couldn't...
-Yellow: ...they couldn't.
-Yellow: Thank you, ma'am. | Objection... sustained. Self-objection.
+Ginger: No, no! They're cowboy boots! They're too big!
+Yellow: ...They are too big.
+Yellow: Thank ya kindly, ma'am. | Objection... sustained.
 @frame Yellow yellow_cool_stance_0
 @goto trial
 # blameFl
-Scraps: It was Flowery.
-Flowery.wide: Me?!
-Scraps: You came in first. You walked right past the bed. And those are dancing shoes. Tiny dancing shoes.
-Scraps: And you've got dirt on your heel. Blue dirt. From the blue bed.
-* Everybody looks at Flowery's heel. There is, in fact, blue dirt on it.
-Flowery.sweat: I— | That's— | That's from a PIROUETTE. A practice pirouette. In the morning. For art.
-Blue.sly: You practiced a pirouette... on my flowers.
-Flowery.ugh: I practiced a pirouette NEAR your flowers. The flowers came INTO the pirouette.
+Scraps: Flowery.
+Flowery.wide[huh]: Me?!
+Scraps: You walked right past the bed. You've got dancing shoes. | And there's blue dirt on your heel.
+* (Everybody looks at Flowery's heel. There's blue dirt on it.)
+Flowery.sweat[nonono]: That's— | That's from a PIROUETTE. For practice.
+Blue.sly: On my flowers.
+Flowery.ugh[none]: NEAR your flowers.
 Blue.cross: You never could land it.
-Flowery.snarl: I LAND IT EVERY TIME.
+Flowery.snarl[show_you]: I land it EVERY time!
 @anim Flowery flowery_pirouette_ 8 16 once
 @frame Flowery flowery_hurt_0
 @shake 2
-@sfx hit_light 0.4
-* Flowery pirouettes. He does not land it.
+@sfx pirouette 0.5
+* (Flowery pirouettes. He doesn't land it.)
 @frame Flowery off
-Blue.sly: ...Mm-hm.
-Yellow: The court finds Flowery... GUILTY. Of trampling. And of not landing it.
+Yellow: This court finds Flowery GUILTY. | Of tramplin'. And of not landin' it.
 @frame Yellow yellow_shoot_0
-@sfx bounce 0.5
-* Yellow fires. A small blue flower pops out of the barrel and lands in Flowery's hair.
-Yellow: ...it always does that.
-Blue.soft: I put those in there, darling. Every morning. I'd rather you shot something pretty.
-* Yellow goes red under his hat.
-Yatta: THAT WAS THE BEST COURT I'VE EVER SEEN!!!
-Ginger: It's the only court you've ever seen.
-Yatta: AND IT WAS THE BEST ONE!!!
+@sfx bump 0.5
+* (Yellow fires. A blue flower pops out of the barrel and lands in Flowery's hair.)
+Yellow: ...It always does that.
+@anim Blue blue_laugh_ 2 4 once
+Blue.soft: I fill it every morning, dear. | I'd rather you shoot something pretty.
+* (Yellow's face goes red under his hat.)
+Yatta: THAT WAS THE BEST COURT EVER!!!
 @frame Flowery off
 @walk Flowery 120 196 0.5
 @face Flowery right
-Flowery.smirk: Origami. You're sharp.
+Flowery.smirk[hoo]: Origami. You've got sharp eyes.
 Scraps: I'm paper. It's the edges.
-Flowery.calm: I mean you watch people. You clocked which foot I walked in on.
-Flowery.calm: Most people don't look that hard at me. They look at the hair and stop.
-Scraps: Your hair's very loud.
-Flowery.smile: Thank you. | ...Do you always look that hard at people?
-Scraps: Since I got back.
-Flowery.side: Back from where?
-Scraps: ...Somewhere you don't get to come back from anymore. | So now I look at everybody really hard. In case it's the last time I get to.
-* Flowery doesn't have a comeback for that one. He looks at his blue-dirt shoe instead.
+Flowery.calm[none]: Most people look at the hair and stop.
+Flowery.smile[none]: You don't.
+Scraps: ...Since I got back, I look at everybody.
+Flowery.side[none]: Got back from where?
+Scraps: Somewhere you don't come back from anymore. | So I look. In case it's the last time.
+* (Flowery doesn't say anything. He looks at his blue-dirt shoe.)
 @music flAsgore
 @party on
 @lead 160 200 right
@@ -640,13 +654,25 @@ Scraps: ...Somewhere you don't get to come back from anymore. | So now I look at
 @trigger 520 150 40 90 next
 @roam
 # blueTalk
-Blue.soft: Everything in this castle is painted, darling. The walls, the sky, the grin on him. I've watched him do the touch-ups.
-Blue.sly: Ask him how long he's been "fine." It's a fun number.
+Blue.soft: Flowers are messengers of love, dear.
+Blue.sly: Ask Flowery how long he's been "fine." It's a fun number.
 @end
 # yellowTalk
-Yellow: Ma'am. Sir. Small loud ma'am. | If you ever need justice, just holler. I'll be there. I'll probably shoot a flower at it.
+Yellow: If y'all ever need justice, just holler. | I'll probably shoot a flower at it.
 @end
 # next
+@sfx noise 0.4
+@shake 2
+* (At the end of the hall, something black is dripping down the wall.)
+* (It pools on the floor. Then it stands up.)
+Yatta: ...That's not a flower.
+Ginger: That's from the Gardens.
+@battle ichorSmall
+@music flAsgore
+* (The puddle soaks into the floorboards and is gone.)
+Scraps: Don't tell Flowery.
+Ginger: Scraps...
+Scraps: Not yet. | He's got enough going on.
 @fade out 0.6
 @finish
 ` }

@@ -1,0 +1,24 @@
+<!doctype html><html><head><meta charset="utf-8"><title>Flower Kingdom smoke test</title><link rel="stylesheet" href="../../css/flowery.css"></head><body>
+<!-- Runs every segment in FW.test mode (instant text, first choice, every NPC and trigger visited, cuts and battles skipped)
+     and reports errors and unknown sprites/voices in the console. ?choice=1 tries the second option of every choice. -->
+<div id="root" class="fk-root"></div>
+<script>
+const ASSET='../../'; const Sound={on:false,vol:1,play(){}}; const Music={play(){},stop(){}}; const MUSIC_TRACKS={};
+const ItemSheet={icon:n=>'../../icons/sprites/'+n+'.png'};
+</script>
+<script src="../../js/flowery-pack.js"></script><script src="../../js/flowery-world.js"></script><script src="../../js/flowery-cuts.js"></script>
+<script src="../../js/flowery-arena.js"></script><script src="../../js/flowery-battle.js"></script><script src="../../js/flowery-story.js"></script><script src="../../js/flowery-story2.js"></script>
+<script>
+FW.test = true; FW.testChoice = +(new URLSearchParams(location.search).get('choice') || 0); FW.testLog = []; FW.testShots = [];
+FlPack.load().then(async () => {
+  FW.open(document.getElementById('root'), {});
+  window.results = [];
+  for (let i = 0; i < FL_STORY.length; i++) {
+    const n0 = FW.testLog.length, t0 = performance.now();
+    const r = await Promise.race([FW.play(FL_STORY[i].script), new Promise(res => setTimeout(() => res('TIMEOUT'), 8000))]);
+    results.push(FL_STORY[i].id + ': ' + r + ', ' + (FW.testLog.length - n0) + ' lines, ' + Math.round(performance.now() - t0) + 'ms');
+    if (r === 'TIMEOUT') break;
+  }
+  window.done = true;
+});
+</script></body></html>

@@ -1,0 +1,28 @@
+.unit img[src*="tasque-companion.png"],img[src*="tasque-manager-portrait.png"],img[src*="tasque-manager-icon.png"]{image-rendering:pixelated}
+.unit .body .rig-sprite.tasquemanager-rig{aspect-ratio:139/141}
+.tasquemanager-rig .rig-svg,.tasquemanager-rig .rig-svg image{image-rendering:pixelated}
+.tasque-spark,.tasque-whip,.tasque-order,.tasque-parts{position:absolute;z-index:32;pointer-events:none}
+.tasque-spark{width:44px;height:44px;margin:-22px;border:3px solid #64f7fa;transform:rotate(45deg);box-shadow:0 0 12px #52eafc,inset 0 0 10px #52eafc;animation:tasqueSpark .42s steps(5) both}
+.tasque-spark:before,.tasque-spark:after{content:"";position:absolute;left:50%;top:-16px;width:3px;height:70px;background:#f5fff9;box-shadow:0 0 7px #64f7fa}
+.tasque-spark:after{transform:rotate(90deg)}
+@keyframes tasqueSpark{from{opacity:1;scale:.3}to{opacity:0;scale:1.35}}
+.tasque-whip{width:94px;height:94px;margin:-47px;border:5px dashed #6ef8ff;border-left-color:transparent;border-bottom-color:transparent;border-radius:50%;filter:drop-shadow(0 0 6px #3de5ff);animation:tasqueWhip .55s steps(7) both}
+@keyframes tasqueWhip{from{opacity:0;transform:rotate(-110deg) scale(.45)}35%{opacity:1}to{opacity:0;transform:rotate(90deg) scale(1.4)}}
+.tasque-order{transform:translate(-50%,-50%);padding:6px 11px;border:2px solid #72faff;background:#100f28e8;color:#eeffff;font:900 12px/1.1 monospace;letter-spacing:1px;white-space:nowrap;text-shadow:0 0 8px #5debff;box-shadow:0 0 13px #51dbfc;animation:tasqueOrder .76s steps(6) both}
+@keyframes tasqueOrder{0%{opacity:0;translate:0 12px}20%{opacity:1;translate:0 0}75%{opacity:1}100%{opacity:0;translate:0 -18px}}
+.tasque-alphabet{position:absolute;top:0;z-index:28;display:flex;pointer-events:none;border:2px solid #b9faffbb;background:#0d244630;box-shadow:0 0 12px #55e9ff55,inset 0 0 18px #55e9ff33;animation:tasqueBoard 1.75s steps(5) both}
+.tasque-letter{position:relative;display:flex;align-items:center;justify-content:center;flex:1;border-right:2px dashed #afffff9c;color:#fff;font:900 clamp(16px,3vw,28px)/1 monospace;text-shadow:2px 2px #15354c,0 0 10px #e7ffff;background:#76eeff17;transition:background .18s,box-shadow .18s}
+.tasque-letter:last-child{border-right:0}.tasque-letter.correct{color:#c8ffe7;border-color:#89ffd5;background:#4be9a326}
+.tasque-alphabet.strike .tasque-letter:not(.correct){background:#7cf7ff9c;box-shadow:inset 0 0 25px #fff,0 0 12px #7cf7ff}
+.tasque-alphabet.strike .tasque-letter.correct{background:#52eea323}
+@keyframes tasqueBoard{0%{opacity:0}10%{opacity:1}75%{opacity:1}100%{opacity:0}}
+.tasque-parts{width:80px;height:80px;margin:-40px;animation:tasqueParts .7s steps(6) both}
+.tasque-parts i{position:absolute;left:34px;top:34px;width:9px;height:9px;background:#e9ffff;box-shadow:0 0 7px #4ceeff;transform:rotate(calc(var(--i,1)*23deg))}
+.tasque-parts i:nth-child(1){--i:0;--x:-30px;--y:-25px}.tasque-parts i:nth-child(2){--i:1;--x:27px;--y:-31px}.tasque-parts i:nth-child(3){--i:2;--x:37px;--y:8px}.tasque-parts i:nth-child(4){--i:3;--x:-35px;--y:15px}.tasque-parts i:nth-child(5){--i:4;--x:-3px;--y:32px}.tasque-parts i:nth-child(6){--i:5;--x:15px;--y:-38px}
+.tasque-parts:not(.done) i{translate:var(--x) var(--y)}.tasque-parts.done i{animation:tasqueGather .7s steps(5) both}
+@keyframes tasqueParts{0%{opacity:0;scale:.4}25%{opacity:1;scale:1}85%{opacity:1}100%{opacity:0;scale:1.1}}
+@keyframes tasqueGather{from{translate:var(--x) var(--y)}to{translate:0 0}}
+.tasque-compliance{position:absolute;z-index:35;left:50%;top:17%;transform:translateX(-50%);padding:10px 17px;border:3px double #74faff;background:#101b31e8;color:#fff;font:900 clamp(13px,2.6vw,22px)/1 monospace;letter-spacing:1.8px;text-align:center;white-space:nowrap;text-shadow:0 0 10px #65f7ff;box-shadow:0 0 24px #53ecff,0 0 40px #53ecff66;pointer-events:none;animation:tasqueOrder 1.1s steps(8) both}
+.tasque-compliance.final{border-color:#fff0a2;box-shadow:0 0 24px #fff0a2}
+.accessibility-reduced-effects .tasque-spark,.accessibility-reduced-effects .tasque-whip,.accessibility-reduced-effects .tasque-order,.accessibility-reduced-effects .tasque-alphabet,.accessibility-reduced-effects .tasque-parts,.accessibility-reduced-effects .tasque-compliance{animation:none}
+.accessibility-reduced-effects .tasque-letter{transition:none}

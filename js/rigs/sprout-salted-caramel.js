@@ -2,7 +2,7 @@
 'use strict';
 const SALTED_CARAMEL = {
   id:'salted-caramel', name:'Salted caramel', art:'assets/skins/sprout-salted-caramel.svg',
-  description:'Dyle’s gift: recruit Sprout and hear four of Dyle’s gossip files.',
+  description:`Recruit Sprout, hear four of Dyle’s gossip files, then buy for ${DyleShop.skinCost.toLocaleString()} Ichor.`,
   get available() { return DyleShop.hasSkin(); }
 };
 const SproutSalted = { pending:undefined };
@@ -61,7 +61,7 @@ function dressSaltedCaramel(rig) {
     const wrap=originalExtras.call(this,id);if(id!=='Sprout')return wrap;
     const unlocked=SALTED_CARAMEL.available,equipped=Save.hero(id).costume===SALTED_CARAMEL.id;
     const card=el('div','card hero-skin-card');
-    card.innerHTML=`<div class="hero-skin-kicker">DYLE’S SHOP APPEARANCE</div><div class="hero-skin-layout"><div class="hero-skin-swatches"><img src="${Art.defaultHero(id)}" alt="Default Sprout"><img src="${ASSET+SALTED_CARAMEL.art}" alt="Salted caramel"></div><div class="hero-skin-copy"><div class="row"><div class="grow"><b>Salted caramel</b><small class="muted">Sprout skin</small></div><span class="hero-skin-status">${equipped?'EQUIPPED':unlocked?'UNLOCKED':'LOCKED'}</span></div><p class="mini muted">${unlocked?'A gift from Dyle.':'Recruit Sprout and hear 4 of Dyle’s gossip files, then claim in his shop.'}</p></div></div>`;
+    card.innerHTML=`<div class="hero-skin-kicker">DYLE’S SHOP APPEARANCE</div><div class="hero-skin-layout"><div class="hero-skin-swatches"><img src="${Art.defaultHero(id)}" alt="Default Sprout"><img src="${ASSET+SALTED_CARAMEL.art}" alt="Salted caramel"></div><div class="hero-skin-copy"><div class="row"><div class="grow"><b>Salted caramel</b><small class="muted">Sprout skin</small></div><span class="hero-skin-status">${equipped?'EQUIPPED':unlocked?'UNLOCKED':'LOCKED'}</span></div><p class="mini muted">${unlocked?'Purchased from Dyle.':SALTED_CARAMEL.description}</p></div></div>`;
     const button=el('button','btn small hero-skin-button',equipped?'USE DEFAULT':unlocked?'EQUIP SKIN':'VISIT DYLE’S SHOP');button.type='button';
     button.onclick=()=>{
       if(!SALTED_CARAMEL.available){Screens.shopKeeper='dyle';Screens.dyleShopTab='skins';Screens.go('shop');return;}

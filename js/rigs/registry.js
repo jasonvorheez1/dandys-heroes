@@ -44,6 +44,7 @@ function rigKitFor(id) {
     QOMConnie: typeof QOMConnieRig !== 'undefined' ? QOMConnieRig : null,
     Cocoa: typeof CocoaRig !== 'undefined' ? CocoaRig : null,
     Jessie: typeof JessieRig !== 'undefined' ? JessieRig : null,
+    TasqueManager: typeof TasqueManagerRig !== 'undefined' ? TasqueManagerRig : null,
     TenderheartSprout: typeof ToonCutoutRigs !== 'undefined' ? ToonCutoutRigs.TenderheartSprout : null,
     ShareBearCosmo: typeof ToonCutoutRigs !== 'undefined' ? ToonCutoutRigs.ShareBearCosmo : null
   };

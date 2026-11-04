@@ -373,9 +373,11 @@ html.graphics-lite .stb-unit.inky .body img { filter: grayscale(1) brightness(.2
 /* stage units */
 .stb-unit .body { transition: filter .25s; }
 .stb-unit .body img { filter: drop-shadow(0 4px 3px #0008); }
-/* Story art is drawn facing left: handlers approach from the left, while
-   weaklings on the right already face their opponents before the shared foe flip. */
-.stb-unit.ally .body img { transform: scaleX(-1); }
+/* Flip only left-facing ally art (handlers and skins marked by makeUnit).
+   Toon art already faces right toward the enemies. */
+.stb-unit.ally.flip .body img { transform: scaleX(-1); }
+.stb-unit.ally.flip .body .rig-sprite { transform: scaleX(-1); }
+.stb-unit.ally.flip .body .rig-sprite img { transform: none; }
 .stb-unit.foe.inky .body img { transform: none; }
 .stb-unit.stb-enter { opacity: 0; }
 .stb-unit { transition: opacity .35s; }

@@ -1,4 +1,30 @@
 /* flowery.css - "Flower Kingdom" event: the overworld screen, Deltarune-style textbox, title cards, the event menu and the battles. */
+.unit .flowery-fake-stats{position:absolute;z-index:8;left:50%;width:155px;padding:4px 6px;transform:translateX(-50%);border:2px solid #ffe47c;border-radius:3px;background:#211b30ed;box-shadow:0 2px 0 #100d16,0 0 12px #ffc85788;color:#fff4be;text-align:center;font:800 8px/1.35 Arial,sans-serif;letter-spacing:.1px;pointer-events:none}
+.unit .flowery-fake-stats[hidden]{display:none}
+.unit .flowery-fake-stats b{display:block;color:#ffe571;font-size:9px;letter-spacing:1px}
+.unit .flowery-fake-stats span{display:block;white-space:nowrap}
+.unit.flowery-omega-active .body{z-index:2;filter:drop-shadow(0 0 7px #fd81d6) drop-shadow(0 0 13px #93c9ff)}
+.unit.flowery-thicket-trapped .shadow{background:radial-gradient(ellipse,#72d56bc7 0 20%,#335d3777 45%,transparent 78%);box-shadow:0 0 10px #70d973a8}
+.flowery-thicket-wall{position:absolute;z-index:25;height:110px;display:flex;align-items:flex-end;justify-content:space-around;pointer-events:none;opacity:.8;image-rendering:pixelated;filter:drop-shadow(0 0 4px #80e276);animation:floweryThicketRise .35s steps(5) both}
+.flowery-thicket-wall:after{content:"";position:absolute;left:0;right:0;bottom:0;height:58px;background:url('../assets/deltarune/flowery-thorns.png') repeat-x center bottom / 85px 57px;opacity:.9}
+.flowery-thicket-wall i{display:block;flex:none;width:13px;height:105px;background:url('../assets/deltarune/flowery-bamboo.png') no-repeat center bottom / 13px 105px;filter:drop-shadow(0 0 2px #264d1f);transform-origin:bottom}
+.flowery-thicket-wall i:nth-child(2n){height:90px;transform:rotate(8deg)}.flowery-thicket-wall i:nth-child(3n){height:100px;transform:rotate(-7deg)}
+@keyframes floweryThicketRise{from{opacity:0;transform:translateX(-45px) scaleY(.25)}to{opacity:.8;transform:translateX(0) scaleY(1)}}
+.flowery-jarona-copy{position:absolute;z-index:6;left:0;bottom:0;width:37px;height:90px;object-fit:contain;pointer-events:none;image-rendering:pixelated;filter:drop-shadow(0 0 8px #b6a8ff);animation:floweryCopy .48s steps(5) both}
+@keyframes floweryCopy{0%{opacity:0;transform:translate(-95%,-95%) scale(.65) scaleX(var(--copy-face, -1))}25%{opacity:.78}70%{opacity:.58}100%{opacity:0;transform:translate(20%,-115%) scale(1.08) scaleX(var(--copy-face, -1))}}
+.flowery-charge-fx{position:absolute;z-index:7;left:-55px;bottom:32px;width:110px;height:48px;pointer-events:none;animation:floweryCharge .5s ease-out both}
+.flowery-charge-fx:before{content:"";position:absolute;top:14px;left:5px;width:100px;height:19px;background:linear-gradient(90deg,transparent,#ffe17a99 35%,#fff9d4 52%,#ffc84688 70%,transparent);clip-path:polygon(0 40%,75% 0,100% 50%,75% 100%,0 60%);filter:drop-shadow(0 0 6px #fff5bd);transform:scaleX(var(--charge-dir, 1))}
+.flowery-charge-fx:after{content:"";position:absolute;top:4px;left:55px;width:32px;height:32px;background:url('../assets/deltarune/flowery-bullet.png') center / contain no-repeat;image-rendering:pixelated;filter:drop-shadow(0 0 5px #ffe38a)}
+.flowery-charge-fx.copy{filter:hue-rotate(180deg);opacity:.55}
+@keyframes floweryCharge{from{opacity:0;transform:translateX(-60px) scaleX(.3)}30%{opacity:1}to{opacity:0;transform:translateX(35px) scaleX(1.15)}}
+.flowery-recruit-fx{position:absolute;z-index:8;left:50%;bottom:100px;transform:translateX(-50%);padding:3px 7px;border:2px solid var(--flower-color);background:#151523e8;color:#fff;font:900 9px/1 Arial,sans-serif;letter-spacing:.7px;white-space:nowrap;text-shadow:0 1px #000;box-shadow:0 0 10px var(--flower-color);pointer-events:none;animation:floweryRecruit .9s ease-out both}
+@keyframes floweryRecruit{0%{opacity:0;translate:0 16px;scale:.6}25%{opacity:1;translate:0 0;scale:1.12}70%{opacity:1}100%{opacity:0;translate:0 -22px;scale:1}}
+.flowery-omega-halo{position:absolute;z-index:1;left:-58px;bottom:18px;width:116px;height:116px;border-radius:50%;background:conic-gradient(#5cff6a,#4ff4ff,#b07bff,#ffd23a,#7f9bff,#ff8a4a,#5cff6a);filter:blur(6px);opacity:.5;pointer-events:none;animation:floweryHalo 4s linear infinite}
+.flowery-omega-halo i{position:absolute;width:13px;height:13px;border-radius:50%;background:#fff;box-shadow:0 0 12px currentColor}.flowery-omega-halo i:nth-child(1){top:0;left:52px;color:#5cff6a}.flowery-omega-halo i:nth-child(2){top:23px;right:10px;color:#4ff4ff}.flowery-omega-halo i:nth-child(3){bottom:23px;right:10px;color:#b07bff}.flowery-omega-halo i:nth-child(4){bottom:0;left:52px;color:#ffd23a}.flowery-omega-halo i:nth-child(5){bottom:23px;left:10px;color:#7f9bff}.flowery-omega-halo i:nth-child(6){top:23px;left:10px;color:#ff8a4a}
+@keyframes floweryHalo{to{transform:rotate(360deg)}}
+.flowery-flower-hit,.flowery-petal-burst{position:absolute;z-index:7;left:-24px;bottom:28px;width:48px;height:48px;border:3px solid var(--flower-color,#ffe47a);border-radius:50%;box-shadow:0 0 10px var(--flower-color,#ffe47a),inset 0 0 9px var(--flower-color,#ffe47a);pointer-events:none;animation:floweryFlowerHit .58s ease-out both}
+.flowery-flower-hit:after,.flowery-petal-burst:after{content:"";position:absolute;inset:-12px;background:url('../assets/deltarune/flowery-petal.png') center / 14px 12px repeat;image-rendering:pixelated;opacity:.6}
+@keyframes floweryFlowerHit{from{opacity:1;transform:scale(.25) rotate(-25deg)}to{opacity:0;transform:scale(1.7) rotate(35deg)}}
 .fk-root{position:fixed;inset:0;z-index:9000;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;user-select:none;-webkit-user-select:none;touch-action:none;
   font-family:"Courier New",Courier,monospace;color:#fff}
 .fk-screen{position:relative;width:100%;height:100%;display:flex;align-items:center;justify-content:center;overflow:hidden}
@@ -125,3 +151,103 @@
 .fk-vl.out{animation:fkVlOut .26s ease-in both}
 @keyframes fkVl{from{transform:translateX(-50%) rotate(-14deg) scale(.2);opacity:0}to{transform:translateX(-50%) rotate(-4deg) scale(1);opacity:1}}
 @keyframes fkVlOut{to{transform:translateX(-50%) rotate(6deg) scale(1.4);opacity:0}}
+
+/* real battles: the event overlay turns see-through so Flowery can talk over the game's own battle screen */
+.fk-root.fk-ghost{background:transparent;pointer-events:none}
+.fk-root.fk-ghost .fk-cv,.fk-root.fk-ghost .fk-pad,.fk-root.fk-ghost .fk-a,.fk-root.fk-ghost .fk-quit{visibility:hidden}
+.fk-root.fk-ghost .fk-box{pointer-events:auto}
+.fk-walker{position:fixed;z-index:9500;height:200px;image-rendering:pixelated;transform:translate(-50%,-100%);pointer-events:none}
+#btnAuto.fk-auto-taken{transform:translateY(40px) rotate(-12deg) scale(1.2);transition:transform .3s}
+#btnAuto.fk-auto-snap{animation:fkSnap .7s forwards}
+@keyframes fkSnap{30%{transform:translateY(40px) scale(1.4);clip-path:inset(0 0 0 0)}100%{transform:translateY(180px) rotate(70deg) scale(.6);opacity:0}}
+#battle.fk-shake{animation:fkShake .4s steps(6) 2}
+@keyframes fkShake{0%,100%{transform:none}25%{transform:translate(-8px,4px)}75%{transform:translate(8px,-4px)}}
+
+/* ---- Flowery on the Main Story's turn-based battle (flowery-storyboss.js) */
+#battle.fl-story .unit.fl-pix img { image-rendering: pixelated; }
+#battle.fl-story .unit.boss .nameplate[data-bar]::after { content: ' · BAR ' attr(data-bar); color: #ffe066; font-weight: 900; }
+.fl-bubble { position: absolute; left: 50%; bottom: 105%; transform: translateX(-50%); min-width: 160px; max-width: 260px; padding: 8px 10px;
+  background: #fff; color: #000; font: 700 13px/1.3 "Courier New", monospace; border: 3px solid #000; border-radius: 10px; z-index: 30; white-space: normal; text-align: left; }
+.fl-bubble::after { content: ''; position: absolute; left: 50%; bottom: -12px; border: 8px solid transparent; border-top-color: #000; transform: translateX(-50%); }
+.fl-fakewin { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 60;
+  background: radial-gradient(circle, rgba(255,214,90,.35), rgba(0,0,0,.6)); color: #ffe066; font: 900 64px/1 Arial Black, sans-serif; text-shadow: 0 4px 0 #7a4b00; animation: flWinIn .4s ease-out; }
+.fl-fakewin small { font-size: 18px; color: #fff; text-shadow: none; margin-top: 10px; }
+.fl-fakewin.crack { animation: flCrack .7s steps(6) forwards; }
+@keyframes flWinIn { from { transform: scale(1.4); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes flCrack { 0% { filter: none; } 30% { transform: skewX(12deg) translateX(-20px); filter: hue-rotate(90deg) contrast(2); } 60% { transform: skewX(-18deg) translateX(30px); clip-path: inset(0 0 50% 0); }
+  100% { transform: translateY(80px) rotate(8deg); opacity: 0; clip-path: inset(0 30% 0 0); } }
+.fl-save { position: absolute; left: 50%; top: 40%; transform: translate(-50%, -50%); z-index: 60; background: #000; border: 3px solid #fff; color: #fff; padding: 14px 22px; font: 700 14px "Courier New", monospace; display: flex; flex-direction: column; gap: 6px; }
+.fl-save b { color: #ffe066; font-size: 20px; }
+.fl-loot { position: fixed; width: 44px; height: 44px; margin: -22px 0 0 -22px; z-index: 10000; transition: left .6s ease-in, top .6s cubic-bezier(.2,-0.6,.6,1); pointer-events: none; }
+.fl-edit { position: absolute; left: 50%; top: -20px; transform: translateX(-50%); background: #111; border: 2px solid #ffe066; color: #ffe066; padding: 4px 8px; font: 700 16px "Courier New", monospace; z-index: 31; white-space: nowrap; }
+.fl-pause { position: absolute; inset: 0; z-index: 55; background: rgba(0,0,0,.65); display: flex; align-items: center; justify-content: center; }
+.fl-pause > div { display: flex; flex-direction: column; gap: 10px; align-items: center; background: #000; border: 3px solid #fff; padding: 20px 40px; }
+.fl-pause b { color: #fff; font: 900 36px Arial Black, sans-serif; letter-spacing: 4px; }
+.fl-pause button { min-width: 140px; padding: 6px; background: #222; color: #888; border: 2px solid #555; font-weight: 800; }
+#btnQuit.fl-hold { transform: rotate(-14deg) scale(.9); transition: transform .2s; }
+.fl-ralsei { position: absolute; left: 3%; bottom: 30%; width: 90px; image-rendering: pixelated; z-index: 40; animation: flWinIn .3s ease-out; }
+.ms-tb-cmd.fl-tape { position: relative; }
+.ms-tb-cmd.fl-tape::after { content: 'CLOSED · SKILLS ON BREAK'; position: absolute; inset: 30% -10%; background: repeating-linear-gradient(-45deg, #ffd23a 0 18px, #111 18px 36px); color: #fff;
+  font: 900 18px Arial Black, sans-serif; display: flex; align-items: center; justify-content: center; text-shadow: 0 2px 0 #000; transform: rotate(-4deg); z-index: 5; }
+.stb-order.fl-cut { animation: flCut .9s ease-in-out; }
+@keyframes flCut { 0%, 100% { transform: none; } 30% { transform: translateX(-30px) rotate(-6deg); } 60% { transform: translateX(10px) rotate(3deg); } }
+.fl-hard { margin-top: 10px; width: 100%; padding: 10px; background: linear-gradient(#5a0d16, #2a0408); color: #ffe066; border: 2px solid #ffe066; font-weight: 900; letter-spacing: 1px; cursor: pointer; }
+#btnAuto.fl-broken { filter: grayscale(1) brightness(.6); transform: rotate(-8deg); clip-path: polygon(0 0, 55% 0, 45% 100%, 0 100%, 0 0, 60% 0, 100% 0, 100% 100%, 50% 100%); }
+
+/* ---- endgame: Jevil x Spamton NEO (flowery-endgame.js) */
+.eg-qte { position: absolute; left: 50%; top: 38%; transform: translate(-50%, -50%); z-index: 70; min-width: 300px; padding: 16px 20px 12px; background: rgba(8,0,18,.92);
+  border: 3px solid #fff; box-shadow: 0 0 0 3px #000, 0 0 40px rgba(176,123,255,.6); color: #fff; text-align: center; font: 900 14px Arial Black, sans-serif; user-select: none; touch-action: none; }
+.eg-qte small { display: block; margin-top: 8px; color: #aaa; font: 700 11px "Courier New", monospace; }
+.eg-qte.shake { animation: flCut .3s; }
+.eg-qte[data-res]::after { content: attr(data-res); position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 34px; background: rgba(0,0,0,.6); }
+.eg-qte.res-perfect::after { color: #ffe066; } .eg-qte.res-good::after { color: #8fffa0; } .eg-qte.res-fail::after { color: #ff4a6a; }
+.eg-qte-time { height: 5px; background: #222; margin-top: 10px; } .eg-qte-time i { display: block; height: 100%; background: #ff4a6a; }
+.eg-ring { position: relative; width: 120px; height: 120px; margin: 0 auto; }
+.eg-ring b { position: absolute; inset: 42px; border: 4px solid #ffe066; border-radius: 50%; }
+.eg-ring i { position: absolute; inset: 40px; border: 3px solid #fff; border-radius: 50%; }
+.eg-mash-t { font-size: 26px; color: #ff8ad8; animation: egPulse .25s infinite alternate; display: block; }
+.eg-mash { height: 18px; border: 2px solid #fff; margin-top: 8px; } .eg-mash i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, #ff8ad8, #ffe066); transition: width .05s; }
+.eg-seq { display: flex; gap: 8px; justify-content: center; font-size: 28px; } .eg-seq span { color: #555; } .eg-seq span.ok { color: #ffe066; }
+.eg-pad { display: flex; gap: 6px; justify-content: center; margin-top: 8px; } .eg-pad button { width: 44px; height: 36px; background: #222; color: #fff; border: 2px solid #777; font-size: 18px; }
+.eg-suits { display: flex; gap: 10px; justify-content: center; } .eg-suits button { width: 56px; height: 76px; background: #fff; color: #000; border: 3px solid #000; font-size: 34px; border-radius: 6px; }
+.eg-suits button.cur { outline: 3px solid #ffe066; transform: translateY(-6px); } .eg-suits button.safe { box-shadow: 0 0 24px 8px #8fffa0; background: #e8ffe8; }
+@keyframes egPulse { to { transform: scale(1.15); } }
+.eg-cut { position: absolute; inset: 0; z-index: 65; pointer-events: none; overflow: hidden; animation: egIn .18s ease-out; }
+.eg-cut.out { opacity: 0; transition: opacity .2s; }
+.eg-band { position: absolute; left: -10%; right: -10%; top: 30%; height: 40%; background: linear-gradient(90deg, #000, var(--c), #000); transform: skewY(-6deg); box-shadow: 0 0 0 6px #fff; }
+.eg-lines { position: absolute; inset: 0; background: repeating-linear-gradient(-6deg, transparent 0 22px, rgba(255,255,255,.18) 22px 24px); animation: egLines .25s linear infinite; }
+.eg-cut img { position: absolute; image-rendering: pixelated; height: 42%; top: 28%; filter: drop-shadow(0 0 12px var(--c)); }
+.eg-cut .eg-a { left: 6%; animation: egSlideL .35s cubic-bezier(.2,1.4,.4,1); } .eg-cut .eg-a.flip { transform: scaleX(-1); }
+.eg-cut .eg-b { right: 6%; animation: egSlideR .35s cubic-bezier(.2,1.4,.4,1); }
+.eg-title { position: absolute; left: 0; right: 0; top: 47%; text-align: center; color: #fff; font: 900 clamp(26px, 5vw, 58px) Arial Black, sans-serif; letter-spacing: 2px;
+  text-shadow: 4px 4px 0 #000, 0 0 18px var(--c); transform: skewY(-6deg); animation: egIn .3s .1s both; }
+@keyframes egIn { from { opacity: 0; transform: scale(1.3) skewY(-6deg); } }
+@keyframes egLines { to { background-position: 60px 0; } }
+@keyframes egSlideL { from { transform: translateX(-120%); } } @keyframes egSlideR { from { transform: translateX(120%); } }
+.eg-shot { position: fixed; z-index: 9999; width: 56px; image-rendering: pixelated; transform: translate(-50%,-50%); transition: left .45s cubic-bezier(.5,0,.8,.4), top .45s cubic-bezier(.5,0,.8,.4), transform .45s; pointer-events: none; }
+.eg-pick { position: fixed; inset: 0; z-index: 10050; background: rgba(5,0,14,.92); display: flex; align-items: center; justify-content: center; }
+.eg-pick-in { width: min(900px, 94vw); max-height: 92vh; overflow: auto; background: #0d0718; border: 3px solid #fff; padding: 14px; color: #fff; }
+.eg-pick h3 { margin: 0 0 10px; font: 900 22px Arial Black, sans-serif; } .eg-pick h3 small { color: #ffe066; font-size: 14px; margin-left: 8px; }
+.eg-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); gap: 8px; }
+.eg-grid button { position: relative; background: #1a1328; border: 2px solid #333; color: #fff; padding: 6px 4px; display: flex; flex-direction: column; align-items: center; gap: 2px; cursor: pointer; }
+.eg-grid button img { width: 60px; height: 60px; object-fit: contain; } .eg-grid button b { font-size: 12px; } .eg-grid button small { font-size: 10px; color: #999; }
+.eg-grid button.on { border-color: var(--hc); box-shadow: 0 0 12px var(--hc); }
+.eg-grid button i { position: absolute; top: 4px; right: 6px; font-style: normal; font-weight: 900; color: #ffe066; }
+.eg-pick-go { display: flex; justify-content: flex-end; gap: 10px; margin-top: 12px; }
+.eg-pick-go button { padding: 10px 22px; font-weight: 900; border: 2px solid #fff; background: #222; color: #fff; }
+.eg-pick-go .eg-go { background: linear-gradient(#7a3fd0, #3a1270); } .eg-pick-go .eg-go:disabled { opacity: .4; }
+.fl-endgame { margin-top: 10px; width: 100%; padding: 10px; background: linear-gradient(90deg, #3a1270, #7a1050); color: #fff; border: 2px solid #ff8ad8; font-weight: 900; letter-spacing: 1px; cursor: pointer; }
+.fl-battle { margin-top: 8px; width: 100%; padding: 10px; background: #160d26; color: #ffe066; border: 2px solid #b07bff; font: 900 13px "Courier New", monospace; letter-spacing: 1px; cursor: pointer; }
+.fl-battle:hover { background: #33204e; }
+
+#battle.eg-battle .unit.eg-strings::before { content: ''; position: absolute; left: 20%; right: 20%; bottom: 60%; height: 900px; pointer-events: none;
+  background: repeating-linear-gradient(90deg, transparent 0 9px, rgba(80,255,110,.75) 9px 11px); mask-image: linear-gradient(transparent, #000 60%); -webkit-mask-image: linear-gradient(transparent, #000 60%); }
+#battle.eg-battle .unit.eg-tele .body { animation: egTele .5s steps(5); }
+@keyframes egTele { 0% { opacity: 1; } 20% { opacity: 0; transform: translateX(-60px); } 40% { opacity: 1; transform: translateX(40px) scaleX(-1); } 60% { opacity: 0; } 80% { opacity: 1; transform: translateX(-10px); } 100% { transform: none; } }
+.eg-qte-fake { border-color: #b07bff; } .eg-ring.fake b { border-color: #b07bff; } .eg-ring.fake i { border-color: #d9b8ff; }
+/* Deltarune sprites already face left (toward the party); the battle's enemy mirror is for the game's right-facing art */
+.unit.foe.fl-pix .body img { transform: none; }
+#battle.eg-battle .unit.eg-huge .body img { image-rendering: pixelated; }
+#battle.eg-battle .unit.eg-huge .shadow { transform: scale(3); }
+#battle.eg-battle .unit.eg-ralsei .body img { width: 225%; max-width: none; margin-left: -62.5%; image-rendering: pixelated; }
+img[src*="assets/deltarune/kris-"] { image-rendering: pixelated; }

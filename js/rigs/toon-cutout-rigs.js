@@ -70,14 +70,14 @@ const ToonCutoutRigs = (() => {
   };
   const actionOf = pose => Object.keys(ACTIONS).find(k => ACTIONS[k].split(' ').includes(pose)) || 'show';
 
-  function build(id, host) {
-    const [path, W, H, headRate, hipRate, leftRate, rightRate, kind, energy] = cfg[id];
+  function build(id, host, source = cfg[id]) {
+    const [path, W, H, headRate, hipRate, leftRate, rightRate, kind, energy] = source;
     host.style.aspectRatio = `${W} / ${H}`;
     const svg = node('svg', { viewBox: `0 0 ${W} ${H}`, class: 'rig-svg toon-cutout-svg', 'aria-hidden': 'true' }, host);
     const defs = node('defs', {}, svg);
     const root = node('g', {}, svg);
     const key = `tc${++serial}`;
-    const url = (typeof ASSET === 'string' ? ASSET : './') + path;
+    const url = /^(?:data:|blob:|https?:|\/)/.test(path) ? path : (typeof ASSET === 'string' ? ASSET : './') + path;
     const X = n => n * W, Y = n => n * H;
     const headY = Y(headRate), hipY = Y(hipRate), leftX = X(leftRate), rightX = X(rightRate), mid = W * .5;
     const parts = {};
@@ -120,16 +120,16 @@ const ToonCutoutRigs = (() => {
     }
     // Poppy and Tisha already have painted per-skill cutouts. Reveal those at
     // the impact beat, between this rig's jointed anticipation and recovery.
-    const actionArt = (id === 'Poppy' || id === 'Tisha')
+    const actionArt = source === cfg[id] && (id === 'Poppy' || id === 'Tisha')
       ? node('image', { x: 0, y: 0, width: W, height: H, opacity: 0,
         preserveAspectRatio: 'xMidYMax meet' }, svg) : null;
     return { root, parts, kind, energy, actionArt };
   }
 
   class Rig {
-    constructor(id, host) {
+    constructor(id, host, source) {
       this.id = id;
-      this.art = build(id, host);
+      this.art = build(id, host, source);
       this.t = Math.random() * 5;
       this.stride = 0;
       this.lastHit = 0;
@@ -204,6 +204,14 @@ const ToonCutoutRigs = (() => {
         if (P.armR != null) P.armR -= 40 * k;
         if (P.frontLeg != null) P.frontLeg += 19 * k;
         if (P.head != null) P.head += 6 * k;
+      } else if (u.animT > 0 && (u.animState === 'cast' || u.animState === 'wind')) {
+        const p = 1 - clamp(u.animT / Math.max(.01, u.animDur || 1));
+        const k = pulse(p);
+        if (P.armL != null) P.armL -= 26 * k;
+        if (P.armR != null) P.armR += 30 * k;
+        if (P.wing != null) P.wing += 22 * k;
+        if (P.head != null) P.head -= 6 * k;
+        bob -= 5 * k;
       }
       if (u.visualStun) bob += Math.sin(this.t * 13) * 2;
       const overlay = this.art.actionArt;
@@ -225,9 +233,31 @@ const ToonCutoutRigs = (() => {
     }
   }
   const enabled = () => { try { return !!Save.data.opt.animatedChars; } catch (_) { return true; } };
-  return Object.fromEntries(Object.keys(cfg).map(id => [id, {
+  const kits = Object.fromEntries(Object.keys(cfg).map(id => [id, {
     baseOnly: true,
     enabled,
     create: host => new Rig(id, host)
   }]));
+  // Story reward costumes and other alternate artwork use the same real
+  // joints, measured against the replacement image once its dimensions load.
+  kits.createFromArt = (id, host, src) => {
+    const still = document.createElement('img');
+    still.src = src; still.alt = ''; still.draggable = false;
+    still.style.width = '100%'; still.style.display = 'block';
+    host.appendChild(still);
+    let inner = null, disposed = false;
+    still.onload = () => {
+      if (disposed || !still.naturalWidth || !still.naturalHeight) return;
+      const source = [src, still.naturalWidth, still.naturalHeight, .52, .78, .33, .69, 'human', .78];
+      still.remove();
+      try { inner = new Rig(id, host, source); }
+      catch (error) { console.warn('Costume rig setup failed:', id, error); host.replaceChildren(still); }
+    };
+    return {
+      get art() { return inner?.art; },
+      update(u, dt, battle) { inner?.update(u, dt, battle); },
+      destroy() { disposed = true; still.onload = null; inner?.art?.root?.ownerSVGElement?.remove(); }
+    };
+  };
+  return kits;
 })();

@@ -1,6 +1,7 @@
 /* Dyle's personal notes and permanent appearance gifts use the existing save. */
 'use strict';
 const DyleShop = (() => {
+  const SALTED_CARAMEL_COST = 5000;
   const records = [
     { id:'kh', mode:'dyleKh', title:'Dearly Beloved', source:'Kingdom Hearts', cost:75000 },
     { id:'ff7', mode:'dyleFf7', title:'Main Theme', source:'Final Fantasy VII', cost:75000 },
@@ -68,13 +69,15 @@ const DyleShop = (() => {
   }
   function hasSkin() { return state().skins.includes('salted-caramel') || (Save.data.heroes?.Sprout?.costumes || []).includes('salted-caramel'); }
   function ready() { return owned('Sprout') && readCount() >= 4; }
-  function claim() {
-    if (hasSkin() || !ready()) return false;
+  function buySkin() {
+    if (hasSkin() || !ready() || !Save.can({ ichor:SALTED_CARAMEL_COST })) return false;
+    Save.data.res.ichor -= SALTED_CARAMEL_COST;
     state().skins.push('salted-caramel');
     const hero = Save.hero('Sprout');
     if (!Array.isArray(hero.costumes)) hero.costumes = [];
     if (!hero.costumes.includes('salted-caramel')) hero.costumes.push('salted-caramel');
     Save.write();
+    UI.refreshBar();
     return true;
   }
   function renderGossip(contents, root, api) {
@@ -97,26 +100,27 @@ const DyleShop = (() => {
         panel.remove(); renderGossip(contents, root, api);
         $(`[data-dyle-file="${file.id}"]`,root)?.focus({preventScroll:true});
         api.say(file.text, file.mood); api.filter();
-        if (!wasReady && ready() && !hasSkin()) UI.toast('Salted caramel is ready to claim in Dyle’s Skins.');
+        if (!wasReady && ready() && !hasSkin()) UI.toast('Salted caramel is available for Ichor in Dyle’s Skins.');
       };
       grid.appendChild(card);
     });
   }
   function renderSkins(contents, root, api) {
-    const ownedSkin = hasSkin(), canClaim = ready(), sprout = owned('Sprout');
+    const ownedSkin = hasSkin(), requirementsMet = ready(), sprout = owned('Sprout');
+    const canAfford = Save.can({ ichor:SALTED_CARAMEL_COST });
     const equipped = sprout && Save.hero('Sprout').costume === 'salted-caramel';
     const card = el('article', 'dyle-skin-card');
-    card.innerHTML = `<div class="dyle-skin-art"><span class="dyle-skin-stamp">${ownedSkin ? 'COLLECTED' : 'DYLE’S GIFT'}</span><img src="assets/skins/sprout-salted-caramel.svg" alt="Sprout in the Salted caramel skin"><span class="dyle-skin-floor"></span></div>
+    card.innerHTML = `<div class="dyle-skin-art"><span class="dyle-skin-stamp">${ownedSkin ? 'COLLECTED' : 'DYLE’S STOCK'}</span><img src="assets/skins/sprout-salted-caramel.svg" alt="Sprout in the Salted caramel skin"><span class="dyle-skin-floor"></span></div>
       <div class="dyle-skin-copy"><small>SPROUT · APPEARANCE</small><h2>Salted caramel</h2><p>A caramel apron, striped scarf, and a little something sweet.</p>
-      ${ownedSkin ? '<div class="dyle-skin-owned">✓ Added to your collection</div>' : `<div class="dyle-skin-requirements"><div class="${sprout ? 'done' : ''}"><i>${sprout ? '✓' : '○'}</i><span>Recruit Sprout</span></div><div class="${readCount() >= 4 ? 'done' : ''}"><i>${readCount() >= 4 ? '✓' : '○'}</i><span>Hear 4 of Dyle’s gossip files</span><b>${Math.min(4,readCount())}/4</b></div><div class="dyle-reward-progress"><i style="width:${Math.min(100,readCount()/4*100)}%"></i></div></div>`}
-      <button class="market-primary dyle-skin-action" ${!ownedSkin && !canClaim || ownedSkin && !sprout ? 'disabled' : ''}>${ownedSkin ? !sprout ? 'Recruit Sprout to equip' : equipped ? 'Use default appearance' : 'Equip on Sprout' : canClaim ? 'Claim free skin' : 'Complete the requirements'}</button>
-      ${!ownedSkin && !canClaim ? '<button class="market-text-button dyle-to-gossip">Visit Dyle’s gossip →</button>' : ''}</div>`;
+      ${ownedSkin ? '<div class="dyle-skin-owned">✓ Added to your collection</div>' : `<div class="dyle-skin-requirements"><div class="${sprout ? 'done' : ''}"><i>${sprout ? '✓' : '○'}</i><span>Recruit Sprout</span></div><div class="${readCount() >= 4 ? 'done' : ''}"><i>${readCount() >= 4 ? '✓' : '○'}</i><span>Hear 4 of Dyle’s gossip files</span><b>${Math.min(4,readCount())}/4</b></div><div class="${canAfford ? 'done' : ''}"><i>${canAfford ? '✓' : '○'}</i><span>Ichor</span><b>${fmt(SALTED_CARAMEL_COST)}</b></div><div class="dyle-reward-progress"><i style="width:${Math.min(100,readCount()/4*100)}%"></i></div></div>`}
+      <button class="market-primary dyle-skin-action" ${!ownedSkin && (!requirementsMet || !canAfford) || ownedSkin && !sprout ? 'disabled' : ''}>${ownedSkin ? !sprout ? 'Recruit Sprout to equip' : equipped ? 'Use default appearance' : 'Equip on Sprout' : !requirementsMet ? 'Complete the requirements' : `Buy · ${fmt(SALTED_CARAMEL_COST)} Ichor`}</button>
+      ${!ownedSkin && !requirementsMet ? '<button class="market-text-button dyle-to-gossip">Visit Dyle’s gossip →</button>' : ''}</div>`;
     contents.appendChild(card);
     $('.dyle-skin-action', card).onclick = () => {
       if (!hasSkin()) {
-        if (!claim()) return;
+        if (!buySkin()) return;
         Sound.play('get_rare');
-        Screens._shopNextLine = 'For Sprout. A small thank-you for taking the time to listen. Tell him the apron has already passed a very thorough inspection.';
+        Screens._shopNextLine = 'For Sprout. Tell him the apron has already passed a very thorough inspection.';
         Screens._shopNextMood = 'pleased';
       } else if (owned('Sprout')) {
         Save.hero('Sprout').costume = equipped ? null : 'salted-caramel'; Save.write(); Sound.play('ui_ok');
@@ -126,6 +130,9 @@ const DyleShop = (() => {
       Screens.render();
     };
     $('.dyle-to-gossip', card)?.addEventListener('click', () => { Screens.dyleShopTab = 'gossip'; Screens.render(); });
+  }
+  function renderCharacters(contents) {
+    // Full character licenses belong here; event modules add their offers.
   }
   function renderRadio(contents, root, api) {
     const list = el('div', 'dyle-radio-list');
@@ -181,5 +188,5 @@ const DyleShop = (() => {
       grid.appendChild(card);
     });
   }
-  return { files, records, state, hasSticker, buySticker, renderStickers, readCount, hear, hasSkin, ready, claim, hasRecord, buyRecord, renderGossip, renderSkins, renderRadio };
+  return { files, records, state, hasSticker, buySticker, renderStickers, readCount, hear, hasSkin, ready, buySkin, skinCost:SALTED_CARAMEL_COST, hasRecord, buyRecord, renderGossip, renderSkins, renderCharacters, renderRadio };
 })();

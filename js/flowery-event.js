@@ -11,7 +11,8 @@
     const raid = Raid.state();
     const s = raid.flowery || (raid.flowery = {});
     s.seg = Math.max(0, Math.min(FL_STORY.length, Number(s.seg) || 0));
-    s.done = !!s.done;
+    s.done = !!s.done || s.seg === FL_STORY.length;
+    s.started = !!s.started || s.seg > 0 || s.done || !!s.tasqueGranted;
     return s;
   };
 
@@ -21,6 +22,11 @@
     if (playing) return;
     playing = true;
     const st = state();
+    // Starting the story makes Tasque Manager available in Dyle's shop.
+    if (!st.started) {
+      st.started = true;
+      Save.write();
+    }
     const root = document.createElement('div'); root.className = 'fk-root';
     document.body.appendChild(root);
     let quit = false;
@@ -30,7 +36,7 @@
       try { Music.screen(Screens.cur); } catch (_) { /* optional */ }
       Screens._raidDossier = ID; try { Screens.render(); } catch (_) { /* optional */ }
     };
-    FW.open(root, { onQuit: () => { if (window.confirm('Leave Flower Kingdom? Your progress is saved at the start of this segment.')) leave(); } });
+    FW.open(root, { onSave: () => { st.savedAt = st.cur; try { Save.write(); } catch (_) { /* optional */ } }, onQuit: () => { if (window.confirm('Leave? You\'ll start this part over next time.')) leave(); } });
     for (let i = from; i < FL_STORY.length && !quit; i++) {
       const S = FW.S; if (!S) break;
       Object.assign(S.fx, { petals: false, ichor: 0, tint: null, glitch: 0, fade: 1, fadeTo: 1 });
@@ -43,6 +49,21 @@
       try { Save.write(); } catch (_) { /* optional */ }
     }
     leave();
+  }
+
+  /* the Hard rematch: the same fight with Flowery cheating (js/flowery-storyboss.js) */
+  async function playHard() {
+    if (playing) return;
+    playing = true;
+    const host = document.createElement('div'); host.className = 'fk-root';
+    document.body.appendChild(host);
+    FW.open(host, {});
+    FW.play('@party Scraps,Ginger,Yatta\n@room roof 160 214 up\n@spawn Flowery 160 172 down\n@frame Flowery flowery_idle3_0').catch(() => {});
+    await new Promise(r => setTimeout(r, 300));
+    try { await FW.BATTLES.flowery(FW.S, ['hard']); } catch (e) { console.warn(e); }
+    FW.close(); host.parentNode && host.parentNode.removeChild(host); playing = false;
+    try { Music.screen(Screens.cur); } catch (_) { /* optional */ }
+    Screens._raidDossier = ID; try { Screens.render(); } catch (_) { /* optional */ }
   }
 
   /* ---------------------------------------------------------------- the menu */
@@ -75,22 +96,31 @@
     root.innerHTML = `<header class="fl-hero"><canvas></canvas><button class="fl-back" type="button" aria-label="Back">‹</button>
         <div class="fl-title"><small>DANDY'S HEROES × DELTARUNE</small><h2>FLOWER KINGDOM</h2><p>Scraps · Ginger · Yatta</p></div></header>
       <div class="fl-grid"><section class="fl-panel"><h3>STORY</h3><div class="fl-load"></div>
-        <button class="fl-go" type="button">${st.done ? 'PLAY AGAIN' : st.seg ? 'CONTINUE' : 'BEGIN'}</button>
+        <button class="fl-go" type="button">${st.done ? 'AGAIN' : st.seg ? 'CONTINUE' : 'START'}</button>
         <div class="fl-chapters">${FL_STORY.map((c, i) => `<button type="button" class="fl-ch ${i > st.seg ? 'lock' : ''} ${i === st.seg && !st.done ? 'cur' : ''}" data-i="${i}"><b>${i + 1}</b><span>${i > st.seg ? '???' : c.title}</span><small style="margin-left:auto;color:#888">${i > st.seg ? '' : c.place}</small></button>`).join('')}</div></section>
-        <section class="fl-panel"><h3>ABOUT</h3><p class="fl-meta">The night after Chapter 3, Yatta finds a door in the vents that shouldn't be there. On the other side: a kingdom of flowers, a king who's very lonely, and a golden flower who was expecting somebody else.</p>
-        <p class="fl-meta">Walk with the arrow keys or the pad. Z / Enter / tap to talk and confirm. X to go back in menus.</p>
-        <p class="fl-meta">${st.beaten ? 'Flowery: beaten.' : 'The last fight is hard. Losing is never the end.'}${st.losses ? ' Attempts: ' + st.losses + '.' : ''}</p></section></div>`;
+        <section class="fl-panel"><h3>ABOUT</h3><p class="fl-meta">Yatta found a door in the vents.</p>
+        <p class="fl-meta">[Z] Confirm · [X] Cancel · Arrows to move</p>
+        <p class="fl-meta">${st.beaten ? '* Flowery has been beaten. He says it doesn\'t count.' : ''}</p>
+        ${st.done ? `<button class="fl-endgame" type="button">??? · THE DOOR WITH NO LOCK${st.endgame ? ' ✓' : ''}</button>` : ''}
+        ${st.done ? '<button class="fl-battle" type="button">BATTLE · JEVIL & SPAMTON NEO</button>' : ''}
+        ${st.beaten ? `<button class="fl-hard" type="button">REMATCH · FLOWERY (HARD)${st.beatenHard ? ' ✓' : ''}</button><p class="fl-meta">He's going to cheat. He told you that himself.</p>` : ''}</section></div>`;
     s.appendChild(root);
     $('.fl-back', root).onclick = () => { Screens._raidDossier = null; Screens.go('raid'); try { Music.screen(Screens.cur); } catch (_) { /* optional */ } };
     const load = $('.fl-load', root), go = $('.fl-go', root);
     const ready = () => { load.innerHTML = ''; banner($('canvas', root)); };
     if (FlPack.ok) ready();
     else {
-      go.disabled = true; load.innerHTML = '<p class="fl-meta">Loading the kingdom… <b>0%</b></p>';
+      go.disabled = true; load.innerHTML = '<p class="fl-meta">LOADING <b>0%</b></p>';
       FlPack.onProgress = p => { const b = load.querySelector('b'); if (b) b.textContent = Math.round(p * 100) + '%'; };
       FlPack.load().then(() => { go.disabled = false; if (root.isConnected) ready(); });
     }
     go.onclick = () => { if (!FlPack.ok) return; FW.sfx('select'); play(st.done ? 0 : Math.min(st.seg, FL_STORY.length - 1)); };
+    const egB = $('.fl-endgame', root);
+    if (egB) egB.onclick = () => { if (!FlPack.ok || !window.FlEndgame || playing) return; FW.sfx('select'); playing = true; FlEndgame.play().finally(() => { playing = false; Screens._raidDossier = ID; try { Screens.render(); } catch (_) { /* optional */ } }); };
+    const battleB = $('.fl-battle', root);
+    if (battleB) battleB.onclick = () => { if (!FlPack.ok || !window.FlEndgame || playing) return; FW.sfx('select'); playing = true; FlEndgame.battle().finally(() => { playing = false; Screens._raidDossier = ID; try { Screens.render(); } catch (_) { /* optional */ } }); };
+    const hardB = $('.fl-hard', root);
+    if (hardB) hardB.onclick = () => { if (!FlPack.ok) return; FW.sfx('select'); playHard(); };
     $$('.fl-ch', root).forEach(b => b.onclick = () => { const i = +b.dataset.i; if (i > st.seg || !FlPack.ok) return; FW.sfx('select'); play(i); });
   }
 
@@ -110,9 +140,9 @@
       if (old) {
         const st = state();
         const card = this.ebCard({
-          kind: 'Story', accent: '#ffd23a', title: TITLE, sub: 'Scraps, Ginger & Yatta vs. Flowery',
+          kind: 'Story', accent: '#ffd23a', title: TITLE, sub: 'Scraps · Ginger · Yatta',
           art: [ItemSheet.icon('Scraps'), ItemSheet.icon('Ginger'), ItemSheet.icon('Yatta')],
-          status: st.done ? 'Cleared' : st.seg ? 'Segment ' + (st.seg + 1) + '/' + FL_STORY.length : 'New', tone: st.done ? 'done' : 'ready',
+          status: st.done ? 'Cleared' : st.seg ? (st.seg + 1) + ' / ' + FL_STORY.length : 'New', tone: st.done ? 'done' : 'ready',
           progress: st.seg / FL_STORY.length, cls: 'fl-event-card'
         });
         card.onclick = () => { Screens._raidDossier = ID; Screens.render(); };

@@ -35,6 +35,7 @@ const StoryBattleUI = {
   /* Borrow the auto battler's arena: same stage, HUD and dock, with a thin
      turn-based overlay (turn order, banner, command menu, cut-ins) on top. */
   build() {
+    this.stopRigAnimation();
     document.querySelectorAll('.ms-tb').forEach(x => x.remove());
     if (typeof Screens !== 'undefined') { clearInterval(Screens._liveClock); Screens._liveClock = null; }
     const r = this.run, arena = $('#battle');
@@ -66,6 +67,7 @@ const StoryBattleUI = {
     };
     $('#btnQuit').onclick = () => this.confirmQuit();
     this.measure();
+    this.startRigAnimation();
   },
 
   /* Same staging numbers as the auto battler (sim.js): a ground line with a
@@ -97,6 +99,7 @@ const StoryBattleUI = {
     this.el.turn.textContent = 'TURN 1';
     if (w === 0) clear(this.el.units);
     else { this.el.units.querySelectorAll('.unit.foe').forEach(x => x.remove()); if (n.relay) this.el.units.querySelectorAll('.unit.ally').forEach(x => x.remove()); }
+    for (const [uid, entry] of this._rigs) if (!entry.node.isConnected) { entry.rig.destroy?.(); this._rigs.delete(uid); }
     this.drawParty(); this.drawFoes(); this.drawDock(); this.drawOrder();
     this.el.cmd.innerHTML = '';
     const boss = foes.some(f => ST_ENEMIES[f[0]].boss);
@@ -112,15 +115,80 @@ const StoryBattleUI = {
   /* ---------- the stage ---------- */
   unitEl(u) { return u && this.el.units.querySelector(`[data-uid="${u.uid}"]`); },
   art(u) { return u.side === 'p' ? stBattleUrl(u.key) : stEnemyArt(u.key); },
+  toonRigKit(u) {
+    if (u.side !== 'p' || !ST_TOONS[u.key] || typeof rigKitFor !== 'function') return null;
+    const kit = rigKitFor(u.key), skin = Art.skin(u.key);
+    if (!kit || !kit.enabled()) return null;
+    if (skin && (skin.noRig || kit.baseOnly)) {
+      return typeof ToonCutoutRigs !== 'undefined' && ToonCutoutRigs.createFromArt
+        ? { create: host => ToonCutoutRigs.createFromArt(u.key, host, this.art(u)) } : null;
+    }
+    return kit;
+  },
+  startRigAnimation() {
+    this._rigs = new Map();
+    this._rigClock = { t: 0, speed: 1, _renderEvery: 1 };
+    let last = performance.now();
+    const tick = now => {
+      if (!this.root || !this.root.isConnected) { this.stopRigAnimation(); return; }
+      const dt = Math.min(.05, Math.max(0, (now - last) / 1000));
+      last = now;
+      this._rigClock.t += dt;
+      for (const [uid, entry] of this._rigs) {
+        if (!entry.node.isConnected) { entry.rig.destroy?.(); this._rigs.delete(uid); continue; }
+        const v = entry.visual;
+        v.animT = Math.max(0, v.animT - dt);
+        v.moving = now < (v.moveUntil || 0);
+        v.hitT = now < (v.hitUntil || 0) ? 1 : 0;
+        v.alive = !entry.node.classList.contains('dead');
+        v.visualSleep = !v.alive || !!entry.unit.st.sleep?.t || this.fxReduced();
+        try { RigMotion.update(v, dt, this._rigClock); }
+        catch (error) {
+          console.warn('Story rig update failed:', entry.unit.key, error);
+          const image = document.createElement('img');
+          image.src = this.art(entry.unit); image.alt = ''; image.draggable = false;
+          entry.node.querySelector('.body').replaceChildren(image);
+          entry.rig.destroy?.(); this._rigs.delete(uid);
+        }
+      }
+      this._rigFrame = requestAnimationFrame(tick);
+    };
+    this._rigFrame = requestAnimationFrame(tick);
+  },
+  stopRigAnimation() {
+    if (this._rigFrame) cancelAnimationFrame(this._rigFrame);
+    this._rigFrame = null;
+    if (this._rigs) for (const { rig } of this._rigs.values()) rig.destroy?.();
+    this._rigs = null;
+  },
+  rigAction(u, kind, skill) {
+    const v = this._rigs?.get(u?.uid)?.visual;
+    if (!v) return;
+    const duration = (kind === 'bond' ? 1.05 : kind === 'skill' ? .7 : .48) / this.speed;
+    v.animState = kind === 'attack' ? 'attack' : kind === 'guard' ? 'wind' : 'cast';
+    v.animDur = v.animT = duration;
+    v.animStyle = '';
+    if (typeof ToonSkillMotion !== 'undefined' && (kind === 'skill' || kind === 'bond')) {
+      const skills = stChar(u.key).skills || [];
+      const index = kind === 'bond' ? 4 : skills.findIndex(s => s.id === skill);
+      const key = ['W', 'G', 'B', 'P', 'R'][index];
+      if (key) ToonSkillMotion.begin(v, key, this._rigClock.t, duration);
+    }
+  },
+  rigHit(u) {
+    const v = this._rigs?.get(u?.uid)?.visual;
+    if (v) v.hitUntil = performance.now() + 250 / this.speed;
+  },
   makeUnit(u) {
     const foe = u.side === 'e', w = Math.round(98 * (this.phone ? .82 : 1) * (u.boss ? 1.3 : 1)), top = w * 1.32;
+    const kit = this.toonRigKit(u);
     const flip = !foe && (ST_HANDLERS[u.key] || (Art.skin(u.key) || {}).nativeFace === -1); // Handler cutouts face left; Toon art already faces right
     const n = el('div', `unit ${foe ? 'foe' : 'ally'}${flip ? ' flip' : ''}${u.boss ? ' boss' : ''}${foe && u.def.art[0] === 'w' ? ' inky' : ''} stb-unit stb-enter`);
     n.dataset.uid = u.uid;
     n.style.setProperty('--w', w + 'px');
     n.style.setProperty('--stb-color', u.side === 'p' ? stChar(u.key).color : '#ed617f');
     n.innerHTML = `<div class="shadow"></div>
-      <div class="body" style="width:${w}px;margin-left:${-w / 2}px"><img src="${this.art(u)}" alt="" draggable="false"></div>
+      <div class="body" style="width:${w}px;margin-left:${-w / 2}px">${kit ? `<div class="rig-sprite ${u.key.toLowerCase()}-rig" aria-hidden="true"></div>` : `<img src="${this.art(u)}" alt="" draggable="false">`}</div>
       <div class="nameplate${u.boss ? ' rankBoss' : ''}" style="bottom:${top + 14}px">${u.boss ? '<i class="rankIcon">👑</i>' : ''}${u.name}${foe ? ` <small>LV ${u.lv}</small>` : ''}</div>
       <div class="hpmini" style="bottom:${top + 3}px"><i style="width:100%"></i><b style="width:0"></b></div>
       ${foe ? `<div class="stb-sg" style="bottom:${top - 3}px"><i></i></div>` : ''}
@@ -129,6 +197,22 @@ const StoryBattleUI = {
       <span class="ms-pops" style="bottom:${top * .72}px"></span>`;
     n.addEventListener('click', () => { if (n.classList.contains('stb-target') && this._targetPick) this._targetPick(u); });
     this.el.units.appendChild(n);
+    if (kit) {
+      const host = n.querySelector('.rig-sprite');
+      try {
+        const rig = kit.create(host);
+        const visual = { id: u.key, imgEl: host, rig, face: 1, alive: u.alive,
+          moving: false, vx: 0, vy: 0, animT: 0, animDur: 0, animState: 'idle', animStyle: '', hitT: 0 };
+        this._rigs.set(u.uid, { unit: u, node: n, rig, visual });
+        rig.update(visual, 1 / 60, this._rigClock);
+      } catch (error) {
+        console.warn('Story rig setup failed:', u.key, error);
+        this._rigs.delete(u.uid);
+        const image = document.createElement('img');
+        image.src = this.art(u); image.alt = ''; image.draggable = false;
+        host.replaceWith(image);
+      }
+    }
     requestAnimationFrame(() => requestAnimationFrame(() => n.classList.remove('stb-enter')));
     return n;
   },
@@ -141,7 +225,12 @@ const StoryBattleUI = {
     if (u.side === 'p') {
       const row = B.party().filter(x => x.row === u.row), k = row.indexOf(u);
       d = lanes(row.length)[k];
-      x = W * (u.row === 'front' ? (this.phone ? .34 : .36) : (this.phone ? .15 : .17)) + (k % 2 ? -1 : 1) * W * .04 + d * W * .03;
+      if (row.length <= 2) {
+        x = W * (u.row === 'front' ? (this.phone ? .34 : .36) : (this.phone ? .15 : .17)) + (k % 2 ? -1 : 1) * W * .04 + d * W * .03;
+      } else {
+        const front = u.row === 'front', center = front ? .3 : .16, step = front ? .105 : .075;
+        x = W * (center + (k - (row.length - 1) / 2) * step);
+      }
     } else {
       const list = B.foes().filter(f => f.alive || f === u), k = Math.max(0, list.indexOf(u)), cnt = list.length;
       d = lanes(cnt)[k];
@@ -160,6 +249,8 @@ const StoryBattleUI = {
   },
   moveTo(u, x, y, ms) {
     const n = this.unitEl(u); if (!n || !u._home) return;
+    const v = this._rigs?.get(u.uid)?.visual;
+    if (v) { v.moving = true; v.vx = (x - u._home.x) * 1000 / ms; v.vy = (y - u._home.y) * 1000 / ms; v.moveUntil = performance.now() + ms / this.speed; }
     n.style.transition = `transform ${ms / this.speed}ms cubic-bezier(.3,.8,.4,1)`;
     n.style.transform = `translate(${x.toFixed(1)}px,${y.toFixed(1)}px) scale(${(1 - u._home.d * .08).toFixed(3)})`;
     n.style.zIndex = 300;
@@ -325,7 +416,11 @@ const StoryBattleUI = {
     await this.wait(200);
     return true;
   },
-  goHome(a) { if (a && a.alive !== undefined) { this.place(a, 260 / this.speed); } },
+  goHome(a) { if (a && a.alive !== undefined) {
+    const v = this._rigs?.get(a.uid)?.visual;
+    if (v) { v.moving = true; v.vx = a.side === 'p' ? -120 : 120; v.moveUntil = performance.now() + 260 / this.speed; }
+    this.place(a, 260 / this.speed);
+  } },
 
   /* ---------- turn loop ---------- */
   async loop() {
@@ -458,6 +553,7 @@ const StoryBattleUI = {
         case 'act': {
           await back();
           const node = this.unitEl(a);
+          this.rigAction(a, e.kind, e.skill);
           this._fxAction = { actor: a.uid, key: a.side === 'p' ? a.key : 'foe', skill: e.skill || '' };
           if (node) { node.classList.remove('stb-act'); void node.offsetWidth; node.classList.add('stb-act'); }
           this.fxWindup(a, e.kind);
@@ -491,16 +587,17 @@ const StoryBattleUI = {
           if (e.fieldNotes) this.pop(t, 'FIELD NOTES', 'tag');
           if (e.streak >= 2) this.pop(t, `RATINGS ×${e.streak}`, 'tag');
           this.flinch(t);
+          this.rigHit(t);
           Sound.play(e.crit ? 'crit' : e.kind === 'mag' ? 'hit_magic' : 'hit_blunt', { vol: .42, throttle: 30 });
           if (t.side === 'p') this.shake(e.amount > t.max.hp * .25);
           else if (heavy) this.shake(false);
           this.refreshUnit(t); await this.wait(e.kind === 'mag' ? 145 : 200); break;
         }
-        case 'lethal': this.pop(t, 'GONE', 'crit hurt'); this.flash('#000'); this.shake(true); Sound.play('crit', { vol: .6 }); await this.wait(420); break;
+        case 'lethal': this.rigHit(t); this.pop(t, 'GONE', 'crit hurt'); this.flash('#000'); this.shake(true); Sound.play('crit', { vol: .6 }); await this.wait(420); break;
         case 'miss': this.pop(t, 'MISS', 'miss'); Sound.play('miss', { vol: .4 }); await this.wait(200); break;
         case 'heal': if (e.amount > 0) { this.fxBurst(t, this._fxAction ? this._fxAction.key : 'Sam', 'heal'); this.pop(t, '+' + e.amount, 'heal'); Sound.play('heal_soft', { vol: .35, throttle: 60 }); } this.refreshUnit(t); await this.wait(140); break;
         case 'fp': this.pop(t, e.amount < 0 ? `${e.amount} FP` : `+${e.amount} FP`, e.amount < 0 ? 'debuff' : 'fp'); this.refreshUnit(t); await this.wait(90); break;
-        case 'dot': this.pop(t, e.amount, 'ink'); Sound.play('hit_water', { vol: .3 }); this.refreshUnit(t); await this.wait(260); break;
+        case 'dot': this.rigHit(t); this.pop(t, e.amount, 'ink'); Sound.play('hit_water', { vol: .3 }); this.refreshUnit(t); await this.wait(260); break;
         case 'status': {
           const ic = ST_STATUS_ICON[e.k];
           if (ic && !e.resisted) { this.fxBurst(t, this._fxAction ? this._fxAction.key : t.side === 'p' ? t.key : 'foe', ic[1]); this.pop(t, ic[2].toUpperCase(), ic[1] === 'buff' ? 'buff' : 'debuff'); Sound.play(ic[1] === 'buff' ? 'buff' : 'spectral', { vol: .25, throttle: 60 }); }
@@ -625,6 +722,7 @@ const StoryBattleUI = {
 
   /* Hand the arena back to the auto battler exactly as it found it. */
   closeBattle(keepOverlay) {
+    this.stopRigAnimation();
     if (this.root) this.root.remove();
     this.root = null; this.pendingPick = null; this._targetPick = null; this.B = null;
     clearTimeout(this._banT);

@@ -271,7 +271,9 @@ Wheatley: It's always for you.
       st.tries++;
       if (ok) {
         const firstAny = !st.license, firstDiff = !st.beaten[diff], n = Math.round(clearShards(diff) * (firstDiff ? 1 : .2));
-        st.beaten[diff] = true; st.license = true; payShards(n); if (res && res.rank && 'SABC'.indexOf(res.rank) < 'SABC'.indexOf(st.best[diff] || 'D')) st.best[diff] = res.rank; Save.write();
+        st.beaten[diff] = true; st.license = true; payShards(n); if (res && res.rank && 'SABC'.indexOf(res.rank) < 'SABC'.indexOf(st.best[diff] || 'D')) st.best[diff] = res.rank;
+        if (diff === 'kaizo') Achievements.evaluate('kaizo_glados');
+        Save.write();
         playCredits(() => { sceneThen(); UI.toast(firstAny ? 'Chell license unlocked at Dyle\'s shop. +' + n + ' shards' : '+' + n + ' Chell shards'); });
       } else { Save.write(); sceneThen(); UI.toast('Test failed.'); }
     });
@@ -482,10 +484,10 @@ Wheatley: It's always for you.
     const dossierFn = Screens.raidDossier;
     Screens.raidDossier = function (s, ev) { if (ev && ev.isAperture) { dossier(s); return; } return dossierFn.apply(this, arguments); };
   }
-  if (typeof DyleShop !== 'undefined' && DyleShop.renderSkins) {
-    const renderSkins = DyleShop.renderSkins;
-    DyleShop.renderSkins = function (contents) {
-      renderSkins.apply(this, arguments);
+  if (typeof DyleShop !== 'undefined' && DyleShop.renderCharacters) {
+    const renderCharacters = DyleShop.renderCharacters;
+    DyleShop.renderCharacters = function (contents) {
+      renderCharacters.apply(this, arguments);
       const wrap = el('section', 'ap-shelf');
       const owned = Save.owns('Chell'), ready = beatenAny();
       const lic = state().license, afford = Save.can({ gold: CHELL_PRICE });
