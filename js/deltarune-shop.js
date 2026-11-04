@@ -4,9 +4,9 @@
 (() => {
   const offers = [
     { id:'TasqueManager', start:true, price:30000, art:'assets/deltarune/tasque-manager-portrait.png', note:'Control / Support · SS Tier' },
-    { id:'Kris', part:2, price:15000, art:'assets/deltarune/kris-idle.png', note:'Control / Damage · B Tier' },
-    { id:'Ralsei', part:6, price:30000, art:'assets/deltarune/ralsei-idle.png', note:'Support / Healer / Control · SS Tier' },
-    { id:'Flowery', part:10, price:45000, art:'assets/deltarune/flowery-idle.png', note:'Damage / Control · S Tier' }
+    { id:'Kris', part:2, price:15000, art:'assets/deltarune/kris-portrait.png', note:'Control / Damage · S Tier' },
+    { id:'Ralsei', part:6, price:30000, art:'assets/deltarune/ralsei-portrait.png', note:'Support / Healer / Control · SS Tier' },
+    { id:'Flowery', part:10, price:45000, art:'assets/deltarune/flowery-portrait.png', note:'Damage / Control · S Tier' }
   ];
   function available(offer, progress){
     return offer.start ? !!progress.started : Math.max(0, Number(progress.seg) || 0) >= offer.part;
@@ -36,3 +36,24 @@
     });
   };
 })();
+
+if (typeof HERO_GENDER !== 'undefined') {
+  HERO_GENDER.Ralsei = 'Male';
+  HERO_GENDER.TasqueManager = 'Female';
+  HERO_GENDER.Flowery = 'Male';
+  HERO_GENDER.Kris = 'Other';
+}
+if (typeof HERO_ANIMAL !== 'undefined') {
+  HERO_ANIMAL.TasqueManager = 'Cat';
+  HERO_ANIMAL.TasqueCompanion = 'Cat';
+  HERO_ANIMAL.Ralsei = 'Goat';
+}
+if (typeof HeroCollections !== 'undefined' && HeroCollections.catalogue) {
+  if (!HeroCollections.catalogue.some(c => c.id === 'deltarune')) {
+    HeroCollections.catalogue.push({
+      id: 'deltarune', name: 'Flower Kingdom & Deltarune', theme: 'Deltarune crossover roster',
+      icon: '♥', color: '#ff7799', stat: 'hp',
+      members: () => ['Kris', 'Ralsei', 'TasqueManager', 'Flowery'].filter(id => (typeof PLAYABLE_IDS !== 'undefined' ? PLAYABLE_IDS : []).includes(id))
+    });
+  }
+}

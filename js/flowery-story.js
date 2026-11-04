@@ -52,14 +52,14 @@ Yatta: AND IT'S GOT A FLOWER ON IT!! THE SAME ONE AS THE SIGN!!
 @emote Scraps off
 Scraps: ...I drew that flower.
 Ginger: You did?
-Scraps: Yesterday. Everybody was crying about Shelly, and I didn't know what to do, so I drew.
-Scraps: It came out sad.
-Yatta: WELL NOW IT'S A DOOR!!
-Ginger: We should wake up Tisha. Or Rodger.
+Scraps: Yesterday, after the reprinting machine broke. Everybody was crying about Shelly, and I didn't know what to do... so I drew a flower with seven petals.
+Scraps: I wished there was a place where nobody ever had to leave. | It came out looking sad.
+Yatta: WELL YOUR WISH OPENED A REAL DOOR IN THE WALL!!
+Ginger: Behind the concrete? That's impossible... unless another world's door was already left cracked on the other side.
 Scraps: ...
 Scraps: Let's just look first.
-Ginger: Scraps, nobody comes back anymore.
-Scraps: I know. I'll be careful.
+Ginger: Scraps, without the machine, nobody comes back anymore if we fall.
+Scraps: I know. I'll hold onto your hand. We'll be careful.
 Yatta: SHE SAID CAREFUL!! WE'RE GOING!!
 @choice Follow Yatta|Follow Yatta carefully
 @if choice=2 careful
@@ -155,8 +155,8 @@ Scraps.!: Hsssss!
 @battle floradinn
 @party off
 @lead 360 206 right
-@walk Ginger 340 196 0.01
-@walk Yatta 336 218 0.01
+@pos Ginger 340 196 right
+@pos Yatta 336 218 right
 @frame Floradinn floradin_up_0
 @frame Floradinn2 floradin_up_1
 Floradinn: Ha! You can't even scratch us!
@@ -187,43 +187,43 @@ Scraps: ...Who are YOU?
 @sfx great_shine 0.3
 @frame Flowery flowery_pose_0
 Flowery.cheer[itsme]: Howdy. | The name's Flowery.
-Flowery.smile[none]: Star sign: the Flower. Golden eyes. Best friend to a king.
-Flowery.smile[none]: And you three must be...
+Flowery.smile[flowery]: Star sign: the Flower. Golden eyes. Best friend to a king.
+Flowery.smile[lady_waiting]: And you three must be...
 @walk Flowery 400 200 0.6
 @face Flowery left
 @voice kris Kris!
 @music flWho
-Flowery.wide[none]: ...
+Flowery.wide: ...
 Flowery.look[huh]: Huh.
-Flowery.side[none]: You're not Kris.
+Flowery.side[predictable]: You're not Kris.
 Ginger: ...Who's Kris?
-Flowery.calm[none]: The king's kid. | I left the back door open for them.
-Flowery.plain[none]: And instead I got... you.
-Yatta: WE CAME FROM THE VENTS!!!
-Flowery.squint[none]: The vents.
+Flowery.calm[best_friend]: The king's kid. | When the Dark Fountain opened in his flower shop, I left the back door cracked a hair so Kris could visit him.
+Flowery.plain[huh]: Instead, your little crayon flower hooked onto my threshold. And I got... you.
+Yatta: WE CAME FROM THE VENTS!!! And why did our attacks only do ONE damage to those sunflowers?!
+Flowery.squint[hah]: Because you're cartoons from another rulebook, Confetti! | Your ink doesn't weigh an ounce in a Dark World.
 @walk Flowery 380 200 0.8
 * (He walks a slow circle around you.)
 Flowery.side[hoo]: Well, aren't you three a strange bouquet.
-Flowery.side[none]: Everything in this kingdom is made of little squares. You three are... not.
+Flowery.side[great_style]: Everything in this kingdom is woven from pixel light and flower-shop memories. You three are... smooth cutouts.
 Scraps: ...Thanks?
-Ginger: We're from a TV show.
-Flowery.soft[none]: A show, huh.
+Ginger: We're from a TV show called Dandy's World.
+Flowery.soft[my_dreams]: A show that got cancelled, huh? | Yeah... I know a lot about things people stop visiting.
 @frame Flowery flowery_pose_0
 @anim Flowery flowery_clap_ 4 10 once
 Flowery.beam[thats_great]: Well! Any friend of the vents is a friend of mine.
-Flowery.smile[none]: Don't worry, Princesses. I'll get you home. | The back door just needs a little time.
+Flowery.smile[its_all_yours]: Don't worry, Princesses. I'll get you home. | The back door just needs a little time.
 Ginger: ...Princesses?
-Flowery.wink[none]: It suits you.
+Flowery.wink[great_style]: It suits you.
 @anim Flowery flowery_condescend_ 7 10 once
-Flowery.smirk[none]: You're Cupcake. You're Origami. And you're Confetti.
+Flowery.smirk[hoo]: You're Cupcake. You're Origami. And you're Confetti.
 Yatta: I'M CONFETTI!!!
 Scraps: I'm paper. I CUT. Origami is folding.
-Flowery.grin[none]: Then I'll keep my petals away from you, Origami.
+Flowery.grin[leaf_it]: Then I'll keep my petals away from you, Origami.
 Ginger: Um... there's somebody in that cupboard.
-Flowery.wide[none]: That? | That's art. It knocks.
+Flowery.wide[huh]: That? | That's art. It knocks.
 Scraps: It said "thank goodness."
 @anim Flowery flowery_shrug_spin_ 4 10 once
-Flowery.smile[none]: Very interactive art. | Now, let's make like a tree and have some fun!
+Flowery.smile[leaf_it]: Very interactive art. | Now, let's make like a tree and have some fun!
 @frame Flowery off
 @face Flowery right
 @walk Flowery 800 200 2.2
@@ -256,33 +256,36 @@ Scraps: Yeah. | He looked at us like we were the wrong present.
 @cut castle
 @npc Flowery flTalk
 @anim Flowery flowery_jacket_flutter_ 5 8 once
-Flowery.cheer[hey_guys]: Behold! Flower Castle!
-Flowery.smile[none]: Built by a dream. Decorated by me.
+Flowery.cheer[hey_guys]: Behold! The Sanctuary of Seven Suns—Flower Castle!
+Flowery.smile[great_style]: Built by a lonely king's dream. Conducted and decorated by yours truly.
+Scraps: Why are there seven suns in the sky? And why haven't they moved since we fell?
+Flowery.calm[wind]: One sun for each of the seven flowers in the Big Guy's shop window. | I froze them at three in the afternoon so his one good day would never have to end.
 Yatta: CAN WE GO IN?!
-Flowery.smile[none]: Of course, Confetti. Right behind me.
+Flowery.smile[for_the_fans]: Of course, Confetti. Right behind me.
+@idle Flowery
 @trigger 260 120 40 90 puzzle
 @roam
 # flTalk
-Flowery.smile: Need something, Princess?
+Flowery.smile[hey_guys]: Need something, Princess?
 @choice Ask about Kris|Ask about him|Nothing
 @if choice=1 askKris
 @if choice=2 askHim
-Flowery.wink: Just wanted to look at me? Understandable.
+Flowery.wink[great_style]: Just wanted to admire the petals? Understandable.
 @end
 # askKris
-Flowery.calm: Kris? | They grew up like a turnip. I watched the whole thing from a pot.
-Flowery.calm[none]: Good kid. Quiet. | Their dad worries about them more than they know.
+Flowery.calm[kris]: Kris? | They grew up like a turnip. I watched the whole thing from a pot on the shop counter.
+Flowery.calm[best_friend]: Good kid. Quiet. | Their dad sets out an extra teacup for them every afternoon, just in case.
 @end
 # askHim
-Flowery.beam: Me? I'm one of seven flowers. | We were part of a very important question, once.
-Flowery.smile[none]: The answer was "yes." For a while.
+Flowery.beam[flowery]: Me? I'm the golden kingcup at the center of the bouquet. | We were grown to ask a very important question, twenty years ago.
+Flowery.smile[smile_again]: The answer was "yes." For a while.
 @end
 # puzzle
 @party off
 @unnpc Flowery
 @switches 330 176 26 #ffd23a,#ff7ab0,#7ff07f,#7f9bff,#c49bff 1,3,0,4,2 solved fumble
 @sign 300 140 hint npc_sign_0
-* (Five colored plates are set into the road. A gate blocks the way.)
+* (Five colored rune plates are set into the road. A gate blocks the way.)
 Scraps: A puzzle.
 Ginger: I'm bad at puzzles...
 Yatta: I'M GREAT AT PUZZLES!! I JUST STAND ON ALL OF THEM!!
@@ -292,13 +295,21 @@ Flowery.smirk[hah]: Go on, then. I'll supervise.
 @party on
 @lead 300 186 right
 @npc Flowery flPuzzle
-@roam Step on the plates in order
+@roam Step on the rune plates in order
 # hint
 * (A sign.)
 * ("Pink sun rises. The sky goes blue. The gold petals fall. The purple dusk comes. Green grass grows over everything.")
 @end
 # flPuzzle
-Flowery.smile: Read the sign, Princess. Signs are very polite. They tell you things.
+Flowery.smile: Need a hand with the tiles, Princess?
+@choice Give me a hint|Show me how a pro does it|I'll solve it myself
+@if choice=1 flHint
+@if choice=2 fumble
+Flowery.smile: Take your time, Princess. Signs are polite. They tell you things.
+@end
+# flHint
+Flowery.smirk: Pink sun rises... that's pink first! Then sky blue, gold petals, purple dusk, green grass!
+Flowery.cheer: Read the sign if you forget, Princess!
 @end
 # fumble
 @party off
@@ -307,34 +318,41 @@ Flowery.smirk[hah]: Okay, okay. Step aside. | This calls for a professional.
 @music flSkate
 @frame Flowery flowery_skateboard_0
 @sfx wing 0.5
-@slide Flowery 470 176 0.6
+@slide Flowery 470 176 1.2
 @sfx select 0.5
 @sfx great_shine 0.5
+@anim Flowery flowery_pirouette_ 8 14 once
+@anim Flowery flowery_teethshine_ 6 12 once
 @frame Flowery flowery_pose_point_cooler_0
 @music flFlowery
-* (Every plate lights up at once.)
+* (Every rune plate lights up with brilliant color.)
 Flowery.grin[yes]: Solved.
 Scraps: That's not solving it. You just skated over it.
-Flowery.smile[none]: The puzzle never said "no skateboards."
+Flowery.smile[hah]: The puzzle never said "no skateboards."
 @goto after
 # solved
 @party off
 @walk Flowery 300 176 0.5
 Flowery.wide[wow]: Oh! You solved it.
-Flowery.ugh[none]: I was going to skateboard on it. I brought the board and everything.
+Flowery.ugh[forget_it]: I was going to skateboard on it. I brought the board and everything.
 @frame Flowery flowery_skateboard_0
-Flowery.sweat[none]: ...I'm skating to the gate anyway.
+Flowery.sweat[nonono]: ...I'm skating to the gate anyway.
 @music flSkate
-@slide Flowery 470 176 0.6
+@slide Flowery 470 176 1.2
+@anim Flowery flowery_pirouette_ 8 14 once
 @music flFlowery
 @frame Flowery flowery_pose_point_cooler_0
 @goto after
 # after
 @sfx impact 0.5
-* (Somewhere ahead, a gate opens.)
+* (Somewhere ahead, a heavy gate unlocks and opens.)
+@walk Flowery 510 160 0.5
+@face Flowery left
+@lead 430 180 right
+@party on
 Yatta!: TEACH ME TO DO THAT!!!
-Flowery.wink[none]: Can't. You need hair like this.
-Flowery.smirk[none]: But I CAN show you my voice lines.
+Flowery.wink[great_style]: Can't. You need hair like this.
+Flowery.smirk[hoo]: But I CAN show you my voice lines.
 Scraps: Your what?
 @frame Flowery flowery_pose_r_0
 @voice sanfrandisco Here I come, Sanfrandisco!
@@ -348,14 +366,13 @@ Scraps: Your what?
 @frame Flowery flowery_pose_0
 @voice best_friend Your dad's my best friend!
 @frame Flowery flowery_idle_0
-Flowery.ugh[none]: ...Wrong audience for that one.
+Flowery.ugh[forget_it]: ...Wrong audience for that one.
 Ginger: Where is that coming from?
-Flowery.smile[none]: Me. I'm just like this.
+Flowery.smile: Me. I'm just like this.
 Yatta!: I WANT VOICE LINES!!!
-Flowery.grin[none]: Confetti, you ARE a voice line.
-@frame Flowery off
-@party on
-@lead 470 180 right
+Flowery.grin[hah]: Confetti, you ARE a voice line.
+@idle Flowery
+@face Flowery right
 @trigger 700 120 40 90 sethaqua
 @npc Flowery flTalk
 @roam
@@ -374,9 +391,9 @@ Seth: Aqua, please, not near the edge!
 Flowery.cheer[hey_guys]: Seth! Aqua! My little buds!
 @face Seth left
 Seth: Flowery! Who are— | Who are THEY?
-Flowery.smile[none]: New friends. They came in through the back door.
+Flowery.smile: New friends. They came in through the back door.
 Seth: ...The back door. | The one we were supposed to watch. For Kris.
-Flowery.smile[none]: For anybody, Seth.
+Flowery.smile: For anybody, Seth.
 Seth: ...Right. Anybody.
 @anim Aqua aqua_wave_ 4 8 once
 Aqua: Uuu, new friends! I'm Blue!
@@ -403,7 +420,7 @@ Seth: It is NOT!
 @anim Flowery flowery_clap_ 4 10 once
 Flowery.grin[hah]: Wonderful! Everybody's friends! | Seth, make sure Gorey's breakfast is perfect.
 Seth: It's three in the afternoon.
-Flowery.wink[none]: Then make it a perfect three in the afternoon. Adieu!
+Flowery.wink[great_style]: Then make it a perfect three in the afternoon. Adieu!
 @walk Flowery 900 170 1.4
 @remove Flowery
 @walk Seth 760 172 0.5
@@ -446,7 +463,7 @@ Orange: I-I'm not scared of them! I'm EXTRA now! I'm SUPER!
 Yatta!: HI!!! I'M CONFETTI!!!
 Orange.!: AAAH!!
 * (Orange hides behind the chef's hat.)
-Flowery.smile[none]: My little sister. She's very brave.
+Flowery.smile: My little sister. She's very brave.
 Orange: I AM very brave!!
 @music flShop
 @anim Green enemy_green_wave_ 4 8 once
@@ -510,28 +527,28 @@ Orange: ...I want to be strong like him. | Then I can protect him too.
 @end
 # flTalk
 @if baked flAfter
-Flowery.smile: Try Green's cooking, Princess. | Green doesn't talk. Green listens.
+Flowery.smile[try_flavor]: Try Green's cooking, Princess. | Green doesn't talk. Green listens.
 @end
 # flAfter
 @party off
 @walk Flowery 120 200 0.6
 @face Flowery right
-Flowery.calm[none]: Cupcake. Got a minute?
+Flowery.calm[lady_waiting]: Cupcake. Got a minute?
 @walk Ginger 150 200 0.6
 @face Ginger left
-Flowery.calm[none]: The other two. Do they go everywhere you go?
+Flowery.calm: The other two. Do they go everywhere you go?
 Ginger: ...No. I'm a Holiday Toon. I'm only around at Christmas.
-Ginger: The rest of the year I'm just... put away.
-Flowery.serious[none]: Put away until you're useful.
+Ginger: The rest of the year I'm just... put away in storage.
+Flowery.serious[only_help]: Put away on a shelf while the world moves on without you.
 Ginger: That's... not how Bobette would say it.
-Flowery.soft[none]: Did somebody send you, Cupcake? | Through the back door?
+Flowery.soft[huh]: Did somebody send you, Cupcake? | Through the back door to shut down the Big Guy's dream?
 Ginger: No. | Nobody tells us where to go anymore.
 * (Flowery looks at her for a while.)
 @frame Flowery flowery_pose_0
 Flowery.beam[hah]: Ha! Of course not. You couldn't spy on a sandwich.
-Flowery.smile[none]: C'mon. There's someone you should meet.
+Flowery.smile[keep_waiting]: C'mon. There's someone you should meet.
 Ginger: Who?
-Flowery.smile[none]: The king. | He doesn't know it yet.
+Flowery.smile[my_king]: The king. | He doesn't know he's dreaming yet. And we're keeping it that way.
 @frame Flowery off
 @party on
 @lead 150 200 right
@@ -557,12 +574,12 @@ Flowery.smile[none]: The king. | He doesn't know it yet.
 @party off
 @spawn Yellow 330 190 left
 @sfx b 0.5
-@frame Yellow yellow_point_left_0
+@flip Yellow on
 @music flYellow
 @anim Yellow yellow_cool_point_raise_ 5 10 once
 Yellow!: FREEZE, varmints!
 @shake 3
-* (A flower in a cowboy hat steps out of the yellow door, pointing a gun.)
+* (A flower in a cowboy hat steps out of the yellow door, pointing his revolver right at you.)
 Yatta!: I'M FROZEN!!!
 Yellow: Somebody trampled Blue's flowerbed. | And there ain't no trampling in my town.
 Scraps: It's a castle.
@@ -573,7 +590,7 @@ Yellow: ...Castle-town.
 @frame Blue blue_poses_0
 Blue: Oh, Yellow, dear. You found them.
 Blue: Three strangers, right next to my poor flowers. | How tragic.
-Flowery.squint[none]: Blue.
+Flowery.squint[huh]: Blue.
 Blue: Flowery. | You're standing in my light.
 @anim Flowery flowery_teethshine_ 6 12 once
 Flowery.smirk[hoo]: I AM the light, Blue.
@@ -583,6 +600,7 @@ Ginger: Court?
 Yellow: Every crime gets a fair trial! I'm the judge, the sheriff, and the jury.
 Scraps: That's not fair.
 Yellow: ...It's a little fair.
+@flip Yellow off
 @frame Yellow yellow_cool_stance_0
 @call trial
 # trial
@@ -597,7 +615,7 @@ Yellow: Hmmmm.
 @if choice=3 blameYellow
 Scraps: Her. Dancers wear little shoes.
 Blue.wide: How DARE you. These are slippers, dear.
-Yellow: Slippers ain't shoes. Objection overruled. | Try again, partner.
+Yellow: Slippers ain't shoes. Objection from the court! Overruled. | Try again, partner.
 @goto trial
 # blameYellow
 Scraps: You. You're wearing boots.
@@ -608,6 +626,7 @@ Yellow: Then justice says... | I gotta punish myself.
 Ginger: No, no! They're cowboy boots! They're too big!
 Yellow: ...They are too big.
 Yellow: Thank ya kindly, ma'am. | Objection... sustained.
+@flip Yellow off
 @frame Yellow yellow_cool_stance_0
 @goto trial
 # blameFl
@@ -617,7 +636,7 @@ Scraps: You walked right past the bed. You've got dancing shoes. | And there's b
 * (Everybody looks at Flowery's heel. There's blue dirt on it.)
 Flowery.sweat[nonono]: That's— | That's from a PIROUETTE. For practice.
 Blue.sly: On my flowers.
-Flowery.ugh[none]: NEAR your flowers.
+Flowery.ugh[forget_it]: NEAR your flowers.
 Blue.cross: You never could land it.
 Flowery.snarl[show_you]: I land it EVERY time!
 @anim Flowery flowery_pirouette_ 8 16 once
@@ -627,6 +646,7 @@ Flowery.snarl[show_you]: I land it EVERY time!
 * (Flowery pirouettes. He doesn't land it.)
 @frame Flowery off
 Yellow: This court finds Flowery GUILTY. | Of tramplin'. And of not landin' it.
+@flip Yellow on
 @frame Yellow yellow_shoot_0
 @sfx bump 0.5
 * (Yellow fires. A blue flower pops out of the barrel and lands in Flowery's hair.)
@@ -634,19 +654,26 @@ Yellow: ...It always does that.
 @anim Blue blue_laugh_ 2 4 once
 Blue.soft: I fill it every morning, dear. | I'd rather you shoot something pretty.
 * (Yellow's face goes red under his hat.)
+@flip Yellow off
+@frame Yellow yellow_cool_stance_0
 Yatta: THAT WAS THE BEST COURT EVER!!!
 @frame Flowery off
 @walk Flowery 120 196 0.5
 @face Flowery right
 Flowery.smirk[hoo]: Origami. You've got sharp eyes.
 Scraps: I'm paper. It's the edges.
-Flowery.calm[none]: Most people look at the hair and stop.
-Flowery.smile[none]: You don't.
+Flowery.calm: Most people look at the hair and stop.
+Flowery.smile: You don't.
 Scraps: ...Since I got back, I look at everybody.
-Flowery.side[none]: Got back from where?
+Flowery.side[huh]: Got back from where?
 Scraps: Somewhere you don't come back from anymore. | So I look. In case it's the last time.
 * (Flowery doesn't say anything. He looks at his blue-dirt shoe.)
 @music flAsgore
+@idle Yellow
+@face Yellow left
+@flip Yellow off
+@idle Blue
+@face Blue left
 @party on
 @lead 160 200 right
 @npc Blue blueTalk

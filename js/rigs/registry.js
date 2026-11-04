@@ -148,7 +148,7 @@ const RigMotion = (() => {
     u._rigAccum = Math.min(.05, (u._rigAccum || 0) + dt * Math.min(battle.speed || 1, 3));
     if (action === u._rigAction && u._rigAccum + .0005 < interval) return;
     u._rigAction = action;
-    const step = u._rigAccum;
+    const step = u._rigAccum || 1 / 60;
     u._rigAccum = 0;
     u.rig.update(u, step, battle);
     if (typeof ToonRigJoints !== 'undefined') ToonRigJoints.update(u, battle);

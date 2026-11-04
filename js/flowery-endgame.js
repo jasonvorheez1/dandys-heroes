@@ -147,8 +147,8 @@
     if (this.eg && u.side === 'p' && this._egGuts && this._egGuts.has(u.uid)) { this._egGuts.delete(u.uid); u.hp = 1; ev.push({ t: 'text', text: `${u.name} hangs on!`, actor: u.uid, cls: 'heal' }); return; }
     const r = kill0.call(this, u, ev);
     if (this.eg && isBoss(u)) {
-      if (u.key === 'egJevil') Achievements.recordMax('jevilDefeat', 1);
-      if (u.key === 'egSneo') Achievements.recordMax('spamtonNeoDefeat', 1);
+      if (u.key === 'egJevil' && typeof Achievements !== 'undefined' && Achievements.recordMax) Achievements.recordMax('jevilDefeat', 1);
+      if (u.key === 'egSneo' && typeof Achievements !== 'undefined' && Achievements.recordMax) Achievements.recordMax('spamtonNeoDefeat', 1);
       const o = this.living('e').find(isBoss);
       if (o && !o.egEnraged) {
         o.egEnraged = true;

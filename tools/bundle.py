@@ -6,7 +6,7 @@ import json
 import sys
 from pathlib import Path
 
-SRC = Path('/workspace/js/game.js')
+SRC = Path(__file__).resolve().parent.parent / 'js' / 'game.js'
 START = 'var S='
 END = ';\nfor(var i='
 

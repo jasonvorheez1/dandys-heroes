@@ -141,7 +141,7 @@ const StoryBattleUI = {
         v.moving = now < (v.moveUntil || 0);
         v.hitT = now < (v.hitUntil || 0) ? 1 : 0;
         v.alive = !entry.node.classList.contains('dead');
-        v.visualSleep = !v.alive || !!entry.unit.st.sleep?.t || this.fxReduced();
+        v.visualSleep = !v.alive || !!entry.unit.st.sleep?.t;
         try { RigMotion.update(v, dt, this._rigClock); }
         catch (error) {
           console.warn('Story rig update failed:', entry.unit.key, error);

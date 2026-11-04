@@ -28,6 +28,29 @@ function flowShield(u,B,amount){
   u._flowShield=u.shields[u.shields.length-1];
   if(u._flowShield){B.applyStatus(u,u,'flowery_illusion',999);if(u._flowRed)B.applyStatus(u,u,'flowery_omega_crit',999);}
 }
+function flowPunch(u, B, e, ratio = 1, tag = 'JARONA!', animStyle = 'floweryJarona', isCombo = false, isFinisher = false) {
+  if (!u.alive || !e?.alive || !B.isTargetable(e, u)) return;
+  const oldX = u.x, oldDepth = u.depth;
+  B.blink(u, e.x - u.face * 26, e.depth);
+  u._flowCharges = (u._flowCharges || 0) + 1;
+  B.anim(u, 'attack', isCombo ? 0.30 : 0.36, animStyle);
+  FloweryVisuals.punch(u, B, e, isCombo, isFinisher);
+  const dmg = (typeof ratio === 'number' && ratio > 10) ? ratio : u.st.atk * ratio * (1 + (u._flowJaronaPct || 0));
+  const hit = B.damage(u, e, dmg, { type: 'physical', tag });
+  if (hit?.amount > 0) {
+    B.interrupt(e, u);
+    B.knockback(u, e, isFinisher ? 110 : (isCombo ? 88 : 76));
+    if (isCombo) B.applyStatus(u, e, 'flowery_offbalance', 6);
+  }
+  if (!B.offscreen) {
+    B.fxSlash(u, e, { col: isFinisher ? '#ff7be8' : (isCombo ? '#ffa85c' : '#ffe879'), ang: isCombo ? -22 : 18 });
+    flowMark(B, e, tag, isFinisher ? '#ff7be8' : (isCombo ? '#ffa85c' : '#ffe879'));
+  }
+  B.after(isCombo ? 0.22 : 0.20, () => {
+    if (u.alive) B.blink(u, oldX, oldDepth);
+  });
+  flowTryOmega(u, B);
+}
 function flowCharge(u,B,e,ratio=1,copy=false){
   if(!u.alive||!e?.alive||!B.isTargetable(e,u))return;
   const oldX=u.x,oldDepth=u.depth;
@@ -45,9 +68,17 @@ function flowTryOmega(u,B){
   B.after(10,()=>{
     if(!u.alive||!u._flowOmega)return;
     u._flowOmega=false;B.removeStatus(u,'flowery_omega');
-    FloweryVisuals.voice(B,'last_jarona',{vol:1,priority:true});
-    flowFoes(u,B).forEach((e,i)=>B.after(i*.08,()=>{if(!u.alive||!e.alive)return;FloweryVisuals.charge(u,B,e);B.damage(u,e,u.st.atk*1.45,{type:'physical',area:true,tag:'Omega JARONA Finale'});B.applyStatus(u,e,'stun',.8);}));
-    B.anim(u,'attack',.8,'floweryJarona');flowMark(B,u,'FINAL JARONA!');
+    B.anim(u, 'cast', .35, 'floweryJaronaWindup');
+    FloweryVisuals.voice(B, FloweryVisuals.nextJaronaVoice(true), {vol:1,priority:true,throttle:0});
+    flowMark(B,u,'LAST JARONA!!!','#ff7bf0');
+    B.after(0.26, () => {
+      if(!u.alive)return;
+      flowFoes(u,B).forEach((e,i)=>B.after(i*.10,()=>{
+        if(!u.alive||!e.alive)return;
+        flowPunch(u, B, e, 1.55, i === 0 ? 'LAST JARONA!!!' : 'COMBO JARONA!!', 'floweryJaronaCombo', true, true);
+        B.applyStatus(u,e,'stun',.8);
+      }));
+    });
   });
   const flowers=['Aqua','Seth','Yellow','Blue','Green','Orange'];
   flowers.forEach((who,pulse)=>B.after(pulse*2,()=>{
@@ -87,16 +118,106 @@ defHero({
   move:{gait:'strut',bob:4,freq:1.6,lean:5,squash:.02,idle:'sway',step:'step_soft',particles:'sparkle',pcol:'#ffdd67',trail:{on:true,col:'#ffbde5',rate:.15},brake:.3},
   basic:{name:'Petal Jab',type:'physical',ratio:.94,range:165,wind:.17,fastWind:true,pcol:'#ffe67c',hit:'hit_slash',
     note:'The first Basic Attack during Maximum Stats becomes a JARONA charge. Omega Basics alternate between charges and flower projectiles.',
-    onStart(u,B,t){u._flowBasicCharge=false;u._flowProjectile=false;if(u._flowOmega){u._flowNextBasicCharge=!u._flowNextBasicCharge;u._flowBasicCharge=u._flowNextBasicCharge;u._flowProjectile=!u._flowBasicCharge;}else if(u.hasStatus('flowery_max')&&u._flowFirst){u._flowFirst=false;u._flowBasicCharge=true;}if(u._flowBasicCharge)B.dash(u,t.x-u.face*25,.18,{depth:t.depth});u._flowBasicVoice=(u._flowBasicVoice||0)+1;if(!u._flowOmega&&u._flowBasicVoice%4===1)FloweryVisuals.voice(B,u._flowBasicVoice%8===1?'hah':'hoo',{vol:.52,throttle:1800});},
-    onHit(u,t,B){if(u._flowBasicCharge){u._flowBasicCharge=false;u._flowCharges++;FloweryVisuals.charge(u,B,t);B.knockback(u,t,70);B.interrupt(t,u);flowTryOmega(u,B);}if(u._flowProjectile){u._flowProjectile=false;B.damage(u,t,u.st.mag*.55,{type:'magic',basic:true,tag:'Omega Petal'});FloweryVisuals.flower(B,t,'#ff91df');}}
+    onStart(u,B,t){
+      u._flowBasicCharge=false;u._flowProjectile=false;
+      if(u._flowOmega){
+        u._flowNextBasicCharge=!u._flowNextBasicCharge;
+        u._flowBasicCharge=u._flowNextBasicCharge;
+        u._flowProjectile=!u._flowBasicCharge;
+      } else if(u.hasStatus('flowery_max')&&u._flowFirst){
+        u._flowFirst=false;
+        u._flowBasicCharge=true;
+      }
+      if(u._flowBasicCharge)B.dash(u,t.x-u.face*25,.18,{depth:t.depth});
+      u._flowBasicVoice=(u._flowBasicVoice||0)+1;
+      if(!u._flowOmega&&u._flowBasicVoice%4===1)FloweryVisuals.voice(B,u._flowBasicVoice%8===1?'hah':'hoo',{vol:.52,throttle:1800});
+    },
+    onHit(u,t,B){
+      if(u._flowBasicCharge){
+        u._flowBasicCharge=false;
+        u._flowCharges++;
+        FloweryVisuals.charge(u,B,t);
+        B.knockback(u,t,70);
+        B.interrupt(t,u);
+        flowTryOmega(u,B);
+      }
+      if(u._flowProjectile){
+        u._flowProjectile=false;
+        B.damage(u,t,u.st.mag*.55,{type:'magic',basic:true,tag:'Omega Petal'});
+        FloweryVisuals.flower(B,t,'#ff91df');
+      }
+    }
   },
   skills:{
     W:{name:'JARONA!',type:'Physical Damage / Control',energy:100,v:{ratio:1.05,copy:.43},
-      desc:(S)=>`<span class="sk-pas">Each wave begins with Maximum Stats for 8s: Attack Speed +25%, Evasion +20%, and faster movement. The first Basic Attack charges and Knocks Back.</span> Rush the three highest-Attack enemies, dealing <em>${pcn(S.ratio*100)}</em> Physical Damage and interrupting them. Four copies hit other targets for reduced damage and apply Off Balance for 6s. With Maximum Stats, the final rush fans out Magic projectiles. Omega adds one copy and cuts Armor.`,
-      passive(u,B){u._flowFirst=true;u._flowCharges=0;u._flowSummoned=0;u._flowOmegaUsed=false;u._flowOmega=false;u._flowNextBasicCharge=false;u._flowThicket=null;u._flowLastShield=null;B.applyStatus(u,u,'flowery_max',8);},
-      cast(u,B,S){const foes=flowFoes(u,B).sort((a,b)=>b.st.atk-a.st.atk);if(!foes.length)return;const maximum=u.hasStatus('flowery_max');const picked=foes.slice(0,3);u._flowJaronaLine=(u._flowJaronaLine||0)+1;FloweryVisuals.voice(B,u._flowJaronaLine===1?'my_jarona':'jarona'+(1+(u._flowJaronaLine-2)%4),{vol:.9,priority:true});
-        picked.forEach((e,i)=>B.after(i*.20,()=>{if(u.alive)flowCharge(u,B,e,S.ratio);if(i===picked.length-1&&u.alive){if(u._flowRed&&e.alive)B.applyStatus(u,e,'flowery_armor',6);if(maximum)flowFoes(u,B).filter(x=>B.distance(e,x)<180).forEach(x=>B.damage(u,x,u.st.mag*.48,{type:'magic',area:true,tag:'JARONA Petals'}));}}));
-        B.after(picked.length*.20+.12,()=>{if(!u.alive)return;const copyTargets=flowFoes(u,B).filter(e=>!picked.includes(e));const pool=copyTargets.length?copyTargets:flowFoes(u,B);for(let i=0;i<(u._flowRed?5:4);i++){const e=pool[i%pool.length];if(e){flowCharge(u,B,e,S.copy,true);if(u._flowRed)B.applyStatus(u,e,'flowery_armor',6);}}});
+      desc:(S)=>`<span class="sk-pas">Each wave begins with Maximum Stats for 8s: Attack Speed +25%, Evasion +20%, and faster movement. The first Basic Attack dashes in and interrupts.</span> Flowery coils back to wind up and strikes the highest-Attack enemies with an escalating <strong>JARONA</strong> punch combo for <em>${pcn(S.ratio*100)}</em> Physical Damage, shouting signature battle cries and chaining immediately into follow-up uppercuts. Four copies hit other targets for reduced damage and apply Off Balance for 6s. With Maximum Stats, the final punch fans out Magic projectiles. Omega adds one copy and cuts Armor.`,
+      passive(u,B){
+        u._flowFirst=true;u._flowCharges=0;u._flowSummoned=0;u._flowOmegaUsed=false;u._flowOmega=false;u._flowNextBasicCharge=false;u._flowThicket=null;u._flowLastShield=null;
+        B.applyStatus(u,u,'flowery_max',8);
+        B.on(u,'waveStart',()=>{
+          u._flowFirst=true;
+          u._flowCharges=0;
+          u._flowSummoned=0;
+          u._flowOmegaUsed=false;
+          u._flowOmega=false;
+          u._flowNextBasicCharge=false;
+          B.applyStatus(u,u,'flowery_max',8);
+          flowShield(u,B,u.max.hp*.30);
+        });
+      },
+      cast(u,B,S){
+        const foes=flowFoes(u,B).sort((a,b)=>b.st.atk-a.st.atk);
+        if(!foes.length)return;
+        const maximum=u.hasStatus('flowery_max');
+        const picked=foes.slice(0,3);
+        // Phase 1 (0.00s): Windup punch pose + charge audio
+        B.anim(u,'cast',.26,'floweryJaronaWindup');
+        Sound.play('dr_graze',{vol:.75});
+        if(!B.offscreen){FX.burst(u.x,u.y-45,14,'#ffe274',{spMax:160});flowMark(B,u,'WINDUP!','#fff07a');}
+        FloweryVisuals.voice(B,FloweryVisuals.nextJaronaVoice(false),{vol:1,priority:true,throttle:0});
+
+        // Phase 2 (0.24s): Punch 1
+        B.after(.24,()=>{
+          if(!u.alive)return;
+          const target1=picked[0];
+          if(!target1||!target1.alive)return;
+          flowPunch(u,B,target1,S.ratio,'JARONA!','floweryJarona',false,false);
+        });
+
+        // Phase 3 (0.54s): Punch 2 (Combo punch into next foe or boss)
+        B.after(.54,()=>{
+          if(!u.alive)return;
+          const target2=(picked[1]&&picked[1].alive)?picked[1]:(picked[0]?.alive?picked[0]:flowFoes(u,B)[0]);
+          if(!target2)return;
+          FloweryVisuals.voice(B,FloweryVisuals.nextJaronaVoice(false),{vol:1,priority:true,throttle:0});
+          flowPunch(u,B,target2,S.ratio*1.15,'COMBO JARONA!!','floweryJaronaCombo',true,false);
+        });
+
+        // Phase 4 (0.84s): Punch 3 / Finisher
+        B.after(.84,()=>{
+          if(!u.alive)return;
+          const target3=(picked[2]&&picked[2].alive)?picked[2]:(picked[1]?.alive?picked[1]:(picked[0]?.alive?picked[0]:flowFoes(u,B)[0]));
+          if(!target3)return;
+          const isFinisher=true;
+          FloweryVisuals.voice(B,FloweryVisuals.nextJaronaVoice(isFinisher),{vol:1,priority:true,throttle:0});
+          flowPunch(u,B,target3,S.ratio*(u._flowRed?1.45:1.25),isFinisher?'LAST JARONA!!!':'TRIPLE JARONA!','floweryJaronaCombo',true,isFinisher);
+          if(u._flowRed&&target3.alive)B.applyStatus(u,target3,'flowery_armor',6);
+          if(maximum)flowFoes(u,B).filter(x=>B.distance(target3,x)<185).forEach(x=>B.damage(u,x,u.st.mag*.50,{type:'magic',area:true,tag:'JARONA Petals'}));
+        });
+
+        // Phase 5 (1.12s): Recruits / Copies rush in with phantom JARONAs
+        B.after(1.12,()=>{
+          if(!u.alive)return;
+          const copyTargets=flowFoes(u,B).filter(e=>!picked.includes(e));
+          const pool=copyTargets.length?copyTargets:flowFoes(u,B);
+          for(let i=0;i<(u._flowRed?5:4);i++){
+            const e=pool[i%pool.length];
+            if(e){
+              flowCharge(u,B,e,S.copy,true);
+              if(u._flowRed)B.applyStatus(u,e,'flowery_armor',6);
+            }
+          }
+        });
       }},
     G:{name:'Thicket of Thorns',type:'Magic Damage / Control',cd:14,first:3,v:{ratio:.95},
       desc:(S)=>`Send bamboo and thorns across the enemy formation for <em>${pcn(S.ratio*100)}</em> Magic Damage and Knockback. Vines linger on struck enemies for 7s, slowing Movement by 30% and Skill Haste by 15%. Dashing through them causes damage and Root; Knockback into them restores Flowery’s Energy. Omega widens the strike and drains Energy.`,
@@ -114,7 +235,7 @@ defHero({
       passive(u,B){u._flowDodgeAt=-99;flowShield(u,B,u.max.hp*.30);B.on(u,'shieldAbsorbed',ev=>{if(ev.shield!==u._flowShield&&ev.shield!==u._flowLastShield)return;B.applyStatus(u,u,'flowery_confidence',8,{stacks:1});});
         B.on(u,'dodged',()=>{if(!u.alive||B.t-u._flowDodgeAt<15)return;u._flowDodgeAt=B.t;flowShield(u,B,u.max.hp*.10);});
         flowFoes(u,B).forEach(e=>B.on(e,'knockedBack',()=>{if(!u.alive||!e.alive||!e.hasStatus('flowery_thicket'))return;B.damage(u,e,u.st.mag*.35,{type:'magic',tag:'Thicket Collision'});B.energy(u,5,{resolvedAmount:true});}));
-        B.every(u,.2,()=>{flowFoes(u,B).forEach(e=>{const zone=u._flowThicket,inside=zone&&B.t<zone.until&&e.x>=zone.min&&e.x<=zone.max;if(inside&&!e.hasStatus('flowery_thicket'))B.applyStatus(u,e,'flowery_thicket',Math.max(.2,zone.until-B.t));const trapped=e.hasStatus('flowery_thicket');if(e.el)e.el.classList.toggle('flowery-thicket-trapped',trapped);if(!trapped||!e.dashUntil||e.dashUntil<=B.t||e._flowDashSeen===e.dashUntil)return;e._flowDashSeen=e.dashUntil;B.damage(u,e,u.st.mag*.45,{type:'magic',tag:'Thicket Dash'});B.applyStatus(u,e,'root',.8);});if(u.el){let tag=u.el.querySelector('.flowery-fake-stats');if(!tag){tag=document.createElement('div');tag.className='flowery-fake-stats';tag.innerHTML='<b>MAXIMUM STATS ✦</b><span>LV 99 · HP 999 · ATK 99</span><span>DEF 99 · MAG 99 · GUTS ★★★★★</span>';tag.style.bottom=(u.bodyW*1.32+u.plate+34)+'px';u.el.appendChild(tag);}tag.hidden=!u.hasStatus('flowery_max');u.el.classList.toggle('flowery-omega-active',!!u._flowOmega);}});
+        B.every(u,.2,()=>{flowFoes(u,B).forEach(e=>{const zone=u._flowThicket,inside=zone&&B.t<zone.until&&e.x>=zone.min&&e.x<=zone.max;if(inside&&!e.hasStatus('flowery_thicket'))B.applyStatus(u,e,'flowery_thicket',Math.max(.2,zone.until-B.t));const trapped=e.hasStatus('flowery_thicket');if(e.el)e.el.classList.toggle('flowery-thicket-trapped',trapped);if(!trapped||!e.dashUntil||e.dashUntil<=B.t||e._flowDashSeen===e.dashUntil)return;e._flowDashSeen=e.dashUntil;B.damage(u,e,u.st.mag*.45,{type:'magic',tag:'Thicket Dash'});B.applyStatus(u,e,'root',.8);});if(u.el){u.el.classList.toggle('flowery-omega-active',!!u._flowOmega);}});
       }},
     R:{name:'OMEGA FLOWERY',type:'Physical / Magic / Control',p:{atkPct:10,hpPct:8,evaPct:8,jaronaPct:15},
       desc:()=>`JARONA gains a fifth copy and cuts Armor; the Thicket grows stronger and drains Energy; My RECRUITs! calls three allies. The Illusory Shield adds Critical Damage. Once per wave, after four real JARONA charges and two recruits, Flowery borrows the six Colored Flowers for 10s. Omega gains Attack, Skill Power, Damage Reduction, and Skill Haste; each flower attacks in turn. He finishes with a teamwide JARONA charge and brief Stun.`,
@@ -123,26 +244,31 @@ defHero({
   }
 });
 
-SPECIAL_HERO_ART.Flowery='assets/deltarune/flowery-idle.png';
-SPECIAL_HERO_ICONS.Flowery='assets/deltarune/flowery-idle.png';
-SKILL_HERO_ART.Flowery={W:'assets/deltarune/flowery-attack.png',G:'assets/deltarune/flowery-idle.png',B:'assets/deltarune/flowery-idle.png',P:'assets/deltarune/flowery-idle.png',R:'assets/deltarune/flowery-omega-card.png'};
+SPECIAL_HERO_ART.Flowery='assets/deltarune/flowery-portrait.png';
+SPECIAL_HERO_ICONS.Flowery='assets/deltarune/flowery-icon.png';
+SKILL_HERO_ART.Flowery={W:'assets/deltarune/flowery-portrait.png',G:'assets/deltarune/flowery-portrait.png',B:'assets/deltarune/flowery-portrait.png',P:'assets/deltarune/flowery-portrait.png',R:'assets/deltarune/flowery-omega-card.png'};
 if(!HERO_IDS.includes('Flowery'))HERO_IDS.push('Flowery');
 if(!PLAYABLE_IDS.includes('Flowery'))PLAYABLE_IDS.push('Flowery');
 HERO_OBTAIN.Flowery='Collab';COLLAB_HERO_IDS.add('Flowery');
 
 (() => {
   const src='assets/deltarune/flowery-battle.png';
-  const clip=(row,n,fps=8,once=false)=>({src,cols:8,rows:8,cellW:96,cellH:96,baseW:96,bodyScale:1.08,groundY:96,frames:Array.from({length:n},(_,i)=>row*8+i),fps,once});
+  const clip=(row,n,fps=8,once=false)=>({src,cols:8,rows:10,cellW:96,cellH:96,baseW:96,bodyScale:1.08,groundY:96,frames:Array.from({length:n},(_,i)=>row*8+i),fps,once});
   const omegaSrc='assets/deltarune/flowery-omega-battle.png';
   const omegaClip=(row,fps=8,once=false)=>({src:omegaSrc,cols:3,rows:4,cellW:160,cellH:160,baseW:160,bodyScale:1.42,groundY:160,frames:[row*3,row*3+1,row*3+2],fps,once});
-  const atlas={idle:clip(0,5,5),move:clip(1,4,10),attack:clip(2,5,12,true),cast:clip(3,3,8,true),omegaIdle:omegaClip(0,6),omegaAttack:omegaClip(1,12,true),omegaCast:omegaClip(2,10,true),omegaPunch:omegaClip(3,10,true)};
+  const atlas={
+    idle:clip(0,5,5),move:clip(1,4,10),attack:clip(2,5,12,true),cast:clip(3,3,8,true),
+    guard:clip(4,3,9,true),hurt:clip(5,3,9,true),recruit:clip(6,4,9,true),cheer:clip(6,4,9,true),
+    victory:clip(7,4,9,true),jaronaWindup:clip(8,5,14,true),jarona:clip(9,2,12,true),jaronaCombo:clip(9,5,14,true),
+    omegaIdle:omegaClip(0,6),omegaAttack:omegaClip(1,12,true),omegaCast:omegaClip(2,10,true),omegaPunch:omegaClip(3,10,true)
+  };
   const previous=Art.collabAtlases;Art.collabAtlases=function(id){return id==='Flowery'?atlas:previous.apply(this,arguments);};
   const prevSprite=Battle.prototype.setNaturalSprite;
   Battle.prototype.setNaturalSprite=function(u,name,phase){
     if(u?.id==='Flowery'){
-      if(u._flowOmega)name=name==='attack'?'omegaAttack':name==='cast'?'omegaCast':'omegaIdle';
-      // Idle and walking art face right; attack, cast, and Omega art face left.
-      u.skinNativeFace=name==='idle'||name==='move'?1:-1;
+      if(u._flowOmega)name=(name==='attack'||name==='jarona'||name==='jaronaCombo')?'omegaPunch':(name==='cast'||name==='jaronaWindup'||name==='recruit'||name==='victory')?'omegaCast':name==='move'?'omegaAttack':'omegaIdle';
+      // Normal attack & cast (rows 2-3) and Omega art face left (-1); all other normal clips face right (1).
+      u.skinNativeFace=(name==='attack'||name==='cast'||name.startsWith('omega'))?-1:1;
     }
     return prevSprite.call(this,u,name,phase);
   };

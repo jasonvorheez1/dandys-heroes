@@ -6,15 +6,27 @@ const FloweryVisuals = (() => {
     'hah', 'hoo', 'my_jarona', 'jarona1', 'jarona2', 'jarona3', 'jarona4',
     'last_jarona', 'leaf_it', 'hey_guys', 'just_kidding', 'omega'
   ];
-  CUE_SOURCES.push([Object.fromEntries(voiceNames.map(name =>
-    ['flowery_voice_' + name, [name + '.ogg']])),
-    (typeof ASSET === 'string' ? ASSET : './') + 'assets/deltarune/flowery-voice/']);
-  const previousMix = soundMix;
-  soundMix = function (cue) {
-    if (!cue.startsWith('flowery_voice_')) return previousMix(cue);
-    return { bus: 'creature', gain: .92, throttle: 650, perCue: 1,
-      maxMs: 5600, fadeMs: 220, musicDip: [.72, 2200] };
-  };
+  const jaronaVariants = ['my_jarona', 'jarona1', 'jarona2', 'jarona3', 'jarona4'];
+  let jaronaIndex = 0;
+  function nextJaronaVoice(isFinisher = false) {
+    if (isFinisher) return 'last_jarona';
+    const v = jaronaVariants[jaronaIndex % jaronaVariants.length];
+    jaronaIndex++;
+    return v;
+  }
+  if (typeof CUE_SOURCES !== 'undefined') {
+    CUE_SOURCES.push([Object.fromEntries(voiceNames.map(name =>
+      ['flowery_voice_' + name, [name + '.ogg']])),
+      (typeof ASSET === 'string' ? ASSET : './') + 'assets/deltarune/flowery-voice/']);
+  }
+  if (typeof soundMix !== 'undefined') {
+    const previousMix = soundMix;
+    soundMix = function (cue) {
+      if (!cue.startsWith('flowery_voice_')) return previousMix(cue);
+      return { bus: 'creature', gain: .96, throttle: 120, perCue: 1,
+        maxMs: 5600, fadeMs: 220, musicDip: [.72, 2200] };
+    };
+  }
 
   function voice(B, name, options = {}) {
     if (!B || B.offscreen || B.paused || B.over) return false;
@@ -32,6 +44,22 @@ const FloweryVisuals = (() => {
     host.appendChild(node);
     setTimeout(() => node.remove(), duration);
     return node;
+  }
+
+  function punch(u, B, target, isCombo = false, isFinisher = false) {
+    if (B.offscreen || !target?.el) return;
+    const fx = transient(target.el, 'flowery-charge-fx' + (isCombo ? ' combo' : ''), 540);
+    if (fx) fx.style.setProperty('--charge-dir', u.face > 0 ? '1' : '-1');
+    Sound.play('dr_rudebuster_hit', { vol: isFinisher ? .95 : (isCombo ? .82 : .72), throttle: 40 });
+    if (isFinisher) {
+      Sound.play('dr_great_shine', { vol: .85, priority: true });
+      FX.burst(target.x, target.y - 48, 22, '#ff9df0', { spMax: 240 });
+      FX.burst(target.x, target.y - 48, 16, '#ffe274', { spMax: 200 });
+      if (B.shake) B.shake(6);
+    } else {
+      FX.burst(target.x, target.y - 48, isCombo ? 15 : 12, isCombo ? '#ffba59' : '#ffe274', { spMax: 195 });
+      if (B.shake) B.shake(isCombo ? 4 : 3);
+    }
   }
 
   function charge(u, B, target, copy = false) {
@@ -100,5 +128,5 @@ const FloweryVisuals = (() => {
     FX.burst(u.x, u.y - 50, 17, '#ff9ddd', { spMax: 150 });
   }
 
-  return { voice, charge, thicket, recruit, omega, flower, petals };
+  return { voice, charge, punch, nextJaronaVoice, jaronaVariants, thicket, recruit, omega, flower, petals };
 })();

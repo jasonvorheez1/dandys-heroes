@@ -149,6 +149,8 @@ const ItemSheet = (() => {
     "js/flowery-story2.js",
     "js/flowery-event.js",
     "js/deltarune-shop.js",
+    "js/badges-overhaul.js",
+    "js/friendship-expansion.js",
     "js/achievements-extra.js",
     "js/skill-progression.js",
     "js/settings-hub.js"

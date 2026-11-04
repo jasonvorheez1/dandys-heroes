@@ -11,7 +11,10 @@ const FW = (() => {
   const P = () => window.FlPack;
   const VW = 320, VH = 240;
   const toonArt = {
-    Scraps: 'assets/toon-art/scraps/scraps.png', Ginger: 'assets/toon-art/Ginger/Ginger.png', Yatta: 'assets/toon-art/Yatta/Yatta.png'
+    Scraps: 'assets/toon-art/scraps/scraps.png',
+    Ginger: 'assets/toon-art/Ginger/Ginger.png',
+    Cocoa: 'assets/toon-art/Cocoa/Cocoa-battle-v2.png',
+    Yatta: 'assets/toon-art/Yatta/Yatta.png'
   };
   const toonImg = {};
   Object.entries(toonArt).forEach(([k, src]) => { const i = new Image(); i.src = (typeof ASSET !== 'undefined' ? ASSET : './') + src; toonImg[k] = i; });
@@ -21,9 +24,10 @@ const FW = (() => {
   const CAST = {
     Scraps: { name: 'Scraps', toon: true, h: 46, voice: 520, color: '#ffd36b' },
     Ginger: { name: 'Ginger', toon: true, h: 44, voice: 400, color: '#ff9db0' },
+    Cocoa: { name: 'Cocoa', toon: true, h: 44, voice: 480, color: '#e08a60' },
     Yatta: { name: 'Yatta', toon: true, h: 46, voice: 640, color: '#ffe95c' },
-    Flowery: { name: 'Flowery', idleAnim: ['flowery_idle_', 5, 5],  walk: { down: ['flowery_walk_down_jacket_', 4], left: ['flowery_walk_left_jacket_', 4], right: ['flowery_walk_right_jacket_', 4], up: ['flowery_lookup_', 1, 'flowery_lookup_0'] },
-      idle: { down: 'flowery_walk_down_jacket_0', left: 'flowery_walk_left_jacket_0', right: 'flowery_walk_right_jacket_0', up: 'flowery_lookup_0' }, voice: 300, color: '#ffe066' },
+    Flowery: { name: 'Flowery', idleAnim: ['flowery_idle_', 5, 5], idleMirror: { left: 1 }, walk: { down: ['flowery_walk_down_jacket_', 4], left: ['flowery_walk_left_jacket_', 4], right: ['flowery_walk_right_jacket_', 4], up: ['flowery_lookup_', 1, 'flowery_lookup_0'] },
+      idle: { up: 'flowery_lookup_0' }, voice: 300, color: '#ffe066' },
     Asgore: { name: 'Asgore', idleMirror: { left: 1 }, walkMirror: { right: 1 }, walkFps: 5,
       idle: { down: 'asgore_armor_sad_down_0', left: 'asgore_expressions_right_0', right: 'asgore_expressions_right_0', up: 'asgore_armor_surprised_up_0' },
       walk: { left: ['asgore_armor_run_left_', 4], right: ['asgore_armor_run_left_', 4], down: ['asgore_armor_sad_down_', 1], up: ['asgore_armor_surprised_up_', 1] }, voice: 150, color: '#f4c95d' },
@@ -39,13 +43,16 @@ const FW = (() => {
     Ralsei: { name: 'Ralsei', walk: W4('ralsei_walk_'), idle: { down: 'ralsei_walk_down_0', up: 'ralsei_walk_up_0', left: 'ralsei_walk_left_0', right: 'ralsei_walk_right_0' }, voice: 420, color: '#7fe07f' },
     Floradinn: { name: 'Floradinn', idle: { down: 'enemy_floradin_0', left: 'enemy_floradin_flipped_0', right: 'enemy_floradin_0', up: 'enemy_floradin_0' }, walk: { down: ['enemy_floradin_', 4], left: ['enemy_floradin_flipped_', 4], right: ['enemy_floradin_', 4], up: ['enemy_floradin_', 4] }, voice: 600, color: '#c6ff4a' },
     Floradinn2: { name: 'Floradinn', same: 'Floradinn' },
-    Sign: { name: '', idle: { down: 'npc_sign_0' } },
+    Sign: { name: '', idle: { down: 'npc_sign_0', up: 'npc_sign_0', left: 'npc_sign_0', right: 'npc_sign_0' } },
+    Bush: { name: '', idle: { down: 'flowery_bush_0', up: 'flowery_bush_0', left: 'flowery_bush_0', right: 'flowery_bush_0' } },
+    Cake: { name: '', idle: { down: 'green_cake_0', up: 'green_cake_0', left: 'green_cake_0', right: 'green_cake_0' } },
+    Bump: { name: '', idle: { down: 'asgore_flowery_fistbump_0', up: 'asgore_flowery_fistbump_0', left: 'asgore_flowery_fistbump_0', right: 'asgore_flowery_fistbump_0' } },
     // Darkners the Gardenview ichor got into (drawn as black shapes with @tint)
     Ink1: { name: '', idle: { down: 'enemy_floradin_flipped_0', left: 'enemy_floradin_flipped_0', right: 'enemy_floradin_0', up: 'enemy_floradin_0' } },
     Ink2: { name: '', idle: { down: 'kawkaw_0', left: 'kawkaw_0', right: 'kawkaw_0', up: 'kawkaw_0' } },
     Ink3: { name: '', idle: { down: 'mantis_idle_0', left: 'mantis_idle_0', right: 'mantis_idle_0', up: 'mantis_idle_0' } },
     Ink4: { name: '', idle: { down: 'blockguy_overworld_0', left: 'blockguy_overworld_0', right: 'blockguy_overworld_0', up: 'blockguy_overworld_0' } },
-    Locker: { name: '???', voice: 420, color: '#bbb' }
+    Locker: { name: '???', idle: { down: 'dw_ralseicupboard_0', up: 'dw_ralseicupboard_0', left: 'dw_ralseicupboard_0', right: 'dw_ralseicupboard_0' }, voice: 420, color: '#bbb' }
   };
   CAST.Floradinn2 = Object.assign({}, CAST.Floradinn);
   // Flowery's portraits (spr_face_flowery_N), by mood
@@ -59,16 +66,25 @@ const FW = (() => {
     if (id === 'Flowery') { const k = FLOWERY_FACE[face] != null ? FLOWERY_FACE[face] : 0; return { pix: 'face_flowery_' + k }; }
     if (id === 'Ralsei') { const k = RALSEI_FACE[face] != null ? RALSEI_FACE[face] : 0; return { pix: 'face_r_nohat_' + k }; }
     if (id === 'Blue') { const k = BLUE_FACE[face] != null ? BLUE_FACE[face] : 0; return { pix: 'face_blue_' + k }; }
-    if (CAST[id] && CAST[id].toon) return { img: (typeof ItemSheet !== 'undefined' ? ItemSheet.icon(id) : '') };
+    if (CAST[id] && CAST[id].toon) {
+      if (typeof Art !== 'undefined' && Art.icon) {
+        const u = Art.icon(id);
+        if (u) return { img: u };
+      }
+      return { img: (typeof ItemSheet !== 'undefined' ? ItemSheet.icon(id) : '') };
+    }
     const mini = { Seth: 'miniface_seth_0', Aqua: 'miniface_aqua_0', Yellow: 'miniface_yellow_0', Orange: 'miniface_orange_0', Green: 'miniface_green_0' }[id];
     return mini ? { pix: mini, mini: true } : null;
   }
 
   /* ------------------------------------------------------------ voice blips (Web Audio, square wave like the original's text) */
   let AC = null;
+  let activeVoiceAudio = null, voicePlayingUntil = 0;
+  function isVoicePlaying() { return Date.now() < voicePlayingUntil; }
   // text blips: Deltarune's own text sounds from the pack (Flowery's voice noise, Asgore's), pitched per speaker; a square wave if missing
   const BLIP = { Flowery: ['voice:noise1', 'voice:noise2', 'voice:noise3'], Asgore: ['sfx:txtasg'] };
   function blip(freq, vol = .035, speaker) {
+    if (speaker === 'Flowery' && isVoicePlaying()) return;
     const pk = P();
     if (pk && pk.play) {
       const set = BLIP[speaker] || (CAST[speaker] && CAST[speaker].blip), id = set ? set[Math.floor(Math.random() * set.length)] : 'sfx:text';
@@ -301,7 +317,7 @@ const FW = (() => {
         lead.dir = dy < 0 && Math.abs(dy) >= Math.abs(dx) ? 'up' : dy > 0 && Math.abs(dy) >= Math.abs(dx) ? 'down' : dx < 0 ? 'left' : 'right';
         lead.moving = true; lead.walkT += dt * (S.keys.run ? 1.6 : 1);
         checkTriggers(lead); checkSwitches(lead);
-      } else lead.moving = false;
+      } else { lead.moving = false; lead.walkT = 0; }
     }
     // caterpillar: followers walk the leader's path
     if (lead && !S.followOff) {
@@ -314,9 +330,9 @@ const FW = (() => {
         if (p) {
           // walk (don't jump) to the trail point: after a scene, followers catch up instead of teleporting
           const dx = p.x - a.x, dy = p.y - a.y, d = Math.hypot(dx, dy), mx = Math.max(2, 170 * dt);
-          a.moving = d > .4; if (a.moving) a.walkT += dt;
-          if (d <= mx) { a.x = p.x; a.y = p.y; a.dir = p.dir; }
-          else { a.x += dx / d * mx; a.y += dy / d * mx; a.dir = Math.abs(dx) > Math.abs(dy) ? (dx < 0 ? 'left' : 'right') : (dy < 0 ? 'up' : 'down'); }
+          a.moving = d > .4; if (a.moving) a.walkT += dt; else a.walkT = 0;
+          if (d <= mx) { a.x = p.x; a.y = p.y; if (d > .5 && p.dir) a.dir = p.dir; }
+          else { a.x += dx / d * mx; a.y += dy / d * mx; if (d > 1.5) a.dir = Math.abs(dx) > Math.abs(dy) ? (dx < 0 ? 'left' : 'right') : (dy < 0 ? 'up' : 'down'); }
         }
       });
     }
@@ -326,7 +342,7 @@ const FW = (() => {
         const k = Math.min(1, tw.t / tw.d);
         a.x = tw.x0 + (tw.x1 - tw.x0) * k; a.y = tw.y0 + (tw.y1 - tw.y0) * k;
         a.moving = !tw.slide; a.walkT += dt * (tw.run ? 1.7 : 1);
-        if (k >= 1) { a.tween = null; a.moving = false; tw.done(); }
+        if (k >= 1) { a.tween = null; a.moving = false; a.walkT = 0; tw.done(); }
       }
       if (a.z > 0 || a.vz) { a.vz -= 520 * dt; a.z = Math.max(0, a.z + a.vz * dt); if (a.z === 0 && a.vz < 0) a.vz = 0; }
       if (a.shake > 0) a.shake = Math.max(0, a.shake - dt * 30);
@@ -384,24 +400,84 @@ const FW = (() => {
   function checkSwitches(a) {
     const W = S.switches; if (!W || W.solved || W.busy) return;
     let on = -1;
-    W.cols.forEach((c, i) => { if (Math.abs(a.x - (W.x + i * W.gap)) < 9 && Math.abs(a.y - W.y) < 7) on = i; });
+    W.cols.forEach((c, i) => { if (Math.abs(a.x - (W.x + i * W.gap)) < 12 && Math.abs(a.y - W.y) < 9) on = i; });
     if (on === W.last) return;
-    W.last = on; if (on < 0 || W.lit.includes(on)) return;
+    W.last = on;
+    if (on < 0) return;
+    if (W.lit.includes(on)) return;
     if (on === W.order[W.step]) {
-      W.lit.push(on); W.step++; sfx('select', { vol: .5 });
-      if (W.step === W.order.length) { W.solved = true; sfx('great_shine', { vol: .5 }); runBlock(W.done); }
+      W.lit.push(on); W.step++; sfx('select', { vol: .55 });
+      try {
+        AC = AC || new (window.AudioContext || window.webkitAudioContext)();
+        if (AC && (typeof Sound === 'undefined' || Sound.on !== false)) {
+          const freqs = [523.25, 659.25, 783.99, 880.0, 1046.5];
+          const osc = AC.createOscillator(), g = AC.createGain(), t0 = AC.currentTime;
+          osc.type = 'triangle'; osc.frequency.value = freqs[Math.min(freqs.length - 1, W.step - 1)] || 600;
+          g.gain.setValueAtTime(.0001, t0); g.gain.linearRampToValueAtTime(.08, t0 + .02); g.gain.exponentialRampToValueAtTime(.0001, t0 + .35);
+          osc.connect(g); g.connect(AC.destination); osc.start(t0); osc.stop(t0 + .38);
+        }
+      } catch (_) {}
+      if (W.step === W.order.length) {
+        W.solved = true; sfx('great_shine', { vol: .6 });
+        for (let p = 0; p < 14; p++) {
+          S.parts.push({ k: 'petal', x: W.x + Math.random() * (W.cols.length * W.gap), y: W.y + (Math.random() - .5) * 20, vx: (Math.random() - .5) * 40, vy: -30 - Math.random() * 30, a: Math.random() * 6, life: 2 });
+        }
+        runBlock(W.done);
+      }
     } else {
-      W.lit = []; W.step = 0; W.fails++; sfx('cantselect', { vol: .5 }); S.fx.shake = 2;
-      if (W.fail && W.fails >= 2) { W.busy = true; runBlock(W.fail).then(() => { W.busy = false; }); }
+      W.lit = []; W.step = 0; W.fails++; sfx('cantselect', { vol: .4 }); S.fx.shake = 1.5;
     }
   }
   function drawSwitches(ctx) {
     const W = S.switches; if (!W || W.hide) return;
     W.cols.forEach((c, i) => {
-      const x = W.x + i * W.gap, y = W.y, lit = W.solved || W.lit.includes(i);
-      ctx.fillStyle = 'rgba(0,0,0,.45)'; ctx.fillRect(x - 9, y - 4, 18, 10);
-      ctx.fillStyle = lit ? c : 'rgba(0,0,0,.35)'; ctx.fillRect(x - 8, y - 6 + (lit ? 1 : 0), 16, 9);
-      ctx.strokeStyle = c; ctx.lineWidth = 1; ctx.strokeRect(x - 7.5, y - 5.5 + (lit ? 1 : 0), 15, 8);
+      const x = W.x + i * W.gap, y = W.y;
+      const lit = W.solved || W.lit.includes(i);
+      const pressed = lit || W.last === i;
+      const dy = pressed ? 1.5 : 0;
+      // Recessed floor shadow
+      ctx.fillStyle = 'rgba(12, 10, 22, .6)';
+      ctx.fillRect(x - 11, y - 5, 22, 13);
+      // Stone frame bevel
+      ctx.fillStyle = '#2b233a';
+      ctx.fillRect(x - 10, y - 6, 20, 12);
+      ctx.fillStyle = '#44375b';
+      ctx.fillRect(x - 10, y - 6, 20, 2);
+      // Inner plate
+      if (!lit) {
+        ctx.fillStyle = '#171424';
+        ctx.fillRect(x - 8, y - 4 + dy, 16, 8);
+        // Dim colored inlay
+        ctx.fillStyle = c;
+        ctx.globalAlpha = 0.32;
+        ctx.fillRect(x - 6, y - 3 + dy, 12, 6);
+        ctx.globalAlpha = 1;
+        // Central rune dot
+        ctx.fillStyle = c;
+        ctx.fillRect(x - 2, y - 1 + dy, 4, 2);
+      } else {
+        // Glowing lit plate
+        ctx.save();
+        ctx.shadowColor = c;
+        ctx.shadowBlur = 8;
+        ctx.fillStyle = c;
+        ctx.fillRect(x - 8, y - 4 + dy, 16, 8);
+        // Hot white core
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(x - 3, y - 2 + dy, 6, 4);
+        ctx.restore();
+        // Sparkle mote while active
+        if (Math.random() < .05) {
+          S.parts.push({ k: 'petal', x: x + (Math.random() - .5) * 8, y: y - 5, vx: (Math.random() - .5) * 6, vy: -15 - Math.random() * 10, a: Math.random() * 6, life: 0.5 });
+        }
+      }
+      if (W.solved) {
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 1;
+        ctx.globalAlpha = 0.6 + Math.sin(S.t * 5 + i * 0.8) * 0.3;
+        ctx.strokeRect(x - 8.5, y - 4.5 + dy, 17, 9);
+        ctx.globalAlpha = 1;
+      }
     });
   }
   function interact() {
@@ -423,13 +499,14 @@ const FW = (() => {
   }
 
   function actorFrame(a) {
-    if (a.frame) return a.frame;
+    if (a.frame && a.frame !== 'off') return a.frame;
     if (a.anim) { const [b, n, fps, once] = a.anim; const i = Math.floor((S.t - a.animT0) * fps); return b + (once ? Math.min(n - 1, i) : i % n); }
     const c = a.c.same ? CAST[a.c.same] : a.c;
     const w = c.walk && c.walk[a.dir];
     if (a.moving && w) return w[0] + (Math.floor(a.walkT * (c.walkFps || 7)) % w[1]);
-    if (c.idleAnim && (a.dir === 'down' || !c.idle || !c.idle[a.dir])) { const [b, n, fps] = (a.dir === 'right' && c.idleAnimR) || c.idleAnim; return b + (Math.floor((S.t + (a.x % 7)) * fps) % n); }
+    if (c.idleAnim && (!c.idle || !c.idle[a.dir])) { const [b, n, fps] = (a.dir === 'right' && c.idleAnimR) || c.idleAnim; return b + (Math.floor((S.t + (a.x % 7)) * fps) % n); }
     if (c.idle && c.idle[a.dir]) return c.idle[a.dir];
+    if (c.idle && c.idle.down) return c.idle.down;
     if (w) return w[2] || w[0] + '0';
     return null;
   }
@@ -452,8 +529,8 @@ const FW = (() => {
     const x = a.x - S.cam.x + (a.shake ? (Math.random() - .5) * a.shake : 0), y = a.y - S.cam.y - a.z;
     // shadow
     ctx.fillStyle = 'rgba(0,0,0,.22)'; ctx.beginPath(); ctx.ellipse(a.x - S.cam.x, a.y - S.cam.y, 9 * a.s, 3 * a.s, 0, 0, Math.PI * 2); ctx.fill();
-    if (a.c.toon && !a.frame && !a.anim) {
-      const img = toonImg[a.id]; if (!img || !img.naturalWidth) return;
+    if (a.c.toon && (!a.frame || a.frame === 'off') && !a.anim) {
+      const img = toonImg[a.id] || toonImg[a.c.name]; if (!img || !img.naturalWidth) return;
       const h = a.c.h * a.s, w = img.naturalWidth / img.naturalHeight * h;
       const bob = a.moving ? Math.abs(Math.sin(a.walkT * 11)) * 2.2 : Math.sin(S.t * 2 + a.x) * .4;
       const sq = a.moving ? 1 + Math.sin(a.walkT * 22) * .03 : 1;
@@ -564,26 +641,67 @@ const FW = (() => {
   /* Flowery opens a lot of his lines with one of his voice clips, like in Chapter 5: on the first line after somebody else
      talks (and on any line that names one, Flowery.face[clip]:), picked by his expression. [none] keeps a line quiet. */
   const FLOWERY_CLIPS = {
-    cheer: ['hey_guys', 'wow', 'thats_great', 'itsme'], beam: ['wow', 'thats_great', 'hah', 'yes'], grin: ['hah', 'yes', 'leaf_it'], laugh: ['hah'],
-    smile: ['hoo', 'hah', 'yes'], wink: ['hoo', 'hah'], smirk: ['hah', 'hoo'], look: ['huh'], wide: ['huh', 'wow'], side: ['huh', 'hoo'],
-    squint: ['huh'], yell: ['show_you', 'take_that', 'nonono'], snarl: ['show_you', 'nonono'], sweat: ['nonono', 'forget_it'], ugh: ['forget_it', 'nonono']
+    cheer: ['hey_guys', 'wow', 'thats_great', 'itsme', 'hah'],
+    beam: ['wow', 'thats_great', 'hah', 'yes', 'for_the_fans'],
+    grin: ['hah', 'yes', 'leaf_it', 'great_style'],
+    laugh: ['hah', 'yes'],
+    smile: ['hoo', 'hah', 'yes', 'flowery', 'its_all_yours'],
+    wink: ['hoo', 'hah', 'great_style'],
+    smirk: ['hah', 'hoo', 'predictable', 'leaf_it'],
+    look: ['huh', 'wow'],
+    wide: ['huh', 'wow', 'nonono'],
+    side: ['huh', 'hoo', 'flowery'],
+    squint: ['huh', 'predictable'],
+    yell: ['show_you', 'take_that', 'nonono', 'powering_up'],
+    snarl: ['show_you', 'nonono', 'take_that'],
+    sweat: ['nonono', 'forget_it', 'huh'],
+    ugh: ['forget_it', 'nonono', 'huh'],
+    frown: ['nonono', 'forget_it'],
+    sad: ['smile_again', 'forget_it'],
+    serious: ['show_you', 'predictable', 'itsme'],
+    dark: ['predictable', 'flowery'],
+    darkgrin: ['hah', 'take_that'],
+    darksmile: ['hah', 'hoo'],
+    warm: ['best_friend', 'smile_again', 'its_all_yours'],
+    gold: ['great_style', 'for_the_fans', 'itsme'],
+    plain: ['hoo', 'huh', 'flowery', 'itsme'],
+    soft: ['smile_again', 'best_friend', 'its_all_yours'],
+    tear: ['smile_again'],
+    weep: ['smile_again'],
+    sigh: ['forget_it']
   };
   let lastSpeaker = null;
   function floweryClip(face, clip, speaker) {
     const first = lastSpeaker !== speaker; lastSpeaker = speaker;
     if (speaker !== 'Flowery' || clip === 'none') return;
     let k = clip;
-    if (!k && first) { const list = FLOWERY_CLIPS[face]; if (list && Math.random() < .75) k = list[Math.floor(Math.random() * list.length)]; }
+    if (!k) {
+      const list = FLOWERY_CLIPS[face] || FLOWERY_CLIPS.smile;
+      const chance = first ? 0.95 : (isVoicePlaying() ? 0 : 0.55);
+      if (list && Math.random() < chance) {
+        k = list[Math.floor(Math.random() * list.length)];
+      }
+    }
     if (k) voiceLine(null, k, '');
   }
   function turnToSpeaker(id) {
-    const sp = S && S.actors[id]; if (!sp || sp.hidden) return;
-    const free = a => !a.hidden && !a.frame && !a.anim && !a.moving && !a.tween && a.dir !== 'up' && !a.c.noTurn && a.alpha > .3;
+    const sp = S && S.actors[id]; if (!sp || sp.hidden || sp.fixedDir) return;
+    const free = a => !a.hidden && !a.frame && !a.anim && !a.moving && !a.tween && !a.fixedDir && !a.c.noTurn && a.alpha > .3;
     const near = Object.values(S.actors).filter(a => a !== sp && Math.abs(a.x - sp.x) < 170 && Math.abs(a.y - sp.y) < 90 && !a.c.noTurn && a.c.name !== '');
-    near.forEach(a => { if (!free(a)) return; const dx = sp.x - a.x; if (Math.abs(dx) > 10) a.dir = dx < 0 ? 'left' : 'right'; });
+    near.forEach(a => {
+      if (!free(a)) return;
+      const dx = sp.x - a.x, dy = sp.y - a.y;
+      if (Math.hypot(dx, dy) < 8) return;
+      if (Math.abs(dx) > Math.abs(dy) * 1.2) a.dir = dx < 0 ? 'left' : 'right';
+      else if (Math.abs(dy) > Math.abs(dx) * 1.2) a.dir = dy < 0 ? 'up' : 'down';
+      else a.dir = dx < 0 ? 'left' : 'right';
+    });
     if (free(sp) && near.length) {
       const mx = near.reduce((m, a) => m + a.x, 0) / near.length - sp.x;
-      if (Math.abs(mx) > 14) sp.dir = mx < 0 ? 'left' : 'right';
+      const my = near.reduce((m, a) => m + a.y, 0) / near.length - sp.y;
+      if (Math.abs(mx) > Math.abs(my) * 1.2 && Math.abs(mx) > 14) sp.dir = mx < 0 ? 'left' : 'right';
+      else if (Math.abs(my) > Math.abs(mx) * 1.2 && Math.abs(my) > 14) sp.dir = my < 0 ? 'up' : 'down';
+      else if (Math.abs(mx) > 14) sp.dir = mx < 0 ? 'left' : 'right';
     }
   }
   async function say(speaker, face, text, opt = {}) {
@@ -615,7 +733,9 @@ const FW = (() => {
         if (skip) { spans.forEach((s, k) => { s.textContent = lines[k]; }); break; }
         spans[li].textContent = L.slice(0, i + 1);
         const ch = L[i];
-        if (ch !== ' ' && i % 2 === 0) blip(speaker ? voice : 280, speaker ? .03 : .018, speaker);
+        if (ch !== ' ' && i % 2 === 0) {
+          if (speaker !== 'Flowery' || !isVoicePlaying()) blip(speaker ? voice : 280, speaker ? .03 : .018, speaker);
+        }
         await new Promise(r => setTimeout(r, (/[.!?,]/.test(ch) && L[i + 1] === ' ' ? 120 : 26) / (opt.fast ? 2 : 1)));
       }
       if (skip) break;
@@ -693,7 +813,7 @@ const FW = (() => {
   async function runBlock(label) {
     const b = program && program[label]; if (!b) { console.warn('[flowery] no block', label); return; }
     const was = S.locked; S.locked = true;
-    const lead = S.actors[S.party[0]]; if (lead) lead.moving = false;
+    const lead = S.actors[S.party[0]]; if (lead) { lead.moving = false; lead.walkT = 0; }
     let r = await runLines(b);
     while (r && r.goto) r = await runLines(program[r.goto] || []);
     hideBox();
@@ -705,8 +825,13 @@ const FW = (() => {
   function walkTo(a, x, y, secs, o = {}) {
     return new Promise(res => {
       const dx = x - a.x, dy = y - a.y, d = Math.hypot(dx, dy);
-      if (d < .5) { res(); return; }
-      const t = FW.test ? .001 : secs != null && !isNaN(secs) ? secs : d / (o.run ? 140 : 70);
+      if (d < .5 || (secs != null && secs <= 0.05) || FW.test) {
+        a.x = x; a.y = y;
+        if (!o.keepDir && d >= .5) a.dir = Math.abs(dy) > Math.abs(dx) ? (dy < 0 ? 'up' : 'down') : (dx < 0 ? 'left' : 'right');
+        a.moving = false; a.walkT = 0;
+        res(); return;
+      }
+      const t = secs != null && !isNaN(secs) ? secs : d / (o.run ? 140 : 70);
       if (!o.keepDir) a.dir = Math.abs(dy) > Math.abs(dx) ? (dy < 0 ? 'up' : 'down') : (dx < 0 ? 'left' : 'right');
       a.tween = { x0: a.x, y0: a.y, x1: x, y1: y, t: 0, d: Math.max(.05, t), done: res, run: o.run, slide: o.slide };
     });
@@ -733,9 +858,21 @@ const FW = (() => {
       case 'remove': delete S.actors[a[0]]; delete S.npcs[a[0]]; return;
       case 'hide': act(a[0]).hidden = true; return;
       case 'show': act(a[0]).hidden = false; return;
+      case 'pos': case 'place': {
+        const o = act(a[0]); o.x = num(a[1]); o.y = num(a[2]);
+        if (a[3]) o.dir = a[3];
+        o.tween = null; o.moving = false; o.walkT = 0;
+        if (S.party && S.party[0] === a[0]) seedTrail();
+        return;
+      }
       case 'walk': case 'run': { const o = act(a[0]); o.frame = null; o.anim = null; o.scripted = true; await walkTo(o, num(a[1]), num(a[2]), a[3] && a[3] !== 'run' ? num(a[3]) : null, { run: cmd === 'run' || a.includes('run') }); return; }
       case 'slide': { const o = act(a[0]); o.scripted = true; await walkTo(o, num(a[1]), num(a[2]), num(a[3]), { slide: true, keepDir: true }); return; }
-      case 'face': act(a[0]).dir = a[1]; act(a[0]).frame = null; act(a[0]).anim = null; return;
+      case 'face': {
+        const o = act(a[0]); o.dir = a[1]; o.frame = null; o.anim = null;
+        if (a[2] === 'lock' || a[2] === 'fixed') o.fixedDir = true;
+        else if (a[2] === 'unlock') o.fixedDir = false;
+        return;
+      }
       case 'flip': act(a[0]).flip = a[1] === 'on'; return;
       case 'crown': act(a[0]).crown = a[1] === 'on'; return;
       case 'frame': { const o = act(a[0]); o.anim = null; o.frame = a[1] === 'off' ? null : a[1]; if (FW.test && o.frame && !P().has(o.frame)) console.warn('[flowery] missing frame ' + o.frame); return; }
@@ -756,7 +893,8 @@ const FW = (() => {
         S.cam.follow = false;
         let x, y, secs;
         if (isNaN(num(a[0]))) { const o = act(a[0]); x = o.x - VW / 2; y = o.y - VH / 2 - 10; secs = num(a[1] || .8); } else { x = num(a[0]); y = num(a[1]); secs = num(a[2] || .8); }
-        await new Promise(res => { S.cam.tween = { x0: S.cam.x, y0: S.cam.y, x1: x, y1: y, t: 0, d: FW.test ? .001 : Math.max(.01, secs), done: res }; });
+        if (FW.test) { S.cam.x = S.cam.tx = x; S.cam.y = S.cam.ty = y; return; }
+        await new Promise(res => { S.cam.tween = { x0: S.cam.x, y0: S.cam.y, x1: x, y1: y, t: 0, d: Math.max(.01, secs), done: res }; });
         return;
       }
       case 'wait': if (FW.test) return; await new Promise(r => setTimeout(r, num(a[0]) * 1000 / (S.speed || 1))); return;
@@ -781,6 +919,8 @@ const FW = (() => {
       case 'untrigger': S.triggers = S.triggers.filter(t => t.label !== a[0]); return;
       case 'roam': {
         hideBox();
+        S.party.forEach(id => { if (S.actors[id]) S.actors[id].scripted = false; });
+        seedTrail(false);
         const hint = S.root.querySelector('.fk-hint'); hint.textContent = a.length ? a.join(' ') : ''; hint.classList.toggle('on', !!a.length);
         if (FW.test) { await testRoam(); hint.classList.remove('on'); return S.finished ? 'stop' : undefined; }
         await new Promise(res => { S.roaming = { done: res }; S.roams.push(S.roaming); S.locked = false; });
@@ -833,9 +973,29 @@ const FW = (() => {
     if (!url || (typeof Sound !== 'undefined' && Sound.on === false)) return Promise.resolve();
     return new Promise(res => {
       try {
-        const a = new Audio(url); a.volume = Math.min(1, .7 * (typeof Sound !== 'undefined' && typeof Sound.vol === 'number' ? Sound.vol : 1));
-        a.addEventListener('ended', res, { once: true }); a.addEventListener('error', res, { once: true }); setTimeout(res, 6000);
-        a.play().catch(res);
+        if (activeVoiceAudio) {
+          try { activeVoiceAudio.pause(); } catch (_) {}
+          activeVoiceAudio = null;
+        }
+        const a = new Audio(url); a.volume = Math.min(1, .80 * (typeof Sound !== 'undefined' && typeof Sound.vol === 'number' ? Sound.vol : 1));
+        activeVoiceAudio = a;
+        voicePlayingUntil = Date.now() + 2200;
+        a.addEventListener('loadedmetadata', () => {
+          if (a.duration && !isNaN(a.duration)) {
+            voicePlayingUntil = Date.now() + (a.duration * 1000) + 120;
+          }
+        }, { once: true });
+        const onDone = () => {
+          if (activeVoiceAudio === a) {
+            activeVoiceAudio = null;
+            voicePlayingUntil = Math.min(voicePlayingUntil, Date.now() + 60);
+          }
+          res();
+        };
+        a.addEventListener('ended', onDone, { once: true });
+        a.addEventListener('error', onDone, { once: true });
+        setTimeout(onDone, 6000);
+        a.play().catch(onDone);
       } catch (_) { res(); }
     });
   }

@@ -21,6 +21,8 @@ STATUS.tasque_reassembled = {icon:'✦',name:'Reassembled',kind:'buff',desc:'Att
 STATUS.tasque_alphabet_haste = {icon:'A',name:'Alphabetical Advantage',kind:'buff',desc:'Skill Haste +20% after stunning at least two enemies. Tasques also attack 20% faster.',mods:(m,s,a)=>{m.cdr+=.2;if(a.minion&&a.owner?.id==='TasqueManager')m.aspdP+=.2;}};
 STATUS.tasque_priority = {icon:'⚡',name:'Priority Override',kind:'buff',desc:'Takes 20% less Damage while attacking an enemy Under Management.',
   onDamaged(a,s,ev){if(a.target?.hasStatus('tasque_under'))ev.amount*=.8;}};
+STATUS.tasque_companion_guard = {icon:'◇',name:'Managed Guard',kind:'buff',desc:'Takes 20% less damage while Tasque Manager is alive.',
+  mods:(m,s,a)=>{if(a?.owner?.alive)m.dmgTaken-=.20;}};
 STATUS.tasque_compliance = {icon:'▥',name:'Forced Compliance',kind:'debuff',desc:'Skill Haste -35% for the duration of Forced Compliance.',mods:m=>{m.cdr-=.35;}};
 STATUS.tasque_compliant_charm = {icon:'◆',name:'Priority Command',kind:'special',desc:'Charmed Attack Speed +30% during Forced Compliance.',mods:m=>{m.aspdP+=.3;}};
 STATUS.tasque_covered = {icon:'◇',name:'Tasque Cover',kind:'buff',desc:'An active Tasque redirects 25% of Tasque Manager’s Damage to itself.',
@@ -37,10 +39,12 @@ const tasqueFoes=(u,B)=>B.enemiesOf(u).filter(e=>e.alive&&B.isTargetable(e,u)&&!
 const tasquePets=u=>(u._tasques||[]).filter(t=>t.alive);
 function summonTasque(u,B,index){
   const p=B.summon(u,{protoId:'TasqueCompanion',name:'Tasque '+(index+1),art:'assets/deltarune/tasque-companion.png',life:900,noSkills:true,noEnergy:true,scale:.65,
-    hp:u.max.hp*(.45+(u._tasqueHpPct||0)),mag:u.st.mag*.48,atk:u.st.atk*.55,def:u.st.def*(u._tasqueRed?1.25:1),mdef:u.st.mdef*(u._tasqueRed?1.25:1),
+    hp:u.max.hp*(.60+(u._tasqueHpPct||0)),mag:u.st.mag*.48,atk:u.st.atk*.55,def:u.st.def*(u._tasqueRed?1.25:1),mdef:u.st.mdef*(u._tasqueRed?1.25:1),
     x:u.x+u.face*(108+index*34),depth:Math.max(.08,Math.min(.9,u.depth+(index?-.1:.1))),tint:'#65eef4'});
   p.baseStats.aggro=2.2;p.dirty=true;p.recompute(true);p.hp=p.max.hp;
-  u._tasques.push(p);if(u._tasqueRed)B.applyStatus(u,p,'tasque_priority',999);
+  u._tasques.push(p);
+  B.applyStatus(u,p,'tasque_companion_guard',999);
+  if(u._tasqueRed)B.applyStatus(u,p,'tasque_priority',999);
   return p;
 }
 function tasqueStrike(u,B,t,scale=1,chosen){
@@ -152,7 +156,7 @@ function tasqueCompliance(u,B){
   });
 }
 
-Object.defineProperty(HEROES,'TasqueCompanion',{enumerable:false,configurable:true,value:{id:'TasqueCompanion',name:'Tasque',tier:'SS',role:'Damage',position:'Frontline',element:'Deltarune',noVoice:true,
+Object.defineProperty(HEROES,'TasqueCompanion',{enumerable:false,configurable:true,value:{id:'TasqueCompanion',name:'Tasque',tier:'SS',role:'Damage',position:'Frontline',element:'Deltarune',noVoice:true,nativeFace:-1,
   base:{hp:700,atk:75,def:150,mag:180,mdef:150,spd:118,acc:200,eva:155},
   hidden:{range:125,aspd:1.2,ms:115,aggro:2.2,crit:.05,critDmg:1.35,healPow:1,shieldPow:1,cdr:0,ccRes:.1,kbRes:.3,armorPen:0,magPen:.05},
   growth:{hp:0,atk:0,def:0,mag:0,mdef:0},move:{gait:'pounce',bob:3,freq:2,lean:4,squash:.02,idle:'sway',step:'step_soft'},
@@ -175,6 +179,19 @@ defHero({
         u._tasqueRed=u.rarity>=5;u._tasques=[];u._tasqueCharms=new Set();u._tasqueCompliance=false;u._tasqueComplianceUsed=false;u._tasqueSkillAttempts=new Set();
         for(let i=0;i<2;i++)summonTasque(u,B,i);
         B.applyStatus(u,u,'tasque_covered',999);
+        B.on(u,'waveStart',()=>{
+          u._tasqueComplianceUsed=false;
+          u._tasqueCompliance=false;
+          u._tasqueSkillAttempts.clear();
+          u._tasques=(u._tasques||[]).filter(t=>t.alive);
+          u._tasques.forEach(p=>{
+            p._tasqueReassembled=false;
+            B.heal(u,p,p.max.hp*.5,{tag:'Wave Reset'});
+          });
+          while(u._tasques.length<2){
+            summonTasque(u,B,u._tasques.length);
+          }
+        });
         B.every(u,.2,()=>{for(const e of [...u._tasqueCharms]){if(e.alive&&e.hasStatus('charm'))continue;u._tasqueCharms.delete(e);if(e.alive){B.removeStatus(e,'tasque_commanded');B.removeStatus(e,'tasque_compliant_charm');B.applyStatus(u,e,'tasque_disciplined',7);}}});
         B.on(u,'damageResolved',ev=>{
           const e=ev.src;if(!e||!u._tasqueCharms.has(e)||!e.hasStatus('charm')||ev.target?.team!==e.team||!ev.basic||ev.hpDamage<=0)return;

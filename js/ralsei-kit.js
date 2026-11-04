@@ -53,7 +53,8 @@ function ralseiSpend(u,B,n){
 function ralseiBasic(u,B){
   B.anim(u,'cast',.5,'ralseiBasic');
   ralseiLow(u,B).slice(0,u.hasStatus('ralsei_prince')?2:1).forEach(a=>{
-    B.heal(u,a,u.st.mag*.55,{tag:'Healing Spell',overheal:'shield'});
+    B.heal(u,a,u.st.mag*.75,{tag:'Healing Spell',overheal:'shield'});
+    B.cleanse(a,1);
     DeltaruneVisuals.heal(u,B,a);
   });
   B.energy(u,9);B.emitTeam(u.team,'allyBasic',{unit:u,target:null});B.emitFoe(u.team,'enemyAction',u);
@@ -93,7 +94,7 @@ function ralseiPrayer(u,B,a){
 
 defHero({
   id:'Ralsei',name:'Ralsei',folder:'Ralsei',file:'Ralsei',icon:'Ralsei',tier:'SS',role:'Support',roleLabel:'Support / Healer / Control',
-  position:'Backline',element:'Deltarune',noVoice:true,eventOnly:true,
+  position:'Backline',element:'Deltarune',noVoice:true,eventOnly:true,nativeFace:1,
   blurb:'A gentle prince who protects the party, heals through danger, and can end a tired foe’s fight peacefully.',
   base:{hp:4050,atk:130,def:225,mag:465,mdef:330,spd:105,acc:190,eva:155},
   hidden:{range:335,aspd:.87,ms:72,aggro:.35,crit:.08,critDmg:1.4,healPow:1.2,shieldPow:1.15,cdr:.12,ccRes:.18,kbRes:.2,armorPen:0,magPen:0},
@@ -103,7 +104,14 @@ defHero({
   skills:{
     W:{name:'DualHeal',type:'Healing / Support / Shield',energy:100,
       desc:()=>'<span class="sk-pas">Starts each wave with 25 TP. Healing an ally below half HP grants 5 TP. Basics heal the weakest ally.</span> Heal the whole team for 30% Max HP plus Skill Power, then give 20% Damage Reduction and 15% more healing received for 8s. At 50 TP, spend it to increase healing, cleanse two debuffs, and shield each ally for 20% Max HP. Allies already at full HP gain Energy. Red rarity also grants team Skill Haste.',
-      passive(u,B){u._ralseiTP=0;ralseiGain(u,B,25);B.on(u,'healDone',ev=>{if(ev.amount>0&&ev.target?.alive&&(ev.target.hp-ev.amount)/ev.target.max.hp<.5)ralseiGain(u,B,5);});},
+      passive(u,B){
+        u._ralseiTP=0;
+        ralseiGain(u,B,25);
+        B.on(u,'waveStart',()=>{
+          ralseiGain(u,B,25);
+        });
+        B.on(u,'healDone',ev=>{if(ev.amount>0&&ev.target?.alive&&(ev.target.hp-ev.amount)/ev.target.max.hp<.5)ralseiGain(u,B,5);});
+      },
       cast(u,B){ralseiDual(u,B);}},
     G:{name:'Pacify',type:'Control / Support',cd:11,first:5,
       desc:()=> 'Make the highest-Attack foe Drowsy for 8s: Attack Speed -25%, Skill Haste -20%, damage -15%. Its next skill or attack against a FluffyGuard refreshes Drowsy and drains Energy. A Drowsy foe below 40% HP becomes TIRED. Cast again on a TIRED foe below 35% HP to spend 20 TP and spare an ordinary enemy, counting as a defeat. Bosses are Stunned, weakened, and drained instead. At Red rarity, affect two enemies, but spare only one per cast.',
@@ -119,7 +127,12 @@ defHero({
         targets.forEach(e=>{
           if(e.hasStatus('ralsei_tired')&&e.hp/e.max.hp<.35&&ralseiSpend(u,B,20)){
             DeltaruneVisuals.pacify(u,B,e,true);
-            if(e.isBoss||e.flags?.executeImmune||e.def?.executeImmune){B.applyStatus(u,e,'stun',3);B.applyStatus(u,e,'ralsei_boss_pacify',7);B.energy(e,-30,{resolvedAmount:true});}
+            if(e.isBoss||e.flags?.executeImmune||e.def?.executeImmune){
+              B.damage(u,e,u.st.mag*1.8,{type:'magic',tag:'Pacify Boss',crit:false});
+              B.applyStatus(u,e,'stun',3);
+              B.applyStatus(u,e,'ralsei_boss_pacify',7);
+              B.energy(e,-30,{resolvedAmount:true});
+            }
             else {ralseiSpare(u,B,e);const a=ralseiLow(u,B)[0];if(a)B.heal(u,a,u.st.mag*.9,{tag:'Pacify'});ralseiGain(u,B,15);}
           }else {B.applyStatus(u,e,'ralsei_drowsy',8);DeltaruneVisuals.pacify(u,B,e,false);}
         });
@@ -140,7 +153,16 @@ defHero({
       passive(u,B){
         u._ralseiPrayerAt=-99;u._ralseiDodgeAt=-99;
         B.on(u,'allyDamageTaken',ev=>{const a=ev.unit;if(!u.alive||!a?.alive||a.minion||a.hp/a.max.hp>=.5||B.t-u._ralseiPrayerAt<(u.hasStatus('ralsei_prince')?5:10))return;u._ralseiPrayerAt=B.t;ralseiPrayer(u,B,a);});
-        ralseiAllies(u,B).forEach(a=>B.on(a,'dodged',()=>{if(!u.alive||B.t-u._ralseiDodgeAt<2)return;u._ralseiDodgeAt=B.t;ralseiGain(u,B,5);}));
+        const hookDodges=()=>{
+          ralseiAllies(u,B).forEach(a=>{
+            if(!a._ralseiDodgeHooked){
+              a._ralseiDodgeHooked=true;
+              B.on(a,'dodged',()=>{if(!u.alive||B.t-u._ralseiDodgeAt<2)return;u._ralseiDodgeAt=B.t;ralseiGain(u,B,5);});
+            }
+          });
+        };
+        hookDodges();
+        B.on(u,'waveStart',hookDodges);
         B.on(u,'healDone',ev=>{const a=ev.target;if(ev.amount>0&&a?.alive&&a.hp/a.max.hp>.8)B.shield(u,a,Math.min(ev.amount*.2,a.max.hp*.06),6);});
       }},
     R:{name:'ReviveSong',type:'Healing / Support / Control',
@@ -149,8 +171,12 @@ defHero({
       passive(u,B,S,P){
         u._ralseiRed=true;u._ralseiReviveUsed=false;u._ralseiPrinceUsed=false;
         u.flat.hpP_ralsei=P.hpPct/100;u.flat.magP_ralsei=P.magPct/100;u.dirty=true;
+        B.on(u,'waveStart',()=>{
+          u._ralseiReviveUsed=false;
+          u._ralseiPrinceUsed=false;
+        });
         B.on(u,'allyLethal',ev=>{
-          const a=ev.unit;if(!u.alive||u._ralseiReviveUsed||!a||a.minion||a===u)return;
+          const a=ev.unit;if(!u.alive||u._ralseiReviveUsed||!a||a.minion)return;
           u._ralseiReviveUsed=true;ev.prevented=true;a.hp=Math.max(1,a.max.hp*.45);B.shield(u,a,a.max.hp*.25,8);
           ralseiAllies(u,B).filter(x=>x!==a).forEach(x=>{B.heal(u,x,x.max.hp*.20,{tag:'ReviveSong'});B.cleanse(x,1);});
           ralseiGain(u,B,30);B.anim(u,'cast',1,'ralseiRevive');
@@ -168,8 +194,8 @@ defHero({
   }
 });
 
-SPECIAL_HERO_ART.Ralsei='assets/deltarune/ralsei-idle.png';
-SPECIAL_HERO_ICONS.Ralsei='assets/deltarune/ralsei-idle.png';
+SPECIAL_HERO_ART.Ralsei='assets/deltarune/ralsei-portrait.png';
+SPECIAL_HERO_ICONS.Ralsei='assets/deltarune/ralsei-icon.png';
 SKILL_HERO_ART.Ralsei={W:'assets/deltarune/ralsei-heal.png',G:'assets/deltarune/ralsei-pacify.png',B:'assets/deltarune/ralsei-guard.png',P:'assets/deltarune/ralsei-heal.png',R:'assets/deltarune/ralsei-revive.png'};
 if(!HERO_IDS.includes('Ralsei'))HERO_IDS.push('Ralsei');
 if(!PLAYABLE_IDS.includes('Ralsei'))PLAYABLE_IDS.push('Ralsei');

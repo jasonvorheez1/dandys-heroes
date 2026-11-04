@@ -10,7 +10,7 @@ const ToonRigJoints = (() => {
   const clamp = n => Math.max(0, Math.min(1, n));
 
   function discover(r, id) {
-    if (r.art) return null; // the new cutouts animate their own joints
+    if (r.art || id === 'Scraps' || id === 'Cocoa') return null; // custom multi-joint rigs animate their own joints
     const R = r.R || {}, p = R.parts || {};
     const joints = {
       head: node(r.headRig, r.headJoint, r.head, R.headG, p.head?.g),

@@ -6,18 +6,22 @@ const DeltaruneVisuals = (() => {
   // Keep character combat independent of that event's much larger lazy-loaded pack.
   const soundFiles = ['select', 'swing', 'rudebuster_hit', 'weaponpull_fast', 'spare', 'graze',
     'power', 'spellcast', 'magicsprinkle', 'mercyadd', 'great_shine', 'revival'];
-  CUE_SOURCES.push([Object.fromEntries(soundFiles.map(name => ['dr_' + name, [name + '.ogg']])),
-    (typeof ASSET === 'string' ? ASSET : './') + 'assets/deltarune/sfx/']);
-  const previousMix = soundMix;
-  soundMix = function (cue) {
-    if (!cue.startsWith('dr_')) return previousMix(cue);
-    const impact = cue === 'dr_swing' || cue === 'dr_rudebuster_hit';
-    return { bus: impact ? 'impact' : 'ability', gain: impact ? .55 : .47,
-      throttle: cue === 'dr_magicsprinkle' ? 280 : impact ? 80 : 180,
-      perCue: impact ? 2 : 1,
-      maxMs: cue === 'dr_revival' ? 6500 : cue === 'dr_great_shine' ? 2300 : 1500,
-      fadeMs: cue === 'dr_revival' ? 250 : 130 };
-  };
+  if (typeof CUE_SOURCES !== 'undefined') {
+    CUE_SOURCES.push([Object.fromEntries(soundFiles.map(name => ['dr_' + name, [name + '.ogg']])),
+      (typeof ASSET === 'string' ? ASSET : './') + 'assets/deltarune/sfx/']);
+  }
+  if (typeof soundMix !== 'undefined') {
+    const previousMix = soundMix;
+    soundMix = function (cue) {
+      if (!cue.startsWith('dr_')) return previousMix(cue);
+      const impact = cue === 'dr_swing' || cue === 'dr_rudebuster_hit';
+      return { bus: impact ? 'impact' : 'ability', gain: impact ? .55 : .47,
+        throttle: cue === 'dr_magicsprinkle' ? 280 : impact ? 80 : 180,
+        perCue: impact ? 2 : 1,
+        maxMs: cue === 'dr_revival' ? 6500 : cue === 'dr_great_shine' ? 2300 : 1500,
+        fadeMs: cue === 'dr_revival' ? 250 : 130 };
+    };
+  }
   function play(B, name, vol = .7) {
     if (!B || B.offscreen || B.paused || B.over) return;
     Sound.play('dr_' + name, { vol });
@@ -26,8 +30,17 @@ const DeltaruneVisuals = (() => {
   const ease = x => 1 - Math.pow(1 - clamp01(x), 3);
   const sheet = id => (typeof ASSET === 'string' ? ASSET : './') + 'assets/deltarune/' + id.toLowerCase() + '-battle.png';
   const frames = (row, count) => Array.from({ length: count }, (_, i) => row * 8 + i);
-  const clip = (id, row, count, fps, once = false) => ({ src: sheet(id), cols: 8, rows: 10, cellW: 96, cellH: 96,
-    baseW: 96, bodyScale: 1.08, groundY: 94, frames: frames(row, count), fps, once });
+  const clip = (id, row, count, fps, once = false, cellW = 96, anchorX = null) => ({
+    src: sheet(id), cols: 8, rows: 10, cellW, cellH: 96,
+    baseW: 96, bodyScale: 1.08, groundY: 92, anchorX, frames: frames(row, count), fps, once
+  });
+  const rClip = (row, count, fps, once = false) => clip('Ralsei', row, count, fps, once, 144, 42);
+  const flClip = (row, count, fps, once = false) => clip('Flowery', row, count, fps, once, 96, null);
+  const flOmegaSrc = (typeof ASSET === 'string' ? ASSET : './') + 'assets/deltarune/flowery-omega-battle.png';
+  const flOmegaClip = (row, fps = 8, once = false) => ({
+    src: flOmegaSrc, cols: 3, rows: 4, cellW: 160, cellH: 160,
+    baseW: 160, bodyScale: 1.42, groundY: 160, frames: [row * 3, row * 3 + 1, row * 3 + 2], fps, once
+  });
   const atlases = {
     Kris: {
       idle: clip('Kris', 0, 4, 4), move: clip('Kris', 1, 6, 11), attack: clip('Kris', 2, 6, 12, true),
@@ -35,16 +48,30 @@ const DeltaruneVisuals = (() => {
       act: clip('Kris', 6, 6, 10, true), xslash: clip('Kris', 7, 7, 12, true), courage: clip('Kris', 8, 5, 8, true)
     },
     Ralsei: {
-      idle: clip('Ralsei', 0, 5, 5), move: clip('Ralsei', 1, 4, 10), attack: clip('Ralsei', 2, 7, 12, true),
-      cast: clip('Ralsei', 3, 8, 11, true), guard: clip('Ralsei', 4, 8, 11, true), hurt: clip('Ralsei', 5, 1, 1, true),
-      prayer: clip('Ralsei', 6, 8, 10, true), pacify: clip('Ralsei', 7, 8, 10, true),
-      revive: clip('Ralsei', 8, 8, 10, true), prince: clip('Ralsei', 9, 8, 10, true)
+      idle: rClip(0, 5, 5), move: rClip(1, 4, 10), attack: rClip(2, 7, 12, true),
+      cast: rClip(3, 8, 11, true), guard: rClip(4, 8, 11, true), hurt: rClip(5, 1, 1, true),
+      prayer: rClip(6, 8, 10, true), pacify: rClip(7, 8, 10, true),
+      revive: rClip(8, 8, 10, true), prince: rClip(9, 8, 10, true)
+    },
+    Flowery: {
+      idle: flClip(0, 5, 5), move: flClip(1, 4, 10), attack: flClip(2, 5, 12, true),
+      cast: flClip(3, 3, 9, true), guard: flClip(4, 3, 9, true), hurt: flClip(5, 3, 9, true),
+      recruit: flClip(6, 4, 9, true), cheer: flClip(6, 4, 9, true),
+      victory: flClip(7, 4, 9, true),
+      jaronaWindup: flClip(8, 5, 14, true),
+      jarona: flClip(9, 2, 12, true),
+      jaronaCombo: flClip(9, 5, 14, true),
+      omegaIdle: flOmegaClip(0, 6), omegaAttack: flOmegaClip(1, 12, true),
+      omegaCast: flOmegaClip(2, 10, true), omegaPunch: flOmegaClip(3, 10, true)
     }
   };
   const oldAtlases = Art.collabAtlases;
   Art.collabAtlases = function (id) { return atlases[id] || oldAtlases.apply(this, arguments); };
-  HEROES.Kris.nativeFace = 1;
-  HEROES.Ralsei.nativeFace = 1;
+  if (HEROES.Kris) HEROES.Kris.nativeFace = 1;
+  if (HEROES.Ralsei) HEROES.Ralsei.nativeFace = 1;
+  if (HEROES.Flowery) HEROES.Flowery.nativeFace = 1;
+  if (HEROES.TasqueManager) HEROES.TasqueManager.nativeFace = -1;
+  if (HEROES.TasqueCompanion) HEROES.TasqueCompanion.nativeFace = -1;
 
   function anchor(B, u) {
     if (!u) return { x: 0, y: 0, size: 90 };
@@ -80,12 +107,15 @@ const DeltaruneVisuals = (() => {
   const styles = {
     krisAct: 'act', krisXSlash: 'xslash', krisDefend: 'guard', krisCourage: 'courage',
     ralseiBasic: 'cast', ralseiDual: 'cast', ralseiPacify: 'pacify', ralseiGuard: 'guard',
-    ralseiPrayer: 'prayer', ralseiRevive: 'revive', ralseiPrince: 'prince'
+    ralseiPrayer: 'prayer', ralseiRevive: 'revive', ralseiPrince: 'prince',
+    floweryBasic: 'attack', floweryJarona: 'jarona', floweryJaronaWindup: 'jaronaWindup', floweryJaronaCombo: 'jaronaCombo',
+    floweryThorns: 'cast', floweryRecruit: 'recruit', floweryOmega: 'victory'
   };
   const oldAnim = Battle.prototype.anim;
   Battle.prototype.anim = function (u, kind, duration, style) {
     const result = oldAnim.apply(this, arguments);
-    if (styles[style]) pose(u, this, styles[style], duration);
+    const poseKey = styles[style] || (u && atlases[u.id] && (atlases[u.id][style] ? style : atlases[u.id][kind] ? kind : null));
+    if (poseKey) pose(u, this, poseKey, duration);
     return result;
   };
   const oldDamage = Battle.prototype.damage;
@@ -93,6 +123,9 @@ const DeltaruneVisuals = (() => {
     const result = oldDamage.apply(this, arguments);
     if (result?.basic && result.amount > 0 && src?.id === 'Kris' && target?.team !== src.team) {
       add(this, 'basic', src, target, .24);
+    }
+    if (target && result?.amount > 0 && (target.id === 'Kris' || target.id === 'Ralsei' || target.id === 'Flowery')) {
+      pose(target, this, 'hurt', 0.35);
     }
     return result;
   };
@@ -143,11 +176,15 @@ const DeltaruneVisuals = (() => {
       const a=anchor(B,u),t=B.t;
       if(u.id==='Kris'){
         if(u._krisTP>0)meter(ctx,a,u._krisTP,RED,'heart');
-        if(u.hasStatus('kris_defend')){ctx.globalAlpha=.72;shield(ctx,a.x,a.y,34,43,'#ffafbc');heart(ctx,a.x,a.y,1,RED);ctx.globalAlpha=1;}
-        if(u.hasStatus('kris_determination')){ctx.globalAlpha=.8;for(let i=0;i<(reduced?2:4);i++){const q=t*1.9+i*Math.PI/2;sparkle(ctx,a.x+Math.cos(q)*36,a.y+Math.sin(q)*36,3,RED);}ctx.globalAlpha=1;}
+        if(u.hasStatus('kris_defend')){ctx.globalAlpha=.75;shield(ctx,a.x,a.y,36,44,'#ffafbc');heart(ctx,a.x,a.y,1.5,RED);ctx.globalAlpha=1;}
+        if(u.hasStatus('kris_determination')){ctx.globalAlpha=.85;for(let i=0;i<(reduced?2:4);i++){const q=t*2.2+i*Math.PI/2;sparkle(ctx,a.x+Math.cos(q)*38,a.y+Math.sin(q)*38,3,RED);}heart(ctx,a.x,a.y-54,2,RED);ctx.globalAlpha=1;}
+        if(u.hasStatus('kris_courage_team')){ctx.globalAlpha=.7;delta(ctx,a.x,a.y-52,10,CYAN);ctx.globalAlpha=1;}
       }else if(u.id==='Ralsei'){
         if(u._ralseiTP>0)meter(ctx,a,u._ralseiTP,MINT,'star');
-        if(u.hasStatus('ralsei_prince')){ctx.globalAlpha=.65;delta(ctx,a.x,a.y-48,9,GOLD);ctx.globalAlpha=1;}
+        if(u.hasStatus('ralsei_prince')){ctx.globalAlpha=.75;delta(ctx,a.x,a.y-48,11,GOLD);ctx.globalAlpha=1;}
+        if(u.hasStatus('ralsei_kindness')){ctx.globalAlpha=.65;heart(ctx,a.x,a.y-52,1.5,MINT);ctx.globalAlpha=1;}
+      }else if(u.id==='TasqueManager'){
+        if(u._tasqueCompliance){ctx.globalAlpha=.8;diamond(ctx,a.x,a.y-54,12,12,CYAN,2);sparkle(ctx,a.x,a.y-54,3,WHITE);ctx.globalAlpha=1;}
       }
       const fluffy=u.getStatus?.('ralsei_fluffy');
       if(fluffy){ctx.globalAlpha=.7;shield(ctx,a.x,a.y,33,39,'#c5ffe0');for(let i=0;i<Math.min(3,fluffy.ralseiCharges||0);i++)pixel(ctx,a.x-10+i*8,a.y-50,4,MINT);ctx.globalAlpha=1;}
@@ -253,7 +290,7 @@ const DeltaruneVisuals = (() => {
   const oldBuild = Battle.prototype.buildUnitEl;
   Battle.prototype.buildUnitEl = function (u) {
     const result = oldBuild.apply(this, arguments);
-    if ((u.id === 'Kris' || u.id === 'Ralsei') && !u.minion) {
+    if ((u.id === 'Kris' || u.id === 'Ralsei' || u.id === 'TasqueManager' || u.id === 'Flowery') && !u.minion) {
       u.el?.classList.add('deltarune-unit', 'deltarune-' + u.id.toLowerCase());
       state(this);
     }
@@ -268,7 +305,7 @@ const DeltaruneVisuals = (() => {
     pose,
     check: (u, B, foe) => { add(B, 'check', u, foe, .65); play(B, 'select', .55); },
     act: (u, B, foe, command) => { add(B, 'act', u, foe, .85, { command }); play(B, command === 'SPARE' ? 'spare' : 'select'); },
-    slash: (u, B, foe, hit) => { add(B, 'slash', u, foe, .34, { hit }); play(B, hit === 2 ? 'rudebuster_hit' : 'swing'); },
+    slash: (u, B, foe, hit) => { add(B, 'slash', u, foe, .38, { hit }); play(B, hit === 2 ? 'rudebuster_hit' : 'swing'); },
     guard: (u, B, ally) => { add(B, 'guard', u, u, .65, { color: '#ffc0c8' }); if (ally && ally !== u) add(B, 'guard', u, ally, .65, { color: '#ffc0c8' }); play(B, 'weaponpull_fast', .6); },
     soul: (u, B) => { add(B, 'soul', u, u, .65); play(B, 'graze', .5); },
     courage: (u, B) => { add(B, 'courage', u, u, 1.1); play(B, 'power', .75); },
@@ -279,6 +316,10 @@ const DeltaruneVisuals = (() => {
     block: (u, B, ally) => { add(B, 'block', u, ally, .45); play(B, 'graze', .5); },
     prayer: (u, B, ally, miracle = false) => { add(B, 'prayer', u, ally, .95, { miracle }); play(B, 'great_shine', .65); },
     revive: (u, B, ally) => { add(B, 'revive', u, ally, 1.25); play(B, 'revival', .8); },
-    prince: (u, B) => { add(B, 'prince', u, u, 1.35); play(B, 'mercyadd', .75); }
+    prince: (u, B) => { add(B, 'prince', u, u, 1.35); play(B, 'mercyadd', .75); },
+    tpGain: (u, B, n, color = '#ff8c92') => {
+      if (!B || B.offscreen || n <= 0) return;
+      B.fxFloatIcon(u.x, u.y - 106, '+' + n + ' TP', color);
+    }
   };
 })();
